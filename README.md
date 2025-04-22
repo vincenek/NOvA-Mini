@@ -16,18 +16,33 @@
       color: #00ffc8;
     }
 
-    .wallet-section, .goal-section, .slider-section {
+    .section {
       background-color: #1a1a1a;
       border-radius: 10px;
       padding: 20px;
       margin: 20px 0;
     }
 
-    .wallet-bar {
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+      border: none;
+      width: 100%;
+    }
+
+    button {
+      background-color: #00ffc8;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .wallet-bar, .goal-progress {
       background-color: #333;
-      height: 30px;
       border-radius: 15px;
       overflow: hidden;
+      height: 30px;
       margin-top: 10px;
     }
 
@@ -43,63 +58,99 @@
       to { width: 60%; }
     }
 
-    .slider {
-      width: 100%;
-      margin-top: 10px;
+    ul {
+      list-style-type: none;
+      padding: 0;
     }
 
-    .goal-progress {
-      background-color: #444;
-      border-radius: 10px;
-      height: 25px;
-      margin-top: 10px;
-    }
-
-    .goal-fill {
-      height: 100%;
-      width: 30%;
-      background-color: #00ffc8;
-      border-radius: 10px;
-    }
-
-    label, p {
-      margin: 10px 0;
+    li {
+      background: #2a2a2a;
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>NOvA-Mini: Ghost Wallet</h1>
 
-  <!-- Ghost Wallet Balance Section -->
-  <div class="wallet-section">
+  <h1>NOvA-Mini: Ghost Wallet Prototype</h1>
+
+  <!-- Ghost Wallet Balance -->
+  <div class="section">
     <h2>Ghost Wallet</h2>
-    <p>Balance: $500</p>
+    <p id="ghostBalance">$0</p>
     <div class="wallet-bar">
-      <div class="wallet-fill"></div>
+      <div class="wallet-fill" id="walletFill"></div>
     </div>
   </div>
 
-  <!-- Auto Transfer Slider -->
-  <div class="slider-section">
-    <h2>Auto-Transfer</h2>
-    <label for="autoTransfer">% of funds to Ghost Wallet</label>
-    <input type="range" id="autoTransfer" class="slider" min="0" max="100" value="10" oninput="updateLabel(this.value)">
-    <p id="sliderValue">10%</p>
+  <!-- Savings Calculator -->
+  <div class="section">
+    <h2>Savings Calculator</h2>
+    <label>Monthly Income ($)</label>
+    <input type="number" id="incomeInput" placeholder="Enter your income">
+    <label>Save (%)</label>
+    <input type="number" id="saveInput" placeholder="e.g. 20">
+    <button onclick="calculateSavings()">Calculate</button>
+    <p id="saveResult"></p>
+    <p id="spendResult"></p>
   </div>
 
-  <!-- Savings Goal Tracker -->
-  <div class="goal-section">
-    <h2>Savings Goal: New iPad</h2>
-    <p>Progress: $150 of $500</p>
-    <div class="goal-progress">
-      <div class="goal-fill"></div>
-    </div>
+  <!-- Expense Tracker -->
+  <div class="section">
+    <h2>Expense Tracker</h2>
+    <input type="number" id="expenseAmount" placeholder="Amount ($)">
+    <input type="text" id="expenseNote" placeholder="Note (e.g. Food)">
+    <button onclick="addExpense()">Add Expense</button>
+    <ul id="expenseList"></ul>
+    <p id="expenseTotal"></p>
   </div>
 
   <script>
-    function updateLabel(value) {
-      document.getElementById('sliderValue').textContent = value + '%';
+    let ghostBalance = 0;
+    let totalExpenses = 0;
+
+    function calculateSavings() {
+      const income = parseFloat(document.getElementById('incomeInput').value);
+      const percent = parseFloat(document.getElementById('saveInput').value);
+
+      if (isNaN(income) || isNaN(percent)) {
+        alert("Please enter valid numbers.");
+        return;
+      }
+
+      const saved = (income * percent / 100).toFixed(2);
+      const spend = (income - saved).toFixed(2);
+
+      ghostBalance = parseFloat(saved);
+      document.getElementById('ghostBalance').textContent = `$${saved}`;
+      document.getElementById('walletFill').style.width = Math.min(percent, 100) + '%';
+
+      document.getElementById('saveResult').textContent = `Saved: $${saved}`;
+      document.getElementById('spendResult').textContent = `Left to Spend: $${spend}`;
+    }
+
+    function addExpense() {
+      const amount = parseFloat(document.getElementById('expenseAmount').value);
+      const note = document.getElementById('expenseNote').value.trim();
+
+      if (isNaN(amount) || note === "") {
+        alert("Please enter a valid amount and note.");
+        return;
+      }
+
+      totalExpenses += amount;
+
+      const li = document.createElement('li');
+      li.textContent = `$${amount.toFixed(2)} - ${note}`;
+      document.getElementById('expenseList').appendChild(li);
+
+      document.getElementById('expenseTotal').textContent = `Total Spent: $${totalExpenses.toFixed(2)}`;
+      
+      document.getElementById('expenseAmount').value = "";
+      document.getElementById('expenseNote').value = "";
     }
   </script>
+
 </body>
 </html>
