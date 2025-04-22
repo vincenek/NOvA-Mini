@@ -1,156 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>NOvA-Mini</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #0e0e0e;
-      color: #f2f2f2;
-      padding: 20px;
-    }
-
-    h1 {
-      text-align: center;
-      color: #00ffc8;
-    }
-
-    .section {
-      background-color: #1a1a1a;
-      border-radius: 10px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-
-    input, button {
-      padding: 10px;
-      margin: 5px 0;
-      border-radius: 5px;
-      border: none;
-      width: 100%;
-    }
-
-    button {
-      background-color: #00ffc8;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .wallet-bar, .goal-progress {
-      background-color: #333;
-      border-radius: 15px;
-      overflow: hidden;
-      height: 30px;
-      margin-top: 10px;
-    }
-
-    .wallet-fill {
-      height: 100%;
-      width: 50%;
-      background: linear-gradient(90deg, #00ffc8, #007a5e);
-      animation: pulse 2s infinite alternate;
-    }
-
-    @keyframes pulse {
-      from { width: 50%; }
-      to { width: 60%; }
-    }
-
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-
-    li {
-      background: #2a2a2a;
-      margin: 5px 0;
-      padding: 8px;
-      border-radius: 5px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOvA-X Dashboard</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <h1>NOvA-Mini: Ghost Wallet Prototype</h1>
-
-  <!-- Ghost Wallet Balance -->
-  <div class="section">
-    <h2>Ghost Wallet</h2>
-    <p id="ghostBalance">$0</p>
-    <div class="wallet-bar">
-      <div class="wallet-fill" id="walletFill"></div>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <div class="user-profile">
+                <img src="avatar.png" alt="User Avatar">
+                <h3>User Name</h3>
+                <p>Active</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#">Dashboard</a></li>
+                    <li><a href="#">Transactions</a></li>
+                    <li><a href="#">Settings</a></li>
+                    <li><a href="#">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="main-content">
+            <div class="top-nav">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search">
+                </div>
+                <div class="notification">
+                    <img src="bell.png" alt="Notifications">
+                </div>
+                <div class="user-dropdown">
+                    <img src="avatar.png" alt="User Avatar">
+                </div>
+            </div>
+            <div class="content-body">
+                <div class="balance-card">
+                    <h2>Total Balance</h2>
+                    <p>$10,000.00</p>
+                </div>
+                <div class="transactions">
+                    <h3>Recent Transactions</h3>
+                    <table>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                        <tr>
+                            <td>2025-04-22</td>
+                            <td>$200.00</td>
+                            <td>Completed</td>
+                        </tr>
+                        <tr>
+                            <td>2025-04-21</td>
+                            <td>$500.00</td>
+                            <td>Pending</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="market-trends">
+                    <h3>Market Trends</h3>
+                    <div class="chart-container">
+                        <!-- Placeholder for chart (You can later replace it with a real chart) -->
+                        <div class="chart">Chart goes here</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-
-  <!-- Savings Calculator -->
-  <div class="section">
-    <h2>Savings Calculator</h2>
-    <label>Monthly Income ($)</label>
-    <input type="number" id="incomeInput" placeholder="Enter your income">
-    <label>Save (%)</label>
-    <input type="number" id="saveInput" placeholder="e.g. 20">
-    <button onclick="calculateSavings()">Calculate</button>
-    <p id="saveResult"></p>
-    <p id="spendResult"></p>
-  </div>
-
-  <!-- Expense Tracker -->
-  <div class="section">
-    <h2>Expense Tracker</h2>
-    <input type="number" id="expenseAmount" placeholder="Amount ($)">
-    <input type="text" id="expenseNote" placeholder="Note (e.g. Food)">
-    <button onclick="addExpense()">Add Expense</button>
-    <ul id="expenseList"></ul>
-    <p id="expenseTotal"></p>
-  </div>
-
-  <script>
-    let ghostBalance = 0;
-    let totalExpenses = 0;
-
-    function calculateSavings() {
-      const income = parseFloat(document.getElementById('incomeInput').value);
-      const percent = parseFloat(document.getElementById('saveInput').value);
-
-      if (isNaN(income) || isNaN(percent)) {
-        alert("Please enter valid numbers.");
-        return;
-      }
-
-      const saved = (income * percent / 100).toFixed(2);
-      const spend = (income - saved).toFixed(2);
-
-      ghostBalance = parseFloat(saved);
-      document.getElementById('ghostBalance').textContent = `$${saved}`;
-      document.getElementById('walletFill').style.width = Math.min(percent, 100) + '%';
-
-      document.getElementById('saveResult').textContent = `Saved: $${saved}`;
-      document.getElementById('spendResult').textContent = `Left to Spend: $${spend}`;
-    }
-
-    function addExpense() {
-      const amount = parseFloat(document.getElementById('expenseAmount').value);
-      const note = document.getElementById('expenseNote').value.trim();
-
-      if (isNaN(amount) || note === "") {
-        alert("Please enter a valid amount and note.");
-        return;
-      }
-
-      totalExpenses += amount;
-
-      const li = document.createElement('li');
-      li.textContent = `$${amount.toFixed(2)} - ${note}`;
-      document.getElementById('expenseList').appendChild(li);
-
-      document.getElementById('expenseTotal').textContent = `Total Spent: $${totalExpenses.toFixed(2)}`;
-      
-      document.getElementById('expenseAmount').value = "";
-      document.getElementById('expenseNote').value = "";
-    }
-  </script>
-
+    <script src="script.js"></script>
 </body>
-</html>
+</html>body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #020F1D;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 100vh;
+}
+
+.dashboard-container {
+    display: flex;
+    width: 100%;
+}
+
+.sidebar {
+    background-color: #1B1E27;
+    width: 250px;
+    padding: 20px;
+}
+
+.sidebar .user-profile {
+    text-align: center;
+}
+
+.sidebar nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar nav ul li {
+    margin: 15px 0;
+}
+
+.sidebar nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #3A3A3A;
+}
+
+.top-nav .search-bar input {
+    padding: 5px;
+    border-radius: 6px;
+    border: 1px solid #3A3A3A;
+    background-color: #1B1E27;
+    color: white;
+}
+
+.top-nav .notification img {
+    width: 20px;
+}
+
+.top-nav .user-dropdown img {
+    width: 30px;
+    border-radius: 50%;
+}
+
+.content-body {
+    margin-top: 20px;
+}
+
+.balance-card {
+    background-color: #1B1E27;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 82, 204, 0.4);
+}
+
+.transactions table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.transactions table th, .transactions table td {
+    padding: 10px;
+    border: 1px solid #3A3A3A;
+}
+
+.chart-container {
+    margin-top: 20px;
+    background-color: #1B1E27;
+    padding: 20px;
+    border-radius: 8px;
+    height: 200px;
+}
+
+.chart {
+    background-color: #0052CC;
+    height: 100%;
+    text-align: center;
+    line-height: 200px;
+    color: white;
+}function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    if (email && password) {
+        alert("Welcome to NOvA-X, " + email + "!");
+    } else {
+        alert("Please enter both email and password.");
+    }
+}
