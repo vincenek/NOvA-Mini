@@ -2,118 +2,104 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Budget Breakdown</title>
+  <title>NOvA-Mini</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      margin: 0;
+      background-color: #0e0e0e;
+      color: #f2f2f2;
       padding: 20px;
-      background: #f4f6f8;
-      color: #333;
     }
-    .container {
-      max-width: 400px;
-      margin: auto;
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
+
     h1 {
       text-align: center;
-      margin-bottom: 20px;
-      color: #1a73e8;
+      color: #00ffc8;
     }
-    label {
-      display: block;
-      margin: 10px 0 5px;
+
+    .wallet-section, .goal-section, .slider-section {
+      background-color: #1a1a1a;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
     }
-    input {
+
+    .wallet-bar {
+      background-color: #333;
+      height: 30px;
+      border-radius: 15px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .wallet-fill {
+      height: 100%;
+      width: 50%;
+      background: linear-gradient(90deg, #00ffc8, #007a5e);
+      animation: pulse 2s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { width: 50%; }
+      to { width: 60%; }
+    }
+
+    .slider {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      box-sizing: border-box;
+      margin-top: 10px;
     }
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #1a73e8;
-      color: white;
-      border: none;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
+
+    .goal-progress {
+      background-color: #444;
+      border-radius: 10px;
+      height: 25px;
+      margin-top: 10px;
     }
-    button:hover {
-      background-color: #0c59c1;
+
+    .goal-fill {
+      height: 100%;
+      width: 30%;
+      background-color: #00ffc8;
+      border-radius: 10px;
     }
-    .output {
-      margin-top: 20px;
-      padding: 15px;
-      background: #e8f0fe;
-      border-radius: 5px;
-    }
-    .highlight {
-      font-weight: bold;
-      color: #0c59c1;
+
+    label, p {
+      margin: 10px 0;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Budget Breakdown</h1>
-    <label for="monthlyIncome">Monthly Budget ($)</label>
-    <input type="number" id="monthlyIncome" placeholder="Enter your budget" />
+  <h1>NOvA-Mini: Ghost Wallet</h1>
 
-    <label for="savings">Savings Goal (%)</label>
-    <input type="number" id="savings" placeholder="e.g. 10 for 10%" />
+  <!-- Ghost Wallet Balance Section -->
+  <div class="wallet-section">
+    <h2>Ghost Wallet</h2>
+    <p>Balance: $500</p>
+    <div class="wallet-bar">
+      <div class="wallet-fill"></div>
+    </div>
+  </div>
 
-    <button onclick="calculateBudget()">Calculate</button>
+  <!-- Auto Transfer Slider -->
+  <div class="slider-section">
+    <h2>Auto-Transfer</h2>
+    <label for="autoTransfer">% of funds to Ghost Wallet</label>
+    <input type="range" id="autoTransfer" class="slider" min="0" max="100" value="10" oninput="updateLabel(this.value)">
+    <p id="sliderValue">10%</p>
+  </div>
 
-    <div id="results" class="output" style="display: none;">
-      <p>After savings: <span id="netBudget" class="highlight"></span></p>
-      <p>Weekly Budget: <span id="weeklyBudget" class="highlight"></span></p>
-      <p>Daily Budget: <span id="dailyBudget" class="highlight"></span></p>
+  <!-- Savings Goal Tracker -->
+  <div class="goal-section">
+    <h2>Savings Goal: New iPad</h2>
+    <p>Progress: $150 of $500</p>
+    <div class="goal-progress">
+      <div class="goal-fill"></div>
     </div>
   </div>
 
   <script>
-    function calculateBudget() {
-      const monthlyIncome = parseFloat(document.getElementById('monthlyIncome').value);
-      const savingsPercent = parseFloat(document.getElementById('savings').value) || 0;
-
-      if (!monthlyIncome || monthlyIncome <= 0) {
-        alert("Please enter a valid monthly budget.");
-        return;
-      }
-
-      const savingsAmount = (monthlyIncome * savingsPercent) / 100;
-      const netBudget = monthlyIncome - savingsAmount;
-
-      const weeklyBudget = (netBudget / 4).toFixed(2);
-      const dailyBudget = (netBudget / 30).toFixed(2);
-
-      document.getElementById('netBudget').textContent = `$${netBudget.toFixed(2)}`;
-      document.getElementById('weeklyBudget').textContent = `$${weeklyBudget}`;
-      document.getElementById('dailyBudget').textContent = `$${dailyBudget}`;
-      document.getElementById('results').style.display = 'block';
-
-      // Optional: Save in local storage
-      localStorage.setItem('lastBudget', JSON.stringify({
-        monthlyIncome, savingsPercent
-      }));
+    function updateLabel(value) {
+      document.getElementById('sliderValue').textContent = value + '%';
     }
-
-    // Load saved data
-    window.onload = function() {
-      const saved = JSON.parse(localStorage.getItem('lastBudget'));
-      if (saved) {
-        document.getElementById('monthlyIncome').value = saved.monthlyIncome;
-        document.getElementById('savings').value = saved.savingsPercent;
-        calculateBudget();
-      }
-    };
   </script>
 </body>
 </html>
