@@ -1,228 +1,203 @@
-<!DOCTYPE html>
+fintech-app/
+├── index.html
+├── package.json
+├── vite.config.js
+├── /public
+│   └── logo.png
+├── /src
+│   ├── main.jsx
+│   ├── App.jsx
+│   ├── /pages
+│   │   ├── Login.jsx
+│   │   └── Dashboard.jsx
+│   ├── /components
+│   │   ├── Button.jsx
+│   │   ├── InputField.jsx
+│   │   └── Card.jsx
+│   └── /styles
+│       ├── global.css
+│       └── variables.css<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOVA-Mini Financial Platform</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- React and Babel CDN -->
-    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-    <style>
-        /* Global Styles */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #020F1D;
-            color: #FFFFFF;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
-            flex-direction: column;
-        }
-
-        /* Container and Login Form */
-        .login-container {
-            background-color: #1B1E27;
-            padding: 2rem;
-            border-radius: 8px;
-            width: 350px;
-            margin: auto;
-            margin-top: 10%;
-        }
-
-        .login-container h2 {
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-
-        input, button {
-            width: 100%;
-            padding: 0.5rem;
-            margin-top: 1rem;
-            border: none;
-            border-radius: 4px;
-        }
-
-        button {
-            background-color: #0052CC;
-            color: #FFFFFF;
-            cursor: pointer;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            background-color: #020F1D;
-            padding: 2rem;
-            min-width: 200px;
-            height: 100vh;
-        }
-
-        .sidebar h3 {
-            color: #0052CC;
-            margin-bottom: 2rem;
-        }
-
-        .sidebar button {
-            background-color: #0052CC;
-            color: #FFFFFF;
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        /* Dashboard Styles */
-        .dashboard {
-            display: flex;
-        }
-
-        .dashboard-content {
-            flex-grow: 1;
-            padding: 2rem;
-            background-color: #1B1E27;
-        }
-
-        .card {
-            background-color: #2E333A;
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 8px;
-        }
-
-        .card h4 {
-            margin-bottom: 0.5rem;
-        }
-
-        .card p {
-            font-size: 1.2rem;
-        }
-
-        /* Navbar Styles */
-        .navbar {
-            background-color: #020F1D;
-            color: #ffffff;
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .navbar h1 {
-            font-size: 1.5rem;
-        }
-
-        .navbar .logout {
-            background-color: #d9534f;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fintech App</title>
+  </head>
+  <body>
     <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>{
+  "name": "fintech-app",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.0.0"
+  }
+}import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
-    <script type="text/babel">
-        // Simulating Financial Platform App with Login and Dashboard
-        function App() {
-            const [loggedIn, setLoggedIn] = React.useState(false);
-            const [email, setEmail] = React.useState('');
-            const [password, setPassword] = React.useState('');
-            const [showDashboard, setShowDashboard] = React.useState(true);
-            const [portfolioValue, setPortfolioValue] = React.useState(25000);
-            const [transactionHistory, setTransactionHistory] = React.useState([
-                { id: 1, type: 'Deposit', amount: 5000 },
-                { id: 2, type: 'Withdrawal', amount: 2000 },
-                { id: 3, type: 'Transfer', amount: 1500 }
-            ]);
+export default defineConfig({
+  plugins: [react()],
+})import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './styles/global.css';
 
-            // Handle Login
-            const handleLogin = (e) => {
-                e.preventDefault();
-                if (email && password) {
-                    setLoggedIn(true);
-                } else {
-                    alert("Please enter email and password.");
-                }
-            };
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);import React from 'react';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
 
-            // Handle Logout
-            const handleLogout = () => {
-                setLoggedIn(false);
-                setEmail('');
-                setPassword('');
-            };
+const App = () => {
+  const isAuthenticated = false; // mock auth
 
-            // Dashboard Components
-            const Dashboard = () => (
-                <div>
-                    <div className="navbar">
-                        <h1>NOVA-Mini</h1>
-                        <button className="logout" onClick={handleLogout}>Log Out</button>
-                    </div>
+  return (
+    <div>
+      {isAuthenticated ? <Dashboard /> : <Login />}
+    </div>
+  );
+};
 
-                    <div className="dashboard">
-                        <div className="sidebar">
-                            <h3>Portfolio</h3>
-                            <p>${portfolioValue}</p>
-                            <button onClick={() => alert('Show Transactions')}>Transactions</button>
-                            <button onClick={() => alert('Show Settings')}>Settings</button>
-                        </div>
+export default App;import React, { useState } from 'react';
+import InputField from '../components/InputField';
+import Button from '../components/Button';
 
-                        <div className="dashboard-content">
-                            <h2>Dashboard</h2>
-                            <div className="card">
-                                <h4>Market Overview</h4>
-                                <p>Current Balance: ${portfolioValue}</p>
-                            </div>
-                            <div className="card">
-                                <h4>Recent Transactions</h4>
-                                <ul>
-                                    {transactionHistory.map(transaction => (
-                                        <li key={transaction.id}>{transaction.type}: ${transaction.amount}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
+const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-            // Login Form Component
-            const LoginPage = () => (
-                <div className="login-container">
-                    <h2>NOVA-Mini</h2>
-                    <form onSubmit={handleLogin}>
-                        <input
-                            type="email"
-                            placeholder="Email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <button type="submit">Sign In</button>
-                    </form>
-                </div>
-            );
+  return (
+    <div className="auth-container">
+      <img src="/logo.png" alt="Logo" className="logo" />
+      <InputField type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <InputField type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+      <Button type="primary" label="Login" onClick={() => alert('Login logic goes here')} />
+      <a href="#">Forgot Password?</a>
+      <br />
+      <a href="#">Sign Up</a>
+    </div>
+  );
+};
 
-            return (
-                <div>
-                    {!loggedIn ? <LoginPage /> : <Dashboard />}
-                </div>
-            );
-        }
+export default Login;import React from 'react';
+import Card from '../components/Card';
 
-        ReactDOM.render(<App />, document.getElementById('root'));
-    </script>
-</body>
-</html>
+const Dashboard = () => {
+  return (
+    <div className="dashboard">
+      <aside className="sidebar">
+        <h2>User Name</h2>
+        <nav>
+          <a href="#">Dashboard</a>
+          <a href="#">Transactions</a>
+          <a href="#">Settings</a>
+        </nav>
+        <button className="logout">Logout</button>
+      </aside>
+      <main>
+        <Card title="Total Balance">$12,345.67</Card>
+        <Card title="Recent Transactions">[Table here]</Card>
+        <Card title="Market Trends">[Chart here]</Card>
+      </main>
+    </div>
+  );
+};
+
+export default Dashboard;import React from 'react';
+
+const Button = ({ type, label, onClick }) => {
+  return (
+    <button className={`btn ${type}`} onClick={onClick}>
+      {label}
+    </button>
+  );
+};
+
+export default Button;import React from 'react';
+
+const InputField = ({ type, placeholder, value, onChange }) => {
+  return (
+    <input className="input" type={type} placeholder={placeholder} value={value} onChange={onChange} />
+  );
+};
+
+export default InputField;import React from 'react';
+
+const Card = ({ title, children }) => {
+  return (
+    <div className="card">
+      <h2>{title}</h2>
+      <div>{children}</div>
+    </div>
+  );
+};
+
+export default Card;:root {
+  --primary-bg: #020F1D;
+  --accent: #0052CC;
+  --text: #ffffff;
+  --secondary-bg: #1B1E27;
+  --font: 'Inter', sans-serif;
+}@import './variables.css';
+
+body {
+  margin: 0;
+  background-color: var(--primary-bg);
+  color: var(--text);
+  font-family: var(--font);
+}
+
+input.input {
+  background-color: var(--secondary-bg);
+  color: var(--text);
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 10px 0;
+  width: 100%;
+}
+
+button.btn.primary {
+  background-color: var(--accent);
+  color: var(--text);
+  border: none;
+  padding: 12px;
+  font-weight: bold;
+  border-radius: 6px;
+  width: 100%;
+}
+
+.card {
+  background-color: var(--secondary-bg);
+  padding: 20px;
+  margin: 10px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
+}
+
+.sidebar {
+  width: 250px;
+  background-color: var(--primary-bg);
+  padding: 20px;
+  height: 100vh;
+  float: left;
+}
+
+main {
+  margin-left: 250px;
+  padding: 20px;
+}
