@@ -1,183 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EchoVault - Personal AI Diary</title>
-  <style>
-    :root {
-      --primary-bg: #020F1D;
-      --accent-blue: #0052CC;
-      --text-white: #FFFFFF;
-      --secondary-gray: #1B1E27;
-      --font-inter: 'Inter', sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOVA-Mini Financial Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- React and Babel CDN -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020F1D;
+            color: #FFFFFF;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+        }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+        /* Container and Login Form */
+        .login-container {
+            background-color: #1B1E27;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 350px;
+            margin: auto;
+            margin-top: 10%;
+        }
 
-    body {
-      font-family: var(--font-inter);
-      background-color: var(--primary-bg);
-      color: var(--text-white);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
 
-    h1 {
-      color: var(--accent-blue);
-      text-align: center;
-      margin-bottom: 20px;
-    }
+        input, button {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 1rem;
+            border: none;
+            border-radius: 4px;
+        }
 
-    input, button, textarea {
-      font-size: 16px;
-      padding: 10px;
-      border-radius: 4px;
-      border: none;
-      margin-bottom: 15px;
-    }
+        button {
+            background-color: #0052CC;
+            color: #FFFFFF;
+            cursor: pointer;
+        }
 
-    input, textarea {
-      width: 300px;
-    }
+        /* Sidebar Styles */
+        .sidebar {
+            background-color: #020F1D;
+            padding: 2rem;
+            min-width: 200px;
+            height: 100vh;
+        }
 
-    button {
-      background-color: var(--accent-blue);
-      color: white;
-      cursor: pointer;
-    }
+        .sidebar h3 {
+            color: #0052CC;
+            margin-bottom: 2rem;
+        }
 
-    button:hover {
-      background-color: #003366;
-    }
+        .sidebar button {
+            background-color: #0052CC;
+            color: #FFFFFF;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
-    .entry-list {
-      margin-top: 20px;
-      width: 100%;
-      max-width: 500px;
-    }
+        /* Dashboard Styles */
+        .dashboard {
+            display: flex;
+        }
 
-    .entry-card {
-      background-color: var(--secondary-gray);
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-    }
+        .dashboard-content {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: #1B1E27;
+        }
 
-    .entry-date {
-      font-size: 12px;
-      color: #bbb;
-    }
+        .card {
+            background-color: #2E333A;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+        }
 
-    .mood-tag {
-      background-color: #ff6347;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 4px;
-      margin-left: 10px;
-    }
-  </style>
+        .card h4 {
+            margin-bottom: 0.5rem;
+        }
+
+        .card p {
+            font-size: 1.2rem;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            background-color: #020F1D;
+            color: #ffffff;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 1.5rem;
+        }
+
+        .navbar .logout {
+            background-color: #d9534f;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
+    <div id="root"></div>
 
-  <h1>EchoVault - Personal AI Diary</h1>
-  
-  <!-- Daily Entry Form -->
-  <textarea id="entryText" placeholder="Write your thoughts..."></textarea>
-  <div>
-    <input type="text" id="moodTag" placeholder="Mood Tag (e.g., Happy, Sad)" />
-    <button id="saveEntryBtn">Save Entry</button>
-  </div>
+    <script type="text/babel">
+        // Simulating Financial Platform App with Login and Dashboard
+        function App() {
+            const [loggedIn, setLoggedIn] = React.useState(false);
+            const [email, setEmail] = React.useState('');
+            const [password, setPassword] = React.useState('');
+            const [showDashboard, setShowDashboard] = React.useState(true);
+            const [portfolioValue, setPortfolioValue] = React.useState(25000);
+            const [transactionHistory, setTransactionHistory] = React.useState([
+                { id: 1, type: 'Deposit', amount: 5000 },
+                { id: 2, type: 'Withdrawal', amount: 2000 },
+                { id: 3, type: 'Transfer', amount: 1500 }
+            ]);
 
-  <!-- Time Capsule -->
-  <h2>Time Capsule</h2>
-  <textarea id="timeCapsuleText" placeholder="Write a message for the future..."></textarea>
-  <input type="number" id="timeCapsuleDays" placeholder="Number of days (e.g., 30)" />
-  <button id="saveTimeCapsuleBtn">Save Time Capsule</button>
+            // Handle Login
+            const handleLogin = (e) => {
+                e.preventDefault();
+                if (email && password) {
+                    setLoggedIn(true);
+                } else {
+                    alert("Please enter email and password.");
+                }
+            };
 
-  <!-- Past Entries -->
-  <div class="entry-list" id="entryList"></div>
+            // Handle Logout
+            const handleLogout = () => {
+                setLoggedIn(false);
+                setEmail('');
+                setPassword('');
+            };
 
-  <script>
-    // Save Entry to LocalStorage
-    const saveEntryBtn = document.getElementById('saveEntryBtn');
-    const saveTimeCapsuleBtn = document.getElementById('saveTimeCapsuleBtn');
-    const entryText = document.getElementById('entryText');
-    const moodTag = document.getElementById('moodTag');
-    const timeCapsuleText = document.getElementById('timeCapsuleText');
-    const timeCapsuleDays = document.getElementById('timeCapsuleDays');
-    const entryList = document.getElementById('entryList');
+            // Dashboard Components
+            const Dashboard = () => (
+                <div>
+                    <div className="navbar">
+                        <h1>NOVA-Mini</h1>
+                        <button className="logout" onClick={handleLogout}>Log Out</button>
+                    </div>
 
-    // Load previous entries and time capsules from localStorage
-    function loadEntries() {
-      const entries = JSON.parse(localStorage.getItem('entries')) || [];
-      entryList.innerHTML = '';
-      entries.forEach(entry => {
-        const entryDiv = document.createElement('div');
-        entryDiv.classList.add('entry-card');
-        entryDiv.innerHTML = `
-          <p><strong>Entry:</strong> ${entry.text}</p>
-          <p class="entry-date">${new Date(entry.date).toLocaleString()}</p>
-          <p class="mood-tag">${entry.mood}</p>
-        `;
-        entryList.appendChild(entryDiv);
-      });
-    }
+                    <div className="dashboard">
+                        <div className="sidebar">
+                            <h3>Portfolio</h3>
+                            <p>${portfolioValue}</p>
+                            <button onClick={() => alert('Show Transactions')}>Transactions</button>
+                            <button onClick={() => alert('Show Settings')}>Settings</button>
+                        </div>
 
-    // Handle saving new entry
-    saveEntryBtn.addEventListener('click', () => {
-      const entryTextValue = entryText.value.trim();
-      const moodTagValue = moodTag.value.trim();
+                        <div className="dashboard-content">
+                            <h2>Dashboard</h2>
+                            <div className="card">
+                                <h4>Market Overview</h4>
+                                <p>Current Balance: ${portfolioValue}</p>
+                            </div>
+                            <div className="card">
+                                <h4>Recent Transactions</h4>
+                                <ul>
+                                    {transactionHistory.map(transaction => (
+                                        <li key={transaction.id}>{transaction.type}: ${transaction.amount}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
 
-      if (entryTextValue && moodTagValue) {
-        const entries = JSON.parse(localStorage.getItem('entries')) || [];
-        entries.push({
-          text: entryTextValue,
-          mood: moodTagValue,
-          date: new Date().toISOString()
-        });
-        localStorage.setItem('entries', JSON.stringify(entries));
-        entryText.value = '';
-        moodTag.value = '';
-        loadEntries();
-      } else {
-        alert('Please fill in both the entry and mood.');
-      }
-    });
+            // Login Form Component
+            const LoginPage = () => (
+                <div className="login-container">
+                    <h2>NOVA-Mini</h2>
+                    <form onSubmit={handleLogin}>
+                        <input
+                            type="email"
+                            placeholder="Email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <button type="submit">Sign In</button>
+                    </form>
+                </div>
+            );
 
-    // Handle saving time capsule
-    saveTimeCapsuleBtn.addEventListener('click', () => {
-      const timeCapsuleTextValue = timeCapsuleText.value.trim();
-      const timeCapsuleDaysValue = parseInt(timeCapsuleDays.value, 10);
+            return (
+                <div>
+                    {!loggedIn ? <LoginPage /> : <Dashboard />}
+                </div>
+            );
+        }
 
-      if (timeCapsuleTextValue && timeCapsuleDaysValue > 0) {
-        const timeCapsules = JSON.parse(localStorage.getItem('timeCapsules')) || [];
-        const futureDate = new Date();
-        futureDate.setDate(futureDate.getDate() + timeCapsuleDaysValue);
-
-        timeCapsules.push({
-          text: timeCapsuleTextValue,
-          daysLater: timeCapsuleDaysValue,
-          futureDate: futureDate.toISOString()
-        });
-        localStorage.setItem('timeCapsules', JSON.stringify(timeCapsules));
-        timeCapsuleText.value = '';
-        timeCapsuleDays.value = '';
-        alert(`Your message will be unlocked in ${timeCapsuleDaysValue} days.`);
-      } else {
-        alert('Please fill in both the message and number of days.');
-      }
-    });
-
-    // Initial load of entries and time capsules
-    loadEntries();
-  </script>
-
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
 </body>
 </html>
