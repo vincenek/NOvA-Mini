@@ -4,3 +4,4 @@
   <input type="number" id="budget-amount">
   <button onclick="setBudget()">Set Budget</button>
 </div>
+git checkout -b feature/budget
