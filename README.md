@@ -14,3 +14,8 @@
   </nav>
 </body>
 </html>
+git checkout main
+git merge feature/settings
+git merge feature/budget
+git merge feature/transfer
+git merge feature/wallet
