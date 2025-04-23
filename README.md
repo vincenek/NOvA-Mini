@@ -1,169 +1,119 @@
-import sqlite3
-import getpass
-import datetime
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from datetime import datetime
+import bcrypt
+import os
 
-DB_NAME = 'wallet.db'
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///finance.db')
+app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET', 'super-secret')  # DO NOT hardcode in production
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-def init_db():
-    with sqlite3.connect(DB_NAME) as conn:
-        c = conn.cursor()
-        c.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            password TEXT,
-            balance REAL DEFAULT 0.0
-        )
-        ''')
-        c.execute('''
-        CREATE TABLE IF NOT EXISTS transactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            type TEXT,
-            amount REAL,
-            to_user TEXT,
-            timestamp TEXT,
-            FOREIGN KEY(user_id) REFERENCES users(id)
-        )
-        ''')
-    print("[✔] Database initialized.")
+db = SQLAlchemy(app)
+jwt = JWTManager(app)
 
+# --- Models ---
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(120), nullable=False)
+    transactions = db.relationship('Transaction', backref='user', lazy=True)
+
+    def set_password(self, password):
+        self.password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    def check_password(self, password):
+        return bcrypt.checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
+
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Float, nullable=False)
+    category = db.Column(db.String(50), nullable=False)  # 'deposit' or 'withdraw'
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+# --- Routes ---
+@app.route('/register', methods=['POST'])
 def register():
-    username = input("Choose username: ")
-    password = getpass.getpass("Choose password: ")
-    with sqlite3.connect(DB_NAME) as conn:
-        c = conn.cursor()
-        try:
-            c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
-            conn.commit()
-            print("[+] Registration successful.")
-        except sqlite3.IntegrityError:
-            print("[!] Username already taken.")
+    data = request.get_json()
+    if not data or not data.get('username') or not data.get('password'):
+        return jsonify({"msg": "Missing username or password"}), 400
 
+    if len(data['password']) < 8:
+        return jsonify({"msg": "Password must be at least 8 characters long"}), 400
+
+    if User.query.filter_by(username=data['username']).first():
+        return jsonify({"msg": "Username already exists"}), 409
+
+    user = User(username=data['username'])
+    user.set_password(data['password'])
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({"msg": "User created"}), 201
+
+@app.route('/login', methods=['POST'])
 def login():
-    username = input("Username: ")
-    password = getpass.getpass("Password: ")
-    with sqlite3.connect(DB_NAME) as conn:
-        c = conn.cursor()
-        c.execute("SELECT id FROM users WHERE username = ? AND password = ?", (username, password))
-        user = c.fetchone()
-        if user:
-            print("[✔] Login successful.")
-            return user[0], username
-        else:
-            print("[!] Invalid credentials.")
-            return None, None
+    data = request.get_json()
+    user = User.query.filter_by(username=data.get('username')).first()
 
-def get_balance(user_id):
-    with sqlite3.connect(DB_NAME) as conn:
-        c = conn.cursor()
-        c.execute("SELECT balance FROM users WHERE id = ?", (user_id,))
-        return c.fetchone()[0]
+    if not user or not user.check_password(data.get('password', '')):
+        return jsonify({"msg": "Invalid credentials"}), 401
 
-def update_balance(user_id, amount):
-    with sqlite3.connect(DB_NAME) as conn:
-        c = conn.cursor()
-        c.execute("UPDATE users SET balance = balance + ? WHERE id = ?", (amount, user_id))
-        conn.commit()
+    access_token = create_access_token(identity=user.id)
+    return jsonify(access_token=access_token)
 
-def record_transaction(user_id, tx_type, amount, to_user=''):
-    with sqlite3.connect(DB_NAME) as conn:
-        c = conn.cursor()
-        c.execute("INSERT INTO transactions (user_id, type, amount, to_user, timestamp) VALUES (?, ?, ?, ?, ?)",
-                  (user_id, tx_type, amount, to_user, datetime.datetime.now().isoformat()))
-        conn.commit()
+@app.route('/transaction', methods=['POST'])
+@jwt_required()
+def add_transaction():
+    user_id = get_jwt_identity()
+    data = request.get_json()
 
-def deposit(user_id):
-    amount = float(input("Amount to deposit: "))
-    update_balance(user_id, amount)
-    record_transaction(user_id, 'DEPOSIT', amount)
-    print(f"[+] Deposited ${amount:.2f}")
+    if not data or 'amount' not in data or 'category' not in data:
+        return jsonify({"msg": "Missing transaction data"}), 400
 
-def withdraw(user_id):
-    amount = float(input("Amount to withdraw: "))
-    if get_balance(user_id) >= amount:
-        update_balance(user_id, -amount)
-        record_transaction(user_id, 'WITHDRAW', amount)
-        print(f"[-] Withdrew ${amount:.2f}")
-    else:
-        print("[!] Insufficient funds.")
+    if data['category'] not in ['deposit', 'withdraw']:
+        return jsonify({"msg": "Invalid category"}), 400
 
-def transfer(user_id, username):
-    to_user = input("Transfer to (username): ")
-    amount = float(input("Amount to transfer: "))
-    with sqlite3.connect(DB_NAME) as conn:
-        c = conn.cursor()
-        c.execute("SELECT id FROM users WHERE username = ?", (to_user,))
-        recipient = c.fetchone()
-        if not recipient:
-            print("[!] Recipient not found.")
-            return
-        if get_balance(user_id) < amount:
-            print("[!] Insufficient funds.")
-            return
-        update_balance(user_id, -amount)
-        update_balance(recipient[0], amount)
-        record_transaction(user_id, 'TRANSFER_OUT', amount, to_user)
-        record_transaction(recipient[0], 'TRANSFER_IN', amount, username)
-        print(f"[→] Transferred ${amount:.2f} to {to_user}")
+    try:
+        transaction = Transaction(
+            amount=float(data['amount']),
+            category=data['category'],
+            user_id=user_id
+        )
+        db.session.add(transaction)
+        db.session.commit()
+        return jsonify({"msg": "Transaction added"}), 201
+    except ValueError:
+        return jsonify({"msg": "Invalid amount"}), 400
 
-def transaction_history(user_id):
-    with sqlite3.connect(DB_NAME) as conn:
-        c = conn.cursor()
-        c.execute("SELECT type, amount, to_user, timestamp FROM transactions WHERE user_id = ? ORDER BY timestamp DESC", (user_id,))
-        txs = c.fetchall()
-        if not txs:
-            print("[!] No transactions found.")
-            return
-        print("\n--- Transaction History ---")
-        for tx in txs:
-            print(f"{tx[3]} | {tx[0]} | ${tx[1]:.2f} | To: {tx[2] if tx[2] else 'N/A'}")
+@app.route('/transactions', methods=['GET'])
+@jwt_required()
+def get_transactions():
+    user_id = get_jwt_identity()
+    transactions = Transaction.query.filter_by(user_id=user_id).order_by(Transaction.date.desc()).all()
+    return jsonify([
+        {
+            "id": t.id,
+            "amount": t.amount,
+            "category": t.category,
+            "date": t.date.isoformat()
+        } for t in transactions
+    ])
 
-def wallet_menu(user_id, username):
-    while True:
-        print(f"\n--- Welcome {username} ---")
-        print("1. Check Balance")
-        print("2. Deposit")
-        print("3. Withdraw")
-        print("4. Transfer")
-        print("5. View Transactions")
-        print("6. Logout")
-        choice = input("Choose: ")
-        if choice == '1':
-            print(f"[$] Balance: ${get_balance(user_id):.2f}")
-        elif choice == '2':
-            deposit(user_id)
-        elif choice == '3':
-            withdraw(user_id)
-        elif choice == '4':
-            transfer(user_id, username)
-        elif choice == '5':
-            transaction_history(user_id)
-        elif choice == '6':
-            break
-        else:
-            print("[!] Invalid option.")
+@app.route('/balance', methods=['GET'])
+@jwt_required()
+def get_balance():
+    user_id = get_jwt_identity()
+    transactions = Transaction.query.filter_by(user_id=user_id).all()
+    balance = sum(t.amount if t.category == 'deposit' else -t.amount for t in transactions)
+    return jsonify({"balance": round(balance, 2)})
 
-def main():
-    init_db()
-    while True:
-        print("\n=== Bank Wallet App ===")
-        print("1. Register")
-        print("2. Login")
-        print("3. Exit")
-        choice = input("Choose: ")
-        if choice == '1':
-            register()
-        elif choice == '2':
-            user_id, username = login()
-            if user_id:
-                wallet_menu(user_id, username)
-        elif choice == '3':
-            print("Goodbye!")
-            break
-        else:
-            print("[!] Invalid option.")
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({"msg": "Resource not found"}), 404
 
 if __name__ == '__main__':
-    main()
-Initial commit - Python CLI wallet app
+    with app.app_context():
+        db.create_all()
+    app.run(host='0.0.0.0', port=5000)
