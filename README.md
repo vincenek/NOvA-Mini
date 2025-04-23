@@ -1,203 +1,168 @@
-fintech-app/
-├── index.html
-├── package.json
-├── vite.config.js
-├── /public
-│   └── logo.png
-├── /src
-│   ├── main.jsx
-│   ├── App.jsx
-│   ├── /pages
-│   │   ├── Login.jsx
-│   │   └── Dashboard.jsx
-│   ├── /components
-│   │   ├── Button.jsx
-│   │   ├── InputField.jsx
-│   │   └── Card.jsx
-│   └── /styles
-│       ├── global.css
-│       └── variables.css<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" href="/logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fintech App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-</html>{
-  "name": "fintech-app",
-  "version": "1.0.0",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.0.0",
-    "vite": "^4.0.0"
-  }
-}import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import sqlite3
+import getpass
+import datetime
 
-export default defineConfig({
-  plugins: [react()],
-})import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import './styles/global.css';
+DB_NAME = 'wallet.db'
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);import React from 'react';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
+def init_db():
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT,
+            balance REAL DEFAULT 0.0
+        )
+        ''')
+        c.execute('''
+        CREATE TABLE IF NOT EXISTS transactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            type TEXT,
+            amount REAL,
+            to_user TEXT,
+            timestamp TEXT,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+        ''')
+    print("[✔] Database initialized.")
 
-const App = () => {
-  const isAuthenticated = false; // mock auth
+def register():
+    username = input("Choose username: ")
+    password = getpass.getpass("Choose password: ")
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        try:
+            c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+            conn.commit()
+            print("[+] Registration successful.")
+        except sqlite3.IntegrityError:
+            print("[!] Username already taken.")
 
-  return (
-    <div>
-      {isAuthenticated ? <Dashboard /> : <Login />}
-    </div>
-  );
-};
+def login():
+    username = input("Username: ")
+    password = getpass.getpass("Password: ")
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute("SELECT id FROM users WHERE username = ? AND password = ?", (username, password))
+        user = c.fetchone()
+        if user:
+            print("[✔] Login successful.")
+            return user[0], username
+        else:
+            print("[!] Invalid credentials.")
+            return None, None
 
-export default App;import React, { useState } from 'react';
-import InputField from '../components/InputField';
-import Button from '../components/Button';
+def get_balance(user_id):
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute("SELECT balance FROM users WHERE id = ?", (user_id,))
+        return c.fetchone()[0]
 
-const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+def update_balance(user_id, amount):
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute("UPDATE users SET balance = balance + ? WHERE id = ?", (amount, user_id))
+        conn.commit()
 
-  return (
-    <div className="auth-container">
-      <img src="/logo.png" alt="Logo" className="logo" />
-      <InputField type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <InputField type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-      <Button type="primary" label="Login" onClick={() => alert('Login logic goes here')} />
-      <a href="#">Forgot Password?</a>
-      <br />
-      <a href="#">Sign Up</a>
-    </div>
-  );
-};
+def record_transaction(user_id, tx_type, amount, to_user=''):
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute("INSERT INTO transactions (user_id, type, amount, to_user, timestamp) VALUES (?, ?, ?, ?, ?)",
+                  (user_id, tx_type, amount, to_user, datetime.datetime.now().isoformat()))
+        conn.commit()
 
-export default Login;import React from 'react';
-import Card from '../components/Card';
+def deposit(user_id):
+    amount = float(input("Amount to deposit: "))
+    update_balance(user_id, amount)
+    record_transaction(user_id, 'DEPOSIT', amount)
+    print(f"[+] Deposited ${amount:.2f}")
 
-const Dashboard = () => {
-  return (
-    <div className="dashboard">
-      <aside className="sidebar">
-        <h2>User Name</h2>
-        <nav>
-          <a href="#">Dashboard</a>
-          <a href="#">Transactions</a>
-          <a href="#">Settings</a>
-        </nav>
-        <button className="logout">Logout</button>
-      </aside>
-      <main>
-        <Card title="Total Balance">$12,345.67</Card>
-        <Card title="Recent Transactions">[Table here]</Card>
-        <Card title="Market Trends">[Chart here]</Card>
-      </main>
-    </div>
-  );
-};
+def withdraw(user_id):
+    amount = float(input("Amount to withdraw: "))
+    if get_balance(user_id) >= amount:
+        update_balance(user_id, -amount)
+        record_transaction(user_id, 'WITHDRAW', amount)
+        print(f"[-] Withdrew ${amount:.2f}")
+    else:
+        print("[!] Insufficient funds.")
 
-export default Dashboard;import React from 'react';
+def transfer(user_id, username):
+    to_user = input("Transfer to (username): ")
+    amount = float(input("Amount to transfer: "))
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute("SELECT id FROM users WHERE username = ?", (to_user,))
+        recipient = c.fetchone()
+        if not recipient:
+            print("[!] Recipient not found.")
+            return
+        if get_balance(user_id) < amount:
+            print("[!] Insufficient funds.")
+            return
+        update_balance(user_id, -amount)
+        update_balance(recipient[0], amount)
+        record_transaction(user_id, 'TRANSFER_OUT', amount, to_user)
+        record_transaction(recipient[0], 'TRANSFER_IN', amount, username)
+        print(f"[→] Transferred ${amount:.2f} to {to_user}")
 
-const Button = ({ type, label, onClick }) => {
-  return (
-    <button className={`btn ${type}`} onClick={onClick}>
-      {label}
-    </button>
-  );
-};
+def transaction_history(user_id):
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute("SELECT type, amount, to_user, timestamp FROM transactions WHERE user_id = ? ORDER BY timestamp DESC", (user_id,))
+        txs = c.fetchall()
+        if not txs:
+            print("[!] No transactions found.")
+            return
+        print("\n--- Transaction History ---")
+        for tx in txs:
+            print(f"{tx[3]} | {tx[0]} | ${tx[1]:.2f} | To: {tx[2] if tx[2] else 'N/A'}")
 
-export default Button;import React from 'react';
+def wallet_menu(user_id, username):
+    while True:
+        print(f"\n--- Welcome {username} ---")
+        print("1. Check Balance")
+        print("2. Deposit")
+        print("3. Withdraw")
+        print("4. Transfer")
+        print("5. View Transactions")
+        print("6. Logout")
+        choice = input("Choose: ")
+        if choice == '1':
+            print(f"[$] Balance: ${get_balance(user_id):.2f}")
+        elif choice == '2':
+            deposit(user_id)
+        elif choice == '3':
+            withdraw(user_id)
+        elif choice == '4':
+            transfer(user_id, username)
+        elif choice == '5':
+            transaction_history(user_id)
+        elif choice == '6':
+            break
+        else:
+            print("[!] Invalid option.")
 
-const InputField = ({ type, placeholder, value, onChange }) => {
-  return (
-    <input className="input" type={type} placeholder={placeholder} value={value} onChange={onChange} />
-  );
-};
+def main():
+    init_db()
+    while True:
+        print("\n=== Bank Wallet App ===")
+        print("1. Register")
+        print("2. Login")
+        print("3. Exit")
+        choice = input("Choose: ")
+        if choice == '1':
+            register()
+        elif choice == '2':
+            user_id, username = login()
+            if user_id:
+                wallet_menu(user_id, username)
+        elif choice == '3':
+            print("Goodbye!")
+            break
+        else:
+            print("[!] Invalid option.")
 
-export default InputField;import React from 'react';
-
-const Card = ({ title, children }) => {
-  return (
-    <div className="card">
-      <h2>{title}</h2>
-      <div>{children}</div>
-    </div>
-  );
-};
-
-export default Card;:root {
-  --primary-bg: #020F1D;
-  --accent: #0052CC;
-  --text: #ffffff;
-  --secondary-bg: #1B1E27;
-  --font: 'Inter', sans-serif;
-}@import './variables.css';
-
-body {
-  margin: 0;
-  background-color: var(--primary-bg);
-  color: var(--text);
-  font-family: var(--font);
-}
-
-input.input {
-  background-color: var(--secondary-bg);
-  color: var(--text);
-  border: none;
-  border-radius: 6px;
-  padding: 12px;
-  margin: 10px 0;
-  width: 100%;
-}
-
-button.btn.primary {
-  background-color: var(--accent);
-  color: var(--text);
-  border: none;
-  padding: 12px;
-  font-weight: bold;
-  border-radius: 6px;
-  width: 100%;
-}
-
-.card {
-  background-color: var(--secondary-bg);
-  padding: 20px;
-  margin: 10px;
-  border-radius: 8px;
-  box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
-}
-
-.sidebar {
-  width: 250px;
-  background-color: var(--primary-bg);
-  padding: 20px;
-  height: 100vh;
-  float: left;
-}
-
-main {
-  margin-left: 250px;
-  padding: 20px;
-}
+if __name__ == '__main__':
+    main()
