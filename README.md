@@ -4,3 +4,4 @@
   <input type="number" id="transfer-amount">
   <button onclick="transferFunds()">Transfer</button>
 </div>
+git checkout -b feature/transfer
