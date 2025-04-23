@@ -1,3 +1,2 @@
-# .env
-DATABASE_URL=sqlite:///finance.db  # or switch to PostgreSQL in prod
+DATABASE_URL=sqlite:///finance.db
 JWT_SECRET=super-secret-prod-key-change-this
