@@ -354,19 +354,21 @@
         }
         
         .signature-display {
-            word-break: break-all;
             font-family: 'Courier New', monospace;
             background: var(--surface-light);
             padding: 20px;
             border-radius: 12px;
             margin: 20px 0;
-            max-height: 120px;
+            height: 120px;
             overflow-y: auto;
             border: 1px solid rgba(126, 87, 194, 0.2);
             font-size: 0.9rem;
             line-height: 1.8;
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
             position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .signature-display::before {
@@ -379,6 +381,13 @@
             font-size: 0.8rem;
             color: var(--text-secondary);
             letter-spacing: 1px;
+        }
+        
+        .signature-content {
+            max-width: 100%;
+            word-wrap: break-word;
+            text-align: center;
+            padding: 10px;
         }
         
         .screen {
@@ -584,7 +593,7 @@
             width: 200%;
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(126, 87, 194, 0.3), transparent);
-            animation: waveAnimation 4s linear infinite;
+            animation: waveAnimation 6s linear infinite;
             opacity: 0.6;
         }
         
@@ -605,10 +614,32 @@
             transform: translateX(150%);
             transition: transform 0.4s ease;
             z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .notification.show {
             transform: translateX(0);
+        }
+        
+        .pattern-container {
+            width: 100%;
+            height: 120px;
+            background: var(--surface-light);
+            border-radius: 12px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(126, 87, 194, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .pattern-canvas {
+            width: 100%;
+            height: 100%;
         }
         
         @media (max-width: 768px) {
@@ -654,6 +685,12 @@
             
             .screen-content {
                 padding: 5px;
+            }
+            
+            .key {
+                width: 35px;
+                height: 35px;
+                font-size: 1.1rem;
             }
         }
     </style>
@@ -758,6 +795,10 @@
                         <div class="analytics-label">Measure of uniqueness</div>
                     </div>
                 </div>
+                
+                <div class="pattern-container">
+                    <canvas id="patternCanvas" class="pattern-canvas"></canvas>
+                </div>
             </div>
             
             <div class="button-group">
@@ -815,6 +856,10 @@
                         <div class="analytics-label">Lower is better</div>
                     </div>
                 </div>
+                
+                <div class="pattern-container">
+                    <canvas id="verifyPatternCanvas" class="pattern-canvas"></canvas>
+                </div>
             </div>
             
             <div class="button-group">
@@ -833,7 +878,9 @@
                 <h2>Neuro Identity Created</h2>
                 <p>Your unique neuro-rhythm signature has been securely stored. This pattern is as unique as your fingerprint.</p>
                 
-                <div class="signature-display" id="signatureDisplay"></div>
+                <div class="signature-display">
+                    <div class="signature-content" id="signatureDisplay"></div>
+                </div>
                 
                 <div class="protection-container">
                     <div class="protection-badge">
@@ -852,6 +899,10 @@
                         <li><i class="fas fa-circle-small"></i> Our system adapts to minor variations in your rhythm</li>
                         <li><i class="fas fa-circle-small"></i> For highest security, authenticate in a consistent posture</li>
                     </ul>
+                </div>
+                
+                <div class="pattern-container">
+                    <canvas id="signaturePatternCanvas" class="pattern-canvas"></canvas>
                 </div>
             </div>
             
@@ -893,6 +944,14 @@
         const deviationScore = document.getElementById('deviationScore');
         const notification = document.getElementById('notification');
         const notificationText = document.getElementById('notificationText');
+        const patternCanvas = document.getElementById('patternCanvas');
+        const verifyPatternCanvas = document.getElementById('verifyPatternCanvas');
+        const signaturePatternCanvas = document.getElementById('signaturePatternCanvas');
+        
+        // Canvas contexts
+        const patternCtx = patternCanvas.getContext('2d');
+        const verifyPatternCtx = verifyPatternCanvas.getContext('2d');
+        const signaturePatternCtx = signaturePatternCanvas.getContext('2d');
         
         // State variables
         let storedSignature = null;
@@ -904,6 +963,116 @@
         let verificationAttempts = 0;
         const MAX_ATTEMPTS = 5;
         let lockoutUntil = 0;
+        let animationFrame;
+
+        // Initialize canvas sizes
+        function initCanvasSizes() {
+            const containers = document.querySelectorAll('.pattern-container');
+            containers.forEach(container => {
+                const canvas = container.querySelector('canvas');
+                if (canvas) {
+                    canvas.width = container.clientWidth;
+                    canvas.height = container.clientHeight;
+                }
+            });
+        }
+
+        // Draw neural pattern
+        function drawNeuralPattern(ctx, pattern, isSignature = false) {
+            const width = ctx.canvas.width;
+            const height = ctx.canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            if (!pattern || pattern.length === 0) {
+                // Draw initial pattern
+                ctx.beginPath();
+                ctx.arc(width/2, height/2, 20, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(126, 87, 194, 0.2)';
+                ctx.fill();
+                return;
+            }
+            
+            // Draw dynamic pattern based on typing data
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const maxRadius = Math.min(width, height) * 0.4;
+            
+            // Draw base circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, maxRadius * 0.7, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(126, 87, 194, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Draw nodes for each key
+            const nodes = [];
+            const angleStep = (Math.PI * 2) / pattern.length;
+            
+            for (let i = 0; i < pattern.length; i++) {
+                const angle = i * angleStep;
+                const radius = maxRadius * 0.8;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+                
+                nodes.push({x, y});
+                
+                // Draw node
+                ctx.beginPath();
+                ctx.arc(x, y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = isSignature ? 
+                    'rgba(102, 187, 106, 0.7)' : 
+                    `rgba(126, 87, 194, ${0.3 + (i/pattern.length)*0.7})`;
+                ctx.fill();
+                
+                // Draw key label
+                ctx.fillStyle = 'rgba(230, 230, 255, 0.8)';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(pattern[i].char, x, y);
+            }
+            
+            // Draw connections between nodes
+            for (let i = 0; i < nodes.length; i++) {
+                const nextIndex = (i + 1) % nodes.length;
+                const current = nodes[i];
+                const next = nodes[nextIndex];
+                
+                // Calculate line width based on timing data
+                const holdTime = pattern[i].holdTime || 100;
+                const lineWidth = Math.min(5, Math.max(1, holdTime / 100));
+                
+                ctx.beginPath();
+                ctx.moveTo(current.x, current.y);
+                ctx.lineTo(next.x, next.y);
+                ctx.strokeStyle = isSignature ? 
+                    'rgba(102, 187, 106, 0.5)' : 
+                    `rgba(126, 87, 194, ${0.2 + (i/pattern.length)*0.8})`;
+                ctx.lineWidth = lineWidth;
+                ctx.stroke();
+            }
+            
+            // Draw center point with pulse animation
+            const pulseSize = 5 + Math.sin(Date.now() / 300) * 3;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, pulseSize, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(126, 87, 194, 0.7)';
+            ctx.fill();
+        }
+        
+        // Animate neural pattern
+        function animatePattern() {
+            drawNeuralPattern(patternCtx, typingPattern);
+            drawNeuralPattern(verifyPatternCtx, verifyPattern);
+            
+            if (storedSignature) {
+                drawNeuralPattern(signaturePatternCtx, storedSignature.pattern, true);
+            }
+            
+            animationFrame = requestAnimationFrame(animatePattern);
+        }
 
         // Show notification
         function showNotification(message) {
@@ -925,6 +1094,8 @@
                 screen.classList.add('active');
                 // Scroll to top when switching screens
                 document.querySelector('.screen-content').scrollTop = 0;
+                // Update canvas sizes
+                initCanvasSizes();
             }, 10);
         }
         
@@ -1049,7 +1220,8 @@
             const hexString = (signature >>> 0).toString(16).padStart(8, '0');
             const base64String = btoa(hexString + hexString + hexString).substring(0, 64);
             
-            return base64String;
+            // Format for display
+            return base64String.match(/.{1,8}/g).join(' ');
         }
         
         // Calculate similarity between two patterns
@@ -1173,6 +1345,7 @@
         function resetIdentity() {
             if (confirm('Reset your neuro identity? This will permanently delete your typing pattern.')) {
                 localStorage.removeItem('neuro_signature');
+                storedSignature = null;
                 resetEnrollment();
                 resetVerification();
                 showScreen(introScreen);
@@ -1266,6 +1439,11 @@
             verifyTypingProgress.style.width = `${progress}%`;
             verifyProgress.textContent = `${Math.round(progress)}%`;
             
+            // Reset result display when starting to type
+            if (verifyPattern.length === 1) {
+                verificationResult.className = 'result';
+            }
+            
             highlightKeys(verifyPhraseInput.value);
         });
         
@@ -1285,10 +1463,19 @@
         
         // Initialize
         window.addEventListener('DOMContentLoaded', () => {
+            initCanvasSizes();
+            animatePattern();
+            
             if (localStorage.getItem('neuro_signature')) {
                 storedSignature = JSON.parse(localStorage.getItem('neuro_signature'));
+                signatureDisplay.textContent = storedSignature.signature;
                 showScreen(verifyScreen);
             }
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            initCanvasSizes();
         });
     </script>
 </body>
