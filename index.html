@@ -642,6 +642,29 @@
             height: 100%;
         }
         
+        .lockout-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: white;
+            font-size: 2rem;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .lockout-overlay .timer {
+            font-size: 4rem;
+            color: var(--error);
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 20px 15px;
@@ -700,6 +723,14 @@
         <!-- Notification system -->
         <div class="notification" id="notification">
             <i class="fas fa-info-circle"></i> <span id="notificationText"></span>
+        </div>
+        
+        <!-- Lockout overlay -->
+        <div class="lockout-overlay" id="lockoutOverlay" style="display: none;">
+            <i class="fas fa-lock fa-3x" style="margin-bottom: 20px;"></i>
+            <h3>Security Lockout</h3>
+            <p>Too many failed attempts. System locked for security.</p>
+            <div class="timer" id="lockoutTimer">05:00</div>
         </div>
         
         <!-- Intro Screen -->
@@ -947,6 +978,8 @@
         const patternCanvas = document.getElementById('patternCanvas');
         const verifyPatternCanvas = document.getElementById('verifyPatternCanvas');
         const signaturePatternCanvas = document.getElementById('signaturePatternCanvas');
+        const lockoutOverlay = document.getElementById('lockoutOverlay');
+        const lockoutTimer = document.getElementById('lockoutTimer');
         
         // Canvas contexts
         const patternCtx = patternCanvas.getContext('2d');
@@ -961,9 +994,10 @@
         let verifyLastKeyTime = 0;
         const targetPhrase = "NeuroPattern";
         let verificationAttempts = 0;
-        const MAX_ATTEMPTS = 5;
+        const MAX_ATTEMPTS = 3;
         let lockoutUntil = 0;
         let animationFrame;
+        let lockoutInterval;
 
         // Initialize canvas sizes
         function initCanvasSizes() {
@@ -1291,14 +1325,36 @@
             }
         }
         
+        // Show lockout screen
+        function showLockout(minutes) {
+            lockoutOverlay.style.display = 'flex';
+            let seconds = minutes * 60;
+            
+            clearInterval(lockoutInterval);
+            lockoutInterval = setInterval(() => {
+                seconds--;
+                if (seconds <= 0) {
+                    clearInterval(lockoutInterval);
+                    lockoutOverlay.style.display = 'none';
+                    lockoutUntil = 0;
+                    verificationAttempts = 0;
+                    resetVerification();
+                    return;
+                }
+                
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                lockoutTimer.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+        
         // Complete verification process
         function completeVerification() {
             try {
                 const now = Date.now();
                 if (lockoutUntil > now) {
                     const minutes = Math.ceil((lockoutUntil - now) / 60000);
-                    verificationResult.textContent = `⏳ Account locked (${minutes} min)`;
-                    verificationResult.classList.add('error', 'show');
+                    showLockout(minutes);
                     return;
                 }
                 
@@ -1332,6 +1388,7 @@
                     verificationAttempts++;
                     if (verificationAttempts >= MAX_ATTEMPTS) {
                         lockoutUntil = now + 300000; // 5 minutes
+                        showLockout(5);
                         showNotification('Account locked for 5 minutes due to multiple failed attempts');
                     }
                 }
@@ -1470,6 +1527,13 @@
                 storedSignature = JSON.parse(localStorage.getItem('neuro_signature'));
                 signatureDisplay.textContent = storedSignature.signature;
                 showScreen(verifyScreen);
+            }
+            
+            // Check if we need to show lockout
+            const now = Date.now();
+            if (lockoutUntil > now) {
+                const minutes = Math.ceil((lockoutUntil - now) / 60000);
+                showLockout(minutes);
             }
         });
         
