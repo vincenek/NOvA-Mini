@@ -532,10 +532,12 @@
             border-radius: var(--border-radius);
             padding: 25px;
             width: 90%;
-            max-width: 400px;
+            max-width: 500px;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
             transform: translateY(-20px);
             transition: var(--transition);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-overlay.active .modal {
@@ -793,6 +795,109 @@
             color: #64748b;
         }
 
+        .debt-management {
+            margin-top: 20px;
+        }
+
+        .debt-list {
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+        }
+
+        .debt-item {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .debt-item:last-child {
+            border-bottom: none;
+        }
+
+        .debt-info {
+            flex: 1;
+        }
+
+        .debt-info h4 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .debt-info p {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 3px;
+        }
+
+        .debt-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+        }
+
+        .pay-btn {
+            background: var(--success);
+            color: white;
+        }
+
+        .history-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .paid-badge {
+            background: var(--success);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .debt-progress {
+            height: 5px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .debt-progress-fill {
+            height: 100%;
+            background: var(--success);
+        }
+
+        .payment-history {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .payment-item:last-child {
+            border-bottom: none;
+        }
+
         @media (min-width: 576px) {
             body {
                 padding: 20px;
@@ -892,6 +997,17 @@
                 <button class="btn btn-outline" style="width:100%; margin-top:15px;" id="addDebtBtn">
                     <i class="fas fa-plus"></i> Add Debt Record
                 </button>
+                
+                <div class="debt-management">
+                    <h4 style="margin-bottom: 10px;">Manage Debts</h4>
+                    <div class="debt-list" id="debtList">
+                        <div class="empty-state" style="padding: 20px;">
+                            <i class="fas fa-exchange-alt"></i>
+                            <h4>No active debts</h4>
+                            <p>Add a debt record to get started</p>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="feature-section">
@@ -1197,6 +1313,51 @@
         </div>
     </div>
 
+    <!-- Payment Modal -->
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Record Payment</h3>
+                <button class="close-modal" id="closePaymentModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="paymentAmount">Amount Paid (₦)</label>
+                    <input type="number" id="paymentAmount" class="form-control" placeholder="0.00" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="paymentDate">Date</label>
+                    <input type="date" id="paymentDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="paymentNotes">Notes</label>
+                    <input type="text" id="paymentNotes" class="form-control" placeholder="Enter payment details">
+                </div>
+                <input type="hidden" id="currentDebtId">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancelPayment">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="savePayment">Record Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment History Modal -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Payment History</h3>
+                <button class="close-modal" id="closeHistoryModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="paymentHistoryContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="closeHistory">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
@@ -1209,6 +1370,7 @@
             };
             
             let currentFilter = 'all';
+            let currentDebtId = null;
             
             // DOM Elements
             const transactionForm = document.getElementById('transactionForm');
@@ -1242,13 +1404,22 @@
             const debtModal = document.getElementById('debtModal');
             const closeDebtModal = document.getElementById('closeDebtModal');
             const cancelDebt = document.getElementById('cancelDebt');
-            const saveDebt = document.getElementById('saveDebt');
+            const saveDebtBtn = document.getElementById('saveDebt');
             const googleSyncBtn = document.getElementById('googleSyncBtn');
             const owedToMeEl = document.getElementById('owedToMe');
             const owedToOthersEl = document.getElementById('owedToOthers');
             const owedToMeCountEl = document.getElementById('owedToMeCount');
             const owedToOthersCountEl = document.getElementById('owedToOthersCount');
             const smsBackupBtn = document.getElementById('smsBackupBtn');
+            const debtListEl = document.getElementById('debtList');
+            const paymentModal = document.getElementById('paymentModal');
+            const closePaymentModal = document.getElementById('closePaymentModal');
+            const cancelPayment = document.getElementById('cancelPayment');
+            const savePaymentBtn = document.getElementById('savePayment');
+            const historyModal = document.getElementById('historyModal');
+            const closeHistoryModal = document.getElementById('closeHistoryModal');
+            const closeHistory = document.getElementById('closeHistory');
+            const paymentHistoryContent = document.getElementById('paymentHistoryContent');
             
             // Initialize charts
             let spendingChart, incomeChart;
@@ -1259,10 +1430,12 @@
             updateBudgetDisplay();
             renderTransactions();
             updateDebtDisplay();
+            renderDebtList();
             
             // Set today's date as default
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
             document.getElementById('debtDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
             
             // Event Listeners
             transactionForm.addEventListener('submit', addTransaction);
@@ -1290,9 +1463,14 @@
             addDebtBtn.addEventListener('click', () => debtModal.classList.add('active'));
             closeDebtModal.addEventListener('click', () => debtModal.classList.remove('active'));
             cancelDebt.addEventListener('click', () => debtModal.classList.remove('active'));
-            saveDebt.addEventListener('click', addDebt);
+            saveDebtBtn.addEventListener('click', addDebt);
             googleSyncBtn.addEventListener('click', () => showNotification('Google Drive sync coming in the next update!'));
             smsBackupBtn.addEventListener('click', () => showNotification('SMS Backup feature coming in the next update!'));
+            closePaymentModal.addEventListener('click', () => paymentModal.classList.remove('active'));
+            cancelPayment.addEventListener('click', () => paymentModal.classList.remove('active'));
+            savePaymentBtn.addEventListener('click', recordPayment);
+            closeHistoryModal.addEventListener('click', () => historyModal.classList.remove('active'));
+            closeHistory.addEventListener('click', () => historyModal.classList.remove('active'));
             
             // Initialize charts with empty data
             function initCharts() {
@@ -1451,9 +1629,11 @@
                     id: Date.now(),
                     type,
                     amount,
+                    originalAmount: amount,
                     person,
                     description: description || 'Debt Record',
-                    date
+                    date,
+                    payments: []
                 };
                 
                 if (type === 'owedToMe') {
@@ -1464,6 +1644,7 @@
                 
                 saveDebts();
                 updateDebtDisplay();
+                renderDebtList();
                 debtModal.classList.remove('active');
                 
                 // Reset form
@@ -1475,18 +1656,223 @@
                 showNotification('Debt record added successfully!');
             }
             
+            // Record payment for a debt
+            function recordPayment() {
+                const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
+                const paymentDate = document.getElementById('paymentDate').value || new Date().toISOString().split('T')[0];
+                const paymentNotes = document.getElementById('paymentNotes').value;
+                const debtId = parseInt(document.getElementById('currentDebtId').value);
+                
+                if (!paymentAmount || paymentAmount <= 0) {
+                    showNotification('Please enter a valid payment amount', 'error');
+                    return;
+                }
+                
+                // Find the debt
+                let debt = null;
+                let debtType = null;
+                
+                // Check owedToMe
+                for (let i = 0; i < debts.owedToMe.length; i++) {
+                    if (debts.owedToMe[i].id === debtId) {
+                        debt = debts.owedToMe[i];
+                        debtType = 'owedToMe';
+                        break;
+                    }
+                }
+                
+                // If not found, check owedToOthers
+                if (!debt) {
+                    for (let i = 0; i < debts.owedToOthers.length; i++) {
+                        if (debts.owedToOthers[i].id === debtId) {
+                            debt = debts.owedToOthers[i];
+                            debtType = 'owedToOthers';
+                            break;
+                        }
+                    }
+                }
+                
+                if (!debt) {
+                    showNotification('Debt not found', 'error');
+                    return;
+                }
+                
+                // Add payment
+                debt.payments.push({
+                    amount: paymentAmount,
+                    date: paymentDate,
+                    notes: paymentNotes
+                });
+                
+                // Update debt amount
+                debt.amount -= paymentAmount;
+                
+                // If debt is fully paid, round to zero to avoid negative values
+                if (debt.amount < 0) {
+                    debt.amount = 0;
+                }
+                
+                saveDebts();
+                updateDebtDisplay();
+                renderDebtList();
+                paymentModal.classList.remove('active');
+                
+                // Reset form
+                document.getElementById('paymentAmount').value = '';
+                document.getElementById('paymentNotes').value = '';
+                document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+                
+                showNotification('Payment recorded successfully!');
+            }
+            
             // Update debt display
             function updateDebtDisplay() {
-                // Calculate totals
-                const owedToMeTotal = debts.owedToMe.reduce((sum, debt) => sum + debt.amount, 0);
-                const owedToOthersTotal = debts.owedToOthers.reduce((sum, debt) => sum + debt.amount, 0);
+                // Calculate totals for owedToMe (only unpaid debts)
+                const owedToMeTotal = debts.owedToMe.reduce((sum, debt) => {
+                    return sum + debt.amount;
+                }, 0);
+                
+                // Calculate totals for owedToOthers (only unpaid debts)
+                const owedToOthersTotal = debts.owedToOthers.reduce((sum, debt) => {
+                    return sum + debt.amount;
+                }, 0);
                 
                 // Update UI
                 owedToMeEl.textContent = owedToMeTotal.toFixed(2);
                 owedToOthersEl.textContent = owedToOthersTotal.toFixed(2);
                 
-                owedToMeCountEl.textContent = `By ${debts.owedToMe.length} ${debts.owedToMe.length === 1 ? 'person' : 'people'}`;
-                owedToOthersCountEl.textContent = `To ${debts.owedToOthers.length} ${debts.owedToOthers.length === 1 ? 'person' : 'people'}`;
+                // Count only active debts
+                const activeOwedToMe = debts.owedToMe.filter(d => d.amount > 0).length;
+                const activeOwedToOthers = debts.owedToOthers.filter(d => d.amount > 0).length;
+                
+                owedToMeCountEl.textContent = `By ${activeOwedToMe} ${activeOwedToMe === 1 ? 'person' : 'people'}`;
+                owedToOthersCountEl.textContent = `To ${activeOwedToOthers} ${activeOwedToOthers === 1 ? 'person' : 'people'}`;
+            }
+            
+            // Render debt list
+            function renderDebtList() {
+                // Get all active debts (owedToMe and owedToOthers with amount > 0)
+                const activeDebts = [
+                    ...debts.owedToMe.filter(d => d.amount > 0),
+                    ...debts.owedToOthers.filter(d => d.amount > 0)
+                ];
+                
+                if (activeDebts.length === 0) {
+                    debtListEl.innerHTML = `
+                        <div class="empty-state" style="padding: 20px;">
+                            <i class="fas fa-exchange-alt"></i>
+                            <h4>No active debts</h4>
+                            <p>Add a debt record to get started</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                debtListEl.innerHTML = '';
+                
+                activeDebts.forEach(debt => {
+                    const debtItem = document.createElement('div');
+                    debtItem.className = 'debt-item';
+                    
+                    // Calculate progress
+                    const paidAmount = debt.originalAmount - debt.amount;
+                    const progress = (paidAmount / debt.originalAmount) * 100;
+                    
+                    debtItem.innerHTML = `
+                        <div class="debt-info">
+                            <h4>${debt.type === 'owedToMe' ? 'Owed to You' : 'You Owe'}: ${debt.person}</h4>
+                            <p>Original: ₦${debt.originalAmount.toFixed(2)} | Remaining: ₦${debt.amount.toFixed(2)}</p>
+                            <div class="debt-progress">
+                                <div class="debt-progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                            <p>Date: ${formatDate(debt.date)}</p>
+                        </div>
+                        <div class="debt-actions">
+                            <button class="action-btn pay-btn" data-id="${debt.id}">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </button>
+                            <button class="action-btn history-btn" data-id="${debt.id}">
+                                <i class="fas fa-history"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    debtListEl.appendChild(debtItem);
+                });
+                
+                // Add event listeners to the new buttons
+                document.querySelectorAll('.pay-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const debtId = parseInt(e.currentTarget.dataset.id);
+                        openPaymentModal(debtId);
+                    });
+                });
+                
+                document.querySelectorAll('.history-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const debtId = parseInt(e.currentTarget.dataset.id);
+                        showPaymentHistory(debtId);
+                    });
+                });
+            }
+            
+            // Open payment modal
+            function openPaymentModal(debtId) {
+                document.getElementById('currentDebtId').value = debtId;
+                paymentModal.classList.add('active');
+            }
+            
+            // Show payment history
+            function showPaymentHistory(debtId) {
+                // Find the debt
+                let debt = null;
+                
+                // Check owedToMe
+                for (let i = 0; i < debts.owedToMe.length; i++) {
+                    if (debts.owedToMe[i].id === debtId) {
+                        debt = debts.owedToMe[i];
+                        break;
+                    }
+                }
+                
+                // If not found, check owedToOthers
+                if (!debt) {
+                    for (let i = 0; i < debts.owedToOthers.length; i++) {
+                        if (debts.owedToOthers[i].id === debtId) {
+                            debt = debts.owedToOthers[i];
+                            break;
+                        }
+                    }
+                }
+                
+                if (!debt) {
+                    showNotification('Debt not found', 'error');
+                    return;
+                }
+                
+                paymentHistoryContent.innerHTML = `
+                    <h4>${debt.type === 'owedToMe' ? 'Owed to You' : 'You Owe'}: ${debt.person}</h4>
+                    <p>Original Amount: ₦${debt.originalAmount.toFixed(2)}</p>
+                    <p>Remaining: ₦${debt.amount.toFixed(2)}</p>
+                    
+                    <div class="payment-history">
+                        <h5 style="margin-top: 15px;">Payment History</h5>
+                        ${debt.payments.length > 0 ? `
+                            ${debt.payments.map(payment => `
+                                <div class="payment-item">
+                                    <div>${formatDate(payment.date)}</div>
+                                    <div>₦${payment.amount.toFixed(2)}</div>
+                                </div>
+                            `).join('')}
+                        ` : `
+                            <div class="empty-state" style="padding: 15px;">
+                                <p>No payments recorded yet</p>
+                            </div>
+                        `}
+                    </div>
+                `;
+                
+                historyModal.classList.add('active');
             }
             
             // Render transactions based on filter
@@ -1826,6 +2212,7 @@
                 renderTransactions();
                 updateCharts();
                 updateDebtDisplay();
+                renderDebtList();
                 
                 resetModal.classList.remove('active');
                 showNotification('All data has been reset!');
@@ -1845,7 +2232,7 @@
             // Helper functions
             function formatDate(dateString) {
                 const date = new Date(dateString);
-                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             }
             
             function formatCategory(category) {
