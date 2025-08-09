@@ -1363,7 +1363,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize variables
             let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            let budget = JSON.parse(localStorage.getItem('budget')) || { total: 0, used: 0 };
+            let budget = JSON.parse(localStorage.getItem('budget')) || { total: 0 };
             let debts = JSON.parse(localStorage.getItem('debts')) || {
                 owedToMe: [],
                 owedToOthers: []
@@ -1431,6 +1431,7 @@
             renderTransactions();
             updateDebtDisplay();
             renderDebtList();
+            updateCharts(); // Initialize charts with data
             
             // Set today's date as default
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
@@ -1501,6 +1502,13 @@
                                         size: window.innerWidth < 768 ? 9 : 11
                                     }
                                 }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ₦${context.raw.toFixed(2)}`;
+                                    }
+                                }
                             }
                         }
                     }
@@ -1534,6 +1542,13 @@
                                         size: window.innerWidth < 768 ? 9 : 11
                                     }
                                 }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ₦${context.raw.toFixed(2)}`;
+                                    }
+                                }
                             }
                         },
                         scales: {
@@ -1545,6 +1560,9 @@
                                 ticks: {
                                     font: {
                                         size: window.innerWidth < 768 ? 8 : 10
+                                    },
+                                    callback: function(value) {
+                                        return '₦' + value;
                                     }
                                 }
                             },
@@ -1590,16 +1608,10 @@
                 transactions.push(transaction);
                 saveData();
                 
-                // Update budget if it's an expense
-                if (type === 'expense') {
-                    budget.used += amount;
-                    saveBudget();
-                }
-                
                 updateBalances();
-                updateCharts();
+                updateBudgetDisplay();
                 renderTransactions();
-                updateBudgetDisplay(); // Ensure budget display updates
+                updateCharts();
                 
                 transactionForm.reset();
                 document.getElementById('date').value = new Date().toISOString().split('T')[0];
@@ -1998,12 +2010,19 @@
             
             // Update budget display
             function updateBudgetDisplay() {
-                // Recalculate used budget from transactions
-                const used = transactions
-                    .filter(t => t.type === 'expense')
-                    .reduce((sum, t) => sum + t.amount, 0);
+                // Calculate used budget from current month's expenses
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
                 
-                budget.used = used; // Update budget object
+                const used = transactions
+                    .filter(t => {
+                        const tDate = new Date(t.date);
+                        return t.type === 'expense' && 
+                               tDate.getMonth() === currentMonth && 
+                               tDate.getFullYear() === currentYear;
+                    })
+                    .reduce((sum, t) => sum + t.amount, 0);
                 
                 totalBudgetEl.textContent = `₦${budget.total.toFixed(2)}`;
                 usedBudgetEl.textContent = `₦${used.toFixed(2)}`;
@@ -2024,9 +2043,8 @@
                 }
                 
                 // Calculate days left in month
-                const today = new Date();
-                const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                const days = lastDay.getDate() - today.getDate();
+                const lastDay = new Date(currentYear, currentMonth + 1, 0);
+                const days = lastDay.getDate() - now.getDate();
                 daysLeftEl.textContent = `${days} ${days === 1 ? 'day' : 'days'}`;
             }
             
@@ -2160,7 +2178,7 @@
                 doc.text(`Total Income: ₦${document.getElementById('totalIncome').textContent.slice(1)}`, 20, 45);
                 doc.text(`Total Expenses: ₦${document.getElementById('totalExpense').textContent.slice(1)}`, 20, 52);
                 doc.text(`Monthly Budget: ₦${budget.total.toFixed(2)}`, 20, 59);
-                doc.text(`Budget Used: ₦${budget.used.toFixed(2)}`, 20, 66);
+                doc.text(`Budget Used: ₦${document.getElementById('usedBudget').textContent.slice(1)}`, 20, 66);
                 
                 // Transactions table
                 doc.setFontSize(12);
@@ -2197,7 +2215,7 @@
             // Reset all data
             function resetAllData() {
                 transactions = [];
-                budget = { total: 0, used: 0 };
+                budget = { total: 0 };
                 debts = {
                     owedToMe: [],
                     owedToOthers: []
