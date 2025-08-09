@@ -793,6 +793,17 @@
             color: #64748b;
         }
 
+        .coming-soon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--warning);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
         @media (min-width: 576px) {
             body {
                 padding: 20px;
@@ -880,16 +891,16 @@
                 <div class="debt-grid">
                     <div class="debt-card owed-to-me">
                         <div class="debt-label">You're Owed</div>
-                        <div class="debt-value">₦25,000</div>
-                        <div class="debt-label">By 3 people</div>
+                        <div class="debt-value">₦<span id="owedToMe">0.00</span></div>
+                        <div class="debt-label" id="owedToMeCount">By 0 people</div>
                     </div>
                     <div class="debt-card owed-to-others">
                         <div class="debt-label">You Owe</div>
-                        <div class="debt-value">₦15,000</div>
-                        <div class="debt-label">To 2 people</div>
+                        <div class="debt-value">₦<span id="owedToOthers">0.00</span></div>
+                        <div class="debt-label" id="owedToOthersCount">To 0 people</div>
                     </div>
                 </div>
-                <button class="btn btn-outline" style="width:100%; margin-top:15px;">
+                <button class="btn btn-outline" style="width:100%; margin-top:15px;" id="addDebtBtn">
                     <i class="fas fa-plus"></i> Add Debt Record
                 </button>
             </div>
@@ -902,7 +913,7 @@
                     <div class="feature-title">SMS Import</div>
                 </div>
                 <p>Automatically import transactions from your bank SMS alerts</p>
-                <button class="sms-import-btn">
+                <button class="sms-import-btn" id="smsImportBtn">
                     <i class="fas fa-sms"></i> Import Bank Transactions
                 </button>
                 <div class="local-insight">
@@ -1040,13 +1051,14 @@
                     </div>
                     <p>Backup your data and access from multiple devices</p>
                     <div class="sync-options">
-                        <button class="sync-btn">
+                        <button class="sync-btn" id="googleSyncBtn">
                             <div class="sync-icon">
                                 <i class="fab fa-google-drive"></i>
                             </div>
                             <div>
                                 <div class="sync-label">Google Drive</div>
                                 <div class="sync-description">Sync with your Google account</div>
+                                <span class="coming-soon">Coming in next update</span>
                             </div>
                         </button>
                         <button class="sync-btn">
@@ -1056,6 +1068,7 @@
                             <div>
                                 <div class="sync-label">SMS Backup</div>
                                 <div class="sync-description">Receive encrypted backup via SMS</div>
+                                <span class="coming-soon">Coming in next update</span>
                             </div>
                         </button>
                     </div>
@@ -1082,61 +1095,10 @@
                     </div>
                     
                     <div id="transactionsContainer">
-                        <div class="transaction-item">
-                            <div class="transaction-info">
-                                <div class="transaction-icon category-income">
-                                    <i class="fas fa-money-check"></i>
-                                </div>
-                                <div class="transaction-details">
-                                    <h3>Salary Deposit</h3>
-                                    <p>Today • Salary</p>
-                                </div>
-                            </div>
-                            <div class="transaction-amount income-amount">
-                                +₦150,000.00
-                            </div>
-                        </div>
-                        <div class="transaction-item">
-                            <div class="transaction-info">
-                                <div class="transaction-icon category-transport">
-                                    <i class="fas fa-car"></i>
-                                </div>
-                                <div class="transaction-details">
-                                    <h3>Fuel Payment</h3>
-                                    <p>Today • Transport</p>
-                                </div>
-                            </div>
-                            <div class="transaction-amount expense-amount">
-                                -₦15,000.00
-                            </div>
-                        </div>
-                        <div class="transaction-item">
-                            <div class="transaction-info">
-                                <div class="transaction-icon category-food">
-                                    <i class="fas fa-utensils"></i>
-                                </div>
-                                <div class="transaction-details">
-                                    <h3>Supermarket</h3>
-                                    <p>Yesterday • Food</p>
-                                </div>
-                            </div>
-                            <div class="transaction-amount expense-amount">
-                                -₦8,500.00
-                            </div>
-                        </div>
-                        <div class="transaction-item">
-                            <div class="transaction-info">
-                                <div class="transaction-icon category-housing">
-                                    <i class="fas fa-home"></i>
-                                </div>
-                                <div class="transaction-details">
-                                    <h3>Rent Payment</h3>
-                                    <p>Jan 5 • Housing</p>
-                                </div>
-                            </div>
-                            <div class="transaction-amount expense-amount">
-                                -₦50,000.00
-                            </div>
+                        <div class="empty-state">
+                            <i class="fas fa-exchange-alt"></i>
+                            <h3>No transactions yet</h3>
+                            <p>Add your first transaction to get started</p>
                         </div>
                     </div>
                 </div>
@@ -1165,6 +1127,7 @@
 
     <div class="notification" id="notification">Transaction added successfully!</div>
 
+    <!-- Budget Modal -->
     <div class="modal-overlay" id="budgetModal">
         <div class="modal">
             <div class="modal-header">
@@ -1184,6 +1147,7 @@
         </div>
     </div>
 
+    <!-- Reset Modal -->
     <div class="modal-overlay" id="resetModal">
         <div class="modal">
             <div class="modal-header">
@@ -1196,6 +1160,7 @@
                     <li>Clear all transactions</li>
                     <li>Reset your balance to zero</li>
                     <li>Reset your budget settings</li>
+                    <li>Clear all debt records</li>
                 </ul>
                 <p>This action cannot be undone.</p>
             </div>
@@ -1206,12 +1171,56 @@
         </div>
     </div>
 
+    <!-- Debt Modal -->
+    <div class="modal-overlay" id="debtModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Debt Record</h3>
+                <button class="close-modal" id="closeDebtModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="debtType">Debt Type</label>
+                    <select id="debtType" class="form-control">
+                        <option value="owedToMe">Owed to Me</option>
+                        <option value="owedToOthers">I Owe</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="debtAmount">Amount (₦)</label>
+                    <input type="number" id="debtAmount" class="form-control" placeholder="0.00" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="debtPerson">Person/Business</label>
+                    <input type="text" id="debtPerson" class="form-control" placeholder="Enter name">
+                </div>
+                <div class="form-group">
+                    <label for="debtDescription">Description</label>
+                    <input type="text" id="debtDescription" class="form-control" placeholder="Enter details">
+                </div>
+                <div class="form-group">
+                    <label for="debtDate">Date</label>
+                    <input type="date" id="debtDate" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancelDebt">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="saveDebt">Save Debt</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize variables
             let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
             let budget = JSON.parse(localStorage.getItem('budget')) || { total: 0, used: 0 };
+            let debts = JSON.parse(localStorage.getItem('debts')) || {
+                owedToMe: [],
+                owedToOthers: []
+            };
+            
             let currentFilter = 'all';
             
             // DOM Elements
@@ -1241,7 +1250,17 @@
             const closeResetModal = document.getElementById('closeResetModal');
             const cancelReset = document.getElementById('cancelReset');
             const confirmReset = document.getElementById('confirmReset');
-            const smsImportBtn = document.querySelector('.sms-import-btn');
+            const smsImportBtn = document.getElementById('smsImportBtn');
+            const addDebtBtn = document.getElementById('addDebtBtn');
+            const debtModal = document.getElementById('debtModal');
+            const closeDebtModal = document.getElementById('closeDebtModal');
+            const cancelDebt = document.getElementById('cancelDebt');
+            const saveDebt = document.getElementById('saveDebt');
+            const googleSyncBtn = document.getElementById('googleSyncBtn');
+            const owedToMeEl = document.getElementById('owedToMe');
+            const owedToOthersEl = document.getElementById('owedToOthers');
+            const owedToMeCountEl = document.getElementById('owedToMeCount');
+            const owedToOthersCountEl = document.getElementById('owedToOthersCount');
             
             // Initialize charts
             let spendingChart, incomeChart;
@@ -1251,9 +1270,11 @@
             updateBalances();
             updateBudgetDisplay();
             renderTransactions();
+            updateDebtDisplay();
             
             // Set today's date as default
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('debtDate').value = new Date().toISOString().split('T')[0];
             
             // Event Listeners
             transactionForm.addEventListener('submit', addTransaction);
@@ -1278,6 +1299,11 @@
             cancelReset.addEventListener('click', () => resetModal.classList.remove('active'));
             confirmReset.addEventListener('click', resetAllData);
             smsImportBtn.addEventListener('click', importFromSMS);
+            addDebtBtn.addEventListener('click', () => debtModal.classList.add('active'));
+            closeDebtModal.addEventListener('click', () => debtModal.classList.remove('active'));
+            cancelDebt.addEventListener('click', () => debtModal.classList.remove('active'));
+            saveDebt.addEventListener('click', addDebt);
+            googleSyncBtn.addEventListener('click', showGoogleSyncMessage);
             
             // Initialize charts with empty data
             function initCharts() {
@@ -1287,7 +1313,7 @@
                     data: {
                         labels: ['Housing', 'Food', 'Transport', 'Entertainment', 'Shopping', 'Other'],
                         datasets: [{
-                            data: [50, 25, 15, 5, 10, 5],
+                            data: [0, 0, 0, 0, 0, 0],
                             backgroundColor: [
                                 '#ec4899', '#f59e0b', '#0ea5e9', '#f97316', '#8b5cf6', '#64748b'
                             ],
@@ -1320,12 +1346,12 @@
                         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                         datasets: [{
                             label: 'Income',
-                            data: [150, 160, 170, 165, 180, 175, 185, 190, 180, 195, 200, 210],
+                            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                             backgroundColor: '#10b981',
                             borderRadius: 6
                         }, {
                             label: 'Expenses',
-                            data: [100, 105, 110, 120, 115, 125, 130, 135, 140, 145, 150, 155],
+                            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                             backgroundColor: '#ef4444',
                             borderRadius: 6
                         }]
@@ -1414,6 +1440,66 @@
                 showNotification('Transaction added successfully!');
             }
             
+            // Add new debt record
+            function addDebt() {
+                const type = document.getElementById('debtType').value;
+                const amount = parseFloat(document.getElementById('debtAmount').value);
+                const person = document.getElementById('debtPerson').value;
+                const description = document.getElementById('debtDescription').value;
+                const date = document.getElementById('debtDate').value || new Date().toISOString().split('T')[0];
+                
+                if (!amount || amount <= 0) {
+                    showNotification('Please enter a valid amount', 'error');
+                    return;
+                }
+                
+                if (!person) {
+                    showNotification('Please enter a person or business name', 'error');
+                    return;
+                }
+                
+                const debt = {
+                    id: Date.now(),
+                    type,
+                    amount,
+                    person,
+                    description: description || 'Debt Record',
+                    date
+                };
+                
+                if (type === 'owedToMe') {
+                    debts.owedToMe.push(debt);
+                } else {
+                    debts.owedToOthers.push(debt);
+                }
+                
+                saveDebts();
+                updateDebtDisplay();
+                debtModal.classList.remove('active');
+                
+                // Reset form
+                document.getElementById('debtAmount').value = '';
+                document.getElementById('debtPerson').value = '';
+                document.getElementById('debtDescription').value = '';
+                document.getElementById('debtDate').value = new Date().toISOString().split('T')[0];
+                
+                showNotification('Debt record added successfully!');
+            }
+            
+            // Update debt display
+            function updateDebtDisplay() {
+                // Calculate totals
+                const owedToMeTotal = debts.owedToMe.reduce((sum, debt) => sum + debt.amount, 0);
+                const owedToOthersTotal = debts.owedToOthers.reduce((sum, debt) => sum + debt.amount, 0);
+                
+                // Update UI
+                owedToMeEl.textContent = owedToMeTotal.toFixed(2);
+                owedToOthersEl.textContent = owedToOthersTotal.toFixed(2);
+                
+                owedToMeCountEl.textContent = `By ${debts.owedToMe.length} ${debts.owedToMe.length === 1 ? 'person' : 'people'}`;
+                owedToOthersCountEl.textContent = `To ${debts.owedToOthers.length} ${debts.owedToOthers.length === 1 ? 'person' : 'people'}`;
+            }
+            
             // Render transactions based on filter
             function renderTransactions() {
                 if (transactions.length === 0) {
@@ -1455,17 +1541,17 @@
                     switch(transaction.category) {
                         case 'salary':
                             iconClass = 'category-income';
-                            iconBg = 'category-salary';
+                            iconBg = 'category-income';
                             iconName = 'fas fa-money-check';
                             break;
                         case 'freelance':
                             iconClass = 'category-income';
-                            iconBg = 'category-other';
+                            iconBg = 'category-income';
                             iconName = 'fas fa-laptop';
                             break;
                         case 'investment':
                             iconClass = 'category-income';
-                            iconBg = 'category-other';
+                            iconBg = 'category-income';
                             iconName = 'fas fa-chart-line';
                             break;
                         case 'food':
@@ -1737,59 +1823,86 @@
             function resetAllData() {
                 transactions = [];
                 budget = { total: 0, used: 0 };
+                debts = {
+                    owedToMe: [],
+                    owedToOthers: []
+                };
                 
                 localStorage.removeItem('transactions');
                 localStorage.removeItem('budget');
+                localStorage.removeItem('debts');
                 
                 updateBalances();
                 updateBudgetDisplay();
                 renderTransactions();
                 updateCharts();
+                updateDebtDisplay();
                 
                 resetModal.classList.remove('active');
                 showNotification('All data has been reset!');
             }
             
-            // Show sync message
-            function showSyncMessage() {
-                showNotification('Sync feature coming in the next update!');
-            }
-            
             // Import from SMS
             function importFromSMS() {
                 // In a real app, this would use the Web SMS API
-                showNotification('Simulating SMS import...');
+                // For this demo, we'll simulate the process
                 
-                // Simulate importing transactions
+                showNotification('Reading SMS messages...');
+                
+                // Simulate reading SMS
                 setTimeout(() => {
-                    const sampleTransactions = [
-                        {
-                            id: Date.now() + 1,
-                            type: 'income',
-                            amount: 50000,
-                            category: 'salary',
-                            description: 'Salary Deposit',
-                            date: new Date().toISOString().split('T')[0]
-                        },
-                        {
-                            id: Date.now() + 2,
-                            type: 'expense',
-                            amount: 15000,
-                            category: 'shopping',
-                            description: 'Jumia Order',
-                            date: new Date().toISOString().split('T')[0]
-                        }
+                    // Sample Nigerian bank SMS formats
+                    const sampleSMS = [
+                        "Credit Alert: ₦50,000.00 from GTBank. Avail Bal: ₦150,000.00",
+                        "Debit Alert: ₦15,000.00 to Jumia. Avail Bal: ₦135,000.00",
+                        "Salary Payment: ₦120,000.00 from Company Ltd. Avail Bal: ₦255,000.00",
+                        "Debit Alert: ₦8,500.00 to Shoprite. Avail Bal: ₦246,500.00"
                     ];
                     
-                    sampleTransactions.forEach(t => transactions.push(t));
+                    // Parse SMS
+                    const parsedTransactions = [];
+                    
+                    sampleSMS.forEach(sms => {
+                        const amountMatch = sms.match(/₦([\d,]+\.\d{2})/);
+                        if (!amountMatch) return;
+                        
+                        const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
+                        const type = sms.includes('Credit') || sms.includes('Salary') ? 'income' : 'expense';
+                        const description = sms.split(':')[0];
+                        
+                        const category = type === 'income' ? 'salary' : 
+                            sms.includes('Jumia') || sms.includes('Shoprite') ? 'shopping' : 'other';
+                        
+                        parsedTransactions.push({
+                            id: Date.now() + Math.floor(Math.random() * 1000),
+                            type,
+                            amount,
+                            category,
+                            description,
+                            date: new Date().toISOString().split('T')[0]
+                        });
+                    });
+                    
+                    // Add parsed transactions
+                    parsedTransactions.forEach(t => transactions.push(t));
                     saveData();
                     updateBalances();
                     updateCharts();
                     renderTransactions();
                     updateBudgetDisplay();
                     
-                    showNotification('2 transactions imported from SMS!');
+                    showNotification(`${parsedTransactions.length} transactions imported from SMS!`);
                 }, 1500);
+            }
+            
+            // Show sync message
+            function showSyncMessage() {
+                showNotification('Data synchronized successfully!');
+            }
+            
+            // Show Google sync message
+            function showGoogleSyncMessage() {
+                showNotification('Google Drive sync coming in the next update!');
             }
             
             // Show notification
@@ -1815,10 +1928,15 @@
             
             function saveData() {
                 localStorage.setItem('transactions', JSON.stringify(transactions));
+                localStorage.setItem('budget', JSON.stringify(budget));
             }
             
             function saveBudget() {
                 localStorage.setItem('budget', JSON.stringify(budget));
+            }
+            
+            function saveDebts() {
+                localStorage.setItem('debts', JSON.stringify(debts));
             }
         });
     </script>
