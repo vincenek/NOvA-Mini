@@ -793,17 +793,6 @@
             color: #64748b;
         }
 
-        .coming-soon {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: var(--warning);
-            color: white;
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-        }
-
         @media (min-width: 576px) {
             body {
                 padding: 20px;
@@ -1058,17 +1047,15 @@
                             <div>
                                 <div class="sync-label">Google Drive</div>
                                 <div class="sync-description">Sync with your Google account</div>
-                                <span class="coming-soon">Coming in next update</span>
                             </div>
                         </button>
-                        <button class="sync-btn">
+                        <button class="sync-btn" id="smsBackupBtn">
                             <div class="sync-icon">
                                 <i class="fas fa-sms"></i>
                             </div>
                             <div>
                                 <div class="sync-label">SMS Backup</div>
                                 <div class="sync-description">Receive encrypted backup via SMS</div>
-                                <span class="coming-soon">Coming in next update</span>
                             </div>
                         </button>
                     </div>
@@ -1261,6 +1248,7 @@
             const owedToOthersEl = document.getElementById('owedToOthers');
             const owedToMeCountEl = document.getElementById('owedToMeCount');
             const owedToOthersCountEl = document.getElementById('owedToOthersCount');
+            const smsBackupBtn = document.getElementById('smsBackupBtn');
             
             // Initialize charts
             let spendingChart, incomeChart;
@@ -1293,17 +1281,18 @@
             closeBudgetModal.addEventListener('click', () => budgetModal.classList.remove('active'));
             cancelBudget.addEventListener('click', () => budgetModal.classList.remove('active'));
             saveBudgetBtn.addEventListener('click', setBudget);
-            syncBtn.addEventListener('click', showSyncMessage);
+            syncBtn.addEventListener('click', () => showNotification('Cloud sync coming in the next update!'));
             resetBtn.addEventListener('click', () => resetModal.classList.add('active'));
             closeResetModal.addEventListener('click', () => resetModal.classList.remove('active'));
             cancelReset.addEventListener('click', () => resetModal.classList.remove('active'));
             confirmReset.addEventListener('click', resetAllData);
-            smsImportBtn.addEventListener('click', importFromSMS);
+            smsImportBtn.addEventListener('click', () => showNotification('SMS Import feature coming in the next update!'));
             addDebtBtn.addEventListener('click', () => debtModal.classList.add('active'));
             closeDebtModal.addEventListener('click', () => debtModal.classList.remove('active'));
             cancelDebt.addEventListener('click', () => debtModal.classList.remove('active'));
             saveDebt.addEventListener('click', addDebt);
-            googleSyncBtn.addEventListener('click', showGoogleSyncMessage);
+            googleSyncBtn.addEventListener('click', () => showNotification('Google Drive sync coming in the next update!'));
+            smsBackupBtn.addEventListener('click', () => showNotification('SMS Backup feature coming in the next update!'));
             
             // Initialize charts with empty data
             function initCharts() {
@@ -1840,69 +1829,6 @@
                 
                 resetModal.classList.remove('active');
                 showNotification('All data has been reset!');
-            }
-            
-            // Import from SMS
-            function importFromSMS() {
-                // In a real app, this would use the Web SMS API
-                // For this demo, we'll simulate the process
-                
-                showNotification('Reading SMS messages...');
-                
-                // Simulate reading SMS
-                setTimeout(() => {
-                    // Sample Nigerian bank SMS formats
-                    const sampleSMS = [
-                        "Credit Alert: ₦50,000.00 from GTBank. Avail Bal: ₦150,000.00",
-                        "Debit Alert: ₦15,000.00 to Jumia. Avail Bal: ₦135,000.00",
-                        "Salary Payment: ₦120,000.00 from Company Ltd. Avail Bal: ₦255,000.00",
-                        "Debit Alert: ₦8,500.00 to Shoprite. Avail Bal: ₦246,500.00"
-                    ];
-                    
-                    // Parse SMS
-                    const parsedTransactions = [];
-                    
-                    sampleSMS.forEach(sms => {
-                        const amountMatch = sms.match(/₦([\d,]+\.\d{2})/);
-                        if (!amountMatch) return;
-                        
-                        const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
-                        const type = sms.includes('Credit') || sms.includes('Salary') ? 'income' : 'expense';
-                        const description = sms.split(':')[0];
-                        
-                        const category = type === 'income' ? 'salary' : 
-                            sms.includes('Jumia') || sms.includes('Shoprite') ? 'shopping' : 'other';
-                        
-                        parsedTransactions.push({
-                            id: Date.now() + Math.floor(Math.random() * 1000),
-                            type,
-                            amount,
-                            category,
-                            description,
-                            date: new Date().toISOString().split('T')[0]
-                        });
-                    });
-                    
-                    // Add parsed transactions
-                    parsedTransactions.forEach(t => transactions.push(t));
-                    saveData();
-                    updateBalances();
-                    updateCharts();
-                    renderTransactions();
-                    updateBudgetDisplay();
-                    
-                    showNotification(`${parsedTransactions.length} transactions imported from SMS!`);
-                }, 1500);
-            }
-            
-            // Show sync message
-            function showSyncMessage() {
-                showNotification('Data synchronized successfully!');
-            }
-            
-            // Show Google sync message
-            function showGoogleSyncMessage() {
-                showNotification('Google Drive sync coming in the next update!');
             }
             
             // Show notification
