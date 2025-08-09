@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTrack NG | Complete Finance Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --card-bg: #ffffff;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --nigerian-green: #008751;
+            --nigerian-white: #ffffff;
+            --border-radius: 10px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: #334155;
+            min-height: 100vh;
+            padding: 15px;
+            position: relative;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            background: var(--nigerian-white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(226, 232, 240, 0.6);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo h1 {
+            font-size: 1.4rem;
+            background: linear-gradient(to right, var(--nigerian-green), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--nigerian-green), var(--primary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--nigerian-green), var(--primary));
+            color: white;
+            box-shadow: var(--card-shadow);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--nigerian-green);
+            color: var(--nigerian-green);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.1);
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            border: 1px solid rgba(226, 232, 240, 0.6);
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--nigerian-green), var(--primary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .balance-amount {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 10px 0;
+            color: var(--dark);
+        }
+
+        .currency-symbol {
+            color: var(--nigerian-green);
+            font-size: 1.4rem;
+        }
+
+        .balance-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f8fafc;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .income-value {
+            color: var(--success);
+        }
+
+        .expense-value {
+            color: var(--danger);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .transaction-form {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 15px;
+        }
+
+        .form-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            background: #f8fafc;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--nigerian-green);
+            box-shadow: 0 0 0 3px rgba(0, 135, 81, 0.1);
+            background: white;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .btn-submit {
+            background: linear-gradient(to right, var(--nigerian-green), #34d399);
+            color: white;
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            margin-top: 5px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .transaction-list {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+
+        .filter-btn.active {
+            background: var(--nigerian-green);
+            color: white;
+        }
+
+        .filter-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            transition: var(--transition);
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-item:hover {
+            background-color: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .transaction-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .category-income { background: var(--success); }
+        .category-food { background: #f59e0b; }
+        .category-shopping { background: #8b5cf6; }
+        .category-transport { background: #0ea5e9; }
+        .category-housing { background: #ec4899; }
+        .category-entertainment { background: #f97316; }
+        .category-other { background: #64748b; }
+
+        .transaction-details h3 {
+            font-weight: 600;
+            margin-bottom: 3px;
+            font-size: 0.95rem;
+        }
+
+        .transaction-details p {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .transaction-amount {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .income-amount {
+            color: var(--success);
+        }
+
+        .expense-amount {
+            color: var(--danger);
+        }
+
+        .charts-container {
+            margin-top: 15px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .chart-card {
+            height: 250px;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .export-section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-top: 15px;
+        }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .export-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .export-btn:hover {
+            background: #f1f5f9;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .export-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--nigerian-green), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .export-btn span {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.85rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px 15px;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            opacity: 0.3;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            padding: 12px 18px;
+            background: var(--nigerian-green);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: var(--transition);
+            max-width: 90%;
+            font-size: 0.9rem;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(-20px);
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            color: #64748b;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            color: var(--dark);
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .modal-btn-primary {
+            background: var(--nigerian-green);
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background: #007245;
+        }
+
+        .modal-btn-secondary {
+            background: #f1f5f9;
+            color: var(--dark);
+        }
+
+        .modal-btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .reset-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .reset-btn {
+            background: #f1f5f9;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reset-btn:hover {
+            background: #fee2e2;
+            transform: translateY(-3px);
+        }
+
+        /* New Features Styling */
+        .feature-card {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .feature-section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 15px;
+        }
+        
+        .feature-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .feature-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--nigerian-green), var(--primary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+        }
+        
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .debt-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .debt-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .debt-card.owed-to-me {
+            border-left: 4px solid var(--success);
+        }
+        
+        .debt-card.owed-to-others {
+            border-left: 4px solid var(--danger);
+        }
+        
+        .debt-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 5px 0;
+        }
+        
+        .debt-label {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        
+        .sms-import-btn {
+            background: linear-gradient(to right, #0ea5e9, #3b82f6);
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .local-insight {
+            background: #f0fdf4;
+            border-left: 4px solid var(--success);
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .insight-icon {
+            color: var(--success);
+            margin-right: 5px;
+        }
+        
+        .sync-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .sync-btn {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .sync-btn:hover {
+            background: #e2e8f0;
+        }
+        
+        .sync-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--nigerian-green), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .sync-label {
+            font-weight: 600;
+        }
+        
+        .sync-description {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        @media (min-width: 576px) {
+            body {
+                padding: 20px;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .chart-row {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            header {
+                padding: 15px 20px;
+            }
+            
+            .logo h1 {
+                font-size: 1.6rem;
+            }
+            
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .debt-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .main-content {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .left-column {
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .right-column {
+                width: 350px;
+            }
+            
+            .feature-card {
+                flex-direction: row;
+            }
+            
+            .feature-section {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <h1>FinTrack <span style="color: var(--nigerian-green);">NG</span></h1>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn btn-outline" id="syncBtn">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="btn btn-primary" id="exportBtn">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
+        </header>
+        
+        <!-- New Features Section -->
+        <div class="feature-card">
+            <div class="feature-section">
+                <div class="feature-header">
+                    <div class="feature-icon">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                    <div class="feature-title">Debt Tracker</div>
+                </div>
+                <div class="debt-grid">
+                    <div class="debt-card owed-to-me">
+                        <div class="debt-label">You're Owed</div>
+                        <div class="debt-value">₦25,000</div>
+                        <div class="debt-label">By 3 people</div>
+                    </div>
+                    <div class="debt-card owed-to-others">
+                        <div class="debt-label">You Owe</div>
+                        <div class="debt-value">₦15,000</div>
+                        <div class="debt-label">To 2 people</div>
+                    </div>
+                </div>
+                <button class="btn btn-outline" style="width:100%; margin-top:15px;">
+                    <i class="fas fa-plus"></i> Add Debt Record
+                </button>
+            </div>
+            
+            <div class="feature-section">
+                <div class="feature-header">
+                    <div class="feature-icon">
+                        <i class="fas fa-comment-alt"></i>
+                    </div>
+                    <div class="feature-title">SMS Import</div>
+                </div>
+                <p>Automatically import transactions from your bank SMS alerts</p>
+                <button class="sms-import-btn">
+                    <i class="fas fa-sms"></i> Import Bank Transactions
+                </button>
+                <div class="local-insight">
+                    <i class="fas fa-lightbulb insight-icon"></i>
+                    <strong>Nigerian Insight:</strong> Save 15 mins daily by automating transaction entry
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="left-column">
+                <div class="dashboard">
+                    <!-- Balance Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <div class="card-icon">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                Current Balance
+                            </div>
+                        </div>
+                        <div class="balance-amount"><span class="currency-symbol">₦</span> <span id="currentBalance">0.00</span></div>
+                        <div class="balance-stats">
+                            <div class="stat">
+                                <div class="stat-value income-value" id="totalIncome">₦0.00</div>
+                                <div class="stat-label">Income</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value expense-value" id="totalExpense">₦0.00</div>
+                                <div class="stat-label">Expenses</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Budget Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <div class="card-icon">
+                                    <i class="fas fa-chart-pie"></i>
+                                </div>
+                                Monthly Budget
+                            </div>
+                            <button class="btn btn-outline" id="setBudgetBtn">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                        <div class="balance-amount"><span id="usedBudget">₦0.00</span> / <span id="totalBudget">₦0.00</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="budgetProgress"></div>
+                        </div>
+                        <div class="balance-stats">
+                            <div class="stat">
+                                <div class="stat-value" id="remainingBudget">₦0.00</div>
+                                <div class="stat-label">Remaining</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value" id="daysLeft">0 days</div>
+                                <div class="stat-label">Left</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Transaction Form -->
+                <div class="transaction-form">
+                    <h2 class="form-title"><i class="fas fa-plus-circle"></i> Add Transaction</h2>
+                    <form id="transactionForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="transactionType">Type</label>
+                                <select id="transactionType" class="form-control">
+                                    <option value="income">Income</option>
+                                    <option value="expense">Expense</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="amount">Amount (₦)</label>
+                                <input type="number" id="amount" class="form-control" placeholder="0.00" step="0.01" min="0">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category" class="form-control">
+                                <option value="salary">Salary</option>
+                                <option value="freelance">Freelance</option>
+                                <option value="investment">Investment</option>
+                                <option value="food">Food & Dining</option>
+                                <option value="shopping">Shopping</option>
+                                <option value="transport">Transport</option>
+                                <option value="housing">Housing</option>
+                                <option value="entertainment">Entertainment</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <input type="text" id="description" class="form-control" placeholder="Enter transaction details">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="date">Date</label>
+                            <input type="date" id="date" class="form-control">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-submit">
+                            <i class="fas fa-check-circle"></i> Add Transaction
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Charts -->
+                <div class="charts-container">
+                    <h2 class="chart-title"><i class="fas fa-chart-bar"></i> Financial Reports</h2>
+                    <div class="chart-row">
+                        <div class="card chart-card">
+                            <canvas id="spendingChart"></canvas>
+                        </div>
+                        <div class="card chart-card">
+                            <canvas id="incomeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sync Options -->
+                <div class="feature-section">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-cloud"></i>
+                        </div>
+                        <div class="feature-title">Cloud Sync</div>
+                    </div>
+                    <p>Backup your data and access from multiple devices</p>
+                    <div class="sync-options">
+                        <button class="sync-btn">
+                            <div class="sync-icon">
+                                <i class="fab fa-google-drive"></i>
+                            </div>
+                            <div>
+                                <div class="sync-label">Google Drive</div>
+                                <div class="sync-description">Sync with your Google account</div>
+                            </div>
+                        </button>
+                        <button class="sync-btn">
+                            <div class="sync-icon">
+                                <i class="fas fa-sms"></i>
+                            </div>
+                            <div>
+                                <div class="sync-label">SMS Backup</div>
+                                <div class="sync-description">Receive encrypted backup via SMS</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Reset Section -->
+                <div class="reset-section">
+                    <button class="reset-btn" id="resetBtn">
+                        <i class="fas fa-redo"></i> Reset All Data
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Right Column - Transactions -->
+            <div class="right-column">
+                <div class="transaction-list">
+                    <div class="list-header">
+                        <h2 class="card-title"><i class="fas fa-list"></i> Recent Transactions</h2>
+                        <div class="filters">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="income">Income</button>
+                            <button class="filter-btn" data-filter="expense">Expense</button>
+                        </div>
+                    </div>
+                    
+                    <div id="transactionsContainer">
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <div class="transaction-icon category-income">
+                                    <i class="fas fa-money-check"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <h3>Salary Deposit</h3>
+                                    <p>Today • Salary</p>
+                                </div>
+                            </div>
+                            <div class="transaction-amount income-amount">
+                                +₦150,000.00
+                            </div>
+                        </div>
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <div class="transaction-icon category-transport">
+                                    <i class="fas fa-car"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <h3>Fuel Payment</h3>
+                                    <p>Today • Transport</p>
+                                </div>
+                            </div>
+                            <div class="transaction-amount expense-amount">
+                                -₦15,000.00
+                            </div>
+                        </div>
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <div class="transaction-icon category-food">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <h3>Supermarket</h3>
+                                    <p>Yesterday • Food</p>
+                                </div>
+                            </div>
+                            <div class="transaction-amount expense-amount">
+                                -₦8,500.00
+                            </div>
+                        </div>
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <div class="transaction-icon category-housing">
+                                    <i class="fas fa-home"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <h3>Rent Payment</h3>
+                                    <p>Jan 5 • Housing</p>
+                                </div>
+                            </div>
+                            <div class="transaction-amount expense-amount">
+                                -₦50,000.00
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="export-section">
+                    <h2 class="card-title"><i class="fas fa-file-export"></i> Export Data</h2>
+                    <p>Download your financial data for backup or analysis</p>
+                    <div class="export-options">
+                        <button class="export-btn" id="exportCsv">
+                            <div class="export-icon">
+                                <i class="fas fa-file-csv"></i>
+                            </div>
+                            <span>CSV Export</span>
+                        </button>
+                        <button class="export-btn" id="exportPdf">
+                            <div class="export-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <span>PDF Report</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">Transaction added successfully!</div>
+
+    <div class="modal-overlay" id="budgetModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Set Monthly Budget</h3>
+                <button class="close-modal" id="closeBudgetModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="budgetAmount">Budget Amount (₦)</label>
+                    <input type="number" id="budgetAmount" class="form-control" placeholder="Enter amount" min="0" step="1000">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancelBudget">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="saveBudget">Set Budget</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="resetModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Reset All Data</h3>
+                <button class="close-modal" id="closeResetModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to reset all data? This will:</p>
+                <ul style="padding-left: 20px; margin: 10px 0;">
+                    <li>Clear all transactions</li>
+                    <li>Reset your balance to zero</li>
+                    <li>Reset your budget settings</li>
+                </ul>
+                <p>This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancelReset">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="confirmReset" style="background: var(--danger);">Reset Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize variables
+            let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            let budget = JSON.parse(localStorage.getItem('budget')) || { total: 0, used: 0 };
+            let currentFilter = 'all';
+            
+            // DOM Elements
+            const transactionForm = document.getElementById('transactionForm');
+            const transactionsContainer = document.getElementById('transactionsContainer');
+            const currentBalanceEl = document.getElementById('currentBalance');
+            const totalIncomeEl = document.getElementById('totalIncome');
+            const totalExpenseEl = document.getElementById('totalExpense');
+            const usedBudgetEl = document.getElementById('usedBudget');
+            const totalBudgetEl = document.getElementById('totalBudget');
+            const remainingBudgetEl = document.getElementById('remainingBudget');
+            const budgetProgressEl = document.getElementById('budgetProgress');
+            const daysLeftEl = document.getElementById('daysLeft');
+            const notification = document.getElementById('notification');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const exportCsvBtn = document.getElementById('exportCsv');
+            const exportPdfBtn = document.getElementById('exportPdf');
+            const setBudgetBtn = document.getElementById('setBudgetBtn');
+            const syncBtn = document.getElementById('syncBtn');
+            const budgetModal = document.getElementById('budgetModal');
+            const closeBudgetModal = document.getElementById('closeBudgetModal');
+            const cancelBudget = document.getElementById('cancelBudget');
+            const saveBudgetBtn = document.getElementById('saveBudget');
+            const budgetAmountInput = document.getElementById('budgetAmount');
+            const resetBtn = document.getElementById('resetBtn');
+            const resetModal = document.getElementById('resetModal');
+            const closeResetModal = document.getElementById('closeResetModal');
+            const cancelReset = document.getElementById('cancelReset');
+            const confirmReset = document.getElementById('confirmReset');
+            const smsImportBtn = document.querySelector('.sms-import-btn');
+            
+            // Initialize charts
+            let spendingChart, incomeChart;
+            initCharts();
+            
+            // Update UI with initial data
+            updateBalances();
+            updateBudgetDisplay();
+            renderTransactions();
+            
+            // Set today's date as default
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            
+            // Event Listeners
+            transactionForm.addEventListener('submit', addTransaction);
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    renderTransactions();
+                });
+            });
+            
+            exportCsvBtn.addEventListener('click', exportToCsv);
+            exportPdfBtn.addEventListener('click', exportToPdf);
+            setBudgetBtn.addEventListener('click', () => budgetModal.classList.add('active'));
+            closeBudgetModal.addEventListener('click', () => budgetModal.classList.remove('active'));
+            cancelBudget.addEventListener('click', () => budgetModal.classList.remove('active'));
+            saveBudgetBtn.addEventListener('click', setBudget);
+            syncBtn.addEventListener('click', showSyncMessage);
+            resetBtn.addEventListener('click', () => resetModal.classList.add('active'));
+            closeResetModal.addEventListener('click', () => resetModal.classList.remove('active'));
+            cancelReset.addEventListener('click', () => resetModal.classList.remove('active'));
+            confirmReset.addEventListener('click', resetAllData);
+            smsImportBtn.addEventListener('click', importFromSMS);
+            
+            // Initialize charts with empty data
+            function initCharts() {
+                const spendingCtx = document.getElementById('spendingChart').getContext('2d');
+                spendingChart = new Chart(spendingCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Housing', 'Food', 'Transport', 'Entertainment', 'Shopping', 'Other'],
+                        datasets: [{
+                            data: [50, 25, 15, 5, 10, 5],
+                            backgroundColor: [
+                                '#ec4899', '#f59e0b', '#0ea5e9', '#f97316', '#8b5cf6', '#64748b'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 10,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    font: {
+                                        size: window.innerWidth < 768 ? 9 : 11
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+                incomeChart = new Chart(incomeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        datasets: [{
+                            label: 'Income',
+                            data: [150, 160, 170, 165, 180, 175, 185, 190, 180, 195, 200, 210],
+                            backgroundColor: '#10b981',
+                            borderRadius: 6
+                        }, {
+                            label: 'Expenses',
+                            data: [100, 105, 110, 120, 115, 125, 130, 135, 140, 145, 150, 155],
+                            backgroundColor: '#ef4444',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    font: {
+                                        size: window.innerWidth < 768 ? 9 : 11
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: window.innerWidth < 768 ? 8 : 10
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: window.innerWidth < 768 ? 8 : 10
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Add new transaction
+            function addTransaction(e) {
+                e.preventDefault();
+                
+                const type = document.getElementById('transactionType').value;
+                const amount = parseFloat(document.getElementById('amount').value);
+                const category = document.getElementById('category').value;
+                const description = document.getElementById('description').value;
+                const date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
+                
+                if (!amount || amount <= 0) {
+                    showNotification('Please enter a valid amount', 'error');
+                    return;
+                }
+                
+                const transaction = {
+                    id: Date.now(),
+                    type,
+                    amount,
+                    category,
+                    description: description || 'New Transaction',
+                    date
+                };
+                
+                transactions.push(transaction);
+                saveData();
+                
+                // Update budget if it's an expense
+                if (type === 'expense') {
+                    budget.used += amount;
+                    saveBudget();
+                }
+                
+                updateBalances();
+                updateCharts();
+                renderTransactions();
+                updateBudgetDisplay(); // Ensure budget display updates
+                
+                transactionForm.reset();
+                document.getElementById('date').value = new Date().toISOString().split('T')[0];
+                
+                showNotification('Transaction added successfully!');
+            }
+            
+            // Render transactions based on filter
+            function renderTransactions() {
+                if (transactions.length === 0) {
+                    transactionsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exchange-alt"></i>
+                            <h3>No transactions yet</h3>
+                            <p>Add your first transaction to get started</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const filteredTransactions = transactions.filter(t => {
+                    if (currentFilter === 'all') return true;
+                    return t.type === currentFilter;
+                });
+                
+                if (filteredTransactions.length === 0) {
+                    transactionsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <h3>No ${currentFilter} transactions</h3>
+                            <p>Try changing your filter</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                transactionsContainer.innerHTML = '';
+                
+                filteredTransactions.slice().reverse().forEach(transaction => {
+                    const transactionItem = document.createElement('div');
+                    transactionItem.className = 'transaction-item';
+                    
+                    // Determine icon and color based on category
+                    let iconClass, iconBg, iconName;
+                    
+                    switch(transaction.category) {
+                        case 'salary':
+                            iconClass = 'category-income';
+                            iconBg = 'category-salary';
+                            iconName = 'fas fa-money-check';
+                            break;
+                        case 'freelance':
+                            iconClass = 'category-income';
+                            iconBg = 'category-other';
+                            iconName = 'fas fa-laptop';
+                            break;
+                        case 'investment':
+                            iconClass = 'category-income';
+                            iconBg = 'category-other';
+                            iconName = 'fas fa-chart-line';
+                            break;
+                        case 'food':
+                            iconClass = 'category-food';
+                            iconBg = 'category-food';
+                            iconName = 'fas fa-utensils';
+                            break;
+                        case 'shopping':
+                            iconClass = 'category-shopping';
+                            iconBg = 'category-shopping';
+                            iconName = 'fas fa-shopping-bag';
+                            break;
+                        case 'transport':
+                            iconClass = 'category-transport';
+                            iconBg = 'category-transport';
+                            iconName = 'fas fa-car';
+                            break;
+                        case 'housing':
+                            iconClass = 'category-housing';
+                            iconBg = 'category-housing';
+                            iconName = 'fas fa-home';
+                            break;
+                        case 'entertainment':
+                            iconClass = 'category-entertainment';
+                            iconBg = 'category-entertainment';
+                            iconName = 'fas fa-gamepad';
+                            break;
+                        default:
+                            iconClass = 'category-other';
+                            iconBg = 'category-other';
+                            iconName = 'fas fa-question';
+                    }
+                    
+                    transactionItem.innerHTML = `
+                        <div class="transaction-info">
+                            <div class="transaction-icon ${iconBg}">
+                                <i class="${iconName}"></i>
+                            </div>
+                            <div class="transaction-details">
+                                <h3>${transaction.description}</h3>
+                                <p>${formatDate(transaction.date)} • ${formatCategory(transaction.category)}</p>
+                            </div>
+                        </div>
+                        <div class="transaction-amount ${transaction.type === 'income' ? 'income-amount' : 'expense-amount'}">
+                            ${transaction.type === 'income' ? '+' : '-'}₦${transaction.amount.toFixed(2)}
+                        </div>
+                    `;
+                    
+                    transactionsContainer.appendChild(transactionItem);
+                });
+            }
+            
+            // Update balance displays
+            function updateBalances() {
+                const totalIncome = transactions
+                    .filter(t => t.type === 'income')
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                const totalExpense = transactions
+                    .filter(t => t.type === 'expense')
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                const balance = totalIncome - totalExpense;
+                
+                currentBalanceEl.textContent = balance.toFixed(2);
+                totalIncomeEl.textContent = `₦${totalIncome.toFixed(2)}`;
+                totalExpenseEl.textContent = `₦${totalExpense.toFixed(2)}`;
+            }
+            
+            // Update budget display
+            function updateBudgetDisplay() {
+                // Recalculate used budget from transactions
+                const used = transactions
+                    .filter(t => t.type === 'expense')
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                budget.used = used; // Update budget object
+                
+                totalBudgetEl.textContent = `₦${budget.total.toFixed(2)}`;
+                usedBudgetEl.textContent = `₦${used.toFixed(2)}`;
+                
+                const remaining = budget.total - used;
+                remainingBudgetEl.textContent = `₦${remaining > 0 ? remaining.toFixed(2) : '0.00'}`;
+                
+                const percentage = budget.total > 0 ? (used / budget.total) * 100 : 0;
+                budgetProgressEl.style.width = `${Math.min(percentage, 100)}%`;
+                
+                // Change progress color based on usage
+                if (percentage > 90) {
+                    budgetProgressEl.style.background = 'var(--danger)';
+                } else if (percentage > 75) {
+                    budgetProgressEl.style.background = 'var(--warning)';
+                } else {
+                    budgetProgressEl.style.background = 'var(--success)';
+                }
+                
+                // Calculate days left in month
+                const today = new Date();
+                const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                const days = lastDay.getDate() - today.getDate();
+                daysLeftEl.textContent = `${days} ${days === 1 ? 'day' : 'days'}`;
+            }
+            
+            // Update charts with real data
+            function updateCharts() {
+                // Update spending chart
+                const spendingData = {
+                    housing: 0,
+                    food: 0,
+                    transport: 0,
+                    entertainment: 0,
+                    shopping: 0,
+                    other: 0
+                };
+                
+                transactions.filter(t => t.type === 'expense').forEach(t => {
+                    if (spendingData[t.category] !== undefined) {
+                        spendingData[t.category] = (spendingData[t.category] || 0) + t.amount;
+                    } else {
+                        spendingData.other += t.amount;
+                    }
+                });
+                
+                spendingChart.data.datasets[0].data = [
+                    spendingData.housing,
+                    spendingData.food,
+                    spendingData.transport,
+                    spendingData.entertainment,
+                    spendingData.shopping,
+                    spendingData.other
+                ];
+                spendingChart.update();
+                
+                // Update income vs expense chart
+                const monthlyData = {
+                    0: { income: 0, expense: 0 }, // Jan
+                    1: { income: 0, expense: 0 }, // Feb
+                    2: { income: 0, expense: 0 }, // Mar
+                    3: { income: 0, expense: 0 }, // Apr
+                    4: { income: 0, expense: 0 }, // May
+                    5: { income: 0, expense: 0 }, // Jun
+                    6: { income: 0, expense: 0 }, // Jul
+                    7: { income: 0, expense: 0 }, // Aug
+                    8: { income: 0, expense: 0 }, // Sep
+                    9: { income: 0, expense: 0 }, // Oct
+                    10: { income: 0, expense: 0 }, // Nov
+                    11: { income: 0, expense: 0 }  // Dec
+                };
+                
+                transactions.forEach(t => {
+                    const date = new Date(t.date);
+                    const month = date.getMonth();
+                    
+                    if (monthlyData[month]) {
+                        monthlyData[month][t.type] += t.amount;
+                    }
+                });
+                
+                // Update chart data
+                incomeChart.data.datasets[0].data = Object.values(monthlyData).map(m => m.income);
+                incomeChart.data.datasets[1].data = Object.values(monthlyData).map(m => m.expense);
+                incomeChart.update();
+            }
+            
+            // Set budget
+            function setBudget() {
+                const budgetAmount = parseFloat(budgetAmountInput.value);
+                if (isNaN(budgetAmount) || budgetAmount <= 0) {
+                    showNotification('Please enter a valid budget amount', 'error');
+                    return;
+                }
+                
+                budget.total = budgetAmount;
+                saveBudget();
+                updateBudgetDisplay();
+                budgetModal.classList.remove('active');
+                budgetAmountInput.value = '';
+                showNotification('Budget set successfully!');
+            }
+            
+            // Export to CSV
+            function exportToCsv() {
+                if (transactions.length === 0) {
+                    showNotification('No transactions to export', 'error');
+                    return;
+                }
+                
+                let csvContent = 'Date,Type,Category,Description,Amount (₦)\n';
+                
+                transactions.forEach(t => {
+                    csvContent += `${t.date},${t.type},${t.category},${t.description},${t.amount}\n`;
+                });
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `fintrack-export-${new Date().toISOString().slice(0, 10)}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showNotification('CSV exported successfully!');
+            }
+            
+            // Export to PDF
+            function exportToPdf() {
+                if (transactions.length === 0) {
+                    showNotification('No transactions to export', 'error');
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Title
+                doc.setFontSize(16);
+                doc.text('FinTrack NG - Transaction Report', 105, 15, null, null, 'center');
+                
+                // Date
+                doc.setFontSize(10);
+                doc.text(`Generated: ${new Date().toLocaleDateString()}`, 105, 22, null, null, 'center');
+                
+                // Summary
+                doc.setFontSize(12);
+                doc.text('Financial Summary', 15, 30);
+                
+                doc.setFontSize(10);
+                doc.text(`Current Balance: ₦${document.getElementById('currentBalance').textContent}`, 20, 38);
+                doc.text(`Total Income: ₦${document.getElementById('totalIncome').textContent.slice(1)}`, 20, 45);
+                doc.text(`Total Expenses: ₦${document.getElementById('totalExpense').textContent.slice(1)}`, 20, 52);
+                doc.text(`Monthly Budget: ₦${budget.total.toFixed(2)}`, 20, 59);
+                doc.text(`Budget Used: ₦${budget.used.toFixed(2)}`, 20, 66);
+                
+                // Transactions table
+                doc.setFontSize(12);
+                doc.text('Transaction History', 15, 75);
+                
+                const tableData = transactions.map(t => [
+                    t.date,
+                    t.type.charAt(0).toUpperCase() + t.type.slice(1),
+                    t.category,
+                    t.description,
+                    `₦${t.amount.toFixed(2)}`
+                ]);
+                
+                doc.autoTable({
+                    head: [['Date', 'Type', 'Category', 'Description', 'Amount']],
+                    body: tableData,
+                    startY: 80,
+                    theme: 'grid',
+                    headStyles: { fillColor: [0, 135, 81] },
+                    columnStyles: {
+                        0: { cellWidth: 25 },
+                        1: { cellWidth: 20 },
+                        2: { cellWidth: 25 },
+                        3: { cellWidth: 60 },
+                        4: { cellWidth: 25 }
+                    }
+                });
+                
+                // Save PDF
+                doc.save(`fintrack-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+                showNotification('PDF exported successfully!');
+            }
+            
+            // Reset all data
+            function resetAllData() {
+                transactions = [];
+                budget = { total: 0, used: 0 };
+                
+                localStorage.removeItem('transactions');
+                localStorage.removeItem('budget');
+                
+                updateBalances();
+                updateBudgetDisplay();
+                renderTransactions();
+                updateCharts();
+                
+                resetModal.classList.remove('active');
+                showNotification('All data has been reset!');
+            }
+            
+            // Show sync message
+            function showSyncMessage() {
+                showNotification('Sync feature coming in the next update!');
+            }
+            
+            // Import from SMS
+            function importFromSMS() {
+                // In a real app, this would use the Web SMS API
+                showNotification('Simulating SMS import...');
+                
+                // Simulate importing transactions
+                setTimeout(() => {
+                    const sampleTransactions = [
+                        {
+                            id: Date.now() + 1,
+                            type: 'income',
+                            amount: 50000,
+                            category: 'salary',
+                            description: 'Salary Deposit',
+                            date: new Date().toISOString().split('T')[0]
+                        },
+                        {
+                            id: Date.now() + 2,
+                            type: 'expense',
+                            amount: 15000,
+                            category: 'shopping',
+                            description: 'Jumia Order',
+                            date: new Date().toISOString().split('T')[0]
+                        }
+                    ];
+                    
+                    sampleTransactions.forEach(t => transactions.push(t));
+                    saveData();
+                    updateBalances();
+                    updateCharts();
+                    renderTransactions();
+                    updateBudgetDisplay();
+                    
+                    showNotification('2 transactions imported from SMS!');
+                }, 1500);
+            }
+            
+            // Show notification
+            function showNotification(message, type = 'success') {
+                notification.textContent = message;
+                notification.style.background = type === 'error' ? 'var(--danger)' : 'var(--nigerian-green)';
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            // Helper functions
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+            
+            function formatCategory(category) {
+                return category.charAt(0).toUpperCase() + category.slice(1);
+            }
+            
+            function saveData() {
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+            }
+            
+            function saveBudget() {
+                localStorage.setItem('budget', JSON.stringify(budget));
+            }
+        });
+    </script>
+</body>
+</html>
