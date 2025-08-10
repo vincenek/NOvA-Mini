@@ -653,7 +653,7 @@
             transform: translateY(-3px);
         }
 
-        /* New Features Styling */
+        /* Feature Styling */
         .feature-card {
             display: flex;
             flex-direction: column;
@@ -1187,7 +1187,7 @@
                     </div>
                     <small>Lifetime ISA bonus: £1,000</small>
                 </div>
-                <button class="btn btn-outline" style="width:100%; margin-top:10px;">
+                <button class="btn btn-outline" style="width:100%; margin-top:10px;" id="addGoalBtn">
                     <i class="fas fa-plus"></i> Add New Goal
                 </button>
             </div>
@@ -1294,7 +1294,7 @@
                         
                         <div class="form-group">
                             <label for="date">Date</label>
-                            <input type="date" id="date" class="form-control">
+                            <input type="date" id="date" class="form-control" value="">
                         </div>
                         
                         <button type="submit" class="btn btn-submit">
@@ -1327,7 +1327,7 @@
                     <div class="brexit-impact">
                         <p><i class="fas fa-info-circle"></i> <strong>Impact on your finances:</strong> Our analysis shows Brexit has increased your monthly grocery costs by approximately £28.50</p>
                     </div>
-                    <button class="btn btn-outline" style="width:100%; margin-top:15px;">
+                    <button class="btn btn-outline" style="width:100%; margin-top:15px;" id="brexitReportBtn">
                         <i class="fas fa-chart-pie"></i> View Full Brexit Impact Report
                     </button>
                 </div>
@@ -1398,7 +1398,7 @@
                             <div class="stat-label">Total Value</div>
                         </div>
                     </div>
-                    <button class="btn btn-outline" style="width:100%; margin-top:10px;">
+                    <button class="btn btn-outline" style="width:100%; margin-top:10px;" id="pensionProjectionBtn">
                         <i class="fas fa-chart-line"></i> View Projections
                     </button>
                 </div>
@@ -1544,6 +1544,14 @@
             const openBankingBtn = document.getElementById('openBankingBtn');
             const calculateTaxBtn = document.getElementById('calculateTaxBtn');
             const taxResultEl = document.getElementById('taxResult');
+            const addGoalBtn = document.getElementById('addGoalBtn');
+            const brexitReportBtn = document.getElementById('brexitReportBtn');
+            const pensionProjectionBtn = document.getElementById('pensionProjectionBtn');
+            
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+            document.getElementById('debtDate').value = today;
             
             // Initialize charts
             let spendingChart, incomeChart;
@@ -1555,11 +1563,7 @@
             renderTransactions();
             updateDebtDisplay();
             renderDebtList();
-            updateCharts(); // Initialize charts with data
-            
-            // Set today's date as default
-            document.getElementById('date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('debtDate').value = new Date().toISOString().split('T')[0];
+            updateCharts();
             
             // Event Listeners
             transactionForm.addEventListener('submit', addTransaction);
@@ -1589,6 +1593,9 @@
             saveDebtBtn.addEventListener('click', addDebt);
             openBankingBtn.addEventListener('click', () => showNotification('Open Banking integration coming in the next update!'));
             calculateTaxBtn.addEventListener('click', calculateTax);
+            addGoalBtn.addEventListener('click', () => showNotification('Savings goal feature coming in the next update!'));
+            brexitReportBtn.addEventListener('click', () => showNotification('Brexit impact report feature coming in the next update!'));
+            pensionProjectionBtn.addEventListener('click', () => showNotification('Pension projection feature coming in the next update!'));
             
             // Initialize charts with empty data
             function initCharts() {
@@ -1706,7 +1713,7 @@
                 const amount = parseFloat(document.getElementById('amount').value);
                 const category = document.getElementById('category').value;
                 const description = document.getElementById('description').value;
-                const date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
+                const date = document.getElementById('date').value || today;
                 
                 if (!amount || amount <= 0) {
                     showNotification('Please enter a valid amount', 'error');
@@ -1731,7 +1738,8 @@
                 updateCharts();
                 
                 transactionForm.reset();
-                document.getElementById('date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('date').value = today;
+                document.getElementById('transactionType').value = 'expense';
                 
                 showNotification('Transaction added successfully!');
             }
@@ -1742,7 +1750,7 @@
                 const amount = parseFloat(document.getElementById('debtAmount').value);
                 const person = document.getElementById('debtPerson').value;
                 const description = document.getElementById('debtDescription').value;
-                const date = document.getElementById('debtDate').value || new Date().toISOString().split('T')[0];
+                const date = document.getElementById('debtDate').value || today;
                 
                 if (!amount || amount <= 0) {
                     showNotification('Please enter a valid amount', 'error');
@@ -1758,11 +1766,9 @@
                     id: Date.now(),
                     type,
                     amount,
-                    originalAmount: amount,
                     person,
                     description: description || 'Debt Record',
-                    date,
-                    payments: []
+                    date
                 };
                 
                 if (type === 'owedToMe') {
@@ -1780,7 +1786,7 @@
                 document.getElementById('debtAmount').value = '';
                 document.getElementById('debtPerson').value = '';
                 document.getElementById('debtDescription').value = '';
-                document.getElementById('debtDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('debtDate').value = today;
                 
                 showNotification('Debt record added successfully!');
             }
@@ -1856,37 +1862,25 @@
             
             // Update debt display
             function updateDebtDisplay() {
-                // Calculate totals for owedToMe (only unpaid debts)
-                const owedToMeTotal = debts.owedToMe.reduce((sum, debt) => {
-                    return sum + debt.amount;
-                }, 0);
+                // Calculate totals for owedToMe
+                const owedToMeTotal = debts.owedToMe.reduce((sum, debt) => sum + debt.amount, 0);
                 
-                // Calculate totals for owedToOthers (only unpaid debts)
-                const owedToOthersTotal = debts.owedToOthers.reduce((sum, debt) => {
-                    return sum + debt.amount;
-                }, 0);
+                // Calculate totals for owedToOthers
+                const owedToOthersTotal = debts.owedToOthers.reduce((sum, debt) => sum + debt.amount, 0);
                 
                 // Update UI
                 owedToMeEl.textContent = owedToMeTotal.toFixed(2);
                 owedToOthersEl.textContent = owedToOthersTotal.toFixed(2);
                 
-                // Count only active debts
-                const activeOwedToMe = debts.owedToMe.filter(d => d.amount > 0).length;
-                const activeOwedToOthers = debts.owedToOthers.filter(d => d.amount > 0).length;
-                
-                owedToMeCountEl.textContent = `By ${activeOwedToMe} ${activeOwedToMe === 1 ? 'person' : 'people'}`;
-                owedToOthersCountEl.textContent = `To ${activeOwedToOthers} ${activeOwedToOthers === 1 ? 'person' : 'people'}`;
+                owedToMeCountEl.textContent = `By ${debts.owedToMe.length} ${debts.owedToMe.length === 1 ? 'person' : 'people'}`;
+                owedToOthersCountEl.textContent = `To ${debts.owedToOthers.length} ${debts.owedToOthers.length === 1 ? 'person' : 'people'}`;
             }
             
             // Render debt list
             function renderDebtList() {
-                // Get all active debts (owedToMe and owedToOthers with amount > 0)
-                const activeDebts = [
-                    ...debts.owedToMe.filter(d => d.amount > 0),
-                    ...debts.owedToOthers.filter(d => d.amount > 0)
-                ];
+                const allDebts = [...debts.owedToMe, ...debts.owedToOthers];
                 
-                if (activeDebts.length === 0) {
+                if (allDebts.length === 0) {
                     debtListEl.innerHTML = `
                         <div class="empty-state" style="padding: 20px;">
                             <i class="fas fa-exchange-alt"></i>
@@ -1899,30 +1893,15 @@
                 
                 debtListEl.innerHTML = '';
                 
-                activeDebts.forEach(debt => {
+                allDebts.forEach(debt => {
                     const debtItem = document.createElement('div');
                     debtItem.className = 'debt-item';
-                    
-                    // Calculate progress
-                    const paidAmount = debt.originalAmount - debt.amount;
-                    const progress = (paidAmount / debt.originalAmount) * 100;
                     
                     debtItem.innerHTML = `
                         <div class="debt-info">
                             <h4>${debt.type === 'owedToMe' ? 'Owed to You' : 'You Owe'}: ${debt.person}</h4>
-                            <p>Original: £${debt.originalAmount.toFixed(2)} | Remaining: £${debt.amount.toFixed(2)}</p>
-                            <div class="debt-progress">
-                                <div class="debt-progress-fill" style="width: ${progress}%"></div>
-                            </div>
+                            <p>Amount: £${debt.amount.toFixed(2)}</p>
                             <p>Date: ${formatDate(debt.date)}</p>
-                        </div>
-                        <div class="debt-actions">
-                            <button class="action-btn pay-btn">
-                                <i class="fas fa-money-bill-wave"></i>
-                            </button>
-                            <button class="action-btn history-btn">
-                                <i class="fas fa-history"></i>
-                            </button>
                         </div>
                     `;
                     
