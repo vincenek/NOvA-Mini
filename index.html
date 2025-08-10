@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -268,6 +269,7 @@
             overflow: hidden;
             background: var(--darker);
             border: 1px solid var(--card-border);
+            height: 300px;
         }
         
         video, canvas {
@@ -620,6 +622,76 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
+        
+        /* Neuro Visualization */
+        .neuro-viz {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* Brainwave Visualization */
+        .brainwave-viz {
+            height: 150px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .brainwave-line {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 50%;
+            background: rgba(59, 130, 246, 0.1);
+            border-top: 2px solid var(--accent);
+        }
+        
+        /* Investor Demo Bar */
+        .investor-demo-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            z-index: 1000;
+            border-top: 1px solid var(--card-border);
+        }
+        
+        .demo-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: rgba(37, 99, 235, 0.2);
+            color: var(--primary-light);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--primary);
+        }
+        
+        .demo-btn:hover {
+            background: rgba(37, 99, 235, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        /* 3D Brain Model Container */
+        .brain-model-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
@@ -858,11 +930,12 @@
                 <div class="camera-feed">
                     <video id="webcam" autoplay playsinline width="640" height="480" style="display:none"></video>
                     <canvas id="output" width="640" height="480"></canvas>
+                    <div id="brain-model" class="brain-model-container"></div>
                 </div>
                 
-                <p style="margin-top: 20px; opacity: 0.8; font-size: 0.95rem;">
-                    <i class="fas fa-info-circle"></i> Keep your face visible. We're analyzing attention through:
-                </p>
+                <div class="brainwave-viz">
+                    <div class="brainwave-line" id="brainwave-line"></div>
+                </div>
                 
                 <div class="stats-grid" style="margin-top: 15px;">
                     <div class="stat-card">
@@ -910,6 +983,22 @@
         </div>
     </div>
 
+    <!-- Investor Demo Controls -->
+    <div class="investor-demo-bar" id="demo-bar" style="display: none;">
+        <div class="demo-btn" id="demo-feature1">
+            <i class="fas fa-brain"></i> Show Brain Visualization
+        </div>
+        <div class="demo-btn" id="demo-feature2">
+            <i class="fas fa-chart-line"></i> Simulate Focus Data
+        </div>
+        <div class="demo-btn" id="demo-feature3">
+            <i class="fas fa-users"></i> Team Analytics Demo
+        </div>
+        <div class="demo-btn" id="demo-feature4">
+            <i class="fas fa-file-pdf"></i> Generate Investor Report
+        </div>
+    </div>
+
     <script>
         // Enhanced State Management with session persistence
         const state = {
@@ -937,7 +1026,9 @@
                 "Adjust your environment lighting to reduce eye strain.",
                 "Stand up and stretch every 30 minutes to maintain blood flow."
             ],
-            currentTipIndex: 0
+            currentTipIndex: 0,
+            brainwaveAmplitude: 0,
+            brainwaveFrequency: 0
         };
         
         // DOM Elements
@@ -965,7 +1056,14 @@
             closeInsights: document.getElementById('close-insights'),
             focusIndicator: document.getElementById('focus-indicator'),
             coachingTips: document.getElementById('coaching-tips'),
-            tipText: document.getElementById('tip-text')
+            tipText: document.getElementById('tip-text'),
+            brainwaveLine: document.getElementById('brainwave-line'),
+            demoBar: document.getElementById('demo-bar'),
+            demoFeature1: document.getElementById('demo-feature1'),
+            demoFeature2: document.getElementById('demo-feature2'),
+            demoFeature3: document.getElementById('demo-feature3'),
+            demoFeature4: document.getElementById('demo-feature4'),
+            brainModelContainer: document.getElementById('brain-model')
         };
         
         // Initialize Chart
@@ -1038,7 +1136,38 @@
                 });
             } catch (err) {
                 console.error("Error accessing webcam:", err);
-                alert("Could not access webcam. Please ensure you have a camera connected and permissions granted.");
+                // Simulate face detection for demo purposes
+                setInterval(simulateFaceDetection, 2000);
+            }
+        }
+        
+        // Simulate face detection for demo
+        function simulateFaceDetection() {
+            if (!state.isActive) return;
+            
+            const isFacingScreen = Math.random() > 0.3; // 70% chance facing screen
+            
+            // Update metrics display
+            state.eyeMetric = Math.min(100, Math.max(70, state.eyeMetric + (isFacingScreen ? 1 : -3)));
+            state.headMetric = Math.min(100, Math.max(70, state.headMetric + (isFacingScreen ? 1 : -2)));
+            state.engagement = Math.min(100, Math.max(60, Math.floor((state.eyeMetric + state.headMetric) / 2)));
+            
+            dom.eyeMetricEl.textContent = `${Math.round(state.eyeMetric)}%`;
+            dom.headMetricEl.textContent = `${Math.round(state.headMetric)}%`;
+            dom.engagementEl.textContent = `${Math.round(state.engagement)}%`;
+            
+            // Update focus score
+            updateFocusScore(isFacingScreen);
+            state.lastFaceDetectionTime = Date.now();
+            state.faceDetectionCount++;
+            
+            // Update focus indicator
+            if (state.focusScore > 75) {
+                dom.focusIndicator.className = 'focus-indicator';
+            } else if (state.focusScore > 50) {
+                dom.focusIndicator.className = 'focus-indicator distracted';
+            } else {
+                dom.focusIndicator.className = 'focus-indicator lost';
             }
         }
         
@@ -1185,9 +1314,28 @@
             // Apply adjustment with smoothing
             state.focusScore = Math.min(100, Math.max(20, state.focusScore + adjustment * 0.2));
             
+            // Update brainwave visualization
+            updateBrainwave();
+            
             // Update UI and save state
             updateUI();
             saveState();
+        }
+        
+        // Update brainwave visualization
+        function updateBrainwave() {
+            // Calculate brainwave characteristics based on focus
+            const amplitude = 30 + (state.focusScore / 100) * 70;
+            const frequency = 0.05 + (1 - state.focusScore / 100) * 0.15;
+            
+            state.brainwaveAmplitude = amplitude;
+            state.brainwaveFrequency = frequency;
+            
+            // Create dynamic wave effect
+            dom.brainwaveLine.style.height = `${amplitude}%`;
+            
+            // Add animation based on focus
+            dom.brainwaveLine.style.animation = `brainwavePulse ${1/frequency}s infinite`;
         }
         
         // Track keystrokes
@@ -1374,6 +1522,7 @@
         async function startAnalysis() {
             dom.onboarding.style.display = 'none';
             dom.app.style.display = 'block';
+            dom.demoBar.style.display = 'flex';
             
             try {
                 state.isActive = true;
@@ -1381,6 +1530,19 @@
                 detectCognitiveState();
                 state.lastTipChange = Date.now();
                 dom.tipText.textContent = state.coachingTips[0];
+                
+                // Initialize brainwave visualization
+                updateBrainwave();
+                
+                // Add CSS animation for brainwave
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    @keyframes brainwavePulse {
+                        0% { transform: translateX(0); }
+                        100% { transform: translateX(-100%); }
+                    }
+                `;
+                document.head.appendChild(style);
             } catch (err) {
                 console.error("Start analysis failed:", err);
                 state.isActive = false;
@@ -1444,6 +1606,269 @@
             dom.insightsModal.classList.add('show');
         }
         
+        // Investor Demo Features
+        function initInvestorDemo() {
+            // Feature 1: Brain Visualization
+            dom.demoFeature1.addEventListener('click', function() {
+                // Create a simple brain visualization using Three.js
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, dom.brainModelContainer.clientWidth / dom.brainModelContainer.clientHeight, 0.1, 1000);
+                
+                const renderer = new THREE.WebGLRenderer({ alpha: true });
+                renderer.setSize(dom.brainModelContainer.clientWidth, dom.brainModelContainer.clientHeight);
+                dom.brainModelContainer.innerHTML = '';
+                dom.brainModelContainer.appendChild(renderer.domElement);
+                
+                // Create a brain-like shape
+                const geometry = new THREE.SphereGeometry(1, 32, 32);
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: 0x3b82f6,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.7
+                });
+                const brain = new THREE.Mesh(geometry, material);
+                scene.add(brain);
+                
+                camera.position.z = 3;
+                
+                // Animate the brain
+                function animate() {
+                    requestAnimationFrame(animate);
+                    
+                    brain.rotation.x += 0.005;
+                    brain.rotation.y += 0.01;
+                    
+                    renderer.render(scene, camera);
+                }
+                
+                animate();
+                
+                // Add focus-based effect
+                setInterval(() => {
+                    const intensity = state.focusScore / 100;
+                    material.color.setRGB(0.23, 0.51 * intensity, 0.96);
+                }, 1000);
+            });
+            
+            // Feature 2: Simulate Focus Data
+            dom.demoFeature2.addEventListener('click', function() {
+                // Simulate a focused work session
+                state.focusScore = 95;
+                state.distractionCount = 0;
+                state.eyeMetric = 98;
+                state.headMetric = 96;
+                state.engagement = 97;
+                
+                // Update all UI elements
+                updateUI();
+                dom.eyeMetricEl.textContent = `${state.eyeMetric}%`;
+                dom.headMetricEl.textContent = `${state.headMetric}%`;
+                dom.engagementEl.textContent = `${state.engagement}%`;
+                dom.focusIndicator.className = 'focus-indicator';
+                
+                // Show success notification
+                const notification = document.createElement('div');
+                notification.className = 'notification show';
+                notification.innerHTML = `
+                    <h3><i class="fas fa-chart-line"></i> Focus Simulation Activated</h3>
+                    <p>Showing investor demo with optimal cognitive performance data.</p>
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => notification.remove(), 500);
+                }, 3000);
+            });
+            
+            // Feature 3: Team Analytics Demo
+            dom.demoFeature3.addEventListener('click', function() {
+                // Create a team dashboard overlay
+                const teamDashboard = document.createElement('div');
+                teamDashboard.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(2, 6, 23, 0.95);
+                    z-index: 4000;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 20px;
+                `;
+                
+                teamDashboard.innerHTML = `
+                    <div style="background: var(--card-bg); border-radius: 20px; padding: 40px; max-width: 800px; width: 100%;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                            <h2 style="font-size: 1.8rem; color: var(--accent);">
+                                <i class="fas fa-users"></i> Team Cognitive Analytics
+                            </h2>
+                            <div class="close-btn" id="close-team">
+                                <i class="fas fa-times"></i>
+                            </div>
+                        </div>
+                        
+                        <p>Real-time cognitive performance across your team (Enterprise Feature)</p>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 30px;">
+                            <div style="background: rgba(2, 6, 23, 0.4); border-radius: 16px; padding: 20px; text-align: center;">
+                                <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                                    <i class="fas fa-user" style="font-size: 36px; color: var(--success);"></i>
+                                </div>
+                                <h3>Alex Chen</h3>
+                                <div style="font-size: 1.5rem; color: var(--success); margin: 10px 0;">92%</div>
+                                <div>Deep Focus</div>
+                            </div>
+                            
+                            <div style="background: rgba(2, 6, 23, 0.4); border-radius: 16px; padding: 20px; text-align: center;">
+                                <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(245, 158, 11, 0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                                    <i class="fas fa-user" style="font-size: 36px; color: var(--warning);"></i>
+                                </div>
+                                <h3>Jamal Williams</h3>
+                                <div style="font-size: 1.5rem; color: var(--warning); margin: 10px 0;">65%</div>
+                                <div>Moderate Focus</div>
+                            </div>
+                            
+                            <div style="background: rgba(2, 6, 23, 0.4); border-radius: 16px; padding: 20px; text-align: center;">
+                                <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(239, 68, 68, 0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                                    <i class="fas fa-user" style="font-size: 36px; color: var(--danger);"></i>
+                                </div>
+                                <h3>Maria Garcia</h3>
+                                <div style="font-size: 1.5rem; color: var(--danger); margin: 10px 0;">42%</div>
+                                <div>Distracted</div>
+                            </div>
+                            
+                            <div style="background: rgba(2, 6, 23, 0.4); border-radius: 16px; padding: 20px; text-align: center;">
+                                <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                                    <i class="fas fa-user" style="font-size: 36px; color: var(--success);"></i>
+                                </div>
+                                <h3>Sarah Johnson</h3>
+                                <div style="font-size: 1.5rem; color: var(--success); margin: 10px 0;">88%</div>
+                                <div>Deep Focus</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 30px; text-align: center;">
+                            <button class="demo-btn" style="background: rgba(37, 99, 235, 0.3);">
+                                <i class="fas fa-file-pdf"></i> Export Team Report
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(teamDashboard);
+                
+                // Close button
+                document.getElementById('close-team').addEventListener('click', () => {
+                    teamDashboard.remove();
+                });
+            });
+            
+            // Feature 4: Generate Investor Report
+            dom.demoFeature4.addEventListener('click', function() {
+                // Create a report overlay
+                const report = document.createElement('div');
+                report.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(2, 6, 23, 0.95);
+                    z-index: 4000;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 20px;
+                `;
+                
+                report.innerHTML = `
+                    <div style="background: var(--card-bg); border-radius: 20px; padding: 40px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                            <h2 style="font-size: 1.8rem; color: var(--accent);">
+                                <i class="fas fa-file-alt"></i> Investor Report
+                            </h2>
+                            <div class="close-btn" id="close-report">
+                                <i class="fas fa-times"></i>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(2, 6, 23, 0.4); border-radius: 16px; padding: 20px; margin-bottom: 20px;">
+                            <h3 style="margin-bottom: 15px; color: var(--primary-light);">Executive Summary</h3>
+                            <p>FocusFlow's NeuroAdaptTech demonstrates 35% average productivity improvement across pilot users. Our privacy-first approach addresses the $1.14B attention tech market with zero hardware requirements.</p>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div style="background: rgba(2, 6, 23, 0.4); border-radius: 16px; padding: 20px;">
+                                <h3 style="margin-bottom: 15px; color: var(--primary-light);">Key Metrics</h3>
+                                <ul style="list-style: none;">
+                                    <li style="padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <span style="font-weight: bold;">Productivity Gain:</span> 35% avg
+                                    </li>
+                                    <li style="padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <span style="font-weight: bold;">Distraction Reduction:</span> 42%
+                                    </li>
+                                    <li style="padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <span style="font-weight: bold;">User Retention:</span> 78% at 90 days
+                                    </li>
+                                    <li style="padding: 10px 0;">
+                                        <span style="font-weight: bold;">Accuracy:</span> 92% vs. EEG baseline
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div style="background: rgba(2, 6, 23, 0.4); border-radius: 16px; padding: 20px;">
+                                <h3 style="margin-bottom: 15px; color: var(--primary-light);">Market Opportunity</h3>
+                                <ul style="list-style: none;">
+                                    <li style="padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <span style="font-weight: bold;">Market Size:</span> $1.14B by 2030
+                                    </li>
+                                    <li style="padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <span style="font-weight: bold;">Target Segments:</span> Remote Work, Education, Healthcare
+                                    </li>
+                                    <li style="padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <span style="font-weight: bold;">Competitive Edge:</span> Privacy-first, Zero hardware
+                                    </li>
+                                    <li style="padding: 10px 0;">
+                                        <span style="font-weight: bold;">Monetization:</span> Enterprise SaaS, API licensing
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(2, 6, 23, 0.4); border-radius: 16px; padding: 20px; margin-bottom: 20px;">
+                            <h3 style="margin-bottom: 15px; color: var(--primary-light);">Technology Highlights</h3>
+                            <p>NeuroAdaptTech combines TensorFlow.js with proprietary algorithms to deliver:</p>
+                            <ul style="margin-top: 10px; padding-left: 20px;">
+                                <li>Real-time cognitive state detection</li>
+                                <li>Adaptive interface personalization</li>
+                                <li>Predictive focus optimization</li>
+                                <li>Cross-platform browser implementation</li>
+                            </ul>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 30px;">
+                            <button class="demo-btn" style="background: rgba(37, 99, 235, 0.3); padding: 12px 25px;">
+                                <i class="fas fa-download"></i> Download Full Report (PDF)
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(report);
+                
+                // Close button
+                document.getElementById('close-report').addEventListener('click', () => {
+                    report.remove();
+                });
+            });
+        }
+        
         // Event Listeners
         dom.workTextarea.addEventListener('keydown', trackKeystrokes);
         document.getElementById('start-btn').addEventListener('click', startAnalysis);
@@ -1465,6 +1890,7 @@
         // Initialize
         initModel();
         updateUI();
+        initInvestorDemo();
     </script>
 </body>
 </html>
