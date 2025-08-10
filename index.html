@@ -985,77 +985,65 @@
             border-left: 4px solid #f59e0b;
         }
 
-        /* Enhanced Debt Styling */
-        .debt-status {
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 10px;
-            display: inline-block;
-            margin-top: 3px;
-        }
-        
-        .status-unpaid {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-        
-        .status-partial {
-            background: #fef9c3;
-            color: #a16207;
-        }
-        
-        .status-paid {
-            background: #dcfce7;
-            color: #15803d;
-        }
-        
-        .debt-actions {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .debt-age {
-            font-size: 0.7rem;
-            color: #64748b;
-            margin-top: 3px;
-        }
-        
-        .debt-progress {
-            height: 5px;
-            background: #e2e8f0;
-            border-radius: 3px;
-            overflow: hidden;
-            margin: 8px 0;
-        }
-        
-        .debt-progress-fill {
-            height: 100%;
-            background: var(--success);
-            transition: width 0.3s ease;
-        }
-        
-        .debt-category {
-            font-size: 0.75rem;
-            padding: 2px 6px;
-            background: #e0f2fe;
-            color: #0369a1;
-            border-radius: 10px;
+        /* Tooltip for sync button */
+        .tooltip {
+            position: relative;
             display: inline-block;
         }
-        
-        .debt-actions .action-btn {
-            font-size: 0.7rem;
-            padding: 4px 8px;
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 180px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -90px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
         }
-        
-        .payment-history-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin: 10px 0 5px;
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Pension Projections */
+        .pension-projection {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .projection-row {
             display: flex;
-            align-items: center;
-            gap: 5px;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+
+        .projection-header {
+            font-weight: 600;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
         }
 
         @media (min-width: 576px) {
@@ -1132,9 +1120,12 @@
                 <h1>FinTrack <span style="color: var(--uk-blue);">UK</span></h1>
             </div>
             <div class="nav-buttons">
-                <button class="btn btn-outline" id="syncBtn">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
+                <div class="tooltip">
+                    <button class="btn btn-outline" id="syncBtn">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <span class="tooltiptext">Coming in next update: Bank sync feature</span>
+                </div>
                 <button class="btn btn-primary" id="exportBtn">
                     <i class="fas fa-download"></i>
                 </button>
@@ -1228,6 +1219,19 @@
                     <div class="form-group">
                         <label for="annualIncome">Annual Income (£)</label>
                         <input type="number" id="annualIncome" class="form-control" placeholder="Enter your annual income" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="pensionContribution">Pension Contribution (%)</label>
+                        <input type="number" id="pensionContribution" class="form-control" placeholder="Enter %" min="0" max="100" value="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="studentLoan">Student Loan Plan</label>
+                        <select id="studentLoan" class="form-control">
+                            <option value="none">None</option>
+                            <option value="plan1">Plan 1</option>
+                            <option value="plan2">Plan 2</option>
+                            <option value="postgrad">Postgraduate</option>
+                        </select>
                     </div>
                     <button class="btn btn-outline" id="calculateTaxBtn">Calculate Tax</button>
                     
@@ -1472,6 +1476,26 @@
                             <div class="stat-label">Total Value</div>
                         </div>
                     </div>
+                    
+                    <div class="pension-projection">
+                        <div class="projection-row projection-header">
+                            <span>Projection</span>
+                            <span>Value</span>
+                        </div>
+                        <div class="projection-row">
+                            <span>Age 55:</span>
+                            <span>£112,500</span>
+                        </div>
+                        <div class="projection-row">
+                            <span>Age 60:</span>
+                            <span>£168,200</span>
+                        </div>
+                        <div class="projection-row">
+                            <span>Age 65:</span>
+                            <span>£234,800</span>
+                        </div>
+                    </div>
+                    
                     <button class="btn btn-outline" style="width:100%; margin-top:10px;" id="pensionProjectionBtn">
                         <i class="fas fa-chart-line"></i> View Projections
                     </button>
@@ -1557,16 +1581,6 @@
                     <label for="debtDate">Date</label>
                     <input type="date" id="debtDate" class="form-control">
                 </div>
-                <div class="form-group">
-                    <label for="debtCategory">Category</label>
-                    <select id="debtCategory" class="form-control">
-                        <option value="personal">Personal</option>
-                        <option value="business">Business</option>
-                        <option value="family">Family</option>
-                        <option value="loan">Loan</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
             </div>
             <div class="modal-footer">
                 <button class="modal-btn modal-btn-secondary" id="cancelDebt">Cancel</button>
@@ -1584,7 +1598,7 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="paymentAmount">Payment Amount (£)</label>
+                    <label for="paymentAmount">Amount Paid (£)</label>
                     <input type="number" id="paymentAmount" class="form-control" placeholder="0.00" step="0.01" min="0">
                 </div>
                 <div class="form-group">
@@ -1592,22 +1606,82 @@
                     <input type="date" id="paymentDate" class="form-control">
                 </div>
                 <div class="form-group">
-                    <label for="paymentMethod">Payment Method</label>
-                    <select id="paymentMethod" class="form-control">
-                        <option value="cash">Cash</option>
-                        <option value="bank">Bank Transfer</option>
-                        <option value="card">Card</option>
-                        <option value="online">Online Payment</option>
-                    </select>
+                    <label for="paymentNotes">Notes</label>
+                    <input type="text" id="paymentNotes" class="form-control" placeholder="Enter payment details">
                 </div>
-                <div class="form-group">
-                    <label for="paymentNote">Note</label>
-                    <input type="text" id="paymentNote" class="form-control" placeholder="Enter payment details">
-                </div>
+                <input type="hidden" id="currentDebtId">
             </div>
             <div class="modal-footer">
                 <button class="modal-btn modal-btn-secondary" id="cancelPayment">Cancel</button>
                 <button class="modal-btn modal-btn-primary" id="savePayment">Record Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment History Modal -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Payment History</h3>
+                <button class="close-modal" id="closeHistoryModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="paymentHistoryContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="closeHistory">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pension Projection Modal -->
+    <div class="modal-overlay" id="pensionModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Pension Projections</h3>
+                <button class="close-modal" id="closePensionModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="currentAge">Current Age</label>
+                    <input type="number" id="currentAge" class="form-control" min="18" max="65" value="35">
+                </div>
+                <div class="form-group">
+                    <label for="retirementAge">Retirement Age</label>
+                    <input type="number" id="retirementAge" class="form-control" min="55" max="75" value="65">
+                </div>
+                <div class="form-group">
+                    <label for="annualContribution">Annual Contribution Increase (%)</label>
+                    <input type="number" id="annualContribution" class="form-control" min="0" max="10" value="2.5" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label for="annualReturn">Expected Annual Return (%)</label>
+                    <input type="number" id="annualReturn" class="form-control" min="1" max="15" value="5.5" step="0.1">
+                </div>
+                
+                <div class="projection-results">
+                    <h4 style="margin: 15px 0 10px;">Projection Results</h4>
+                    <div class="projection-row projection-header">
+                        <span>Age</span>
+                        <span>Value</span>
+                    </div>
+                    <div class="projection-row">
+                        <span>Age 55:</span>
+                        <span id="projection55">£0.00</span>
+                    </div>
+                    <div class="projection-row">
+                        <span>Age 60:</span>
+                        <span id="projection60">£0.00</span>
+                    </div>
+                    <div class="projection-row">
+                        <span>Age 65:</span>
+                        <span id="projection65">£0.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancelPension">Close</button>
+                <button class="modal-btn modal-btn-primary" id="updateProjection">Update Projection</button>
             </div>
         </div>
     </div>
@@ -1669,18 +1743,27 @@
             const addGoalBtn = document.getElementById('addGoalBtn');
             const brexitReportBtn = document.getElementById('brexitReportBtn');
             const pensionProjectionBtn = document.getElementById('pensionProjectionBtn');
+            const pensionModal = document.getElementById('pensionModal');
+            const closePensionModal = document.getElementById('closePensionModal');
+            const cancelPension = document.getElementById('cancelPension');
+            const updateProjectionBtn = document.getElementById('updateProjection');
+            const projection55 = document.getElementById('projection55');
+            const projection60 = document.getElementById('projection60');
+            const projection65 = document.getElementById('projection65');
             const paymentModal = document.getElementById('paymentModal');
             const closePaymentModal = document.getElementById('closePaymentModal');
             const cancelPayment = document.getElementById('cancelPayment');
             const savePaymentBtn = document.getElementById('savePayment');
-            const paymentAmountInput = document.getElementById('paymentAmount');
-            const paymentDateInput = document.getElementById('paymentDate');
+            const historyModal = document.getElementById('historyModal');
+            const closeHistoryModal = document.getElementById('closeHistoryModal');
+            const closeHistory = document.getElementById('closeHistory');
+            const paymentHistoryContent = document.getElementById('paymentHistoryContent');
             
             // Set today's date as default
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('date').value = today;
             document.getElementById('debtDate').value = today;
-            paymentDateInput.value = today;
+            document.getElementById('paymentDate').value = today;
             
             // Initialize charts
             let spendingChart, incomeChart;
@@ -1693,6 +1776,7 @@
             updateDebtDisplay();
             renderDebtList();
             updateCharts();
+            calculatePensionProjection();
             
             // Event Listeners
             transactionForm.addEventListener('submit', addTransaction);
@@ -1724,10 +1808,18 @@
             calculateTaxBtn.addEventListener('click', calculateTax);
             addGoalBtn.addEventListener('click', () => showNotification('Savings goal feature coming in the next update!'));
             brexitReportBtn.addEventListener('click', () => showNotification('Brexit impact report feature coming in the next update!'));
-            pensionProjectionBtn.addEventListener('click', () => showNotification('Pension projection feature coming in the next update!'));
+            pensionProjectionBtn.addEventListener('click', () => {
+                pensionModal.classList.add('active');
+                calculatePensionProjection();
+            });
+            closePensionModal.addEventListener('click', () => pensionModal.classList.remove('active'));
+            cancelPension.addEventListener('click', () => pensionModal.classList.remove('active'));
+            updateProjectionBtn.addEventListener('click', calculatePensionProjection);
             closePaymentModal.addEventListener('click', () => paymentModal.classList.remove('active'));
             cancelPayment.addEventListener('click', () => paymentModal.classList.remove('active'));
             savePaymentBtn.addEventListener('click', recordPayment);
+            closeHistoryModal.addEventListener('click', () => historyModal.classList.remove('active'));
+            closeHistory.addEventListener('click', () => historyModal.classList.remove('active'));
             
             // Initialize charts with empty data
             function initCharts() {
@@ -1883,7 +1975,6 @@
                 const person = document.getElementById('debtPerson').value;
                 const description = document.getElementById('debtDescription').value;
                 const date = document.getElementById('debtDate').value || today;
-                const category = document.getElementById('debtCategory').value;
                 
                 if (!amount || amount <= 0) {
                     showNotification('Please enter a valid amount', 'error');
@@ -1899,14 +1990,11 @@
                     id: Date.now(),
                     type,
                     amount,
+                    originalAmount: amount,
                     person,
                     description: description || 'Debt Record',
                     date,
-                    category,
-                    paid: 0,
-                    payments: [],
-                    status: 'unpaid',
-                    created: new Date().toISOString()
+                    payments: []
                 };
                 
                 if (type === 'owedToMe') {
@@ -1931,70 +2019,58 @@
             
             // Record payment for a debt
             function recordPayment() {
-                const amount = parseFloat(paymentAmountInput.value);
-                const date = paymentDateInput.value || today;
-                const method = document.getElementById('paymentMethod').value;
-                const note = document.getElementById('paymentNote').value || 'Payment';
+                const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
+                const paymentDate = document.getElementById('paymentDate').value || today;
+                const paymentNotes = document.getElementById('paymentNotes').value;
+                const debtId = parseInt(document.getElementById('currentDebtId').value);
                 
-                if (!amount || amount <= 0) {
+                if (!paymentAmount || paymentAmount <= 0) {
                     showNotification('Please enter a valid payment amount', 'error');
                     return;
                 }
                 
-                // Find the debt by ID
-                let debtFound = false;
+                // Find the debt
+                let debt = null;
+                let debtType = null;
                 
-                // Search in owedToMe
+                // Check owedToMe
                 for (let i = 0; i < debts.owedToMe.length; i++) {
-                    if (debts.owedToMe[i].id === currentDebtId) {
-                        const debt = debts.owedToMe[i];
-                        debt.paid += amount;
-                        
-                        // Add payment to history
-                        debt.payments.push({
-                            amount,
-                            date,
-                            method,
-                            note
-                        });
-                        
-                        // Update debt status
-                        if (debt.paid >= debt.amount) {
-                            debt.status = 'paid';
-                        } else if (debt.paid > 0) {
-                            debt.status = 'partial';
-                        }
-                        
-                        debtFound = true;
+                    if (debts.owedToMe[i].id === debtId) {
+                        debt = debts.owedToMe[i];
+                        debtType = 'owedToMe';
                         break;
                     }
                 }
                 
-                // Search in owedToOthers if not found
-                if (!debtFound) {
+                // If not found, check owedToOthers
+                if (!debt) {
                     for (let i = 0; i < debts.owedToOthers.length; i++) {
-                        if (debts.owedToOthers[i].id === currentDebtId) {
-                            const debt = debts.owedToOthers[i];
-                            debt.paid += amount;
-                            
-                            // Add payment to history
-                            debt.payments.push({
-                                amount,
-                                date,
-                                method,
-                                note
-                            });
-                            
-                            // Update debt status
-                            if (debt.paid >= debt.amount) {
-                                debt.status = 'paid';
-                            } else if (debt.paid > 0) {
-                                debt.status = 'partial';
-                            }
-                            
+                        if (debts.owedToOthers[i].id === debtId) {
+                            debt = debts.owedToOthers[i];
+                            debtType = 'owedToOthers';
                             break;
                         }
                     }
+                }
+                
+                if (!debt) {
+                    showNotification('Debt not found', 'error');
+                    return;
+                }
+                
+                // Add payment
+                debt.payments.push({
+                    amount: paymentAmount,
+                    date: paymentDate,
+                    notes: paymentNotes
+                });
+                
+                // Update debt amount
+                debt.amount -= paymentAmount;
+                
+                // If debt is fully paid, round to zero to avoid negative values
+                if (debt.amount < 0) {
+                    debt.amount = 0;
                 }
                 
                 saveDebts();
@@ -2003,117 +2079,44 @@
                 paymentModal.classList.remove('active');
                 
                 // Reset form
-                paymentAmountInput.value = '';
-                paymentDateInput.value = today;
-                document.getElementById('paymentMethod').value = 'bank';
-                document.getElementById('paymentNote').value = '';
+                document.getElementById('paymentAmount').value = '';
+                document.getElementById('paymentNotes').value = '';
+                document.getElementById('paymentDate').value = today;
                 
                 showNotification('Payment recorded successfully!');
             }
             
-            // Calculate UK tax
-            function calculateTax() {
-                const income = parseFloat(document.getElementById('annualIncome').value);
-                
-                if (!income || income <= 0) {
-                    showNotification('Please enter a valid income amount', 'error');
-                    return;
-                }
-                
-                // UK Tax Bands 2023/2024 (simplified)
-                const personalAllowance = 12570;
-                const basicRateThreshold = 50270;
-                const higherRateThreshold = 125140;
-                
-                let taxableIncome = income - personalAllowance;
-                if (taxableIncome < 0) taxableIncome = 0;
-                
-                let tax = 0;
-                let ni = 0;
-                
-                // Calculate Income Tax
-                if (taxableIncome > 0) {
-                    if (taxableIncome <= (basicRateThreshold - personalAllowance)) {
-                        tax = taxableIncome * 0.20;
-                    } else if (taxableIncome <= (higherRateThreshold - personalAllowance)) {
-                        tax = (basicRateThreshold - personalAllowance) * 0.20;
-                        tax += (taxableIncome - (basicRateThreshold - personalAllowance)) * 0.40;
-                    } else {
-                        tax = (basicRateThreshold - personalAllowance) * 0.20;
-                        tax += (higherRateThreshold - basicRateThreshold) * 0.40;
-                        tax += (taxableIncome - (higherRateThreshold - personalAllowance)) * 0.45;
-                    }
-                }
-                
-                // Calculate National Insurance
-                const niThreshold = 12576;
-                const niUpperThreshold = 50268;
-                
-                if (income > niThreshold) {
-                    const niLowerBand = Math.min(income, niUpperThreshold) - niThreshold;
-                    ni = niLowerBand * 0.12;
-                    
-                    if (income > niUpperThreshold) {
-                        ni += (income - niUpperThreshold) * 0.02;
-                    }
-                }
-                
-                const takeHome = income - tax - ni;
-                
-                taxResultEl.innerHTML = `
-                    <div class="tax-line">
-                        <span>Income Tax:</span>
-                        <span>£${tax.toFixed(2)}</span>
-                    </div>
-                    <div class="tax-line">
-                        <span>National Insurance:</span>
-                        <span>£${ni.toFixed(2)}</span>
-                    </div>
-                    <div class="tax-line">
-                        <span>Total Deductions:</span>
-                        <span>£${(tax + ni).toFixed(2)}</span>
-                    </div>
-                    <div class="tax-line">
-                        <span>Take Home Pay:</span>
-                        <span>£${takeHome.toFixed(2)}</span>
-                    </div>
-                `;
-            }
-            
             // Update debt display
             function updateDebtDisplay() {
-                // Calculate totals for owedToMe
+                // Calculate totals for owedToMe (only unpaid debts)
                 const owedToMeTotal = debts.owedToMe.reduce((sum, debt) => {
-                    if (debt.status !== 'paid') {
-                        return sum + (debt.amount - debt.paid);
-                    }
-                    return sum;
+                    return sum + debt.amount;
                 }, 0);
                 
-                // Calculate totals for owedToOthers
+                // Calculate totals for owedToOthers (only unpaid debts)
                 const owedToOthersTotal = debts.owedToOthers.reduce((sum, debt) => {
-                    if (debt.status !== 'paid') {
-                        return sum + (debt.amount - debt.paid);
-                    }
-                    return sum;
+                    return sum + debt.amount;
                 }, 0);
-                
-                // Count active debts
-                const owedToMeCount = debts.owedToMe.filter(d => d.status !== 'paid').length;
-                const owedToOthersCount = debts.owedToOthers.filter(d => d.status !== 'paid').length;
                 
                 // Update UI
                 owedToMeEl.textContent = owedToMeTotal.toFixed(2);
                 owedToOthersEl.textContent = owedToOthersTotal.toFixed(2);
                 
-                owedToMeCountEl.textContent = `By ${owedToMeCount} ${owedToMeCount === 1 ? 'person' : 'people'}`;
-                owedToOthersCountEl.textContent = `To ${owedToOthersCount} ${owedToOthersCount === 1 ? 'person' : 'people'}`;
+                // Count only active debts
+                const activeOwedToMe = debts.owedToMe.filter(d => d.amount > 0).length;
+                const activeOwedToOthers = debts.owedToOthers.filter(d => d.amount > 0).length;
+                
+                owedToMeCountEl.textContent = `By ${activeOwedToMe} ${activeOwedToMe === 1 ? 'person' : 'people'}`;
+                owedToOthersCountEl.textContent = `To ${activeOwedToOthers} ${activeOwedToOthers === 1 ? 'person' : 'people'}`;
             }
             
             // Render debt list
             function renderDebtList() {
-                const allDebts = [...debts.owedToMe, ...debts.owedToOthers];
-                const activeDebts = allDebts.filter(d => d.status !== 'paid');
+                // Get all active debts (owedToMe and owedToOthers with amount > 0)
+                const activeDebts = [
+                    ...debts.owedToMe.filter(d => d.amount > 0),
+                    ...debts.owedToOthers.filter(d => d.amount > 0)
+                ];
                 
                 if (activeDebts.length === 0) {
                     debtListEl.innerHTML = `
@@ -2128,44 +2131,22 @@
                 
                 debtListEl.innerHTML = '';
                 
-                // Sort by date (newest first)
-                activeDebts.sort((a, b) => new Date(b.created) - new Date(a.created));
-                
                 activeDebts.forEach(debt => {
                     const debtItem = document.createElement('div');
                     debtItem.className = 'debt-item';
                     
-                    const remaining = debt.amount - debt.paid;
-                    const percentage = (debt.paid / debt.amount) * 100;
-                    
-                    // Status badge
-                    let statusBadge = '';
-                    if (debt.status === 'paid') {
-                        statusBadge = `<span class="debt-status status-paid">Paid</span>`;
-                    } else if (debt.status === 'partial') {
-                        statusBadge = `<span class="debt-status status-partial">Partially Paid</span>`;
-                    } else {
-                        statusBadge = `<span class="debt-status status-unpaid">Unpaid</span>`;
-                    }
-                    
-                    // Debt age
-                    const createdDate = new Date(debt.created);
-                    const today = new Date();
-                    const diffTime = Math.abs(today - createdDate);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                    const ageText = diffDays === 0 ? 'Today' : `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+                    // Calculate progress
+                    const paidAmount = debt.originalAmount - debt.amount;
+                    const progress = (paidAmount / debt.originalAmount) * 100;
                     
                     debtItem.innerHTML = `
                         <div class="debt-info">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <h4>${debt.type === 'owedToMe' ? 'Owed to You' : 'You Owe'}: ${debt.person}</h4>
-                                ${statusBadge}
-                            </div>
-                            <p>Amount: £${debt.amount.toFixed(2)} | Paid: £${debt.paid.toFixed(2)} | Due: £${remaining.toFixed(2)}</p>
-                            <p><span class="debt-category">${debt.category}</span> <span class="debt-age">${ageText}</span></p>
+                            <h4>${debt.type === 'owedToMe' ? 'Owed to You' : 'You Owe'}: ${debt.person}</h4>
+                            <p>Original: £${debt.originalAmount.toFixed(2)} | Remaining: £${debt.amount.toFixed(2)}</p>
                             <div class="debt-progress">
-                                <div class="debt-progress-fill" style="width: ${percentage}%"></div>
+                                <div class="debt-progress-fill" style="width: ${progress}%"></div>
                             </div>
+                            <p>Date: ${formatDate(debt.date)}</p>
                         </div>
                         <div class="debt-actions">
                             <button class="action-btn pay-btn" data-id="${debt.id}">
@@ -2180,85 +2161,79 @@
                     debtListEl.appendChild(debtItem);
                 });
                 
-                // Add event listeners to new buttons
+                // Add event listeners to the new buttons
                 document.querySelectorAll('.pay-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        currentDebtId = parseInt(this.dataset.id);
-                        paymentModal.classList.add('active');
+                    btn.addEventListener('click', (e) => {
+                        const debtId = parseInt(e.currentTarget.dataset.id);
+                        openPaymentModal(debtId);
                     });
                 });
                 
                 document.querySelectorAll('.history-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const debtId = parseInt(this.dataset.id);
-                        viewPaymentHistory(debtId);
+                    btn.addEventListener('click', (e) => {
+                        const debtId = parseInt(e.currentTarget.dataset.id);
+                        showPaymentHistory(debtId);
                     });
                 });
             }
             
-            // View payment history for a debt
-            function viewPaymentHistory(debtId) {
+            // Open payment modal
+            function openPaymentModal(debtId) {
+                document.getElementById('currentDebtId').value = debtId;
+                paymentModal.classList.add('active');
+            }
+            
+            // Show payment history
+            function showPaymentHistory(debtId) {
                 // Find the debt
                 let debt = null;
-                for (const d of debts.owedToMe) {
-                    if (d.id === debtId) {
-                        debt = d;
+                
+                // Check owedToMe
+                for (let i = 0; i < debts.owedToMe.length; i++) {
+                    if (debts.owedToMe[i].id === debtId) {
+                        debt = debts.owedToMe[i];
                         break;
                     }
                 }
+                
+                // If not found, check owedToOthers
                 if (!debt) {
-                    for (const d of debts.owedToOthers) {
-                        if (d.id === debtId) {
-                            debt = d;
+                    for (let i = 0; i < debts.owedToOthers.length; i++) {
+                        if (debts.owedToOthers[i].id === debtId) {
+                            debt = debts.owedToOthers[i];
                             break;
                         }
                     }
                 }
                 
-                if (!debt) return;
-                
-                if (debt.payments.length === 0) {
-                    showNotification('No payment history for this debt', 'info');
+                if (!debt) {
+                    showNotification('Debt not found', 'error');
                     return;
                 }
                 
-                let historyHTML = `
-                    <div class="payment-history-title">
-                        <i class="fas fa-history"></i> Payment History for ${debt.person}
+                paymentHistoryContent.innerHTML = `
+                    <h4>${debt.type === 'owedToMe' ? 'Owed to You' : 'You Owe'}: ${debt.person}</h4>
+                    <p>Original Amount: £${debt.originalAmount.toFixed(2)}</p>
+                    <p>Remaining: £${debt.amount.toFixed(2)}</p>
+                    
+                    <div class="payment-history">
+                        <h5 style="margin-top: 15px;">Payment History</h5>
+                        ${debt.payments.length > 0 ? `
+                            ${debt.payments.map(payment => `
+                                <div class="payment-item">
+                                    <div>${formatDate(payment.date)}</div>
+                                    <div>£${payment.amount.toFixed(2)}</div>
+                                </div>
+                            `).join('')}
+                        ` : `
+                            <div class="empty-state" style="padding: 15px;">
+                                <p>No payments recorded yet</p>
+                            </div>
+                        `}
                     </div>
                 `;
                 
-                debt.payments.forEach(payment => {
-                    historyHTML += `
-                        <div class="payment-item">
-                            <div>${formatDate(payment.date)}</div>
-                            <div>£${payment.amount.toFixed(2)}</div>
-                        </div>
-                    `;
-                });
-                
-                // Create a modal-like notification
-                const historyNotification = document.createElement('div');
-                historyNotification.className = 'notification';
-                historyNotification.id = 'historyNotification';
-                historyNotification.innerHTML = `
-                    <div style="max-height: 200px; overflow-y: auto;">
-                        ${historyHTML}
-                    </div>
-                `;
-                document.body.appendChild(historyNotification);
-                
-                setTimeout(() => {
-                    historyNotification.classList.add('show');
-                }, 10);
-                
-                // Auto-close after 5 seconds
-                setTimeout(() => {
-                    historyNotification.classList.remove('show');
-                    setTimeout(() => {
-                        document.body.removeChild(historyNotification);
-                    }, 300);
-                }, 5000);
+                historyModal.classList.add('active');
             }
             
             // Render transactions based on filter
@@ -2609,6 +2584,148 @@
                 // Save PDF
                 doc.save(`fintrack-uk-report-${new Date().toISOString().slice(0, 10)}.pdf`);
                 showNotification('PDF exported successfully!');
+            }
+            
+            // Calculate UK tax
+            function calculateTax() {
+                const income = parseFloat(document.getElementById('annualIncome').value);
+                const pensionPercent = parseFloat(document.getElementById('pensionContribution').value) || 0;
+                const studentLoan = document.getElementById('studentLoan').value;
+                
+                if (!income || income <= 0) {
+                    showNotification('Please enter a valid income amount', 'error');
+                    return;
+                }
+                
+                // Calculate pension contribution
+                const pensionAmount = income * (pensionPercent / 100);
+                const taxableIncome = income - pensionAmount;
+                
+                // UK Tax Bands 2023/2024 (simplified)
+                const personalAllowance = 12570;
+                const basicRateThreshold = 50270;
+                const higherRateThreshold = 125140;
+                
+                let taxable = taxableIncome - personalAllowance;
+                if (taxable < 0) taxable = 0;
+                
+                let tax = 0;
+                let ni = 0;
+                
+                // Calculate Income Tax
+                if (taxable > 0) {
+                    if (taxable <= (basicRateThreshold - personalAllowance)) {
+                        tax = taxable * 0.20;
+                    } else if (taxable <= (higherRateThreshold - personalAllowance)) {
+                        tax = (basicRateThreshold - personalAllowance) * 0.20;
+                        tax += (taxable - (basicRateThreshold - personalAllowance)) * 0.40;
+                    } else {
+                        tax = (basicRateThreshold - personalAllowance) * 0.20;
+                        tax += (higherRateThreshold - basicRateThreshold) * 0.40;
+                        tax += (taxable - (higherRateThreshold - personalAllowance)) * 0.45;
+                    }
+                }
+                
+                // Calculate National Insurance
+                const niThreshold = 12576;
+                const niUpperThreshold = 50268;
+                
+                if (taxableIncome > niThreshold) {
+                    const niLowerBand = Math.min(taxableIncome, niUpperThreshold) - niThreshold;
+                    ni = niLowerBand * 0.12;
+                    
+                    if (taxableIncome > niUpperThreshold) {
+                        ni += (taxableIncome - niUpperThreshold) * 0.02;
+                    }
+                }
+                
+                // Calculate Student Loan
+                let studentLoanPayment = 0;
+                const studentLoanThreshold = studentLoan === 'plan1' ? 22015 : 
+                                          studentLoan === 'plan2' ? 27295 : 
+                                          studentLoan === 'postgrad' ? 21000 : 0;
+                
+                if (studentLoan !== 'none' && taxableIncome > studentLoanThreshold) {
+                    studentLoanPayment = (taxableIncome - studentLoanThreshold) * 0.09;
+                }
+                
+                const takeHome = taxableIncome - tax - ni - studentLoanPayment;
+                
+                taxResultEl.innerHTML = `
+                    <div class="tax-line">
+                        <span>Gross Income:</span>
+                        <span>£${income.toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>Pension Contribution:</span>
+                        <span>£${pensionAmount.toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>Taxable Income:</span>
+                        <span>£${taxableIncome.toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>Income Tax:</span>
+                        <span>£${tax.toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>National Insurance:</span>
+                        <span>£${ni.toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>Student Loan:</span>
+                        <span>£${studentLoanPayment.toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>Total Deductions:</span>
+                        <span>£${(tax + ni + studentLoanPayment).toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>Take Home Pay:</span>
+                        <span>£${takeHome.toFixed(2)}</span>
+                    </div>
+                `;
+            }
+            
+            // Calculate pension projections
+            function calculatePensionProjection() {
+                const currentAge = parseInt(document.getElementById('currentAge').value) || 35;
+                const retirementAge = parseInt(document.getElementById('retirementAge').value) || 65;
+                const contributionIncrease = parseFloat(document.getElementById('annualContribution').value) || 2.5;
+                const annualReturn = parseFloat(document.getElementById('annualReturn').value) || 5.5;
+                
+                if (currentAge >= retirementAge) {
+                    showNotification('Retirement age must be greater than current age', 'error');
+                    return;
+                }
+                
+                let currentPension = 14300;
+                let monthlyContribution = 245.60;
+                let projection55 = 0;
+                let projection60 = 0;
+                let projection65 = 0;
+                
+                // Calculate projections
+                for (let age = currentAge; age <= retirementAge; age++) {
+                    // Apply annual return
+                    currentPension *= (1 + annualReturn/100);
+                    
+                    // Add monthly contributions (12 times per year)
+                    currentPension += monthlyContribution * 12;
+                    
+                    // Increase contribution each year
+                    monthlyContribution *= (1 + contributionIncrease/100);
+                    
+                    // Store projections at key ages
+                    if (age === 55) projection55 = currentPension;
+                    if (age === 60) projection60 = currentPension;
+                    if (age === 65) projection65 = currentPension;
+                }
+                
+                // Update display
+                projection55.textContent = `£${projection55.toFixed(0)}`;
+                projection60.textContent = `£${projection60.toFixed(0)}`;
+                projection65.textContent = `£${projection65.toFixed(0)}`;
             }
             
             // Reset all data
