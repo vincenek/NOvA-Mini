@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinTrack UK | Intelligent Debt Tracker</title>
+    <title>FinTrack UK | Complete Finance Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
         :root {
             --primary: #1d4ed8;
@@ -39,7 +41,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 100%;
             margin: 0 auto;
         }
 
@@ -86,6 +88,7 @@
         .nav-buttons {
             display: flex;
             gap: 8px;
+            position: relative;
         }
 
         .btn {
@@ -219,11 +222,483 @@
             opacity: 0.8;
         }
 
+        .transaction-form {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 15px;
+        }
+
+        .form-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            background: #f8fafc;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--uk-blue);
+            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+            background: white;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .btn-submit {
+            background: linear-gradient(to right, var(--uk-blue), #34d399);
+            color: white;
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            margin-top: 5px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .transaction-list {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+
+        .filter-btn.active {
+            background: var(--uk-blue);
+            color: white;
+        }
+
+        .filter-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            transition: var(--transition);
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-item:hover {
+            background-color: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .transaction-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .category-income { background: var(--success); }
+        .category-food { background: #f59e0b; }
+        .category-shopping { background: #8b5cf6; }
+        .category-transport { background: #0ea5e9; }
+        .category-housing { background: #ec4899; }
+        .category-entertainment { background: #f97316; }
+        .category-other { background: #64748b; }
+        .category-tax { background: #dc2626; }
+        .category-pension { background: #8b5cf6; }
+        .category-utilities { background: #0ea5e9; }
+
+        .transaction-details h3 {
+            font-weight: 600;
+            margin-bottom: 3px;
+            font-size: 0.95rem;
+        }
+
+        .transaction-details p {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .transaction-amount {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .income-amount {
+            color: var(--success);
+        }
+
+        .expense-amount {
+            color: var(--danger);
+        }
+
+        .charts-container {
+            margin-top: 15px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .chart-card {
+            height: 250px;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .export-section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-top: 15px;
+        }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .export-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .export-btn:hover {
+            background: #f1f5f9;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .export-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--uk-blue), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .export-btn span {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.85rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px 15px;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            opacity: 0.3;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            padding: 12px 18px;
+            background: var(--uk-blue);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: var(--transition);
+            max-width: 90%;
+            font-size: 0.9rem;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(-20px);
+            transition: var(--transition);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            color: #64748b;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            color: var(--dark);
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .modal-btn-primary {
+            background: var(--uk-blue);
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background: #1a3eb2;
+        }
+
+        .modal-btn-secondary {
+            background: #f1f5f9;
+            color: var(--dark);
+        }
+
+        .modal-btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .reset-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .reset-btn {
+            background: #f1f5f9;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reset-btn:hover {
+            background: #fee2e2;
+            transform: translateY(-3px);
+        }
+
+        /* Feature Styling */
+        .feature-card {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .feature-section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 15px;
+        }
+        
+        .feature-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .feature-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--uk-blue), var(--primary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+        }
+        
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
         .debt-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            margin-top: 15px;
         }
         
         .debt-card {
@@ -251,6 +726,78 @@
             font-size: 0.8rem;
             color: #64748b;
         }
+        
+        .sms-import-btn {
+            background: linear-gradient(to right, #0ea5e9, #3b82f6);
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .local-insight {
+            background: #f0fdf4;
+            border-left: 4px solid var(--success);
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .insight-icon {
+            color: var(--success);
+            margin-right: 5px;
+        }
+        
+        .sync-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .sync-btn {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .sync-btn:hover {
+            background: #e2e8f0;
+        }
+        
+        .sync-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--uk-blue), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .sync-label {
+            font-weight: 600;
+        }
+        
+        .sync-description {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
 
         .debt-management {
             margin-top: 20px;
@@ -270,7 +817,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #fff;
         }
 
         .debt-item:last-child {
@@ -284,9 +830,6 @@
         .debt-info h4 {
             font-size: 1rem;
             margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .debt-info p {
@@ -339,16 +882,12 @@
         .debt-progress-fill {
             height: 100%;
             background: var(--success);
-            transition: width 0.5s ease;
         }
 
         .payment-history {
             margin-top: 15px;
             max-height: 200px;
             overflow-y: auto;
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 10px;
         }
 
         .payment-item {
@@ -363,26 +902,107 @@
             border-bottom: none;
         }
         
-        .payment-item .amount {
+        /* UK Innovations */
+        .uk-feature-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .uk-feature-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .uk-feature-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .uk-feature-title {
+            font-size: 1.1rem;
             font-weight: 600;
+            color: var(--dark);
         }
         
-        .payment-item .date {
-            color: #64748b;
-            font-size: 0.8rem;
+        .tax-calculator {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
         }
         
+        .tax-result {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .tax-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .tax-line:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .savings-goal {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        
+        .savings-progress {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        
+        .savings-fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 4px;
+        }
+        
+        .brexit-impact {
+            background: #fffbeb;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #f59e0b;
+        }
+
+        /* Enhanced Debt Styling */
         .debt-status {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 3px;
         }
         
-        .status-active {
-            background: #fef3c7;
-            color: #d97706;
+        .status-unpaid {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        
+        .status-partial {
+            background: #fef9c3;
+            color: #a16207;
         }
         
         .status-paid {
@@ -390,238 +1010,89 @@
             color: #15803d;
         }
         
-        .status-overdue {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-        
-        .debt-icon {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
+        .debt-actions {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.9rem;
+            gap: 5px;
         }
         
-        .debt-type-owed {
-            background: var(--success);
-        }
-        
-        .debt-type-owe {
-            background: var(--danger);
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 30px 15px;
+        .debt-age {
+            font-size: 0.7rem;
             color: #64748b;
+            margin-top: 3px;
         }
         
-        .empty-state i {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            opacity: 0.3;
-        }
-        
-        .notification {
-            position: fixed;
-            bottom: 15px;
-            right: 15px;
-            padding: 12px 18px;
-            background: var(--uk-blue);
-            color: white;
-            border-radius: 8px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: var(--transition);
-            max-width: 90%;
-            font-size: 0.9rem;
-        }
-        
-        .notification.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            opacity: 0;
-            visibility: hidden;
-            transition: var(--transition);
-        }
-        
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .modal {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-            transform: translateY(-20px);
-            transition: var(--transition);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .modal-overlay.active .modal {
-            transform: translateY(0);
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .modal-title {
-            font-size: 1.3rem;
-            color: var(--dark);
-            font-weight: 600;
-        }
-        
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 1.6rem;
-            cursor: pointer;
-            color: #64748b;
-            transition: var(--transition);
-        }
-        
-        .close-modal:hover {
-            color: var(--dark);
-        }
-        
-        .modal-body {
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-            line-height: 1.6;
-        }
-        
-        .modal-footer {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-        
-        .modal-btn {
-            padding: 9px 18px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: var(--transition);
-            font-size: 0.9rem;
-        }
-        
-        .modal-btn-primary {
-            background: var(--uk-blue);
-            color: white;
-        }
-        
-        .modal-btn-primary:hover {
-            background: #1a3eb2;
-        }
-        
-        .modal-btn-secondary {
-            background: #f1f5f9;
-            color: var(--dark);
-        }
-        
-        .modal-btn-secondary:hover {
+        .debt-progress {
+            height: 5px;
             background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0;
         }
         
-        .form-group {
-            margin-bottom: 15px;
+        .debt-progress-fill {
+            height: 100%;
+            background: var(--success);
+            transition: width 0.3s ease;
         }
         
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #475569;
-            font-size: 0.9rem;
+        .debt-category {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            background: #e0f2fe;
+            color: #0369a1;
+            border-radius: 10px;
+            display: inline-block;
         }
         
-        .form-control {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            font-size: 0.95rem;
-            transition: var(--transition);
-            background: #f8fafc;
-        }
-        
-        .form-control:focus {
-            outline: none;
-            border-color: var(--uk-blue);
-            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
-            background: white;
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        
-        .pay-amount-input {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .pay-amount-input span {
-            font-weight: 600;
+        .debt-actions .action-btn {
+            font-size: 0.7rem;
+            padding: 4px 8px;
         }
         
         .payment-history-title {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .payment-history-title h4 {
-            font-size: 0.95rem;
-            color: var(--dark);
-        }
-        
-        .payment-history-title button {
-            background: none;
-            border: none;
-            color: var(--uk-blue);
-            font-size: 0.8rem;
-            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 10px 0 5px;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
         }
-        
+
+        @media (min-width: 576px) {
+            body {
+                padding: 20px;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .chart-row {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            header {
+                padding: 15px 20px;
+            }
+            
+            .logo h1 {
+                font-size: 1.6rem;
+            }
+            
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .debt-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .uk-feature-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
         @media (min-width: 768px) {
             .main-content {
                 flex-direction: row;
@@ -637,8 +1108,16 @@
                 width: 350px;
             }
             
-            .dashboard {
-                grid-template-columns: 1fr 1fr;
+            .feature-card {
+                flex-direction: row;
+            }
+            
+            .feature-section {
+                flex: 1;
+            }
+            
+            .uk-feature-grid {
+                grid-template-columns: 1fr 1fr 1fr;
             }
         }
     </style>
@@ -654,93 +1133,400 @@
             </div>
             <div class="nav-buttons">
                 <button class="btn btn-outline" id="syncBtn">
-                    <i class="fas fa-sync-alt"></i> Sync
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="btn btn-primary" id="exportBtn">
+                    <i class="fas fa-download"></i>
                 </button>
             </div>
         </header>
         
-        <div class="main-content">
-            <div class="left-column">
-                <!-- Debt Tracker Section -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <div class="card-icon">
-                                <i class="fas fa-hand-holding-usd"></i>
-                            </div>
-                            Intelligent Debt Tracker
-                        </div>
-                        <button class="btn btn-outline" id="addDebtBtn">
-                            <i class="fas fa-plus"></i> Add Debt
-                        </button>
+        <!-- New Features Section -->
+        <div class="feature-card">
+            <div class="feature-section">
+                <div class="feature-header">
+                    <div class="feature-icon">
+                        <i class="fas fa-hand-holding-usd"></i>
                     </div>
-                    
-                    <div class="debt-grid">
-                        <div class="debt-card owed-to-me">
-                            <div class="debt-label">You're Owed</div>
-                            <div class="debt-value">£<span id="owedToMe">0.00</span></div>
-                            <div class="debt-label" id="owedToMeCount">By 0 people</div>
-                        </div>
-                        <div class="debt-card owed-to-others">
-                            <div class="debt-label">You Owe</div>
-                            <div class="debt-value">£<span id="owedToOthers">0.00</span></div>
-                            <div class="debt-label" id="owedToOthersCount">To 0 people</div>
-                        </div>
+                    <div class="feature-title">Debt Tracker</div>
+                </div>
+                <div class="debt-grid">
+                    <div class="debt-card owed-to-me">
+                        <div class="debt-label">You're Owed</div>
+                        <div class="debt-value">£<span id="owedToMe">0.00</span></div>
+                        <div class="debt-label" id="owedToMeCount">By 0 people</div>
                     </div>
-                    
-                    <div class="debt-management">
-                        <h4 style="margin-bottom: 10px;">Manage Debts</h4>
-                        <div class="debt-list" id="debtList">
-                            <div class="empty-state" style="padding: 20px;">
-                                <i class="fas fa-exchange-alt"></i>
-                                <h4>No active debts</h4>
-                                <p>Add a debt record to get started</p>
-                            </div>
+                    <div class="debt-card owed-to-others">
+                        <div class="debt-label">You Owe</div>
+                        <div class="debt-value">£<span id="owedToOthers">0.00</span></div>
+                        <div class="debt-label" id="owedToOthersCount">To 0 people</div>
+                    </div>
+                </div>
+                <button class="btn btn-outline" style="width:100%; margin-top:15px;" id="addDebtBtn">
+                    <i class="fas fa-plus"></i> Add Debt Record
+                </button>
+                
+                <div class="debt-management">
+                    <h4 style="margin-bottom: 10px;">Manage Debts</h4>
+                    <div class="debt-list" id="debtList">
+                        <div class="empty-state" style="padding: 20px;">
+                            <i class="fas fa-exchange-alt"></i>
+                            <h4>No active debts</h4>
+                            <p>Add a debt record to get started</p>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div class="right-column">
-                <!-- Payment History Section -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <div class="card-icon">
-                                <i class="fas fa-history"></i>
+            <div class="feature-section">
+                <div class="feature-header">
+                    <div class="feature-icon">
+                        <i class="fas fa-comment-alt"></i>
+                    </div>
+                    <div class="feature-title">SMS Import</div>
+                </div>
+                <p>Automatically import transactions from your UK bank SMS alerts</p>
+                <button class="sms-import-btn" id="smsImportBtn">
+                    <i class="fas fa-sms"></i> Import Bank Transactions
+                </button>
+                <div class="local-insight">
+                    <i class="fas fa-lightbulb insight-icon"></i>
+                    <strong>UK Insight:</strong> Save 15 mins daily by automating transaction entry
+                </div>
+            </div>
+        </div>
+        
+        <!-- UK Innovations Section -->
+        <div class="uk-feature-grid">
+            <!-- Open Banking Card -->
+            <div class="uk-feature-card">
+                <div class="uk-feature-header">
+                    <div class="feature-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <div class="uk-feature-title">Open Banking</div>
+                </div>
+                <p>Connect your UK bank accounts securely via Open Banking API</p>
+                <button class="btn btn-primary" style="width:100%; margin-top:15px;" id="openBankingBtn">
+                    <i class="fas fa-plug"></i> Connect Bank Account
+                </button>
+                <div class="local-insight">
+                    <i class="fas fa-lightbulb insight-icon"></i>
+                    <strong>UK Innovation:</strong> Real-time transaction syncing with 300+ UK banks
+                </div>
+            </div>
+            
+            <!-- Tax Calculator Card -->
+            <div class="uk-feature-card">
+                <div class="uk-feature-header">
+                    <div class="feature-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <div class="uk-feature-title">Tax Calculator</div>
+                </div>
+                <div class="tax-calculator">
+                    <div class="form-group">
+                        <label for="annualIncome">Annual Income (£)</label>
+                        <input type="number" id="annualIncome" class="form-control" placeholder="Enter your annual income" min="0">
+                    </div>
+                    <button class="btn btn-outline" id="calculateTaxBtn">Calculate Tax</button>
+                    
+                    <div class="tax-result" id="taxResult">
+                        <p>Enter your income to calculate taxes</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Savings Goals Card -->
+            <div class="uk-feature-card">
+                <div class="uk-feature-header">
+                    <div class="feature-icon">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <div class="uk-feature-title">Savings Goals</div>
+                </div>
+                <div class="savings-goal">
+                    <h4>ISA Savings Goal</h4>
+                    <p>£1,500 saved of £20,000</p>
+                    <div class="savings-progress">
+                        <div class="savings-fill" style="width: 7.5%"></div>
+                    </div>
+                    <small>Maximize your £20,000 annual ISA allowance</small>
+                </div>
+                <div class="savings-goal">
+                    <h4>House Deposit</h4>
+                    <p>£8,200 saved of £30,000</p>
+                    <div class="savings-progress">
+                        <div class="savings-fill" style="width: 27.3%"></div>
+                    </div>
+                    <small>Lifetime ISA bonus: £1,000</small>
+                </div>
+                <button class="btn btn-outline" style="width:100%; margin-top:10px;" id="addGoalBtn">
+                    <i class="fas fa-plus"></i> Add New Goal
+                </button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="left-column">
+                <div class="dashboard">
+                    <!-- Balance Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <div class="card-icon">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                Current Balance
                             </div>
-                            Payment History
+                        </div>
+                        <div class="balance-amount"><span class="currency-symbol">£</span> <span id="currentBalance">0.00</span></div>
+                        <div class="balance-stats">
+                            <div class="stat">
+                                <div class="stat-value income-value" id="totalIncome">£0.00</div>
+                                <div class="stat-label">Income</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value expense-value" id="totalExpense">£0.00</div>
+                                <div class="stat-label">Expenses</div>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="payment-history" id="paymentHistory">
-                        <div class="empty-state" style="padding: 20px;">
-                            <i class="fas fa-receipt"></i>
-                            <h4>No payments yet</h4>
-                            <p>Record payments to see history</p>
+                    <!-- Budget Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <div class="card-icon">
+                                    <i class="fas fa-chart-pie"></i>
+                                </div>
+                                Monthly Budget
+                            </div>
+                            <button class="btn btn-outline" id="setBudgetBtn">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                        <div class="balance-amount"><span id="usedBudget">£0.00</span> / <span id="totalBudget">£0.00</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="budgetProgress"></div>
+                        </div>
+                        <div class="balance-stats">
+                            <div class="stat">
+                                <div class="stat-value" id="remainingBudget">£0.00</div>
+                                <div class="stat-label">Remaining</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value" id="daysLeft">0 days</div>
+                                <div class="stat-label">Left</div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Debt Summary Chart -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <div class="card-icon">
-                                <i class="fas fa-chart-pie"></i>
+                <!-- Transaction Form -->
+                <div class="transaction-form">
+                    <h2 class="form-title"><i class="fas fa-plus-circle"></i> Add Transaction</h2>
+                    <form id="transactionForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="transactionType">Type</label>
+                                <select id="transactionType" class="form-control">
+                                    <option value="income">Income</option>
+                                    <option value="expense">Expense</option>
+                                </select>
                             </div>
-                            Debt Summary
+                            <div class="form-group">
+                                <label for="amount">Amount (£)</label>
+                                <input type="number" id="amount" class="form-control" placeholder="0.00" step="0.01" min="0">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category" class="form-control">
+                                <option value="salary">Salary</option>
+                                <option value="freelance">Freelance</option>
+                                <option value="investment">Investment</option>
+                                <option value="benefits">Benefits</option>
+                                <option value="food">Food & Dining</option>
+                                <option value="shopping">Shopping</option>
+                                <option value="transport">Transport</option>
+                                <option value="housing">Housing</option>
+                                <option value="council_tax">Council Tax</option>
+                                <option value="utilities">Utilities</option>
+                                <option value="tv_license">TV License</option>
+                                <option value="pension">Pension Contribution</option>
+                                <option value="entertainment">Entertainment</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <input type="text" id="description" class="form-control" placeholder="Enter transaction details">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="date">Date</label>
+                            <input type="date" id="date" class="form-control" value="">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-submit">
+                            <i class="fas fa-check-circle"></i> Add Transaction
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Charts -->
+                <div class="charts-container">
+                    <h2 class="chart-title"><i class="fas fa-chart-bar"></i> Financial Reports</h2>
+                    <div class="chart-row">
+                        <div class="card chart-card">
+                            <canvas id="spendingChart"></canvas>
+                        </div>
+                        <div class="card chart-card">
+                            <canvas id="incomeChart"></canvas>
                         </div>
                     </div>
-                    <canvas id="debtChart" height="200"></canvas>
+                </div>
+                
+                <!-- Brexit Impact Section -->
+                <div class="feature-section">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="feature-title">Brexit Impact Analysis</div>
+                    </div>
+                    <div class="brexit-impact">
+                        <p><i class="fas fa-info-circle"></i> <strong>Impact on your finances:</strong> Our analysis shows Brexit has increased your monthly grocery costs by approximately £28.50</p>
+                    </div>
+                    <button class="btn btn-outline" style="width:100%; margin-top:15px;" id="brexitReportBtn">
+                        <i class="fas fa-chart-pie"></i> View Full Brexit Impact Report
+                    </button>
+                </div>
+                
+                <!-- Reset Section -->
+                <div class="reset-section">
+                    <button class="reset-btn" id="resetBtn">
+                        <i class="fas fa-redo"></i> Reset All Data
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Right Column - Transactions -->
+            <div class="right-column">
+                <div class="transaction-list">
+                    <div class="list-header">
+                        <h2 class="card-title"><i class="fas fa-list"></i> Recent Transactions</h2>
+                        <div class="filters">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="income">Income</button>
+                            <button class="filter-btn" data-filter="expense">Expense</button>
+                        </div>
+                    </div>
+                    
+                    <div id="transactionsContainer">
+                        <div class="empty-state">
+                            <i class="fas fa-exchange-alt"></i>
+                            <h3>No transactions yet</h3>
+                            <p>Add your first transaction to get started</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="export-section">
+                    <h2 class="card-title"><i class="fas fa-file-export"></i> Export Data</h2>
+                    <p>Download your financial data for backup or analysis</p>
+                    <div class="export-options">
+                        <button class="export-btn" id="exportCsv">
+                            <div class="export-icon">
+                                <i class="fas fa-file-csv"></i>
+                            </div>
+                            <span>CSV Export</span>
+                        </button>
+                        <button class="export-btn" id="exportPdf">
+                            <div class="export-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <span>PDF Report</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Pension Tracker -->
+                <div class="feature-section" style="margin-top: 20px;">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-piggy-bank"></i>
+                        </div>
+                        <div class="feature-title">Pension Tracker</div>
+                    </div>
+                    <div class="balance-stats">
+                        <div class="stat">
+                            <div class="stat-value">£245.60</div>
+                            <div class="stat-label">This Month</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">£14,300</div>
+                            <div class="stat-label">Total Value</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline" style="width:100%; margin-top:10px;" id="pensionProjectionBtn">
+                        <i class="fas fa-chart-line"></i> View Projections
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="notification" id="notification">Payment recorded successfully!</div>
+    <div class="notification" id="notification">Transaction added successfully!</div>
 
-    <!-- Add Debt Modal -->
+    <!-- Budget Modal -->
+    <div class="modal-overlay" id="budgetModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Set Monthly Budget</h3>
+                <button class="close-modal" id="closeBudgetModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="budgetAmount">Budget Amount (£)</label>
+                    <input type="number" id="budgetAmount" class="form-control" placeholder="Enter amount" min="0" step="100">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancelBudget">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="saveBudget">Set Budget</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Modal -->
+    <div class="modal-overlay" id="resetModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Reset All Data</h3>
+                <button class="close-modal" id="closeResetModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to reset all data? This will:</p>
+                <ul style="padding-left: 20px; margin: 10px 0;">
+                    <li>Clear all transactions</li>
+                    <li>Reset your balance to zero</li>
+                    <li>Reset your budget settings</li>
+                    <li>Clear all debt records</li>
+                </ul>
+                <p>This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancelReset">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="confirmReset" style="background: var(--danger);">Reset Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debt Modal -->
     <div class="modal-overlay" id="debtModal">
         <div class="modal">
             <div class="modal-header">
@@ -772,8 +1558,14 @@
                     <input type="date" id="debtDate" class="form-control">
                 </div>
                 <div class="form-group">
-                    <label for="dueDate">Due Date (optional)</label>
-                    <input type="date" id="dueDate" class="form-control">
+                    <label for="debtCategory">Category</label>
+                    <select id="debtCategory" class="form-control">
+                        <option value="personal">Personal</option>
+                        <option value="business">Business</option>
+                        <option value="family">Family</option>
+                        <option value="loan">Loan</option>
+                        <option value="other">Other</option>
+                    </select>
                 </div>
             </div>
             <div class="modal-footer">
@@ -783,7 +1575,7 @@
         </div>
     </div>
 
-    <!-- Record Payment Modal -->
+    <!-- Payment Modal -->
     <div class="modal-overlay" id="paymentModal">
         <div class="modal">
             <div class="modal-header">
@@ -792,18 +1584,11 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="debtInfo">Debt Information</label>
-                    <div id="debtInfo" style="background: #f8fafc; padding: 10px; border-radius: 8px; font-size: 0.95rem;"></div>
-                </div>
-                <div class="form-group">
                     <label for="paymentAmount">Payment Amount (£)</label>
-                    <div class="pay-amount-input">
-                        <span>£</span>
-                        <input type="number" id="paymentAmount" class="form-control" placeholder="0.00" step="0.01" min="0">
-                    </div>
+                    <input type="number" id="paymentAmount" class="form-control" placeholder="0.00" step="0.01" min="0">
                 </div>
                 <div class="form-group">
-                    <label for="paymentDate">Payment Date</label>
+                    <label for="paymentDate">Date</label>
                     <input type="date" id="paymentDate" class="form-control">
                 </div>
                 <div class="form-group">
@@ -811,10 +1596,13 @@
                     <select id="paymentMethod" class="form-control">
                         <option value="cash">Cash</option>
                         <option value="bank">Bank Transfer</option>
-                        <option value="card">Credit/Debit Card</option>
+                        <option value="card">Card</option>
                         <option value="online">Online Payment</option>
-                        <option value="other">Other</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label for="paymentNote">Note</label>
+                    <input type="text" id="paymentNote" class="form-control" placeholder="Enter payment details">
                 </div>
             </div>
             <div class="modal-footer">
@@ -828,68 +1616,130 @@
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize variables
+            let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            let budget = JSON.parse(localStorage.getItem('budget')) || { total: 0 };
             let debts = JSON.parse(localStorage.getItem('debts')) || {
                 owedToMe: [],
                 owedToOthers: []
             };
             
-            let payments = JSON.parse(localStorage.getItem('payments')) || [];
+            let currentFilter = 'all';
             let currentDebtId = null;
             
             // DOM Elements
-            const owedToMeEl = document.getElementById('owedToMe');
-            const owedToOthersEl = document.getElementById('owedToOthers');
-            const owedToMeCountEl = document.getElementById('owedToMeCount');
-            const owedToOthersCountEl = document.getElementById('owedToOthersCount');
-            const debtListEl = document.getElementById('debtList');
-            const paymentHistoryEl = document.getElementById('paymentHistory');
+            const transactionForm = document.getElementById('transactionForm');
+            const transactionsContainer = document.getElementById('transactionsContainer');
+            const currentBalanceEl = document.getElementById('currentBalance');
+            const totalIncomeEl = document.getElementById('totalIncome');
+            const totalExpenseEl = document.getElementById('totalExpense');
+            const usedBudgetEl = document.getElementById('usedBudget');
+            const totalBudgetEl = document.getElementById('totalBudget');
+            const remainingBudgetEl = document.getElementById('remainingBudget');
+            const budgetProgressEl = document.getElementById('budgetProgress');
+            const daysLeftEl = document.getElementById('daysLeft');
             const notification = document.getElementById('notification');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const exportCsvBtn = document.getElementById('exportCsv');
+            const exportPdfBtn = document.getElementById('exportPdf');
+            const setBudgetBtn = document.getElementById('setBudgetBtn');
+            const budgetModal = document.getElementById('budgetModal');
+            const closeBudgetModal = document.getElementById('closeBudgetModal');
+            const cancelBudget = document.getElementById('cancelBudget');
+            const saveBudgetBtn = document.getElementById('saveBudget');
+            const budgetAmountInput = document.getElementById('budgetAmount');
+            const resetBtn = document.getElementById('resetBtn');
+            const resetModal = document.getElementById('resetModal');
+            const closeResetModal = document.getElementById('closeResetModal');
+            const cancelReset = document.getElementById('cancelReset');
+            const confirmReset = document.getElementById('confirmReset');
+            const smsImportBtn = document.getElementById('smsImportBtn');
             const addDebtBtn = document.getElementById('addDebtBtn');
             const debtModal = document.getElementById('debtModal');
             const closeDebtModal = document.getElementById('closeDebtModal');
             const cancelDebt = document.getElementById('cancelDebt');
             const saveDebtBtn = document.getElementById('saveDebt');
+            const owedToMeEl = document.getElementById('owedToMe');
+            const owedToOthersEl = document.getElementById('owedToOthers');
+            const owedToMeCountEl = document.getElementById('owedToMeCount');
+            const owedToOthersCountEl = document.getElementById('owedToOthersCount');
+            const debtListEl = document.getElementById('debtList');
+            const openBankingBtn = document.getElementById('openBankingBtn');
+            const calculateTaxBtn = document.getElementById('calculateTaxBtn');
+            const taxResultEl = document.getElementById('taxResult');
+            const addGoalBtn = document.getElementById('addGoalBtn');
+            const brexitReportBtn = document.getElementById('brexitReportBtn');
+            const pensionProjectionBtn = document.getElementById('pensionProjectionBtn');
             const paymentModal = document.getElementById('paymentModal');
             const closePaymentModal = document.getElementById('closePaymentModal');
             const cancelPayment = document.getElementById('cancelPayment');
             const savePaymentBtn = document.getElementById('savePayment');
-            const debtInfoEl = document.getElementById('debtInfo');
+            const paymentAmountInput = document.getElementById('paymentAmount');
+            const paymentDateInput = document.getElementById('paymentDate');
             
             // Set today's date as default
             const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
             document.getElementById('debtDate').value = today;
-            document.getElementById('paymentDate').value = today;
+            paymentDateInput.value = today;
             
-            // Initialize chart
-            let debtChart;
-            initDebtChart();
+            // Initialize charts
+            let spendingChart, incomeChart;
+            initCharts();
             
             // Update UI with initial data
+            updateBalances();
+            updateBudgetDisplay();
+            renderTransactions();
             updateDebtDisplay();
             renderDebtList();
-            renderPaymentHistory();
+            updateCharts();
             
             // Event Listeners
+            transactionForm.addEventListener('submit', addTransaction);
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    renderTransactions();
+                });
+            });
+            
+            exportCsvBtn.addEventListener('click', exportToCsv);
+            exportPdfBtn.addEventListener('click', exportToPdf);
+            setBudgetBtn.addEventListener('click', () => budgetModal.classList.add('active'));
+            closeBudgetModal.addEventListener('click', () => budgetModal.classList.remove('active'));
+            cancelBudget.addEventListener('click', () => budgetModal.classList.remove('active'));
+            saveBudgetBtn.addEventListener('click', setBudget);
+            resetBtn.addEventListener('click', () => resetModal.classList.add('active'));
+            closeResetModal.addEventListener('click', () => resetModal.classList.remove('active'));
+            cancelReset.addEventListener('click', () => resetModal.classList.remove('active'));
+            confirmReset.addEventListener('click', resetAllData);
+            smsImportBtn.addEventListener('click', () => showNotification('SMS Import feature coming in the next update!'));
             addDebtBtn.addEventListener('click', () => debtModal.classList.add('active'));
             closeDebtModal.addEventListener('click', () => debtModal.classList.remove('active'));
             cancelDebt.addEventListener('click', () => debtModal.classList.remove('active'));
             saveDebtBtn.addEventListener('click', addDebt);
+            openBankingBtn.addEventListener('click', () => showNotification('Open Banking integration coming in the next update!'));
+            calculateTaxBtn.addEventListener('click', calculateTax);
+            addGoalBtn.addEventListener('click', () => showNotification('Savings goal feature coming in the next update!'));
+            brexitReportBtn.addEventListener('click', () => showNotification('Brexit impact report feature coming in the next update!'));
+            pensionProjectionBtn.addEventListener('click', () => showNotification('Pension projection feature coming in the next update!'));
             closePaymentModal.addEventListener('click', () => paymentModal.classList.remove('active'));
             cancelPayment.addEventListener('click', () => paymentModal.classList.remove('active'));
             savePaymentBtn.addEventListener('click', recordPayment);
             
-            // Initialize debt chart
-            function initDebtChart() {
-                const ctx = document.getElementById('debtChart').getContext('2d');
-                debtChart = new Chart(ctx, {
+            // Initialize charts with empty data
+            function initCharts() {
+                const spendingCtx = document.getElementById('spendingChart').getContext('2d');
+                spendingChart = new Chart(spendingCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Owed to You', 'You Owe'],
+                        labels: ['Housing', 'Food', 'Transport', 'Council Tax', 'Utilities', 'Other'],
                         datasets: [{
-                            data: [0, 0],
+                            data: [0, 0, 0, 0, 0, 0],
                             backgroundColor: [
-                                '#10b981',
-                                '#ef4444'
+                                '#ec4899', '#f59e0b', '#0ea5e9', '#dc2626', '#3b82f6', '#64748b'
                             ],
                             borderWidth: 0
                         }]
@@ -905,7 +1755,7 @@
                                     usePointStyle: true,
                                     pointStyle: 'circle',
                                     font: {
-                                        size: 11
+                                        size: window.innerWidth < 768 ? 9 : 11
                                     }
                                 }
                             },
@@ -919,6 +1769,111 @@
                         }
                     }
                 });
+                
+                const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+                incomeChart = new Chart(incomeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        datasets: [{
+                            label: 'Income',
+                            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            backgroundColor: '#10b981',
+                            borderRadius: 6
+                        }, {
+                            label: 'Expenses',
+                            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            backgroundColor: '#ef4444',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    font: {
+                                        size: window.innerWidth < 768 ? 9 : 11
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: £${context.raw.toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: window.innerWidth < 768 ? 8 : 10
+                                    },
+                                    callback: function(value) {
+                                        return '£' + value;
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: window.innerWidth < 768 ? 8 : 10
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Add new transaction
+            function addTransaction(e) {
+                e.preventDefault();
+                
+                const type = document.getElementById('transactionType').value;
+                const amount = parseFloat(document.getElementById('amount').value);
+                const category = document.getElementById('category').value;
+                const description = document.getElementById('description').value;
+                const date = document.getElementById('date').value || today;
+                
+                if (!amount || amount <= 0) {
+                    showNotification('Please enter a valid amount', 'error');
+                    return;
+                }
+                
+                const transaction = {
+                    id: Date.now(),
+                    type,
+                    amount,
+                    category,
+                    description: description || 'New Transaction',
+                    date
+                };
+                
+                transactions.push(transaction);
+                saveData();
+                
+                updateBalances();
+                updateBudgetDisplay();
+                renderTransactions();
+                updateCharts();
+                
+                transactionForm.reset();
+                document.getElementById('date').value = today;
+                document.getElementById('transactionType').value = 'expense';
+                
+                showNotification('Transaction added successfully!');
             }
             
             // Add new debt record
@@ -928,7 +1883,7 @@
                 const person = document.getElementById('debtPerson').value;
                 const description = document.getElementById('debtDescription').value;
                 const date = document.getElementById('debtDate').value || today;
-                const dueDate = document.getElementById('dueDate').value || '';
+                const category = document.getElementById('debtCategory').value;
                 
                 if (!amount || amount <= 0) {
                     showNotification('Please enter a valid amount', 'error');
@@ -944,13 +1899,14 @@
                     id: Date.now(),
                     type,
                     amount,
-                    paid: 0,
-                    remaining: amount,
                     person,
                     description: description || 'Debt Record',
                     date,
-                    dueDate,
-                    status: 'active'
+                    category,
+                    paid: 0,
+                    payments: [],
+                    status: 'unpaid',
+                    created: new Date().toISOString()
                 };
                 
                 if (type === 'owedToMe') {
@@ -969,166 +1925,189 @@
                 document.getElementById('debtPerson').value = '';
                 document.getElementById('debtDescription').value = '';
                 document.getElementById('debtDate').value = today;
-                document.getElementById('dueDate').value = '';
                 
                 showNotification('Debt record added successfully!');
             }
             
             // Record payment for a debt
             function recordPayment() {
-                const amount = parseFloat(document.getElementById('paymentAmount').value);
-                const date = document.getElementById('paymentDate').value || today;
+                const amount = parseFloat(paymentAmountInput.value);
+                const date = paymentDateInput.value || today;
                 const method = document.getElementById('paymentMethod').value;
+                const note = document.getElementById('paymentNote').value || 'Payment';
                 
                 if (!amount || amount <= 0) {
                     showNotification('Please enter a valid payment amount', 'error');
                     return;
                 }
                 
-                // Find the debt
-                let debt = null;
-                let debtType = null;
+                // Find the debt by ID
+                let debtFound = false;
                 
-                for (const type of ['owedToMe', 'owedToOthers']) {
-                    debt = debts[type].find(d => d.id === currentDebtId);
-                    if (debt) {
-                        debtType = type;
+                // Search in owedToMe
+                for (let i = 0; i < debts.owedToMe.length; i++) {
+                    if (debts.owedToMe[i].id === currentDebtId) {
+                        const debt = debts.owedToMe[i];
+                        debt.paid += amount;
+                        
+                        // Add payment to history
+                        debt.payments.push({
+                            amount,
+                            date,
+                            method,
+                            note
+                        });
+                        
+                        // Update debt status
+                        if (debt.paid >= debt.amount) {
+                            debt.status = 'paid';
+                        } else if (debt.paid > 0) {
+                            debt.status = 'partial';
+                        }
+                        
+                        debtFound = true;
                         break;
                     }
                 }
                 
-                if (!debt) {
-                    showNotification('Debt not found', 'error');
-                    return;
+                // Search in owedToOthers if not found
+                if (!debtFound) {
+                    for (let i = 0; i < debts.owedToOthers.length; i++) {
+                        if (debts.owedToOthers[i].id === currentDebtId) {
+                            const debt = debts.owedToOthers[i];
+                            debt.paid += amount;
+                            
+                            // Add payment to history
+                            debt.payments.push({
+                                amount,
+                                date,
+                                method,
+                                note
+                            });
+                            
+                            // Update debt status
+                            if (debt.paid >= debt.amount) {
+                                debt.status = 'paid';
+                            } else if (debt.paid > 0) {
+                                debt.status = 'partial';
+                            }
+                            
+                            break;
+                        }
+                    }
                 }
                 
-                // Check if payment exceeds remaining amount
-                if (amount > debt.remaining) {
-                    showNotification('Payment exceeds remaining debt amount', 'error');
-                    return;
-                }
-                
-                // Update debt
-                debt.paid += amount;
-                debt.remaining = debt.amount - debt.paid;
-                
-                if (debt.remaining <= 0) {
-                    debt.status = 'paid';
-                }
-                
-                // Create payment record
-                const payment = {
-                    id: Date.now(),
-                    debtId: debt.id,
-                    amount,
-                    date,
-                    method,
-                    debtType
-                };
-                
-                payments.push(payment);
-                savePayments();
                 saveDebts();
-                
                 updateDebtDisplay();
                 renderDebtList();
-                renderPaymentHistory();
                 paymentModal.classList.remove('active');
                 
                 // Reset form
-                document.getElementById('paymentAmount').value = '';
-                document.getElementById('paymentDate').value = today;
+                paymentAmountInput.value = '';
+                paymentDateInput.value = today;
+                document.getElementById('paymentMethod').value = 'bank';
+                document.getElementById('paymentNote').value = '';
                 
                 showNotification('Payment recorded successfully!');
             }
             
-            // Open payment modal for a specific debt
-            function openPaymentModal(debtId) {
-                currentDebtId = debtId;
+            // Calculate UK tax
+            function calculateTax() {
+                const income = parseFloat(document.getElementById('annualIncome').value);
                 
-                // Find the debt
-                let debt = null;
-                let debtType = null;
+                if (!income || income <= 0) {
+                    showNotification('Please enter a valid income amount', 'error');
+                    return;
+                }
                 
-                for (const type of ['owedToMe', 'owedToOthers']) {
-                    debt = debts[type].find(d => d.id === debtId);
-                    if (debt) {
-                        debtType = type;
-                        break;
+                // UK Tax Bands 2023/2024 (simplified)
+                const personalAllowance = 12570;
+                const basicRateThreshold = 50270;
+                const higherRateThreshold = 125140;
+                
+                let taxableIncome = income - personalAllowance;
+                if (taxableIncome < 0) taxableIncome = 0;
+                
+                let tax = 0;
+                let ni = 0;
+                
+                // Calculate Income Tax
+                if (taxableIncome > 0) {
+                    if (taxableIncome <= (basicRateThreshold - personalAllowance)) {
+                        tax = taxableIncome * 0.20;
+                    } else if (taxableIncome <= (higherRateThreshold - personalAllowance)) {
+                        tax = (basicRateThreshold - personalAllowance) * 0.20;
+                        tax += (taxableIncome - (basicRateThreshold - personalAllowance)) * 0.40;
+                    } else {
+                        tax = (basicRateThreshold - personalAllowance) * 0.20;
+                        tax += (higherRateThreshold - basicRateThreshold) * 0.40;
+                        tax += (taxableIncome - (higherRateThreshold - personalAllowance)) * 0.45;
                     }
                 }
                 
-                if (!debt) {
-                    showNotification('Debt not found', 'error');
-                    return;
+                // Calculate National Insurance
+                const niThreshold = 12576;
+                const niUpperThreshold = 50268;
+                
+                if (income > niThreshold) {
+                    const niLowerBand = Math.min(income, niUpperThreshold) - niThreshold;
+                    ni = niLowerBand * 0.12;
+                    
+                    if (income > niUpperThreshold) {
+                        ni += (income - niUpperThreshold) * 0.02;
+                    }
                 }
                 
-                // Update debt info display
-                const typeText = debtType === 'owedToMe' ? 'Owed to You' : 'You Owe';
-                const amountText = `£${debt.amount.toFixed(2)}`;
-                const remainingText = `£${debt.remaining.toFixed(2)}`;
+                const takeHome = income - tax - ni;
                 
-                debtInfoEl.innerHTML = `
-                    <div><strong>${debt.person}</strong> - ${typeText}</div>
-                    <div>Original Amount: ${amountText}</div>
-                    <div>Remaining: ${remainingText}</div>
-                `;
-                
-                // Set payment amount to remaining by default
-                document.getElementById('paymentAmount').value = debt.remaining.toFixed(2);
-                
-                // Open modal
-                paymentModal.classList.add('active');
-            }
-            
-            // View payment history for a specific debt
-            function viewPaymentHistory(debtId) {
-                const debtPayments = payments.filter(p => p.debtId === debtId);
-                
-                if (debtPayments.length === 0) {
-                    showNotification('No payment history for this debt', 'info');
-                    return;
-                }
-                
-                let historyHTML = `
-                    <div class="payment-history-title">
-                        <h4>Payment History</h4>
+                taxResultEl.innerHTML = `
+                    <div class="tax-line">
+                        <span>Income Tax:</span>
+                        <span>£${tax.toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>National Insurance:</span>
+                        <span>£${ni.toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>Total Deductions:</span>
+                        <span>£${(tax + ni).toFixed(2)}</span>
+                    </div>
+                    <div class="tax-line">
+                        <span>Take Home Pay:</span>
+                        <span>£${takeHome.toFixed(2)}</span>
                     </div>
                 `;
-                
-                debtPayments.forEach(payment => {
-                    historyHTML += `
-                        <div class="payment-item">
-                            <div class="date">${formatDate(payment.date)}</div>
-                            <div class="amount">£${payment.amount.toFixed(2)}</div>
-                            <div class="method">${formatMethod(payment.method)}</div>
-                        </div>
-                    `;
-                });
-                
-                paymentHistoryEl.innerHTML = historyHTML;
             }
             
             // Update debt display
             function updateDebtDisplay() {
-                // Calculate totals for owedToMe (only active debts)
-                const owedToMeActive = debts.owedToMe.filter(d => d.status !== 'paid');
-                const owedToMeTotal = owedToMeActive.reduce((sum, debt) => sum + debt.remaining, 0);
+                // Calculate totals for owedToMe
+                const owedToMeTotal = debts.owedToMe.reduce((sum, debt) => {
+                    if (debt.status !== 'paid') {
+                        return sum + (debt.amount - debt.paid);
+                    }
+                    return sum;
+                }, 0);
                 
-                // Calculate totals for owedToOthers (only active debts)
-                const owedToOthersActive = debts.owedToOthers.filter(d => d.status !== 'paid');
-                const owedToOthersTotal = owedToOthersActive.reduce((sum, debt) => sum + debt.remaining, 0);
+                // Calculate totals for owedToOthers
+                const owedToOthersTotal = debts.owedToOthers.reduce((sum, debt) => {
+                    if (debt.status !== 'paid') {
+                        return sum + (debt.amount - debt.paid);
+                    }
+                    return sum;
+                }, 0);
+                
+                // Count active debts
+                const owedToMeCount = debts.owedToMe.filter(d => d.status !== 'paid').length;
+                const owedToOthersCount = debts.owedToOthers.filter(d => d.status !== 'paid').length;
                 
                 // Update UI
                 owedToMeEl.textContent = owedToMeTotal.toFixed(2);
                 owedToOthersEl.textContent = owedToOthersTotal.toFixed(2);
                 
-                owedToMeCountEl.textContent = `By ${owedToMeActive.length} ${owedToMeActive.length === 1 ? 'person' : 'people'}`;
-                owedToOthersCountEl.textContent = `To ${owedToOthersActive.length} ${owedToOthersActive.length === 1 ? 'person' : 'people'}`;
-                
-                // Update chart
-                debtChart.data.datasets[0].data = [owedToMeTotal, owedToOthersTotal];
-                debtChart.update();
+                owedToMeCountEl.textContent = `By ${owedToMeCount} ${owedToMeCount === 1 ? 'person' : 'people'}`;
+                owedToOthersCountEl.textContent = `To ${owedToOthersCount} ${owedToOthersCount === 1 ? 'person' : 'people'}`;
             }
             
             // Render debt list
@@ -1149,35 +2128,48 @@
                 
                 debtListEl.innerHTML = '';
                 
+                // Sort by date (newest first)
+                activeDebts.sort((a, b) => new Date(b.created) - new Date(a.created));
+                
                 activeDebts.forEach(debt => {
                     const debtItem = document.createElement('div');
                     debtItem.className = 'debt-item';
                     
-                    const progressPercent = (debt.paid / debt.amount) * 100;
-                    const isOverdue = debt.dueDate && new Date(debt.dueDate) < new Date() && debt.remaining > 0;
-                    const status = isOverdue ? 'overdue' : debt.status;
+                    const remaining = debt.amount - debt.paid;
+                    const percentage = (debt.paid / debt.amount) * 100;
+                    
+                    // Status badge
+                    let statusBadge = '';
+                    if (debt.status === 'paid') {
+                        statusBadge = `<span class="debt-status status-paid">Paid</span>`;
+                    } else if (debt.status === 'partial') {
+                        statusBadge = `<span class="debt-status status-partial">Partially Paid</span>`;
+                    } else {
+                        statusBadge = `<span class="debt-status status-unpaid">Unpaid</span>`;
+                    }
+                    
+                    // Debt age
+                    const createdDate = new Date(debt.created);
+                    const today = new Date();
+                    const diffTime = Math.abs(today - createdDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                    const ageText = diffDays === 0 ? 'Today' : `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
                     
                     debtItem.innerHTML = `
                         <div class="debt-info">
-                            <h4>
-                                <div class="debt-icon ${debt.type === 'owedToMe' ? 'debt-type-owed' : 'debt-type-owe'}">
-                                    <i class="fas fa-${debt.type === 'owedToMe' ? 'hand-holding-usd' : 'money-bill-wave'}"></i>
-                                </div>
-                                ${debt.person}
-                                <span class="debt-status status-${status}">
-                                    ${status === 'active' ? 'Active' : status === 'paid' ? 'Paid' : 'Overdue'}
-                                </span>
-                            </h4>
-                            <p>${debt.description}</p>
-                            <p>Amount: £${debt.amount.toFixed(2)} | Paid: £${debt.paid.toFixed(2)} | Remaining: £${debt.remaining.toFixed(2)}</p>
-                            <div class="debt-progress">
-                                <div class="debt-progress-fill" style="width: ${progressPercent}%"></div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h4>${debt.type === 'owedToMe' ? 'Owed to You' : 'You Owe'}: ${debt.person}</h4>
+                                ${statusBadge}
                             </div>
-                            ${debt.dueDate ? `<p>Due: ${formatDate(debt.dueDate)}</p>` : ''}
+                            <p>Amount: £${debt.amount.toFixed(2)} | Paid: £${debt.paid.toFixed(2)} | Due: £${remaining.toFixed(2)}</p>
+                            <p><span class="debt-category">${debt.category}</span> <span class="debt-age">${ageText}</span></p>
+                            <div class="debt-progress">
+                                <div class="debt-progress-fill" style="width: ${percentage}%"></div>
+                            </div>
                         </div>
                         <div class="debt-actions">
                             <button class="action-btn pay-btn" data-id="${debt.id}">
-                                <i class="fas fa-money-check"></i>
+                                <i class="fas fa-money-bill-wave"></i>
                             </button>
                             <button class="action-btn history-btn" data-id="${debt.id}">
                                 <i class="fas fa-history"></i>
@@ -1188,140 +2180,462 @@
                     debtListEl.appendChild(debtItem);
                 });
                 
-                // Add event listeners to buttons
+                // Add event listeners to new buttons
                 document.querySelectorAll('.pay-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const debtId = parseInt(e.currentTarget.getAttribute('data-id'));
-                        openPaymentModal(debtId);
+                    btn.addEventListener('click', function() {
+                        currentDebtId = parseInt(this.dataset.id);
+                        paymentModal.classList.add('active');
                     });
                 });
                 
                 document.querySelectorAll('.history-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const debtId = parseInt(e.currentTarget.getAttribute('data-id'));
+                    btn.addEventListener('click', function() {
+                        const debtId = parseInt(this.dataset.id);
                         viewPaymentHistory(debtId);
                     });
                 });
             }
             
-            // Render payment history
-            function renderPaymentHistory() {
-                if (payments.length === 0) {
-                    paymentHistoryEl.innerHTML = `
-                        <div class="empty-state" style="padding: 20px;">
-                            <i class="fas fa-receipt"></i>
-                            <h4>No payments yet</h4>
-                            <p>Record payments to see history</p>
+            // View payment history for a debt
+            function viewPaymentHistory(debtId) {
+                // Find the debt
+                let debt = null;
+                for (const d of debts.owedToMe) {
+                    if (d.id === debtId) {
+                        debt = d;
+                        break;
+                    }
+                }
+                if (!debt) {
+                    for (const d of debts.owedToOthers) {
+                        if (d.id === debtId) {
+                            debt = d;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!debt) return;
+                
+                if (debt.payments.length === 0) {
+                    showNotification('No payment history for this debt', 'info');
+                    return;
+                }
+                
+                let historyHTML = `
+                    <div class="payment-history-title">
+                        <i class="fas fa-history"></i> Payment History for ${debt.person}
+                    </div>
+                `;
+                
+                debt.payments.forEach(payment => {
+                    historyHTML += `
+                        <div class="payment-item">
+                            <div>${formatDate(payment.date)}</div>
+                            <div>£${payment.amount.toFixed(2)}</div>
+                        </div>
+                    `;
+                });
+                
+                // Create a modal-like notification
+                const historyNotification = document.createElement('div');
+                historyNotification.className = 'notification';
+                historyNotification.id = 'historyNotification';
+                historyNotification.innerHTML = `
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        ${historyHTML}
+                    </div>
+                `;
+                document.body.appendChild(historyNotification);
+                
+                setTimeout(() => {
+                    historyNotification.classList.add('show');
+                }, 10);
+                
+                // Auto-close after 5 seconds
+                setTimeout(() => {
+                    historyNotification.classList.remove('show');
+                    setTimeout(() => {
+                        document.body.removeChild(historyNotification);
+                    }, 300);
+                }, 5000);
+            }
+            
+            // Render transactions based on filter
+            function renderTransactions() {
+                if (transactions.length === 0) {
+                    transactionsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exchange-alt"></i>
+                            <h3>No transactions yet</h3>
+                            <p>Add your first transaction to get started</p>
                         </div>
                     `;
                     return;
                 }
                 
-                // Sort by date descending
-                const sortedPayments = [...payments].sort((a, b) => 
-                    new Date(b.date) - new Date(a.date)
-                );
+                const filteredTransactions = transactions.filter(t => {
+                    if (currentFilter === 'all') return true;
+                    return t.type === currentFilter;
+                });
                 
-                let historyHTML = `
-                    <div class="payment-history-title">
-                        <h4>Recent Payments</h4>
-                        <button id="viewAllPayments">
-                            <i class="fas fa-list"></i> View All
-                        </button>
-                    </div>
-                `;
-                
-                // Show only last 5 payments
-                const recentPayments = sortedPayments.slice(0, 5);
-                
-                recentPayments.forEach(payment => {
-                    // Find debt for this payment
-                    const debt = [...debts.owedToMe, ...debts.owedToOthers]
-                        .find(d => d.id === payment.debtId);
-                    
-                    if (!debt) return;
-                    
-                    historyHTML += `
-                        <div class="payment-item">
-                            <div class="info">
-                                <div><strong>${debt.person}</strong></div>
-                                <div class="date">${formatDate(payment.date)}</div>
-                            </div>
-                            <div class="amount">£${payment.amount.toFixed(2)}</div>
+                if (filteredTransactions.length === 0) {
+                    transactionsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <h3>No ${currentFilter} transactions</h3>
+                            <p>Try changing your filter</p>
                         </div>
                     `;
-                });
-                
-                paymentHistoryEl.innerHTML = historyHTML;
-                
-                // Add event listener to view all button
-                document.getElementById('viewAllPayments').addEventListener('click', () => {
-                    viewAllPayments();
-                });
-            }
-            
-            // View all payments
-            function viewAllPayments() {
-                if (payments.length === 0) return;
-                
-                // Sort by date descending
-                const sortedPayments = [...payments].sort((a, b) => 
-                    new Date(b.date) - new Date(a.date)
-                );
-                
-                let historyHTML = `
-                    <div class="payment-history-title">
-                        <h4>All Payments</h4>
-                        <button id="viewRecentPayments">
-                            <i class="fas fa-arrow-left"></i> Back
-                        </button>
-                    </div>
-                `;
-                
-                sortedPayments.forEach(payment => {
-                    // Find debt for this payment
-                    const debt = [...debts.owedToMe, ...debts.owedToOthers]
-                        .find(d => d.id === payment.debtId);
-                    
-                    if (!debt) return;
-                    
-                    const typeText = payment.debtType === 'owedToMe' ? 'Owed to You' : 'You Owe';
-                    
-                    historyHTML += `
-                        <div class="payment-item">
-                            <div class="info">
-                                <div><strong>${debt.person}</strong> (${typeText})</div>
-                                <div class="date">${formatDate(payment.date)} • ${formatMethod(payment.method)}</div>
-                            </div>
-                            <div class="amount">£${payment.amount.toFixed(2)}</div>
-                        </div>
-                    `;
-                });
-                
-                paymentHistoryEl.innerHTML = historyHTML;
-                
-                // Add event listener to back button
-                document.getElementById('viewRecentPayments').addEventListener('click', () => {
-                    renderPaymentHistory();
-                });
-            }
-            
-            // Helper functions
-            function formatDate(dateString) {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' });
-            }
-            
-            function formatMethod(method) {
-                switch(method) {
-                    case 'cash': return 'Cash';
-                    case 'bank': return 'Bank Transfer';
-                    case 'card': return 'Card';
-                    case 'online': return 'Online';
-                    default: return method;
+                    return;
                 }
+                
+                transactionsContainer.innerHTML = '';
+                
+                filteredTransactions.slice().reverse().forEach(transaction => {
+                    const transactionItem = document.createElement('div');
+                    transactionItem.className = 'transaction-item';
+                    
+                    // Determine icon and color based on category
+                    let iconClass, iconBg, iconName;
+                    
+                    switch(transaction.category) {
+                        case 'salary':
+                            iconClass = 'category-income';
+                            iconBg = 'category-income';
+                            iconName = 'fas fa-money-check';
+                            break;
+                        case 'freelance':
+                            iconClass = 'category-income';
+                            iconBg = 'category-income';
+                            iconName = 'fas fa-laptop';
+                            break;
+                        case 'investment':
+                            iconClass = 'category-income';
+                            iconBg = 'category-income';
+                            iconName = 'fas fa-chart-line';
+                            break;
+                        case 'benefits':
+                            iconClass = 'category-income';
+                            iconBg = 'category-income';
+                            iconName = 'fas fa-hand-holding-heart';
+                            break;
+                        case 'food':
+                            iconClass = 'category-food';
+                            iconBg = 'category-food';
+                            iconName = 'fas fa-utensils';
+                            break;
+                        case 'shopping':
+                            iconClass = 'category-shopping';
+                            iconBg = 'category-shopping';
+                            iconName = 'fas fa-shopping-bag';
+                            break;
+                        case 'transport':
+                            iconClass = 'category-transport';
+                            iconBg = 'category-transport';
+                            iconName = 'fas fa-car';
+                            break;
+                        case 'housing':
+                            iconClass = 'category-housing';
+                            iconBg = 'category-housing';
+                            iconName = 'fas fa-home';
+                            break;
+                        case 'council_tax':
+                            iconClass = 'category-tax';
+                            iconBg = 'category-tax';
+                            iconName = 'fas fa-landmark';
+                            break;
+                        case 'utilities':
+                            iconClass = 'category-utilities';
+                            iconBg = 'category-utilities';
+                            iconName = 'fas fa-bolt';
+                            break;
+                        case 'tv_license':
+                            iconClass = 'category-tax';
+                            iconBg = 'category-tax';
+                            iconName = 'fas fa-tv';
+                            break;
+                        case 'pension':
+                            iconClass = 'category-pension';
+                            iconBg = 'category-pension';
+                            iconName = 'fas fa-piggy-bank';
+                            break;
+                        case 'entertainment':
+                            iconClass = 'category-entertainment';
+                            iconBg = 'category-entertainment';
+                            iconName = 'fas fa-gamepad';
+                            break;
+                        default:
+                            iconClass = 'category-other';
+                            iconBg = 'category-other';
+                            iconName = 'fas fa-question';
+                    }
+                    
+                    transactionItem.innerHTML = `
+                        <div class="transaction-info">
+                            <div class="transaction-icon ${iconBg}">
+                                <i class="${iconName}"></i>
+                            </div>
+                            <div class="transaction-details">
+                                <h3>${transaction.description}</h3>
+                                <p>${formatDate(transaction.date)} • ${formatCategory(transaction.category)}</p>
+                            </div>
+                        </div>
+                        <div class="transaction-amount ${transaction.type === 'income' ? 'income-amount' : 'expense-amount'}">
+                            ${transaction.type === 'income' ? '+' : '-'}£${transaction.amount.toFixed(2)}
+                        </div>
+                    `;
+                    
+                    transactionsContainer.appendChild(transactionItem);
+                });
             }
             
+            // Update balance displays
+            function updateBalances() {
+                const totalIncome = transactions
+                    .filter(t => t.type === 'income')
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                const totalExpense = transactions
+                    .filter(t => t.type === 'expense')
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                const balance = totalIncome - totalExpense;
+                
+                currentBalanceEl.textContent = balance.toFixed(2);
+                totalIncomeEl.textContent = `£${totalIncome.toFixed(2)}`;
+                totalExpenseEl.textContent = `£${totalExpense.toFixed(2)}`;
+            }
+            
+            // Update budget display
+            function updateBudgetDisplay() {
+                // Calculate used budget from current month's expenses
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+                
+                const used = transactions
+                    .filter(t => {
+                        const tDate = new Date(t.date);
+                        return t.type === 'expense' && 
+                               tDate.getMonth() === currentMonth && 
+                               tDate.getFullYear() === currentYear;
+                    })
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                totalBudgetEl.textContent = `£${budget.total.toFixed(2)}`;
+                usedBudgetEl.textContent = `£${used.toFixed(2)}`;
+                
+                const remaining = budget.total - used;
+                remainingBudgetEl.textContent = `£${remaining > 0 ? remaining.toFixed(2) : '0.00'}`;
+                
+                const percentage = budget.total > 0 ? (used / budget.total) * 100 : 0;
+                budgetProgressEl.style.width = `${Math.min(percentage, 100)}%`;
+                
+                // Change progress color based on usage
+                if (percentage > 90) {
+                    budgetProgressEl.style.background = 'var(--danger)';
+                } else if (percentage > 75) {
+                    budgetProgressEl.style.background = 'var(--warning)';
+                } else {
+                    budgetProgressEl.style.background = 'var(--success)';
+                }
+                
+                // Calculate days left in month
+                const lastDay = new Date(currentYear, currentMonth + 1, 0);
+                const days = lastDay.getDate() - now.getDate();
+                daysLeftEl.textContent = `${days} ${days === 1 ? 'day' : 'days'}`;
+            }
+            
+            // Update charts with real data
+            function updateCharts() {
+                // Update spending chart
+                const spendingData = {
+                    housing: 0,
+                    food: 0,
+                    transport: 0,
+                    council_tax: 0,
+                    utilities: 0,
+                    other: 0
+                };
+                
+                transactions.filter(t => t.type === 'expense').forEach(t => {
+                    if (spendingData[t.category] !== undefined) {
+                        spendingData[t.category] = (spendingData[t.category] || 0) + t.amount;
+                    } else {
+                        spendingData.other += t.amount;
+                    }
+                });
+                
+                spendingChart.data.datasets[0].data = [
+                    spendingData.housing,
+                    spendingData.food,
+                    spendingData.transport,
+                    spendingData.council_tax,
+                    spendingData.utilities,
+                    spendingData.other
+                ];
+                spendingChart.update();
+                
+                // Update income vs expense chart
+                const monthlyData = {
+                    0: { income: 0, expense: 0 }, // Jan
+                    1: { income: 0, expense: 0 }, // Feb
+                    2: { income: 0, expense: 0 }, // Mar
+                    3: { income: 0, expense: 0 }, // Apr
+                    4: { income: 0, expense: 0 }, // May
+                    5: { income: 0, expense: 0 }, // Jun
+                    6: { income: 0, expense: 0 }, // Jul
+                    7: { income: 0, expense: 0 }, // Aug
+                    8: { income: 0, expense: 0 }, // Sep
+                    9: { income: 0, expense: 0 }, // Oct
+                    10: { income: 0, expense: 0 }, // Nov
+                    11: { income: 0, expense: 0 }  // Dec
+                };
+                
+                transactions.forEach(t => {
+                    const date = new Date(t.date);
+                    const month = date.getMonth();
+                    
+                    if (monthlyData[month]) {
+                        monthlyData[month][t.type] += t.amount;
+                    }
+                });
+                
+                // Update chart data
+                incomeChart.data.datasets[0].data = Object.values(monthlyData).map(m => m.income);
+                incomeChart.data.datasets[1].data = Object.values(monthlyData).map(m => m.expense);
+                incomeChart.update();
+            }
+            
+            // Set budget
+            function setBudget() {
+                const budgetAmount = parseFloat(budgetAmountInput.value);
+                if (isNaN(budgetAmount) || budgetAmount <= 0) {
+                    showNotification('Please enter a valid budget amount', 'error');
+                    return;
+                }
+                
+                budget.total = budgetAmount;
+                saveBudget();
+                updateBudgetDisplay();
+                budgetModal.classList.remove('active');
+                budgetAmountInput.value = '';
+                showNotification('Budget set successfully!');
+            }
+            
+            // Export to CSV
+            function exportToCsv() {
+                if (transactions.length === 0) {
+                    showNotification('No transactions to export', 'error');
+                    return;
+                }
+                
+                let csvContent = 'Date,Type,Category,Description,Amount (£)\n';
+                
+                transactions.forEach(t => {
+                    csvContent += `${t.date},${t.type},${t.category},${t.description},${t.amount}\n`;
+                });
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `fintrack-uk-export-${new Date().toISOString().slice(0, 10)}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showNotification('CSV exported successfully!');
+            }
+            
+            // Export to PDF
+            function exportToPdf() {
+                if (transactions.length === 0) {
+                    showNotification('No transactions to export', 'error');
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Title
+                doc.setFontSize(16);
+                doc.text('FinTrack UK - Transaction Report', 105, 15, null, null, 'center');
+                
+                // Date
+                doc.setFontSize(10);
+                doc.text(`Generated: ${new Date().toLocaleDateString()}`, 105, 22, null, null, 'center');
+                
+                // Summary
+                doc.setFontSize(12);
+                doc.text('Financial Summary', 15, 30);
+                
+                doc.setFontSize(10);
+                doc.text(`Current Balance: £${document.getElementById('currentBalance').textContent}`, 20, 38);
+                doc.text(`Total Income: £${document.getElementById('totalIncome').textContent.slice(1)}`, 20, 45);
+                doc.text(`Total Expenses: £${document.getElementById('totalExpense').textContent.slice(1)}`, 20, 52);
+                doc.text(`Monthly Budget: £${budget.total.toFixed(2)}`, 20, 59);
+                doc.text(`Budget Used: £${document.getElementById('usedBudget').textContent.slice(1)}`, 20, 66);
+                
+                // Transactions table
+                doc.setFontSize(12);
+                doc.text('Transaction History', 15, 75);
+                
+                const tableData = transactions.map(t => [
+                    t.date,
+                    t.type.charAt(0).toUpperCase() + t.type.slice(1),
+                    t.category,
+                    t.description,
+                    `£${t.amount.toFixed(2)}`
+                ]);
+                
+                doc.autoTable({
+                    head: [['Date', 'Type', 'Category', 'Description', 'Amount']],
+                    body: tableData,
+                    startY: 80,
+                    theme: 'grid',
+                    headStyles: { fillColor: [29, 78, 216] },
+                    columnStyles: {
+                        0: { cellWidth: 25 },
+                        1: { cellWidth: 20 },
+                        2: { cellWidth: 25 },
+                        3: { cellWidth: 60 },
+                        4: { cellWidth: 25 }
+                    }
+                });
+                
+                // Save PDF
+                doc.save(`fintrack-uk-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+                showNotification('PDF exported successfully!');
+            }
+            
+            // Reset all data
+            function resetAllData() {
+                transactions = [];
+                budget = { total: 0 };
+                debts = {
+                    owedToMe: [],
+                    owedToOthers: []
+                };
+                
+                localStorage.removeItem('transactions');
+                localStorage.removeItem('budget');
+                localStorage.removeItem('debts');
+                
+                updateBalances();
+                updateBudgetDisplay();
+                renderTransactions();
+                updateCharts();
+                updateDebtDisplay();
+                renderDebtList();
+                
+                resetModal.classList.remove('active');
+                showNotification('All data has been reset!');
+            }
+            
+            // Show notification
             function showNotification(message, type = 'success') {
                 notification.textContent = message;
                 notification.style.background = type === 'error' ? 'var(--danger)' : 'var(--uk-blue)';
@@ -1332,12 +2646,30 @@
                 }, 3000);
             }
             
-            function saveDebts() {
-                localStorage.setItem('debts', JSON.stringify(debts));
+            // Helper functions
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' });
             }
             
-            function savePayments() {
-                localStorage.setItem('payments', JSON.stringify(payments));
+            function formatCategory(category) {
+                // Convert underscores to spaces and capitalize
+                return category.split('_').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ');
+            }
+            
+            function saveData() {
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                localStorage.setItem('budget', JSON.stringify(budget));
+            }
+            
+            function saveBudget() {
+                localStorage.setItem('budget', JSON.stringify(budget));
+            }
+            
+            function saveDebts() {
+                localStorage.setItem('debts', JSON.stringify(debts));
             }
         });
     </script>
