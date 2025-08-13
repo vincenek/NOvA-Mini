@@ -215,27 +215,6 @@
             color: var(--primary);
         }
         
-        .collapse-btn {
-            background: none;
-            border: none;
-            color: var(--primary);
-            font-size: 18px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .collapsed .collapse-btn {
-            transform: rotate(180deg);
-        }
-        
-        .card-content {
-            display: block;
-        }
-        
-        .collapsed .card-content {
-            display: none;
-        }
-        
         .form-group {
             margin-bottom: 12px;
         }
@@ -310,7 +289,6 @@
         
         /* Results Section */
         .result-card {
-            display: none;
             text-align: center;
             padding: 15px;
             background: rgba(76, 201, 240, 0.05);
@@ -354,19 +332,6 @@
             font-weight: 700;
             font-size: 14px;
             box-shadow: 0 3px 8px rgba(67, 97, 238, 0.2);
-            animation: pulse 2s infinite;
-        }
-        
-        .time-equivalent {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--secondary);
-            text-align: center;
-            margin: 15px 0;
-            padding: 10px;
-            background: rgba(67, 97, 238, 0.08);
-            border-radius: 10px;
-            border-left: 3px solid var(--primary);
         }
         
         /* Insights */
@@ -403,12 +368,6 @@
         }
         
         /* Animations */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -563,6 +522,29 @@
             color: var(--success);
         }
         
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+        
         /* Responsive design */
         @media (max-width: 480px) {
             .container {
@@ -593,6 +575,17 @@
                 padding: 12px 5px;
                 font-size: 12px;
             }
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
         }
     </style>
 </head>
@@ -683,11 +676,11 @@
                         </button>
                         
                         <div class="result-card" id="time-result">
-                            <div class="result-value">15.6 min</div>
+                            <div class="result-value" id="time-result-value">15.6 min</div>
                             <div class="result-label">of work needed for this <span id="result-item">Designer Coffee</span></div>
                             
                             <div class="time-visual">
-                                <div class="time-block">15m</div>
+                                <div class="time-block pulse" id="time-block-minutes">15m</div>
                                 <div class="time-block">=</div>
                                 <div class="time-block"><i class="fas fa-coffee"></i></div>
                             </div>
@@ -697,7 +690,7 @@
                                     <i class="fas fa-lightbulb"></i>
                                     Financial Insight
                                 </div>
-                                <p>Buying this daily costs <strong>95 hours/year</strong> - over 2 work weeks!</p>
+                                <p id="insight-text">Buying this daily costs <strong>95 hours/year</strong> - over 2 work weeks!</p>
                             </div>
                         </div>
                     </div>
@@ -746,40 +739,40 @@
                     </div>
                 </div>
                 
-                <div class="savings-card">
+                <div class="savings-card" id="savings-goal-card">
                     <div class="savings-header">
-                        <div class="savings-title">Summer Vacation</div>
-                        <div class="savings-amount">$350/$1200</div>
+                        <div class="savings-title" id="goal-title">Summer Vacation</div>
+                        <div class="savings-amount" id="goal-progress">$350/$1200</div>
                     </div>
                     
                     <div class="savings-details">
                         <div class="detail-item">
                             <div class="detail-label">Target Date</div>
-                            <div class="detail-value">Aug 30, 2023</div>
+                            <div class="detail-value" id="goal-date">Aug 30, 2023</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Days Left</div>
-                            <div class="detail-value">42 days</div>
+                            <div class="detail-value" id="days-left">42 days</div>
                         </div>
                     </div>
                     
                     <div class="savings-progress">
                         <div class="progress-header">
                             <div>Progress</div>
-                            <div>29%</div>
+                            <div id="progress-percent">29%</div>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: 29%"></div>
+                            <div class="progress-fill" id="progress-fill" style="width: 29%"></div>
                         </div>
                     </div>
                     
                     <div class="savings-progress" style="margin-top: 15px;">
                         <div class="progress-header">
-                            <div>Time Value: 14 hours saved</div>
-                            <div>48 hours total</div>
+                            <div>Time Value: <span id="time-saved">14</span> hours saved</div>
+                            <div><span id="time-total">48</span> hours total</div>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: 29%; background: var(--primary);"></div>
+                            <div class="progress-fill" id="time-progress" style="width: 29%; background: var(--primary);"></div>
                         </div>
                     </div>
                     
@@ -787,7 +780,7 @@
                         <div class="time-block">1h</div>
                         <div class="time-block">2h</div>
                         <div class="time-block">3h</div>
-                        <div class="time-block" style="background: var(--success);">14h</div>
+                        <div class="time-block" style="background: var(--success);" id="saved-time-block">14h</div>
                         <div class="time-block">...</div>
                         <div class="time-block">48h</div>
                         <div class="time-block"><i class="fas fa-umbrella-beach"></i></div>
@@ -798,14 +791,14 @@
                             <i class="fas fa-calendar-alt"></i>
                             Timeline
                         </div>
-                        <p>At $25/day, you'll reach your goal in <strong>34 days</strong> - 8 days ahead of schedule!</p>
+                        <p id="timeline-text">At $25/day, you'll reach your goal in <strong>34 days</strong> - 8 days ahead of schedule!</p>
                     </div>
                     
                     <div style="display: flex; gap: 10px; margin-top: 15px;">
-                        <button class="btn btn-secondary" style="flex: 1;">
+                        <button class="btn btn-secondary" id="add-savings-btn" style="flex: 1;">
                             <i class="fas fa-plus"></i> Add Savings
                         </button>
-                        <button class="btn" style="flex: 1;">
+                        <button class="btn" id="edit-goal-btn" style="flex: 1;">
                             <i class="fas fa-edit"></i> Edit Goal
                         </button>
                     </div>
@@ -818,38 +811,8 @@
                     <div class="card-header">
                         <div class="card-title"><i class="fas fa-history"></i> Savings History</div>
                     </div>
-                    <div class="card-content">
-                        <div class="history-item">
-                            <div class="history-info">
-                                <div class="history-name">New Laptop</div>
-                                <div class="history-date">Completed: Jun 15, 2023</div>
-                            </div>
-                            <div class="history-amount">$1200</div>
-                        </div>
-                        
-                        <div class="history-item">
-                            <div class="history-info">
-                                <div class="history-name">Emergency Fund</div>
-                                <div class="history-date">Completed: Apr 3, 2023</div>
-                            </div>
-                            <div class="history-amount">$3000</div>
-                        </div>
-                        
-                        <div class="history-item">
-                            <div class="history-info">
-                                <div class="history-name">Car Down Payment</div>
-                                <div class="history-date">Completed: Jan 20, 2023</div>
-                            </div>
-                            <div class="history-amount">$4500</div>
-                        </div>
-                        
-                        <div class="history-item">
-                            <div class="history-info">
-                                <div class="history-name">Wedding Fund</div>
-                                <div class="history-date">Completed: Dec 12, 2022</div>
-                            </div>
-                            <div class="history-amount">$8000</div>
-                        </div>
+                    <div class="card-content" id="history-content">
+                        <!-- History items will be added here dynamically -->
                     </div>
                 </div>
                 
@@ -861,11 +824,11 @@
                         <div class="savings-details">
                             <div class="detail-item">
                                 <div class="detail-label">Total Time Saved</div>
-                                <div class="detail-value">620 hours</div>
+                                <div class="detail-value" id="total-time-saved">620 hours</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Equivalent To</div>
-                                <div class="detail-value">15.5 work weeks</div>
+                                <div class="detail-value" id="equivalent-time">15.5 work weeks</div>
                             </div>
                         </div>
                         
@@ -874,7 +837,7 @@
                                 <i class="fas fa-lightbulb"></i>
                                 Financial Insight
                             </div>
-                            <p>By reaching your savings goals, you've reclaimed <strong>620 hours</strong> of your life - that's over 3 months of full-time work!</p>
+                            <p id="history-insight">By reaching your savings goals, you've reclaimed <strong>620 hours</strong> of your life - that's over 3 months of full-time work!</p>
                         </div>
                     </div>
                 </div>
@@ -885,8 +848,33 @@
             ValueVision &copy; 2023 | Transform your financial perspective
         </footer>
     </div>
+    
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-info-circle"></i>
+        <span id="toast-message">Savings goal updated!</span>
+    </div>
 
     <script>
+        // App state
+        const state = {
+            hourlyRate: 25,
+            goals: [],
+            history: [
+                { name: "New Laptop", amount: 1200, date: "2023-06-15" },
+                { name: "Emergency Fund", amount: 3000, date: "2023-04-03" },
+                { name: "Car Down Payment", amount: 4500, date: "2023-01-20" },
+                { name: "Wedding Fund", amount: 8000, date: "2022-12-12" }
+            ],
+            currentGoal: {
+                name: "Summer Vacation",
+                target: 1200,
+                saved: 350,
+                dailyTarget: 25,
+                createdAt: new Date()
+            }
+        };
+        
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
             // Set up tab functionality
@@ -905,36 +893,226 @@
             document.getElementById('calculate-btn').addEventListener('click', calculateTimeCost);
             
             // Set up save goal button
-            document.getElementById('save-goal-btn').addEventListener('click', function() {
-                alert('Savings goal updated successfully!');
-            });
+            document.getElementById('save-goal-btn').addEventListener('click', saveGoal);
             
-            // Initialize with first calculation
+            // Set up add savings button
+            document.getElementById('add-savings-btn').addEventListener('click', addSavings);
+            
+            // Set up edit goal button
+            document.getElementById('edit-goal-btn').addEventListener('click', editGoal);
+            
+            // Initialize calculator
             calculateTimeCost();
+            
+            // Initialize savings goal
+            updateSavingsGoal();
+            
+            // Initialize history
+            renderHistory();
+            
+            // Initialize stats
+            updateStats();
         });
         
+        // Calculate time cost
         function calculateTimeCost() {
             const hourlyRate = parseFloat(document.getElementById('hourly-rate').value) || 25;
-            const itemCost = parseFloat(document.getElementById('item-cost').value) || 6.5;
-            const itemName = document.getElementById('item-name').value || "Designer Coffee";
+            const itemCost = parseFloat(document.getElementById('item-cost').value) || 0;
+            const itemName = document.getElementById('item-name').value || "item";
+            
+            // Update state
+            state.hourlyRate = hourlyRate;
             
             // Calculate minutes of work needed
             const minutesOfWork = Math.round((itemCost / hourlyRate) * 60);
             
             // Update result
-            document.querySelector('#time-result .result-value').textContent = minutesOfWork + " min";
+            document.getElementById('time-result-value').textContent = minutesOfWork + " min";
             document.getElementById('result-item').textContent = itemName;
+            document.getElementById('time-block-minutes').textContent = minutesOfWork + "m";
             
             // Calculate yearly impact
             const yearlyHours = Math.round((minutesOfWork * 365) / 60);
             
             // Update insight
-            const insightElement = document.querySelector('#time-result .insight-card p');
-            insightElement.innerHTML = `Buying this daily costs <strong>${yearlyHours} hours/year</strong> - over ${Math.round(yearlyHours / 40)} work weeks!`;
+            const insightElement = document.getElementById('insight-text');
+            if (itemCost > 0) {
+                insightElement.innerHTML = `Buying this daily costs <strong>${yearlyHours} hours/year</strong> - over ${Math.round(yearlyHours / 40)} work weeks!`;
+            } else {
+                insightElement.innerHTML = `Calculate to see how this purchase impacts your time`;
+            }
             
-            // Show result
-            const resultCard = document.getElementById('time-result');
-            resultCard.style.display = 'block';
+            // Update stats
+            updateStats();
+        }
+        
+        // Save goal
+        function saveGoal() {
+            const name = document.getElementById('goal-name').value;
+            const target = parseFloat(document.getElementById('goal-amount').value) || 0;
+            const saved = parseFloat(document.getElementById('saved-amount').value) || 0;
+            const dailyTarget = parseFloat(document.getElementById('daily-savings').value) || 0;
+            
+            // Update state
+            state.currentGoal = {
+                name,
+                target,
+                saved,
+                dailyTarget,
+                createdAt: new Date()
+            };
+            
+            // Update UI
+            updateSavingsGoal();
+            
+            // Show toast
+            showToast('Savings goal updated!');
+        }
+        
+        // Add savings
+        function addSavings() {
+            const amount = parseFloat(prompt("How much did you save today?", "50")) || 0;
+            
+            if (amount > 0) {
+                state.currentGoal.saved += amount;
+                
+                // Prevent saving more than target
+                if (state.currentGoal.saved > state.currentGoal.target) {
+                    state.currentGoal.saved = state.currentGoal.target;
+                }
+                
+                // Update UI
+                updateSavingsGoal();
+                
+                // Show toast
+                showToast(`Added $${amount} to your savings!`);
+            }
+        }
+        
+        // Edit goal
+        function editGoal() {
+            document.getElementById('goal-name').value = state.currentGoal.name;
+            document.getElementById('goal-amount').value = state.currentGoal.target;
+            document.getElementById('saved-amount').value = state.currentGoal.saved;
+            document.getElementById('daily-savings').value = state.currentGoal.dailyTarget;
+            
+            // Switch to savings tab
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.querySelector('[data-tab="savings"]').classList.add('active');
+            document.getElementById('savings').classList.add('active');
+            
+            // Scroll to form
+            document.getElementById('goal-name').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Update savings goal UI
+        function updateSavingsGoal() {
+            const goal = state.currentGoal;
+            
+            // Calculate values
+            const progress = Math.min(100, Math.round((goal.saved / goal.target) * 100));
+            const hoursTotal = Math.round(goal.target / state.hourlyRate);
+            const hoursSaved = Math.round(goal.saved / state.hourlyRate);
+            const remaining = goal.target - goal.saved;
+            const daysNeeded = Math.ceil(remaining / goal.dailyTarget);
+            
+            // Set target date (today + days needed)
+            const targetDate = new Date();
+            targetDate.setDate(targetDate.getDate() + daysNeeded);
+            const formattedDate = targetDate.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+            
+            // Days left
+            const today = new Date();
+            const timeDiff = targetDate.getTime() - today.getTime();
+            const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            
+            // Update UI
+            document.getElementById('goal-title').textContent = goal.name;
+            document.getElementById('goal-progress').textContent = `$${goal.saved}/$${goal.target}`;
+            document.getElementById('progress-percent').textContent = `${progress}%`;
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+            document.getElementById('time-saved').textContent = hoursSaved;
+            document.getElementById('time-total').textContent = hoursTotal;
+            document.getElementById('time-progress').style.width = `${progress}%`;
+            document.getElementById('saved-time-block').textContent = `${hoursSaved}h`;
+            document.getElementById('goal-date').textContent = formattedDate;
+            document.getElementById('days-left').textContent = `${daysLeft} days`;
+            
+            // Timeline text
+            const timelineElement = document.getElementById('timeline-text');
+            if (goal.saved >= goal.target) {
+                timelineElement.innerHTML = "Congratulations! You've reached your savings goal!";
+            } else {
+                timelineElement.innerHTML = `At $${goal.dailyTarget}/day, you'll reach your goal in <strong>${daysNeeded} days</strong>!`;
+            }
+            
+            // Update stats
+            updateStats();
+        }
+        
+        // Render history
+        function renderHistory() {
+            const historyContent = document.getElementById('history-content');
+            historyContent.innerHTML = '';
+            
+            state.history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <div class="history-info">
+                        <div class="history-name">${item.name}</div>
+                        <div class="history-date">Completed: ${new Date(item.date).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                        })}</div>
+                    </div>
+                    <div class="history-amount">$${item.amount}</div>
+                `;
+                historyContent.appendChild(historyItem);
+            });
+            
+            // Calculate total time saved
+            const totalAmount = state.history.reduce((sum, item) => sum + item.amount, 0);
+            const totalHours = Math.round(totalAmount / state.hourlyRate);
+            const workWeeks = (totalHours / 40).toFixed(1);
+            
+            // Update history stats
+            document.getElementById('total-time-saved').textContent = `${totalHours} hours`;
+            document.getElementById('equivalent-time').textContent = `${workWeeks} work weeks`;
+            document.getElementById('history-insight').innerHTML = 
+                `By reaching your savings goals, you've reclaimed <strong>${totalHours} hours</strong> of your life - that's over ${workWeeks} weeks of full-time work!`;
+        }
+        
+        // Update stats
+        function updateStats() {
+            // In a real app, this would come from actual usage data
+            const spentToday = (Math.random() * 100).toFixed(2);
+            const hoursWorked = (Math.random() * 8).toFixed(1);
+            const savedAmount = state.currentGoal.saved;
+            
+            document.getElementById('stat-spent').textContent = '$' + spentToday;
+            document.getElementById('stat-hours').textContent = hoursWorked;
+            document.getElementById('stat-saved').textContent = '$' + savedAmount;
+        }
+        
+        // Show toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
     </script>
 </body>
