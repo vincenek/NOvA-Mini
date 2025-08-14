@@ -3,393 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ValueVision | Time-Based Financial Awareness</title>
+    <title>DebtFree Compass - Offline Loan Manager</title>
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* CSS Variables for consistent theming */
         :root {
-            --primary: #4361ee;
-            --secondary: #3a0ca3;
-            --accent: #4cc9f0;
-            --success: #2ec4b6;
-            --warning: #ff9f1c;
-            --error: #e71d36;
-            --dark: #2b2d42;
-            --light: #f8f9fa;
-            --card: #ffffff;
-            --radius: 16px;
-            --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-            --transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --secondary-dark: #059669;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --light-gray: #e2e8f0;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --box-shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+            --transition: all 0.3s ease;
         }
-        
+
+        /* Reset and Base Styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
-        
+
         body {
-            background: linear-gradient(135deg, #f0f4ff 0%, #e6f7ff 100%);
+            background-color: #f1f5f9;
             color: var(--dark);
-            min-height: 100vh;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             line-height: 1.6;
-            position: relative;
             overflow-x: hidden;
         }
-        
+
         .container {
-            width: 100%;
-            max-width: 480px;
-            background: rgba(255, 255, 255, 0.98);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            position: relative;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.4s ease;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 16px;
         }
-        
-        .container.settings-open {
-            transform: translateX(-30%);
-        }
-        
-        /* Settings Panel */
-        .settings-panel {
-            position: fixed;
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px 0;
+            box-shadow: var(--box-shadow);
+            position: sticky;
             top: 0;
-            right: -350px;
-            width: 350px;
-            height: 100vh;
-            background: white;
-            box-shadow: -5px 0 25px rgba(0,0,0,0.1);
-            z-index: 1000;
-            padding: 20px;
-            transition: right 0.4s ease;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
+            z-index: 100;
         }
-        
-        .settings-panel.active {
-            right: 0;
-        }
-        
-        .settings-header {
+
+        .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e0e7ff;
-            margin-bottom: 20px;
         }
-        
-        .settings-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--secondary);
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        
-        .close-settings {
-            background: #f0f4ff;
-            border: none;
+
+        .logo-icon {
+            background: white;
+            color: var(--primary);
             width: 40px;
             height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
+            font-weight: bold;
+            font-size: 20px;
         }
-        
-        .close-settings:hover {
-            background: #e0e7ff;
-        }
-        
-        .settings-section {
-            margin-bottom: 25px;
-        }
-        
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .settings-item {
-            background: #f8f9fa;
-            border-radius: var(--radius);
-            padding: 16px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            cursor: pointer;
-            transition: var(--transition);
-            border: 1px solid #e0e7ff;
-        }
-        
-        .settings-item:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow);
-            border-color: var(--accent);
-        }
-        
-        .feature-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 18px;
-        }
-        
-        .feature-info {
-            flex: 1;
-        }
-        
-        .feature-title {
-            font-weight: 600;
-            margin-bottom: 4px;
-            font-size: 16px;
-        }
-        
-        .feature-desc {
-            font-size: 13px;
-            color: #6c738d;
-        }
-        
-        .coming-soon {
-            background: #f0f4ff;
-            color: var(--primary);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        /* Reset Button */
-        .reset-btn {
-            background: #fff0f0;
-            color: var(--error);
-            border: none;
-            padding: 16px;
-            border-radius: var(--radius);
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            margin-top: 10px;
-            transition: var(--transition);
-        }
-        
-        .reset-btn:hover {
-            background: #ffe0e0;
-        }
-        
-        /* Coming Soon Modal */
-        .coming-soon-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        
-        .coming-soon-modal.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-        
-        .modal-content {
-            background: white;
-            width: 90%;
-            max-width: 400px;
-            border-radius: var(--radius);
-            padding: 30px;
-            text-align: center;
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
-        
-        .coming-soon-modal.active .modal-content {
-            transform: translateY(0);
-        }
-        
-        .modal-icon {
-            width: 70px;
-            height: 70px;
-            background: rgba(76, 201, 240, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 32px;
-            color: var(--primary);
-        }
-        
-        .modal-title {
-            font-size: 24px;
+
+        .logo-text {
+            font-size: 1.5rem;
             font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--secondary);
         }
-        
-        .modal-text {
-            font-size: 16px;
-            color: #5a5f7c;
-            margin-bottom: 25px;
-            line-height: 1.6;
-        }
-        
-        .modal-btn {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            border: none;
-            padding: 14px 24px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            width: 100%;
-        }
-        
-        .modal-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
-        }
-        
-        /* Header */
-        header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 20px 15px 15px;
-            position: relative;
-            overflow: hidden;
-            z-index: 10;
-        }
-        
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .logo-icon {
+
+        .motivation-btn {
             background: rgba(255, 255, 255, 0.2);
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 22px;
+            gap: 8px;
         }
-        
-        h1 {
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+        .motivation-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
-        
-        .subtitle {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        
-        /* Stats */
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            padding: 12px;
-            backdrop-filter: blur(5px);
-            margin-top: 10px;
-        }
-        
-        .stat-card {
-            text-align: center;
-            padding: 0 8px;
-            flex: 1;
-        }
-        
-        .stat-value {
-            font-size: 17px;
-            font-weight: 700;
-            margin-bottom: 3px;
-            color: white;
-        }
-        
-        .stat-label {
-            font-size: 12px;
-            opacity: 0.85;
-            color: rgba(255,255,255,0.9);
-        }
-        
-        /* Tabs */
+
+        /* Tab Navigation */
         .tabs {
             display: flex;
             background: white;
-            border-bottom: 1px solid #e0e7ff;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin: 24px 0;
+            box-shadow: var(--box-shadow);
         }
-        
+
         .tab {
             flex: 1;
             text-align: center;
-            padding: 16px 5px;
-            font-weight: 700;
-            color: #6c738d;
+            padding: 16px;
+            font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
             position: relative;
-            font-size: 14px;
         }
-        
+
         .tab.active {
             color: var(--primary);
         }
-        
-        .tab.active:after {
+
+        .tab.active::after {
             content: '';
             position: absolute;
             bottom: 0;
@@ -397,1359 +138,1100 @@
             width: 100%;
             height: 3px;
             background: var(--primary);
-            border-radius: 3px 3px 0 0;
         }
-        
-        /* Main Content */
-        main {
-            padding: 15px;
-            flex: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+
+        .tab:hover:not(.active) {
+            background: var(--light-gray);
         }
-        
+
+        /* Tab Content */
         .tab-content {
             display: none;
         }
-        
+
         .tab-content.active {
             display: block;
-            animation: fadeIn 0.4s ease-out;
+            animation: fadeIn 0.4s ease;
         }
-        
-        /* Card Design */
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card Styles */
         .card {
-            background: var(--card);
-            border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            margin-bottom: 20px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 24px;
+            margin-bottom: 24px;
             transition: var(--transition);
         }
-        
+
+        .card:hover {
+            box-shadow: var(--box-shadow-lg);
+        }
+
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--light-gray);
         }
-        
+
         .card-title {
-            font-size: 18px;
+            font-size: 1.25rem;
             font-weight: 700;
-            color: var(--secondary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            color: var(--dark);
         }
-        
-        .card-title i {
-            color: var(--primary);
-        }
-        
-        /* Form Elements */
+
+        /* Form Styles */
         .form-group {
             margin-bottom: 16px;
         }
-        
+
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
-            font-size: 14px;
             color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
-        
+
         input, select {
             width: 100%;
-            padding: 14px;
-            border: 2px solid #e0e7ff;
-            border-radius: 12px;
-            background: white;
-            font-size: 16px;
+            padding: 12px 16px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 1rem;
             transition: var(--transition);
-            color: var(--dark);
         }
-        
+
         input:focus, select:focus {
-            border-color: var(--accent);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
-        
-        .input-group {
-            position: relative;
-        }
-        
-        .input-group span {
-            position: absolute;
-            right: 14px;
-            top: 14px;
-            color: var(--primary);
-            font-weight: 700;
-            font-size: 15px;
-        }
-        
-        /* Buttons */
+
         .btn {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
+            border-radius: 8px;
+            font-weight: 600;
             cursor: pointer;
-            width: 100%;
             transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 15px;
+            text-align: center;
         }
-        
+
         .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+            background: var(--primary-dark);
         }
-        
+
         .btn-secondary {
-            background: white;
+            background: var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary-dark);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
             color: var(--primary);
-            border: 2px solid var(--primary);
         }
-        
-        /* Results Section */
-        .result-card {
-            text-align: center;
-            padding: 20px;
-            background: rgba(76, 201, 240, 0.05);
-            border-radius: var(--radius);
-            margin-top: 15px;
-            animation: fadeIn 0.6s ease-out forwards;
-        }
-        
-        .result-value {
-            font-size: 38px;
-            font-weight: 800;
-            margin: 15px 0;
-            color: var(--secondary);
-            line-height: 1.1;
-        }
-        
-        .result-label {
-            font-size: 16px;
-            color: #5a5f7c;
-            margin-bottom: 20px;
-        }
-        
-        /* Time Visualization */
-        .time-visual {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin: 20px 0;
-        }
-        
-        .time-block {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+
+        .btn-outline:hover {
+            background: var(--primary);
             color: white;
-            font-weight: 700;
-            font-size: 16px;
-            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.25);
         }
-        
-        /* Insights */
-        .insight-card {
-            background: linear-gradient(135deg, #fdf6e3 0%, #fff9e6 100%);
-            border-left: 4px solid var(--warning);
-            padding: 16px;
-            border-radius: 0 12px 12px 0;
-            margin-top: 20px;
-            text-align: left;
-            font-size: 14px;
+
+        .btn-danger {
+            background: var(--danger);
         }
-        
-        .insight-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-            color: var(--warning);
-            font-weight: 600;
-            font-size: 16px;
+
+        .btn-danger:hover {
+            background: #dc2626;
         }
-        
-        /* Footer */
-        footer {
-            background: var(--light);
-            padding: 15px;
-            text-align: center;
-            color: #6c738d;
-            font-size: 13px;
-            border-top: 1px solid #e0e7ff;
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.875rem;
         }
-        
-        /* Savings Card */
-        .savings-card {
-            background: white;
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
-            border-left: 5px solid var(--success);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .savings-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 80px;
-            height: 80px;
-            background: rgba(46, 196, 182, 0.1);
-            border-radius: 0 0 0 100%;
-        }
-        
-        .savings-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .savings-title {
-            font-weight: 700;
-            font-size: 18px;
-            color: var(--dark);
-        }
-        
-        .savings-amount {
-            font-weight: 700;
-            font-size: 20px;
-            color: var(--success);
-        }
-        
-        .savings-details {
+
+        /* Loan Dashboard */
+        .loans-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .loan-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transition: var(--transition);
             position: relative;
-            z-index: 2;
         }
-        
-        .detail-item {
-            background: rgba(46, 196, 182, 0.1);
-            border-radius: 10px;
-            padding: 12px;
-            font-size: 14px;
+
+        .loan-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--box-shadow-lg);
         }
-        
-        .detail-label {
-            font-weight: 600;
-            color: var(--success);
-            margin-bottom: 5px;
-            font-size: 13px;
+
+        .loan-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 16px;
         }
-        
-        .detail-value {
+
+        .loan-name {
+            font-size: 1.25rem;
             font-weight: 700;
-            font-size: 16px;
+            margin-bottom: 4px;
         }
-        
-        /* Progress Bar */
-        .savings-progress {
-            margin: 20px 0;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .progress-header {
+
+        .loan-details {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 15px;
-            font-weight: 600;
+            font-size: 0.875rem;
         }
-        
+
+        .loan-body {
+            padding: 16px;
+        }
+
+        .loan-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 12px;
+            background: var(--light);
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
         .progress-bar {
-            height: 12px;
-            background: #e0e7ff;
-            border-radius: 6px;
+            height: 8px;
+            background: var(--light-gray);
+            border-radius: 4px;
             overflow: hidden;
+            margin: 16px 0;
         }
-        
-        .progress-fill {
+
+        .progress {
             height: 100%;
-            background: linear-gradient(90deg, var(--success) 0%, var(--accent) 100%);
-            border-radius: 6px;
+            background: var(--secondary);
+            border-radius: 4px;
             transition: width 0.5s ease;
         }
-        
-        /* History Item */
-        .history-item {
+
+        .loan-footer {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #e0e7ff;
+            padding: 0 16px 16px;
+        }
+
+        .chart-container {
+            height: 200px;
+            margin: 16px 0;
+        }
+
+        /* Timeline */
+        .timeline {
+            display: flex;
+            justify-content: space-between;
             position: relative;
-            background: white;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin: 32px 0;
         }
-        
-        .history-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--light-gray);
+            z-index: 1;
         }
-        
-        .history-info {
+
+        .timeline-item {
+            text-align: center;
+            z-index: 2;
+            position: relative;
             flex: 1;
         }
-        
-        .history-name {
-            font-weight: 600;
-            margin-bottom: 5px;
-            font-size: 16px;
-        }
-        
-        .history-date {
-            font-size: 13px;
-            color: #7a7f9a;
-        }
-        
-        .history-amount {
-            font-weight: 700;
-            font-size: 18px;
-        }
-        
-        .history-type {
-            font-size: 12px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            background: #f0f4ff;
-            color: var(--primary);
-            margin-top: 5px;
-        }
-        
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        /* Toast Notification */
-        .toast {
-            position: fixed;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--dark);
-            color: white;
-            padding: 14px 28px;
-            border-radius: 30px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 15px;
-            font-weight: 500;
-        }
-        
-        .toast.show {
-            opacity: 1;
-        }
-        
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 30px 20px;
-            color: #7a7f9a;
-        }
-        
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 15px;
-            color: var(--primary);
-            opacity: 0.5;
-        }
-        
-        .empty-state h3 {
-            font-size: 20px;
-            margin-bottom: 10px;
-            color: var(--dark);
-        }
-        
-        .empty-state p {
-            font-size: 15px;
-            max-width: 300px;
-            margin: 0 auto;
-        }
-        
-        /* Feature Roadmap */
-        .roadmap-container {
-            background: #f8f9fa;
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .roadmap-title {
-            text-align: center;
-            margin-bottom: 20px;
-            color: var(--secondary);
-            font-weight: 700;
-        }
-        
-        .roadmap-item {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px dashed #e0e7ff;
-        }
-        
-        .roadmap-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-        
-        .roadmap-icon {
-            width: 36px;
-            height: 36px;
-            background: var(--primary);
-            border-radius: 10px;
+
+        .timeline-marker {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid var(--light-gray);
+            margin: 0 auto 8px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: bold;
+            color: var(--gray);
+            transition: var(--transition);
+        }
+
+        .timeline-item.active .timeline-marker {
+            background: var(--secondary);
+            border-color: var(--secondary);
             color: white;
-            font-size: 16px;
-            flex-shrink: 0;
-            margin-right: 15px;
         }
-        
-        .roadmap-content {
-            flex: 1;
+
+        .timeline-item.completed .timeline-marker {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
         }
-        
-        .roadmap-feature {
-            font-weight: 600;
-            margin-bottom: 5px;
+
+        .timeline-label {
+            font-size: 0.875rem;
+            color: var(--gray);
         }
-        
-        .roadmap-desc {
-            font-size: 14px;
-            color: #5a5f7c;
+
+        /* Coming Soon Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--box-shadow-lg);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 700;
             margin-bottom: 8px;
         }
-        
-        .roadmap-status {
-            display: inline-block;
-            padding: 4px 10px;
-            background: #e6f7ff;
-            color: var(--primary);
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
+
+        .feature-desc {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
         }
-        
-        /* Responsive design */
-        @media (max-width: 480px) {
-            .container {
-                height: 100vh;
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow-lg);
+            max-width: 500px;
+            width: 90%;
+            padding: 32px;
+            text-align: center;
+            position: relative;
+            animation: modalIn 0.4s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .modal-text {
+            color: var(--gray);
+            margin-bottom: 24px;
+        }
+
+        /* Motivation Celebration */
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .celebration.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .celebration-content {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 32px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .celebration.active .celebration-content {
+            transform: scale(1);
+        }
+
+        .celebration-icon {
+            font-size: 64px;
+            color: var(--secondary);
+            margin-bottom: 16px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .celebration-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--dark);
+        }
+
+        .celebration-text {
+            font-size: 1.2rem;
+            color: var(--gray);
+            margin-bottom: 24px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .loans-grid {
+                grid-template-columns: 1fr;
             }
             
-            .settings-panel {
-                width: 300px;
-                right: -300px;
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
             }
             
-            .container.settings-open {
-                transform: translateX(-40%);
-            }
-            
-            header {
-                padding: 15px 12px 12px;
-            }
-            
-            h1 {
-                font-size: 20px;
-            }
-            
-            .subtitle {
-                font-size: 13px;
-            }
-            
-            .stat-value {
-                font-size: 16px;
-            }
-            
-            .stat-label {
-                font-size: 11px;
+            .tabs {
+                flex-wrap: wrap;
             }
             
             .tab {
-                padding: 14px 5px;
-                font-size: 13px;
+                flex: 1 0 33%;
             }
             
-            .history-item {
-                padding: 12px;
+            .features-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Settings Panel -->
-    <div class="settings-panel" id="settings-panel">
-        <div class="settings-header">
-            <div class="settings-title">Settings</div>
-            <button class="close-settings" id="close-settings">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="settings-section">
-            <h3 class="section-title"><i class="fas fa-cog"></i> App Settings</h3>
-            
-            <button class="reset-btn" id="reset-app">
-                <i class="fas fa-redo"></i> Reset Application Data
-            </button>
-        </div>
-        
-        <div class="settings-section">
-            <h3 class="section-title"><i class="fas fa-star"></i> Innovative Features</h3>
-            
-            <div class="settings-item" data-feature="bank-integration">
-                <div class="feature-icon">
-                    <i class="fas fa-university"></i>
+    <!-- Header with Logo and Motivation Button -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">DF</div>
+                    <div class="logo-text">DebtFree Compass</div>
                 </div>
-                <div class="feature-info">
-                    <div class="feature-title">Bank Integration</div>
-                    <div class="feature-desc">Connect your bank accounts for automatic tracking</div>
-                </div>
-                <div class="coming-soon">COMING SOON</div>
-            </div>
-            
-            <div class="settings-item" data-feature="sms-integration">
-                <div class="feature-icon">
-                    <i class="fas fa-comment-alt"></i>
-                </div>
-                <div class="feature-info">
-                    <div class="feature-title">SMS Integration</div>
-                    <div class="feature-desc">Track expenses via SMS notifications</div>
-                </div>
-                <div class="coming-soon">COMING SOON</div>
-            </div>
-            
-            <div class="settings-item" data-feature="time-bank">
-                <div class="feature-icon">
-                    <i class="fas fa-hourglass-half"></i>
-                </div>
-                <div class="feature-info">
-                    <div class="feature-title">Time Bank</div>
-                    <div class="feature-desc">Save time instead of money for future purchases</div>
-                </div>
-                <div class="coming-soon">COMING SOON</div>
+                <button id="motivationBtn" class="motivation-btn">
+                    <span>🎉</span> Motivation Mode
+                </button>
             </div>
         </div>
+    </header>
+    
+    <div class="container">
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <div class="tab active" data-tab="loans">My Loans</div>
+            <div class="tab" data-tab="whatif">What If Simulator</div>
+            <div class="tab" data-tab="comingsoon">Coming Soon</div>
+        </div>
         
-        <div class="roadmap-container">
-            <div class="roadmap-title">Feature Roadmap</div>
-            
-            <div class="roadmap-item">
-                <div class="roadmap-icon">
-                    <i class="fas fa-robot"></i>
+        <!-- Tab Content -->
+        <div id="loansTab" class="tab-content active">
+            <!-- Add Loan Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Add New Loan</h2>
                 </div>
-                <div class="roadmap-content">
-                    <div class="roadmap-feature">Financial AI Advisor</div>
-                    <div class="roadmap-desc">Get personalized financial advice based on your spending habits</div>
-                    <span class="roadmap-status">In Development</span>
+                <form id="loanForm">
+                    <div class="form-group">
+                        <label for="loanName">Loan Name</label>
+                        <input type="text" id="loanName" placeholder="e.g., Credit Card, Student Loan" required>
+                    </div>
+                    
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label for="loanBalance">Current Balance ($)</label>
+                            <input type="number" id="loanBalance" min="0" step="0.01" placeholder="5000" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="interestRate">Interest Rate (%)</label>
+                            <input type="number" id="interestRate" min="0" step="0.01" placeholder="7.5" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label for="minPayment">Minimum Payment ($)</label>
+                            <input type="number" id="minPayment" min="0" step="0.01" placeholder="100" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="strategy">Payoff Strategy</label>
+                            <select id="strategy">
+                                <option value="avalanche">Avalanche (Highest Interest First)</option>
+                                <option value="snowball">Snowball (Lowest Balance First)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn">Add Loan</button>
+                </form>
+            </div>
+            
+            <!-- Strategy Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Payoff Strategy</h2>
+                </div>
+                <div id="strategyInfo">
+                    <p>You are using the <strong>Avalanche method</strong> to pay off your debts. This strategy saves you the most money on interest.</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" style="width: 35%;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                    <span>Total Debt: $24,500</span>
+                    <span>Paid: $8,575 (35%)</span>
                 </div>
             </div>
             
-            <div class="roadmap-item">
-                <div class="roadmap-icon">
-                    <i class="fas fa-chart-line"></i>
+            <!-- Loans Dashboard -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Your Loans</h2>
+                    <button id="resetBtn" class="btn btn-danger btn-sm">Reset All</button>
                 </div>
-                <div class="roadmap-content">
-                    <div class="roadmap-feature">Investment Insights</div>
-                    <div class="roadmap-desc">Track investments in time equivalents</div>
-                    <span class="roadmap-status">Planned for Q3</span>
+                
+                <div id="loansContainer" class="loans-grid">
+                    <!-- Loan cards will be dynamically inserted here -->
                 </div>
             </div>
-            
-            <div class="roadmap-item">
-                <div class="roadmap-icon">
-                    <i class="fas fa-stopwatch"></i>
+        </div>
+        
+        <!-- What If Simulator Tab -->
+        <div id="whatifTab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Payment Simulator</h2>
                 </div>
-                <div class="roadmap-content">
-                    <div class="roadmap-feature">Time Tracker</div>
-                    <div class="roadmap-desc">Track your actual working hours</div>
-                    <span class="roadmap-status">Planned for Q4</span>
+                <p>Adjust your monthly payments to see how much faster you can become debt-free and how much interest you'll save.</p>
+                
+                <div class="chart-container">
+                    <canvas id="simulationChart"></canvas>
+                </div>
+                
+                <div class="form-group">
+                    <label for="extraPayment">Extra Monthly Payment ($)</label>
+                    <input type="range" id="extraPayment" min="0" max="500" step="10" value="0">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>$0</span>
+                        <span id="extraPaymentValue">$0</span>
+                        <span>$500</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Projected Results</h3>
+                    <div class="loan-stats">
+                        <div class="stat">
+                            <div class="stat-label">Payoff Time</div>
+                            <div class="stat-value">5.2 years</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Interest Saved</div>
+                            <div class="stat-value">$3,450</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">New Payoff Date</div>
+                            <div class="stat-value">Aug 2028</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Total Savings</div>
+                            <div class="stat-value">$8,200</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 style="margin: 24px 0 16px;">Payoff Timeline</h3>
+                <div class="timeline">
+                    <div class="timeline-item completed">
+                        <div class="timeline-marker">✓</div>
+                        <div class="timeline-label">Loan Setup</div>
+                    </div>
+                    <div class="timeline-item active">
+                        <div class="timeline-marker">25%</div>
+                        <div class="timeline-label">Q1 2024</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">50%</div>
+                        <div class="timeline-label">Q3 2025</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">75%</div>
+                        <div class="timeline-label">Q1 2027</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">100%</div>
+                        <div class="timeline-label">Q4 2028</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Coming Soon Tab -->
+        <div id="comingsoonTab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Future Features</h2>
+                </div>
+                <p>We're constantly improving DebtFree Compass. Here's what we're working on next:</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card" data-feature="bank">
+                        <div class="feature-icon">🏦</div>
+                        <h3 class="feature-title">Bank Integration</h3>
+                        <p class="feature-desc">Automatically sync your loan balances with your bank accounts</p>
+                        <button class="btn btn-outline">Learn More</button>
+                    </div>
+                    
+                    <div class="feature-card" data-feature="ai">
+                        <div class="feature-icon">🤖</div>
+                        <h3 class="feature-title">AI Payoff Assistant</h3>
+                        <p class="feature-desc">Get personalized payoff strategies from our AI assistant</p>
+                        <button class="btn btn-outline">Learn More</button>
+                    </div>
+                    
+                    <div class="feature-card" data-feature="sync">
+                        <div class="feature-icon">☁️</div>
+                        <h3 class="feature-title">Cloud Sync</h3>
+                        <p class="feature-desc">Access your debt plan from any device with secure sync</p>
+                        <button class="btn btn-outline">Learn More</button>
+                    </div>
+                    
+                    <div class="feature-card" data-feature="notifications">
+                        <div class="feature-icon">🔔</div>
+                        <h3 class="feature-title">Payment Reminders</h3>
+                        <p class="feature-desc">Get notified about upcoming payments and milestones</p>
+                        <button class="btn btn-outline">Learn More</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     
     <!-- Coming Soon Modal -->
-    <div class="coming-soon-modal" id="coming-soon-modal">
+    <div id="comingSoonModal" class="modal">
         <div class="modal-content">
-            <div class="modal-icon">
-                <i class="fas fa-wrench"></i>
-            </div>
-            <h3 class="modal-title">Feature Coming Soon!</h3>
-            <p class="modal-text" id="modal-text">We're working hard to bring you this innovative feature in our next update. Stay tuned for exciting new capabilities!</p>
-            <button class="modal-btn" id="modal-close">Got It!</button>
+            <button class="modal-close">&times;</button>
+            <div class="modal-icon">🚀</div>
+            <h2 class="modal-title">Coming Soon!</h2>
+            <p class="modal-text">This feature is currently in development. We're working hard to bring you the best debt payoff experience.</p>
+            <p class="modal-text">Stay tuned for updates!</p>
+            <button class="btn">Got It</button>
         </div>
     </div>
     
-    <div class="container" id="app-container">
-        <!-- Header -->
-        <header>
-            <div class="header-top">
-                <div class="logo">
-                    <div class="logo-icon">
-                        <i class="fas fa-hourglass-half"></i>
-                    </div>
-                    <h1>ValueVision</h1>
-                </div>
-                <div id="settings-toggle">
-                    <i class="fas fa-cog" style="font-size: 22px; color: white;"></i>
-                </div>
-            </div>
-            <div class="subtitle">Transform money into time equivalents for smarter decisions</div>
-            
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-spent">$0.00</div>
-                    <div class="stat-label">Spent Today</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-hours">0</div>
-                    <div class="stat-label">Hours Worked</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-saved">$0.00</div>
-                    <div class="stat-label">Saved</div>
-                </div>
-            </div>
-        </header>
-        
-        <!-- Tab Navigation -->
-        <div class="tabs">
-            <div class="tab active" data-tab="calculator">Calculator</div>
-            <div class="tab" data-tab="savings">Savings</div>
-            <div class="tab" data-tab="history">History</div>
+    <!-- Celebration Modal -->
+    <div id="celebration" class="celebration">
+        <div class="celebration-content">
+            <div class="celebration-icon">🎉</div>
+            <h2 class="celebration-title">Milestone Achieved!</h2>
+            <p class="celebration-text" id="celebrationMessage">You've paid off 25% of your Credit Card debt! Keep up the great work!</p>
+            <button class="btn" id="closeCelebration">Continue</button>
         </div>
-        
-        <!-- Main Content -->
-        <main>
-            <!-- Calculator Tab -->
-            <div class="tab-content active" id="calculator">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title"><i class="fas fa-money-bill-wave"></i> Your Earning Power</div>
-                    </div>
-                    <div class="card-content">
-                        <div class="form-group">
-                            <label for="hourly-rate"><i class="fas fa-dollar-sign"></i> Hourly Rate</label>
-                            <div class="input-group">
-                                <input type="number" id="hourly-rate" placeholder="0.00" value="0">
-                                <span>$/hr</span>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="daily-hours"><i class="fas fa-clock"></i> Daily Work Hours</label>
-                            <input type="number" id="daily-hours" placeholder="8" value="0">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title"><i class="fas fa-shopping-cart"></i> Purchase Evaluation</div>
-                    </div>
-                    <div class="card-content">
-                        <div class="form-group">
-                            <label for="item-name"><i class="fas fa-tag"></i> Item Name</label>
-                            <input type="text" id="item-name" placeholder="e.g. Coffee, Dinner Out">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="item-cost"><i class="fas fa-dollar-sign"></i> Item Cost</label>
-                            <div class="input-group">
-                                <input type="number" id="item-cost" placeholder="0.00" value="0">
-                                <span>USD</span>
-                            </div>
-                        </div>
-                        
-                        <button class="btn" id="calculate-btn">
-                            <i class="fas fa-hourglass-half"></i> Calculate Time Cost
-                        </button>
-                        
-                        <div class="result-card" id="time-result" style="display: none;">
-                            <div class="result-value" id="time-result-value">0 min</div>
-                            <div class="result-label">of work needed for this <span id="result-item">item</span></div>
-                            
-                            <div class="time-visual">
-                                <div class="time-block" id="time-block-minutes">0m</div>
-                                <div class="time-block">=</div>
-                                <div class="time-block"><i class="fas fa-shopping-bag"></i></div>
-                            </div>
-                            
-                            <div class="insight-card">
-                                <div class="insight-title">
-                                    <i class="fas fa-lightbulb"></i>
-                                    Financial Insight
-                                </div>
-                                <p id="insight-text">Enter values to see how purchases impact your time</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Savings Tab -->
-            <div class="tab-content" id="savings">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title"><i class="fas fa-bullseye"></i> Create Savings Goal</div>
-                    </div>
-                    <div class="card-content">
-                        <div class="form-group">
-                            <label for="goal-name"><i class="fas fa-crosshairs"></i> Goal Name</label>
-                            <input type="text" id="goal-name" placeholder="e.g. Vacation, New Laptop">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="goal-amount"><i class="fas fa-dollar-sign"></i> Target Amount</label>
-                            <div class="input-group">
-                                <input type="number" id="goal-amount" placeholder="0.00" value="0">
-                                <span>USD</span>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="saved-amount"><i class="fas fa-piggy-bank"></i> Amount Saved</label>
-                            <div class="input-group">
-                                <input type="number" id="saved-amount" placeholder="0.00" value="0">
-                                <span>USD</span>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="daily-savings"><i class="fas fa-calendar-day"></i> Daily Savings Target</label>
-                            <div class="input-group">
-                                <input type="number" id="daily-savings" placeholder="0.00" value="0">
-                                <span>USD</span>
-                            </div>
-                        </div>
-                        
-                        <button class="btn" id="save-goal-btn">
-                            <i class="fas fa-save"></i> Save Goal
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="savings-card" id="savings-goal-card" style="display: none;">
-                    <div class="savings-header">
-                        <div class="savings-title" id="goal-title">Goal Name</div>
-                        <div class="savings-amount" id="goal-progress">$0.00/$0.00</div>
-                    </div>
-                    
-                    <div class="savings-details">
-                        <div class="detail-item">
-                            <div class="detail-label">Target Date</div>
-                            <div class="detail-value" id="goal-date">--</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Days Left</div>
-                            <div class="detail-value" id="days-left">--</div>
-                        </div>
-                    </div>
-                    
-                    <div class="savings-progress">
-                        <div class="progress-header">
-                            <div>Progress</div>
-                            <div id="progress-percent">0%</div>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="savings-progress" style="margin-top: 20px;">
-                        <div class="progress-header">
-                            <div>Time Value: <span id="time-saved">0</span> hours saved</div>
-                            <div><span id="time-total">0</span> hours total</div>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="time-progress" style="width: 0%; background: var(--primary);"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="time-visual" style="margin-top: 20px;">
-                        <div class="time-block" style="background: var(--success);" id="saved-time-block">0h</div>
-                        <div class="time-block">of</div>
-                        <div class="time-block" id="total-time-block">0h</div>
-                        <div class="time-block"><i class="fas fa-trophy"></i></div>
-                    </div>
-                    
-                    <div class="insight-card" style="margin-top: 20px;">
-                        <div class="insight-title">
-                            <i class="fas fa-calendar-alt"></i>
-                            Timeline
-                        </div>
-                        <p id="timeline-text">Set a daily savings target to see your timeline</p>
-                    </div>
-                    
-                    <div style="display: flex; gap: 12px; margin-top: 20px;">
-                        <button class="btn btn-secondary" id="add-savings-btn" style="flex: 1;">
-                            <i class="fas fa-plus"></i> Add Savings
-                        </button>
-                        <button class="btn" id="edit-goal-btn" style="flex: 1;">
-                            <i class="fas fa-edit"></i> Edit Goal
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="empty-state" id="savings-empty">
-                    <i class="fas fa-bullseye"></i>
-                    <h3>No Savings Goals Yet</h3>
-                    <p>Create your first savings goal to start tracking your progress and time value</p>
-                </div>
-            </div>
-            
-            <!-- History Tab -->
-            <div class="tab-content" id="history">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title"><i class="fas fa-history"></i> Financial History</div>
-                    </div>
-                    <div class="card-content">
-                        <div id="history-list">
-                            <div class="empty-state">
-                                <i class="fas fa-history"></i>
-                                <h3>No Financial History Yet</h3>
-                                <p>Your purchase evaluations and savings progress will appear here once you start using ValueVision</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-        
-        <footer>
-            ValueVision &copy; 2023 | Your time is your most valuable asset
-        </footer>
     </div>
     
-    <!-- Toast Notification -->
-    <div class="toast" id="toast">
-        <i class="fas fa-check-circle"></i>
-        <span id="toast-message">Action completed successfully!</span>
-    </div>
-
     <script>
-        // App state - all values start at 0
+        // App State Management
         const state = {
-            hourlyRate: 0,
-            dailyHours: 0,
-            goals: [],
-            history: [],
-            currentGoal: null,
-            purchases: [],
-            timeBank: 0,
-            level: 1
+            loans: [],
+            strategy: 'avalanche',
+            totalDebt: 0,
+            paidDebt: 0
         };
         
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set up tab functionality
-            document.querySelectorAll('.tab').forEach(tab => {
+        // DOM Elements
+        const elements = {
+            tabs: document.querySelectorAll('.tab'),
+            tabContents: document.querySelectorAll('.tab-content'),
+            loanForm: document.getElementById('loanForm'),
+            loansContainer: document.getElementById('loansContainer'),
+            resetBtn: document.getElementById('resetBtn'),
+            motivationBtn: document.getElementById('motivationBtn'),
+            extraPayment: document.getElementById('extraPayment'),
+            extraPaymentValue: document.getElementById('extraPaymentValue'),
+            comingSoonModal: document.getElementById('comingSoonModal'),
+            modalClose: document.querySelector('.modal-close'),
+            celebration: document.getElementById('celebration'),
+            closeCelebration: document.getElementById('closeCelebration'),
+            celebrationMessage: document.getElementById('celebrationMessage'),
+            featureCards: document.querySelectorAll('.feature-card')
+        };
+        
+        // Sample loan data for demo
+        const sampleLoans = [
+            {
+                id: 1,
+                name: "Credit Card",
+                balance: 4500,
+                interestRate: 19.99,
+                minPayment: 150,
+                payoffDate: "Aug 2026",
+                totalInterest: 1250,
+                paid: 1500
+            },
+            {
+                id: 2,
+                name: "Student Loan",
+                balance: 15000,
+                interestRate: 5.8,
+                minPayment: 180,
+                payoffDate: "Dec 2030",
+                totalInterest: 4200,
+                paid: 4500
+            },
+            {
+                id: 3,
+                name: "Auto Loan",
+                balance: 8000,
+                interestRate: 7.2,
+                minPayment: 250,
+                payoffDate: "Mar 2025",
+                totalInterest: 950,
+                paid: 2500
+            }
+        ];
+        
+        // Initialize the application
+        function init() {
+            loadLoans();
+            setupEventListeners();
+            renderLoans();
+            initCharts();
+        }
+        
+        // Load loans from localStorage
+        function loadLoans() {
+            const savedLoans = localStorage.getItem('debtfreeLoans');
+            state.loans = savedLoans ? JSON.parse(savedLoans) : sampleLoans;
+            
+            // Calculate total debt stats
+            state.totalDebt = state.loans.reduce((sum, loan) => sum + loan.balance + loan.paid, 0);
+            state.paidDebt = state.loans.reduce((sum, loan) => sum + loan.paid, 0);
+        }
+        
+        // Save loans to localStorage
+        function saveLoans() {
+            localStorage.setItem('debtfreeLoans', JSON.stringify(state.loans));
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Tab switching
+            elements.tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    // Remove active class from all tabs
+                    elements.tabs.forEach(t => t.classList.remove('active'));
+                    elements.tabContents.forEach(c => c.classList.remove('active'));
                     
+                    // Add active class to clicked tab
                     tab.classList.add('active');
                     const tabId = tab.getAttribute('data-tab');
-                    document.getElementById(tabId).classList.add('active');
+                    document.getElementById(`${tabId}Tab`).classList.add('active');
                 });
             });
             
-            // Set up calculate button
-            document.getElementById('calculate-btn').addEventListener('click', calculateTimeCost);
+            // Loan form submission
+            elements.loanForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const newLoan = {
+                    id: Date.now(),
+                    name: document.getElementById('loanName').value,
+                    balance: parseFloat(document.getElementById('loanBalance').value),
+                    interestRate: parseFloat(document.getElementById('interestRate').value),
+                    minPayment: parseFloat(document.getElementById('minPayment').value),
+                    strategy: document.getElementById('strategy').value,
+                    payoffDate: "Calculating...",
+                    totalInterest: 0,
+                    paid: 0
+                };
+                
+                // Calculate payoff details (simplified for demo)
+                newLoan.totalInterest = Math.round(newLoan.balance * (newLoan.interestRate/100) * 3);
+                const payoffMonths = Math.ceil(newLoan.balance / newLoan.minPayment);
+                const payoffDate = new Date();
+                payoffDate.setMonth(payoffDate.getMonth() + payoffMonths);
+                newLoan.payoffDate = payoffDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                
+                // Add to state
+                state.loans.push(newLoan);
+                saveLoans();
+                renderLoans();
+                
+                // Reset form
+                this.reset();
+                
+                // Show success animation
+                showCelebration(`Your ${newLoan.name} loan has been added!`);
+            });
             
-            // Set up save goal button
-            document.getElementById('save-goal-btn').addEventListener('click', saveGoal);
+            // Reset button
+            elements.resetBtn.addEventListener('click', function() {
+                if (confirm("Are you sure you want to reset all loan data? This cannot be undone.")) {
+                    localStorage.removeItem('debtfreeLoans');
+                    state.loans = [];
+                    renderLoans();
+                }
+            });
             
-            // Set up add savings button
-            document.getElementById('add-savings-btn').addEventListener('click', addSavings);
+            // Motivation button
+            elements.motivationBtn.addEventListener('click', showRandomMotivation);
             
-            // Set up edit goal button
-            document.getElementById('edit-goal-btn').addEventListener('click', editGoal);
+            // Extra payment slider
+            elements.extraPayment.addEventListener('input', function() {
+                elements.extraPaymentValue.textContent = `$${this.value}`;
+                updateSimulationChart();
+            });
             
-            // Set up settings toggle
-            document.getElementById('settings-toggle').addEventListener('click', toggleSettings);
+            // Modal close buttons
+            elements.modalClose.addEventListener('click', () => {
+                elements.comingSoonModal.classList.remove('active');
+            });
             
-            // Set up close settings button
-            document.getElementById('close-settings').addEventListener('click', toggleSettings);
+            elements.closeCelebration.addEventListener('click', () => {
+                elements.celebration.classList.remove('active');
+            });
             
-            // Set up reset button
-            document.getElementById('reset-app').addEventListener('click', resetApp);
-            
-            // Set up feature items
-            document.querySelectorAll('.settings-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const feature = item.getAttribute('data-feature');
-                    showFeatureModal(feature);
+            // Coming soon feature cards
+            elements.featureCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    elements.comingSoonModal.classList.add('active');
                 });
             });
-            
-            // Set up modal close button
-            document.getElementById('modal-close').addEventListener('click', () => {
-                document.getElementById('coming-soon-modal').classList.remove('active');
-            });
-            
-            // Initialize UI
-            updateUI();
-        });
-        
-        // Toggle settings panel
-        function toggleSettings() {
-            const settingsPanel = document.getElementById('settings-panel');
-            const appContainer = document.getElementById('app-container');
-            
-            settingsPanel.classList.toggle('active');
-            appContainer.classList.toggle('settings-open');
         }
         
-        // Reset app
-        function resetApp() {
-            if (confirm("Are you sure you want to reset all data? This action cannot be undone.")) {
-                // Reset state
-                state.hourlyRate = 0;
-                state.dailyHours = 0;
-                state.goals = [];
-                state.history = [];
-                state.currentGoal = null;
-                state.purchases = [];
-                state.timeBank = 0;
-                
-                // Reset form fields
-                document.getElementById('hourly-rate').value = '0';
-                document.getElementById('daily-hours').value = '0';
-                document.getElementById('item-name').value = '';
-                document.getElementById('item-cost').value = '0';
-                document.getElementById('goal-name').value = '';
-                document.getElementById('goal-amount').value = '0';
-                document.getElementById('saved-amount').value = '0';
-                document.getElementById('daily-savings').value = '0';
-                
-                // Hide results
-                document.getElementById('time-result').style.display = 'none';
-                document.getElementById('savings-goal-card').style.display = 'none';
-                document.getElementById('savings-empty').style.display = 'block';
-                
-                // Clear history
-                document.getElementById('history-list').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-history"></i>
-                        <h3>No Financial History Yet</h3>
-                        <p>Your purchase evaluations and savings progress will appear here once you start using ValueVision</p>
-                    </div>
-                `;
-                
-                // Reset stats
-                document.getElementById('stat-spent').textContent = '$0.00';
-                document.getElementById('stat-hours').textContent = '0';
-                document.getElementById('stat-saved').textContent = '$0.00';
-                
-                // Show toast
-                showToast('Application data has been reset');
-                
-                // Close settings
-                toggleSettings();
-            }
-        }
-        
-        // Show feature modal
-        function showFeatureModal(feature) {
-            const modal = document.getElementById('coming-soon-modal');
-            const modalText = document.getElementById('modal-text');
-            
-            // Set feature-specific text
-            let featureName = '';
-            
-            switch(feature) {
-                case 'bank-integration':
-                    featureName = 'Bank Integration';
-                    break;
-                case 'sms-integration':
-                    featureName = 'SMS Integration';
-                    break;
-                case 'time-bank':
-                    featureName = 'Time Bank';
-                    break;
-                default:
-                    featureName = 'Feature';
-            }
-            
-            modalText.innerHTML = `We're working hard to bring you the <strong>${featureName}</strong> feature in our next update! This innovative tool will help you manage your finances more effectively.`;
-            modal.classList.add('active');
-        }
-        
-        // Calculate time cost
-        function calculateTimeCost() {
-            const hourlyRate = parseFloat(document.getElementById('hourly-rate').value) || 0;
-            const itemCost = parseFloat(document.getElementById('item-cost').value) || 0;
-            const itemName = document.getElementById('item-name').value || "item";
-            
-            if (hourlyRate <= 0 || itemCost <= 0) {
-                showToast("Please enter valid values for hourly rate and item cost");
-                return;
-            }
-            
-            // Update state
-            state.hourlyRate = hourlyRate;
-            
-            // Calculate minutes of work needed
-            const minutesOfWork = Math.round((itemCost / hourlyRate) * 60);
-            
-            // Format minutes to hours/minutes if more than 60 minutes
-            let displayValue;
-            if (minutesOfWork >= 60) {
-                const hours = Math.floor(minutesOfWork / 60);
-                const minutes = minutesOfWork % 60;
-                displayValue = `${hours}h ${minutes}m`;
-            } else {
-                displayValue = `${minutesOfWork}m`;
-            }
-            
-            // Update result
-            document.getElementById('time-result-value').textContent = displayValue;
-            document.getElementById('result-item').textContent = itemName;
-            document.getElementById('time-block-minutes').textContent = 
-                minutesOfWork >= 60 ? `${Math.round(minutesOfWork/60)}h` : `${minutesOfWork}m`;
-            
-            // Calculate yearly impact
-            const yearlyHours = (minutesOfWork * 365 / 60).toFixed(1);
-            const workWeeks = (yearlyHours / 40).toFixed(1);
-            
-            // Update insight
-            const insightElement = document.getElementById('insight-text');
-            insightElement.innerHTML = 
-                `Buying this daily costs <strong>${yearlyHours} hours/year</strong> - that's nearly ${workWeeks} work weeks!`;
-            
-            // Show result
-            document.getElementById('time-result').style.display = 'block';
-            
-            // Add to history
-            state.purchases.push({
-                name: itemName,
-                cost: itemCost,
-                date: new Date()
-            });
-            
-            // Update stats and history
-            updateStats();
-            updateHistory();
-        }
-        
-        // Save goal
-        function saveGoal() {
-            const name = document.getElementById('goal-name').value;
-            const target = parseFloat(document.getElementById('goal-amount').value) || 0;
-            const saved = parseFloat(document.getElementById('saved-amount').value) || 0;
-            const dailyTarget = parseFloat(document.getElementById('daily-savings').value) || 0;
-            
-            if (!name || target <= 0) {
-                showToast("Please enter a goal name and valid target amount");
-                return;
-            }
-            
-            // Update state
-            state.currentGoal = {
-                name,
-                target,
-                saved,
-                dailyTarget,
-                createdAt: new Date()
-            };
-            
-            // Add to goals if new
-            if (!state.goals.some(g => g.name === name)) {
-                state.goals.push({...state.currentGoal});
-            }
-            
-            // Update UI
-            updateSavingsGoal();
-            
-            // Show toast
-            showToast('Savings goal created!');
-        }
-        
-        // Add savings
-        function addSavings() {
-            if (!state.currentGoal) {
-                showToast("Please create a savings goal first");
-                return;
-            }
-            
-            const amount = parseFloat(prompt("How much did you save today?", "0")) || 0;
-            
-            if (amount <= 0) {
-                showToast("Please enter a valid savings amount");
-                return;
-            }
-            
-            state.currentGoal.saved += amount;
-            
-            // Prevent saving more than target
-            if (state.currentGoal.saved > state.currentGoal.target) {
-                state.currentGoal.saved = state.currentGoal.target;
-                showToast("Congratulations! You've reached your savings goal!");
-            }
-            
-            // Add to history
-            state.history.push({
-                name: `Added to ${state.currentGoal.name}`,
-                amount: amount,
-                type: "savings",
-                date: new Date()
-            });
-            
-            // Update UI
-            updateSavingsGoal();
-            updateHistory();
-            
-            // Show toast
-            showToast(`Added $${amount} to your savings!`);
-        }
-        
-        // Edit goal
-        function editGoal() {
-            if (!state.currentGoal) {
-                showToast("Please create a savings goal first");
-                return;
-            }
-            
-            document.getElementById('goal-name').value = state.currentGoal.name;
-            document.getElementById('goal-amount').value = state.currentGoal.target;
-            document.getElementById('saved-amount').value = state.currentGoal.saved;
-            document.getElementById('daily-savings').value = state.currentGoal.dailyTarget;
-            
-            // Switch to savings tab
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            document.querySelector('[data-tab="savings"]').classList.add('active');
-            document.getElementById('savings').classList.add('active');
-            
-            // Scroll to form
-            document.getElementById('goal-name').scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        // Update savings goal UI
-        function updateSavingsGoal() {
-            if (!state.currentGoal) return;
-            
-            const goal = state.currentGoal;
-            
-            // Calculate values
-            const progress = Math.min(100, Math.round((goal.saved / goal.target) * 100));
-            const hoursTotal = (goal.target / state.hourlyRate).toFixed(1);
-            const hoursSaved = (goal.saved / state.hourlyRate).toFixed(1);
-            const remaining = goal.target - goal.saved;
-            const daysNeeded = Math.ceil(remaining / goal.dailyTarget);
-            
-            // Set target date (today + days needed)
-            const targetDate = new Date();
-            targetDate.setDate(targetDate.getDate() + daysNeeded);
-            const formattedDate = targetDate.toLocaleDateString('en-US', { 
-                month: 'short', 
-                day: 'numeric', 
-                year: 'numeric' 
-            });
-            
-            // Days left
-            const today = new Date();
-            const timeDiff = targetDate.getTime() - today.getTime();
-            const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
-            
-            // Update UI
-            document.getElementById('goal-title').textContent = goal.name;
-            document.getElementById('goal-progress').textContent = `$${goal.saved.toFixed(2)}/$${goal.target.toFixed(2)}`;
-            document.getElementById('progress-percent').textContent = `${progress}%`;
-            document.getElementById('progress-fill').style.width = `${progress}%`;
-            document.getElementById('time-saved').textContent = hoursSaved;
-            document.getElementById('time-total').textContent = hoursTotal;
-            document.getElementById('time-progress').style.width = `${progress}%`;
-            document.getElementById('saved-time-block').textContent = `${hoursSaved}h`;
-            document.getElementById('total-time-block').textContent = `${hoursTotal}h`;
-            document.getElementById('goal-date').textContent = formattedDate;
-            document.getElementById('days-left').textContent = `${daysLeft} days`;
-            
-            // Timeline text
-            const timelineElement = document.getElementById('timeline-text');
-            if (goal.saved >= goal.target) {
-                timelineElement.innerHTML = "Congratulations! You've reached your savings goal!";
-            } else {
-                timelineElement.innerHTML = `At $${goal.dailyTarget}/day, you'll reach your goal in <strong>${daysNeeded} days</strong>!`;
-            }
-            
-            // Show savings card
-            document.getElementById('savings-goal-card').style.display = 'block';
-            document.getElementById('savings-empty').style.display = 'none';
-            
-            // Update stats
-            updateStats();
-        }
-        
-        // Update history UI
-        function updateHistory() {
-            const historyList = document.getElementById('history-list');
-            
-            // Clear current history
-            historyList.innerHTML = '';
-            
-            if (state.purchases.length === 0 && state.history.length === 0) {
-                historyList.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-history"></i>
-                        <h3>No Financial History Yet</h3>
-                        <p>Your purchase evaluations and savings progress will appear here once you start using ValueVision</p>
+        // Render loans to the dashboard
+        function renderLoans() {
+            if (state.loans.length === 0) {
+                elements.loansContainer.innerHTML = `
+                    <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                        <h3>No Loans Added Yet</h3>
+                        <p>Get started by adding your first loan using the form above.</p>
                     </div>
                 `;
                 return;
             }
             
-            // Add purchases to history
-            state.purchases.slice().reverse().forEach(purchase => {
-                const date = new Date(purchase.date);
-                historyList.innerHTML += `
-                    <div class="history-item">
-                        <div class="history-info">
-                            <div class="history-name">${purchase.name}</div>
-                            <div class="history-date">${formatDate(date)}</div>
-                            <div class="history-type">Purchase</div>
+            elements.loansContainer.innerHTML = '';
+            
+            state.loans.forEach(loan => {
+                const paidPercentage = Math.round((loan.paid / (loan.balance + loan.paid)) * 100);
+                const remaining = loan.balance;
+                const paid = loan.paid;
+                
+                const loanCard = document.createElement('div');
+                loanCard.className = 'loan-card';
+                loanCard.innerHTML = `
+                    <div class="loan-header">
+                        <div class="loan-name">${loan.name}</div>
+                        <div class="loan-details">
+                            <span>${loan.interestRate}% APR</span>
+                            <span>Min: $${loan.minPayment}/mo</span>
                         </div>
-                        <div class="history-amount" style="color: var(--error);">$${purchase.cost.toFixed(2)}</div>
                     </div>
-                `;
-            });
-            
-            // Add savings to history
-            state.history.slice().reverse().forEach(history => {
-                const date = new Date(history.date);
-                historyList.innerHTML += `
-                    <div class="history-item">
-                        <div class="history-info">
-                            <div class="history-name">${history.name}</div>
-                            <div class="history-date">${formatDate(date)}</div>
-                            <div class="history-type">Savings</div>
+                    <div class="loan-body">
+                        <div class="loan-stats">
+                            <div class="stat">
+                                <div class="stat-label">Remaining</div>
+                                <div class="stat-value">$${remaining.toLocaleString()}</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Paid</div>
+                                <div class="stat-value">$${paid.toLocaleString()}</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Interest</div>
+                                <div class="stat-value">$${loan.totalInterest.toLocaleString()}</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Payoff Date</div>
+                                <div class="stat-value">${loan.payoffDate}</div>
+                            </div>
                         </div>
-                        <div class="history-amount" style="color: var(--success);">+$${history.amount.toFixed(2)}</div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress" style="width: ${paidPercentage}%;"></div>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <canvas id="chart-${loan.id}"></canvas>
+                        </div>
+                    </div>
+                    <div class="loan-footer">
+                        <button class="btn btn-sm btn-outline">Amortization</button>
+                        <button class="btn btn-sm btn-danger" data-id="${loan.id}">Remove</button>
                     </div>
                 `;
+                
+                elements.loansContainer.appendChild(loanCard);
+                
+                // Render chart for this loan
+                renderLoanChart(loan);
+                
+                // Add event listener to remove button
+                loanCard.querySelector('.btn-danger').addEventListener('click', function() {
+                    const loanId = parseInt(this.getAttribute('data-id'));
+                    removeLoan(loanId);
+                });
             });
         }
         
-        // Format date for display
-        function formatDate(date) {
-            const now = new Date();
-            const diff = now - date;
-            const diffHours = Math.floor(diff / (1000 * 60 * 60));
-            const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
-            
-            if (diffHours < 24) {
-                return `Today, ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-            } else if (diffDays === 1) {
-                return `Yesterday, ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-            } else {
-                return date.toLocaleDateString() + ', ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            }
+        // Remove a loan
+        function removeLoan(loanId) {
+            state.loans = state.loans.filter(loan => loan.id !== loanId);
+            saveLoans();
+            renderLoans();
         }
         
-        // Update UI
-        function updateUI() {
-            updateStats();
-            
-            // Show/hide savings card based on state
-            if (state.currentGoal) {
-                document.getElementById('savings-goal-card').style.display = 'block';
-                document.getElementById('savings-empty').style.display = 'none';
-                updateSavingsGoal();
-            } else {
-                document.getElementById('savings-goal-card').style.display = 'none';
-                document.getElementById('savings-empty').style.display = 'block';
-            }
-            
-            updateHistory();
+        // Initialize charts
+        function initCharts() {
+            // Simulation chart
+            const ctx = document.getElementById('simulationChart').getContext('2d');
+            window.simulationChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Now', '1 yr', '2 yr', '3 yr', '4 yr', '5 yr'],
+                    datasets: [
+                        {
+                            label: 'Current Plan',
+                            data: [24500, 21000, 17200, 12800, 7800, 0],
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'With Extra Payments',
+                            data: [24500, 19500, 14200, 8500, 2200, 0],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Debt Payoff Projection'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Balance ($)'
+                            }
+                        }
+                    }
+                }
+            });
         }
         
-        // Update stats
-        function updateStats() {
-            // Calculate spent today
-            const today = new Date().toDateString();
-            const spentToday = state.purchases
-                .filter(p => new Date(p.date).toDateString() === today)
-                .reduce((sum, p) => sum + p.cost, 0)
-                .toFixed(2);
+        // Render chart for an individual loan
+        function renderLoanChart(loan) {
+            const ctx = document.getElementById(`chart-${loan.id}`).getContext('2d');
             
-            // Hours worked - in a real app this would be user input
-            const hoursWorked = state.dailyHours || 0;
-            
-            // Total saved
-            const totalSaved = state.currentGoal ? state.currentGoal.saved : 0;
-            
-            document.getElementById('stat-spent').textContent = '$' + spentToday;
-            document.getElementById('stat-hours').textContent = hoursWorked;
-            document.getElementById('stat-saved').textContent = '$' + totalSaved.toFixed(2);
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Paid Off', 'Remaining'],
+                    datasets: [{
+                        data: [loan.paid, loan.balance],
+                        backgroundColor: [
+                            '#10b981',
+                            '#e2e8f0'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: $${context.raw.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
         
-        // Show toast notification
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toast-message');
+        // Update simulation chart based on extra payment
+        function updateSimulationChart() {
+            const extra = parseInt(elements.extraPayment.value);
             
-            toastMessage.textContent = message;
-            toast.classList.add('show');
+            // Simplified simulation - in a real app this would do actual calculations
+            const currentData = [24500, 21000, 17200, 12800, 7800, 0];
+            const newData = [24500, 19500 - extra*8, 14200 - extra*16, 8500 - extra*24, 2200 - extra*32, 0];
             
+            window.simulationChart.data.datasets[1].data = newData;
+            window.simulationChart.update();
+        }
+        
+        // Show random motivational message
+        function showRandomMotivation() {
+            const messages = [
+                "You're making great progress! Every payment brings you closer to financial freedom.",
+                "Did you know? Paying just $50 extra each month could save you thousands in interest!",
+                "Celebrate small wins! You've already paid off a significant portion of your debt.",
+                "Consistency is key. Keep making those payments and you'll reach your goal!",
+                "Financial freedom is a journey. You're on the right path!",
+                "Imagine how great it will feel to be completely debt-free. You're getting there!",
+                "Your dedication to paying off debt is inspiring. Keep up the excellent work!"
+            ];
+            
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            showCelebration(randomMessage);
+        }
+        
+        // Show celebration modal
+        function showCelebration(message) {
+            elements.celebrationMessage.textContent = message;
+            elements.celebration.classList.add('active');
+            
+            // Auto close after 5 seconds
             setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+                elements.celebration.classList.remove('active');
+            }, 5000);
         }
+        
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
