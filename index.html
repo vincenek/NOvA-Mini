@@ -7,7 +7,6 @@
     <link rel="manifest" href="/manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* CSS Variables for consistent theming */
         :root {
             --primary: #2563eb;
             --primary-dark: #1d4ed8;
@@ -26,7 +25,6 @@
             --transition: all 0.3s ease;
         }
 
-        /* Reset and Base Styles */
         * {
             margin: 0;
             padding: 0;
@@ -47,7 +45,6 @@
             padding: 0 16px;
         }
 
-        /* Header Styles */
         header {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
@@ -106,7 +103,6 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
-        /* Tab Navigation */
         .tabs {
             display: flex;
             background: white;
@@ -144,7 +140,6 @@
             background: var(--light-gray);
         }
 
-        /* Tab Content */
         .tab-content {
             display: none;
         }
@@ -159,7 +154,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Card Styles */
         .card {
             background: white;
             border-radius: var(--border-radius);
@@ -188,7 +182,6 @@
             color: var(--dark);
         }
 
-        /* Form Styles */
         .form-group {
             margin-bottom: 16px;
         }
@@ -264,7 +257,6 @@
             font-size: 0.875rem;
         }
 
-        /* Loan Dashboard */
         .loans-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -360,7 +352,37 @@
             margin: 16px 0;
         }
 
-        /* Timeline */
+        .payment-form {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .payment-form h4 {
+            margin-bottom: 12px;
+        }
+
+        .payment-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+        }
+
+        .payment-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .payment-input span {
+            font-weight: 600;
+        }
+
+        .payment-input input {
+            max-width: 120px;
+        }
+
         .timeline {
             display: flex;
             justify-content: space-between;
@@ -418,7 +440,6 @@
             color: var(--gray);
         }
 
-        /* Coming Soon Grid */
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -466,7 +487,6 @@
             margin-bottom: 16px;
         }
 
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -530,7 +550,6 @@
             margin-bottom: 24px;
         }
 
-        /* Motivation Celebration */
         .celebration {
             position: fixed;
             top: 0;
@@ -593,7 +612,33 @@
             margin-bottom: 24px;
         }
 
-        /* Responsive Design */
+        .payment-history {
+            margin-top: 24px;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .history-table th, 
+        .history-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .history-table th {
+            font-weight: 600;
+            color: var(--dark);
+            background-color: var(--light);
+        }
+
+        .history-table tr:last-child td {
+            border-bottom: none;
+        }
+
         @media (max-width: 768px) {
             .loans-grid {
                 grid-template-columns: 1fr;
@@ -614,6 +659,20 @@
             
             .features-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .payment-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .payment-input input {
+                max-width: 100%;
+            }
+            
+            .history-table {
+                display: block;
+                overflow-x: auto;
             }
         }
     </style>
@@ -638,7 +697,7 @@
         <!-- Tab Navigation -->
         <div class="tabs">
             <div class="tab active" data-tab="loans">My Loans</div>
-            <div class="tab" data-tab="whatif">What If Simulator</div>
+            <div class="tab" data-tab="payments">Payment History</div>
             <div class="tab" data-tab="comingsoon">Coming Soon</div>
         </div>
         
@@ -692,14 +751,14 @@
                     <h2 class="card-title">Payoff Strategy</h2>
                 </div>
                 <div id="strategyInfo">
-                    <p>You are using the <strong>Avalanche method</strong> to pay off your debts. This strategy saves you the most money on interest.</p>
+                    <p>You are using the <strong id="strategyName">Avalanche method</strong> to pay off your debts. This strategy saves you the most money on interest.</p>
                 </div>
                 <div class="progress-bar">
-                    <div class="progress" style="width: 35%;"></div>
+                    <div class="progress" id="totalProgress" style="width: 0%;"></div>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-                    <span>Total Debt: $24,500</span>
-                    <span>Paid: $8,575 (35%)</span>
+                    <span>Total Debt: $<span id="totalDebt">0</span></span>
+                    <span>Paid: $<span id="paidDebt">0</span> (<span id="paidPercent">0</span>%)</span>
                 </div>
             </div>
             
@@ -716,72 +775,15 @@
             </div>
         </div>
         
-        <!-- What If Simulator Tab -->
-        <div id="whatifTab" class="tab-content">
+        <!-- Payment History Tab -->
+        <div id="paymentsTab" class="tab-content">
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Payment Simulator</h2>
-                </div>
-                <p>Adjust your monthly payments to see how much faster you can become debt-free and how much interest you'll save.</p>
-                
-                <div class="chart-container">
-                    <canvas id="simulationChart"></canvas>
+                    <h2 class="card-title">Payment History</h2>
                 </div>
                 
-                <div class="form-group">
-                    <label for="extraPayment">Extra Monthly Payment ($)</label>
-                    <input type="range" id="extraPayment" min="0" max="500" step="10" value="0">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>$0</span>
-                        <span id="extraPaymentValue">$0</span>
-                        <span>$500</span>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <h3>Projected Results</h3>
-                    <div class="loan-stats">
-                        <div class="stat">
-                            <div class="stat-label">Payoff Time</div>
-                            <div class="stat-value">5.2 years</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-label">Interest Saved</div>
-                            <div class="stat-value">$3,450</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-label">New Payoff Date</div>
-                            <div class="stat-value">Aug 2028</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-label">Total Savings</div>
-                            <div class="stat-value">$8,200</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <h3 style="margin: 24px 0 16px;">Payoff Timeline</h3>
-                <div class="timeline">
-                    <div class="timeline-item completed">
-                        <div class="timeline-marker">✓</div>
-                        <div class="timeline-label">Loan Setup</div>
-                    </div>
-                    <div class="timeline-item active">
-                        <div class="timeline-marker">25%</div>
-                        <div class="timeline-label">Q1 2024</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-marker">50%</div>
-                        <div class="timeline-label">Q3 2025</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-marker">75%</div>
-                        <div class="timeline-label">Q1 2027</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-marker">100%</div>
-                        <div class="timeline-label">Q4 2028</div>
-                    </div>
+                <div id="historyContainer" class="payment-history">
+                    <!-- Payment history will be inserted here -->
                 </div>
             </div>
         </div>
@@ -835,7 +837,7 @@
             <h2 class="modal-title">Coming Soon!</h2>
             <p class="modal-text">This feature is currently in development. We're working hard to bring you the best debt payoff experience.</p>
             <p class="modal-text">Stay tuned for updates!</p>
-            <button class="btn">Got It</button>
+            <button class="btn" id="closeModal">Got It</button>
         </div>
     </div>
     
@@ -853,6 +855,7 @@
         // App State Management
         const state = {
             loans: [],
+            payments: [],
             strategy: 'avalanche',
             totalDebt: 0,
             paidDebt: 0
@@ -866,71 +869,72 @@
             loansContainer: document.getElementById('loansContainer'),
             resetBtn: document.getElementById('resetBtn'),
             motivationBtn: document.getElementById('motivationBtn'),
-            extraPayment: document.getElementById('extraPayment'),
-            extraPaymentValue: document.getElementById('extraPaymentValue'),
             comingSoonModal: document.getElementById('comingSoonModal'),
             modalClose: document.querySelector('.modal-close'),
+            closeModal: document.getElementById('closeModal'),
             celebration: document.getElementById('celebration'),
             closeCelebration: document.getElementById('closeCelebration'),
             celebrationMessage: document.getElementById('celebrationMessage'),
-            featureCards: document.querySelectorAll('.feature-card')
+            featureCards: document.querySelectorAll('.feature-card'),
+            strategyName: document.getElementById('strategyName'),
+            totalProgress: document.getElementById('totalProgress'),
+            totalDebt: document.getElementById('totalDebt'),
+            paidDebt: document.getElementById('paidDebt'),
+            paidPercent: document.getElementById('paidPercent'),
+            historyContainer: document.getElementById('historyContainer')
         };
-        
-        // Sample loan data for demo
-        const sampleLoans = [
-            {
-                id: 1,
-                name: "Credit Card",
-                balance: 4500,
-                interestRate: 19.99,
-                minPayment: 150,
-                payoffDate: "Aug 2026",
-                totalInterest: 1250,
-                paid: 1500
-            },
-            {
-                id: 2,
-                name: "Student Loan",
-                balance: 15000,
-                interestRate: 5.8,
-                minPayment: 180,
-                payoffDate: "Dec 2030",
-                totalInterest: 4200,
-                paid: 4500
-            },
-            {
-                id: 3,
-                name: "Auto Loan",
-                balance: 8000,
-                interestRate: 7.2,
-                minPayment: 250,
-                payoffDate: "Mar 2025",
-                totalInterest: 950,
-                paid: 2500
-            }
-        ];
         
         // Initialize the application
         function init() {
-            loadLoans();
+            loadData();
             setupEventListeners();
             renderLoans();
-            initCharts();
+            renderPaymentHistory();
+            updateDashboard();
         }
         
-        // Load loans from localStorage
-        function loadLoans() {
+        // Load data from localStorage
+        function loadData() {
             const savedLoans = localStorage.getItem('debtfreeLoans');
-            state.loans = savedLoans ? JSON.parse(savedLoans) : sampleLoans;
+            const savedPayments = localStorage.getItem('debtfreePayments');
+            const savedStrategy = localStorage.getItem('debtfreeStrategy');
+            
+            state.loans = savedLoans ? JSON.parse(savedLoans) : [];
+            state.payments = savedPayments ? JSON.parse(savedPayments) : [];
+            state.strategy = savedStrategy || 'avalanche';
             
             // Calculate total debt stats
-            state.totalDebt = state.loans.reduce((sum, loan) => sum + loan.balance + loan.paid, 0);
-            state.paidDebt = state.loans.reduce((sum, loan) => sum + loan.paid, 0);
+            updateDebtStats();
         }
         
-        // Save loans to localStorage
-        function saveLoans() {
+        // Save data to localStorage
+        function saveData() {
             localStorage.setItem('debtfreeLoans', JSON.stringify(state.loans));
+            localStorage.setItem('debtfreePayments', JSON.stringify(state.payments));
+            localStorage.setItem('debtfreeStrategy', state.strategy);
+        }
+        
+        // Update debt statistics
+        function updateDebtStats() {
+            state.totalDebt = state.loans.reduce((sum, loan) => sum + loan.balance, 0);
+            state.paidDebt = state.loans.reduce((sum, loan) => sum + (loan.originalBalance - loan.balance), 0);
+            
+            const totalOriginal = state.loans.reduce((sum, loan) => sum + loan.originalBalance, 0);
+            const paidPercentage = totalOriginal > 0 ? Math.round((state.paidDebt / totalOriginal) * 100) : 0;
+            
+            elements.totalDebt.textContent = state.totalDebt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            elements.paidDebt.textContent = state.paidDebt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            elements.paidPercent.textContent = paidPercentage;
+            elements.totalProgress.style.width = `${paidPercentage}%`;
+        }
+        
+        // Update dashboard
+        function updateDashboard() {
+            elements.strategyName.textContent = state.strategy === 'avalanche' 
+                ? 'Avalanche method' 
+                : 'Snowball method';
+                
+            updateDebtStats();
         }
         
         // Setup event listeners
@@ -938,11 +942,9 @@
             // Tab switching
             elements.tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
-                    // Remove active class from all tabs
                     elements.tabs.forEach(t => t.classList.remove('active'));
                     elements.tabContents.forEach(c => c.classList.remove('active'));
                     
-                    // Add active class to clicked tab
                     tab.classList.add('active');
                     const tabId = tab.getAttribute('data-tab');
                     document.getElementById(`${tabId}Tab`).classList.add('active');
@@ -957,25 +959,24 @@
                     id: Date.now(),
                     name: document.getElementById('loanName').value,
                     balance: parseFloat(document.getElementById('loanBalance').value),
+                    originalBalance: parseFloat(document.getElementById('loanBalance').value),
                     interestRate: parseFloat(document.getElementById('interestRate').value),
                     minPayment: parseFloat(document.getElementById('minPayment').value),
                     strategy: document.getElementById('strategy').value,
-                    payoffDate: "Calculating...",
                     totalInterest: 0,
-                    paid: 0
+                    paid: 0,
+                    payments: []
                 };
                 
-                // Calculate payoff details (simplified for demo)
-                newLoan.totalInterest = Math.round(newLoan.balance * (newLoan.interestRate/100) * 3);
-                const payoffMonths = Math.ceil(newLoan.balance / newLoan.minPayment);
-                const payoffDate = new Date();
-                payoffDate.setMonth(payoffDate.getMonth() + payoffMonths);
-                newLoan.payoffDate = payoffDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                // Calculate payoff date
+                newLoan.payoffDate = calculatePayoffDate(newLoan);
                 
                 // Add to state
                 state.loans.push(newLoan);
-                saveLoans();
+                state.strategy = newLoan.strategy;
+                saveData();
                 renderLoans();
+                updateDashboard();
                 
                 // Reset form
                 this.reset();
@@ -988,22 +989,25 @@
             elements.resetBtn.addEventListener('click', function() {
                 if (confirm("Are you sure you want to reset all loan data? This cannot be undone.")) {
                     localStorage.removeItem('debtfreeLoans');
+                    localStorage.removeItem('debtfreePayments');
+                    localStorage.removeItem('debtfreeStrategy');
                     state.loans = [];
+                    state.payments = [];
                     renderLoans();
+                    renderPaymentHistory();
+                    updateDashboard();
                 }
             });
             
             // Motivation button
             elements.motivationBtn.addEventListener('click', showRandomMotivation);
             
-            // Extra payment slider
-            elements.extraPayment.addEventListener('input', function() {
-                elements.extraPaymentValue.textContent = `$${this.value}`;
-                updateSimulationChart();
-            });
-            
             // Modal close buttons
             elements.modalClose.addEventListener('click', () => {
+                elements.comingSoonModal.classList.remove('active');
+            });
+            
+            elements.closeModal.addEventListener('click', () => {
                 elements.comingSoonModal.classList.remove('active');
             });
             
@@ -1019,6 +1023,94 @@
             });
         }
         
+        // Calculate payoff date for a loan
+        function calculatePayoffDate(loan) {
+            const monthlyRate = loan.interestRate / 100 / 12;
+            let balance = loan.balance;
+            let months = 0;
+            let totalInterest = 0;
+            
+            // If the monthly payment is less than the monthly interest, it will never be paid off
+            if (loan.minPayment <= balance * monthlyRate) {
+                return "Never";
+            }
+            
+            while (balance > 0) {
+                months++;
+                const interest = balance * monthlyRate;
+                totalInterest += interest;
+                const principalPayment = Math.min(loan.minPayment - interest, balance);
+                balance -= principalPayment;
+            }
+            
+            const payoffDate = new Date();
+            payoffDate.setMonth(payoffDate.getMonth() + months);
+            return payoffDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        }
+        
+        // Calculate interest for a payment
+        function calculateInterest(loan, amount) {
+            const monthlyRate = loan.interestRate / 100 / 12;
+            return loan.balance * monthlyRate;
+        }
+        
+        // Make a payment on a loan
+        function makePayment(loanId, amount) {
+            const loan = state.loans.find(l => l.id === loanId);
+            if (!loan) return;
+            
+            // Calculate interest portion
+            const interest = calculateInterest(loan, amount);
+            const principal = amount - interest;
+            
+            // Create payment record
+            const payment = {
+                id: Date.now(),
+                loanId: loanId,
+                loanName: loan.name,
+                amount: amount,
+                interest: interest,
+                principal: principal,
+                date: new Date().toLocaleDateString('en-US')
+            };
+            
+            // Update loan
+            loan.balance = Math.max(0, loan.balance - principal);
+            loan.totalInterest += interest;
+            loan.paid += amount;
+            loan.payments.push(payment);
+            
+            // Recalculate payoff date
+            loan.payoffDate = calculatePayoffDate(loan);
+            
+            // Add to payment history
+            state.payments.push(payment);
+            
+            // Save and update UI
+            saveData();
+            renderLoans();
+            renderPaymentHistory();
+            updateDashboard();
+            
+            // Check for milestones
+            checkMilestones(loan);
+        }
+        
+        // Check for milestones and show celebrations
+        function checkMilestones(loan) {
+            const paidPercentage = Math.round(((loan.originalBalance - loan.balance) / loan.originalBalance) * 100);
+            
+            if (paidPercentage >= 100) {
+                showCelebration(`🎉 Congratulations! You've completely paid off your ${loan.name} loan! 🎉`);
+            } else if (paidPercentage >= 75) {
+                showCelebration(`Amazing! You've paid off 75% of your ${loan.name} loan! Almost there!`);
+            } else if (paidPercentage >= 50) {
+                showCelebration(`Great job! You're halfway through paying off your ${loan.name} loan!`);
+            } else if (paidPercentage >= 25) {
+                showCelebration(`Nice work! You've paid off 25% of your ${loan.name} loan! Keep it up!`);
+            }
+        }
+        
         // Render loans to the dashboard
         function renderLoans() {
             if (state.loans.length === 0) {
@@ -1031,12 +1123,19 @@
                 return;
             }
             
+            // Sort loans based on strategy
+            const sortedLoans = [...state.loans];
+            if (state.strategy === 'avalanche') {
+                sortedLoans.sort((a, b) => b.interestRate - a.interestRate);
+            } else {
+                sortedLoans.sort((a, b) => a.balance - b.balance);
+            }
+            
             elements.loansContainer.innerHTML = '';
             
-            state.loans.forEach(loan => {
-                const paidPercentage = Math.round((loan.paid / (loan.balance + loan.paid)) * 100);
-                const remaining = loan.balance;
-                const paid = loan.paid;
+            sortedLoans.forEach(loan => {
+                const paidAmount = loan.originalBalance - loan.balance;
+                const paidPercentage = Math.round((paidAmount / loan.originalBalance) * 100);
                 
                 const loanCard = document.createElement('div');
                 loanCard.className = 'loan-card';
@@ -1045,22 +1144,22 @@
                         <div class="loan-name">${loan.name}</div>
                         <div class="loan-details">
                             <span>${loan.interestRate}% APR</span>
-                            <span>Min: $${loan.minPayment}/mo</span>
+                            <span>Min: $${loan.minPayment.toFixed(2)}/mo</span>
                         </div>
                     </div>
                     <div class="loan-body">
                         <div class="loan-stats">
                             <div class="stat">
                                 <div class="stat-label">Remaining</div>
-                                <div class="stat-value">$${remaining.toLocaleString()}</div>
+                                <div class="stat-value">$${loan.balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                             </div>
                             <div class="stat">
                                 <div class="stat-label">Paid</div>
-                                <div class="stat-value">$${paid.toLocaleString()}</div>
+                                <div class="stat-value">$${paidAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                             </div>
                             <div class="stat">
                                 <div class="stat-label">Interest</div>
-                                <div class="stat-value">$${loan.totalInterest.toLocaleString()}</div>
+                                <div class="stat-value">$${loan.totalInterest.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                             </div>
                             <div class="stat">
                                 <div class="stat-label">Payoff Date</div>
@@ -1072,135 +1171,195 @@
                             <div class="progress" style="width: ${paidPercentage}%;"></div>
                         </div>
                         
-                        <div class="chart-container">
-                            <canvas id="chart-${loan.id}"></canvas>
+                        <div class="payment-form">
+                            <h4>Make a Payment</h4>
+                            <div class="payment-row">
+                                <div class="payment-input">
+                                    <span>$</span>
+                                    <input type="number" class="payment-amount" min="${loan.minPayment.toFixed(2)}" step="0.01" value="${loan.minPayment.toFixed(2)}">
+                                </div>
+                                <button class="btn btn-secondary btn-sm record-payment" data-id="${loan.id}">Record Payment</button>
+                            </div>
                         </div>
                     </div>
                     <div class="loan-footer">
-                        <button class="btn btn-sm btn-outline">Amortization</button>
-                        <button class="btn btn-sm btn-danger" data-id="${loan.id}">Remove</button>
+                        <button class="btn btn-sm btn-outline view-history" data-id="${loan.id}">View History</button>
+                        <button class="btn btn-sm btn-danger remove-loan" data-id="${loan.id}">Remove</button>
                     </div>
                 `;
                 
                 elements.loansContainer.appendChild(loanCard);
                 
-                // Render chart for this loan
-                renderLoanChart(loan);
+                // Add event listeners to buttons
+                loanCard.querySelector('.record-payment').addEventListener('click', function() {
+                    const loanId = parseInt(this.getAttribute('data-id'));
+                    const amount = parseFloat(loanCard.querySelector('.payment-amount').value);
+                    
+                    if (amount < loan.minPayment) {
+                        alert(`Payment must be at least the minimum payment of $${loan.minPayment.toFixed(2)}`);
+                        return;
+                    }
+                    
+                    if (amount > loan.balance + (loan.balance * (loan.interestRate/100/12))) {
+                        alert(`Payment exceeds the remaining balance plus interest. Max payment is $${(loan.balance + (loan.balance * (loan.interestRate/100/12))).toFixed(2)}`);
+                        return;
+                    }
+                    
+                    makePayment(loanId, amount);
+                });
                 
-                // Add event listener to remove button
-                loanCard.querySelector('.btn-danger').addEventListener('click', function() {
+                loanCard.querySelector('.remove-loan').addEventListener('click', function() {
                     const loanId = parseInt(this.getAttribute('data-id'));
                     removeLoan(loanId);
+                });
+                
+                loanCard.querySelector('.view-history').addEventListener('click', function() {
+                    const loanId = parseInt(this.getAttribute('data-id'));
+                    showLoanHistory(loanId);
                 });
             });
         }
         
+        // Render payment history
+        function renderPaymentHistory() {
+            if (state.payments.length === 0) {
+                elements.historyContainer.innerHTML = `
+                    <div class="card" style="text-align: center; padding: 40px;">
+                        <h3>No Payments Recorded Yet</h3>
+                        <p>Make your first payment to see it appear here.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort payments by date (newest first)
+            const sortedPayments = [...state.payments].sort((a, b) => b.id - a.id);
+            
+            let html = `
+                <div class="card">
+                    <h3>All Payments</h3>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Loan</th>
+                                <th>Amount</th>
+                                <th>Principal</th>
+                                <th>Interest</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            sortedPayments.forEach(payment => {
+                html += `
+                    <tr>
+                        <td>${payment.date}</td>
+                        <td>${payment.loanName}</td>
+                        <td>$${payment.amount.toFixed(2)}</td>
+                        <td>$${payment.principal.toFixed(2)}</td>
+                        <td>$${payment.interest.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            elements.historyContainer.innerHTML = html;
+        }
+        
+        // Show loan-specific payment history
+        function showLoanHistory(loanId) {
+            const loan = state.loans.find(l => l.id === loanId);
+            if (!loan) return;
+            
+            if (loan.payments.length === 0) {
+                elements.historyContainer.innerHTML = `
+                    <div class="card" style="text-align: center; padding: 40px;">
+                        <h3>No Payments for ${loan.name}</h3>
+                        <p>Make your first payment to see it appear here.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort payments by date (newest first)
+            const sortedPayments = [...loan.payments].sort((a, b) => b.id - a.id);
+            
+            let html = `
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3>Payment History: ${loan.name}</h3>
+                        <button class="btn btn-sm btn-outline" id="backToAll">Back to All Payments</button>
+                    </div>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Principal</th>
+                                <th>Interest</th>
+                                <th>Balance After</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            // Calculate running balance
+            let runningBalance = loan.originalBalance;
+            
+            sortedPayments.forEach(payment => {
+                runningBalance -= payment.principal;
+                
+                html += `
+                    <tr>
+                        <td>${payment.date}</td>
+                        <td>$${payment.amount.toFixed(2)}</td>
+                        <td>$${payment.principal.toFixed(2)}</td>
+                        <td>$${payment.interest.toFixed(2)}</td>
+                        <td>$${runningBalance.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            elements.historyContainer.innerHTML = html;
+            
+            // Add event listener to back button
+            document.getElementById('backToAll').addEventListener('click', () => {
+                renderPaymentHistory();
+                document.getElementById('paymentsTab').classList.add('active');
+                document.getElementById('loansTab').classList.remove('active');
+                document.querySelector('.tab[data-tab="payments"]').classList.add('active');
+                document.querySelector('.tab[data-tab="loans"]').classList.remove('active');
+            });
+            
+            // Switch to payment history tab
+            document.getElementById('paymentsTab').classList.add('active');
+            document.getElementById('loansTab').classList.remove('active');
+            document.querySelector('.tab[data-tab="payments"]').classList.add('active');
+            document.querySelector('.tab[data-tab="loans"]').classList.remove('active');
+        }
+        
         // Remove a loan
         function removeLoan(loanId) {
-            state.loans = state.loans.filter(loan => loan.id !== loanId);
-            saveLoans();
-            renderLoans();
-        }
-        
-        // Initialize charts
-        function initCharts() {
-            // Simulation chart
-            const ctx = document.getElementById('simulationChart').getContext('2d');
-            window.simulationChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Now', '1 yr', '2 yr', '3 yr', '4 yr', '5 yr'],
-                    datasets: [
-                        {
-                            label: 'Current Plan',
-                            data: [24500, 21000, 17200, 12800, 7800, 0],
-                            borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                            tension: 0.3,
-                            fill: true
-                        },
-                        {
-                            label: 'With Extra Payments',
-                            data: [24500, 19500, 14200, 8500, 2200, 0],
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            tension: 0.3,
-                            fill: true
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        title: {
-                            display: true,
-                            text: 'Debt Payoff Projection'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Balance ($)'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        // Render chart for an individual loan
-        function renderLoanChart(loan) {
-            const ctx = document.getElementById(`chart-${loan.id}`).getContext('2d');
-            
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Paid Off', 'Remaining'],
-                    datasets: [{
-                        data: [loan.paid, loan.balance],
-                        backgroundColor: [
-                            '#10b981',
-                            '#e2e8f0'
-                        ],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.label}: $${context.raw.toLocaleString()}`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        // Update simulation chart based on extra payment
-        function updateSimulationChart() {
-            const extra = parseInt(elements.extraPayment.value);
-            
-            // Simplified simulation - in a real app this would do actual calculations
-            const currentData = [24500, 21000, 17200, 12800, 7800, 0];
-            const newData = [24500, 19500 - extra*8, 14200 - extra*16, 8500 - extra*24, 2200 - extra*32, 0];
-            
-            window.simulationChart.data.datasets[1].data = newData;
-            window.simulationChart.update();
+            if (confirm("Are you sure you want to remove this loan? All payment history for this loan will also be deleted.")) {
+                state.loans = state.loans.filter(loan => loan.id !== loanId);
+                state.payments = state.payments.filter(payment => payment.loanId !== loanId);
+                saveData();
+                renderLoans();
+                renderPaymentHistory();
+                updateDashboard();
+            }
         }
         
         // Show random motivational message
