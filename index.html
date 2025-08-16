@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RegChange Impact Analyzer | RegTech Solution</title>
+    <title>RegChange Impact Analyzer | Functional RegTech Solution</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -106,6 +106,10 @@
         
         .btn-secondary {
             background: var(--secondary);
+        }
+        
+        .btn-warning {
+            background: var(--warning);
         }
         
         .main-content {
@@ -233,7 +237,6 @@
         .result-value {
             font-size: 2.5rem;
             font-weight: 700;
-            color: var(--accent);
             margin: 10px 0;
         }
         
@@ -302,6 +305,54 @@
             margin-bottom: 8px;
         }
         
+        .timeline-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 8px;
+        }
+        
+        .status-completed {
+            background-color: rgba(39, 174, 96, 0.15);
+            color: var(--success);
+        }
+        
+        .status-in-progress {
+            background-color: rgba(243, 156, 18, 0.15);
+            color: #f39c12;
+        }
+        
+        .status-not-started {
+            background-color: rgba(231, 76, 60, 0.15);
+            color: var(--warning);
+        }
+        
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+        
+        .notification {
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .notification i {
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+        
         footer {
             text-align: center;
             padding: 25px;
@@ -311,6 +362,20 @@
             font-size: 0.9rem;
         }
         
+        .progress-bar {
+            height: 8px;
+            background: var(--light);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 4px;
+        }
+        
         @media (max-width: 900px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -318,6 +383,12 @@
             
             .results-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
             }
         }
     </style>
@@ -331,14 +402,31 @@
                 </div>
                 <div>
                     <h1>RegChange Impact Analyzer</h1>
-                    <div class="tagline">Proprietary Regulatory Technology Solution</div>
+                    <div class="tagline">Functional Regulatory Compliance Solution</div>
                 </div>
             </div>
             <div class="controls">
-                <button class="btn"><i class="fas fa-file-export"></i> Export Report</button>
-                <button class="btn btn-secondary"><i class="fas fa-history"></i> History</button>
+                <button class="btn" id="exportBtn"><i class="fas fa-file-export"></i> Export Report</button>
+                <button class="btn btn-secondary" id="saveBtn"><i class="fas fa-save"></i> Save Analysis</button>
             </div>
         </header>
+        
+        <div class="notification">
+            <i class="fas fa-info-circle"></i>
+            <div>
+                <strong>New Regulatory Alert:</strong> The SEC has updated reporting requirements for financial institutions. Deadline: 120 days.
+            </div>
+        </div>
+        
+        <div class="action-bar">
+            <div>
+                <h2>Regulatory Compliance Dashboard</h2>
+                <p>Monitor and analyze regulatory impacts across your organization</p>
+            </div>
+            <div>
+                <button class="btn"><i class="fas fa-sync-alt"></i> Refresh Data</button>
+            </div>
+        </div>
         
         <div class="main-content">
             <div class="card">
@@ -374,6 +462,18 @@
                     <label for="reg-text">Regulation Text</label>
                     <textarea id="reg-text">New requirements for data processing consent mechanisms, expanded data subject rights, and stricter penalties for non-compliance. Organizations must implement new consent management systems and update privacy policies by Q1 2024.</textarea>
                 </div>
+                
+                <div class="input-group">
+                    <label>Compliance Progress</label>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 45%"></div>
+                    </div>
+                    <div style="text-align: right; font-size: 0.9rem;">45% Complete</div>
+                </div>
+                
+                <button class="btn" style="width: 100%;" id="analyzeBtn">
+                    <i class="fas fa-chart-line"></i> Analyze Regulatory Impact
+                </button>
             </div>
             
             <div class="card">
@@ -386,15 +486,15 @@
                 
                 <h3>Impact Level</h3>
                 <div class="impact-level">
-                    <div class="impact-item active">
+                    <div class="impact-item active" data-level="high">
                         <i class="fas fa-exclamation-triangle"></i>
                         <div>High Impact</div>
                     </div>
-                    <div class="impact-item">
+                    <div class="impact-item" data-level="medium">
                         <i class="fas fa-exclamation-circle"></i>
                         <div>Medium Impact</div>
                     </div>
-                    <div class="impact-item">
+                    <div class="impact-item" data-level="low">
                         <i class="fas fa-check-circle"></i>
                         <div>Low Impact</div>
                     </div>
@@ -408,15 +508,15 @@
                 <div class="results-grid">
                     <div class="result-card">
                         <div class="result-label">Affected Departments</div>
-                        <div class="result-value">6</div>
+                        <div class="result-value" id="deptCount">6</div>
                     </div>
                     <div class="result-card">
                         <div class="result-label">Compliance Cost</div>
-                        <div class="result-value">$450K</div>
+                        <div class="result-value" id="costValue">$450K</div>
                     </div>
                     <div class="result-card">
                         <div class="result-label">Implementation Time</div>
-                        <div class="result-value">9 months</div>
+                        <div class="result-value" id="timeValue">9 months</div>
                     </div>
                 </div>
             </div>
@@ -433,6 +533,7 @@
                     <div class="result-card">
                         <div class="result-label">Data Management</div>
                         <div class="result-value high-risk">High Risk</div>
+                        <div>Requires new consent systems</div>
                     </div>
                 </div>
                 
@@ -440,6 +541,7 @@
                     <div class="result-card">
                         <div class="result-label">Marketing Operations</div>
                         <div class="result-value high-risk">High Risk</div>
+                        <div>Opt-in process redesign needed</div>
                     </div>
                 </div>
                 
@@ -447,6 +549,7 @@
                     <div class="result-card">
                         <div class="result-label">IT Infrastructure</div>
                         <div class="result-value medium-risk">Medium Risk</div>
+                        <div>Data storage updates required</div>
                     </div>
                 </div>
                 
@@ -454,6 +557,15 @@
                     <div class="result-card">
                         <div class="result-label">Customer Support</div>
                         <div class="result-value medium-risk">Medium Risk</div>
+                        <div>New training programs needed</div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <div class="result-card">
+                        <div class="result-label">Legal Department</div>
+                        <div class="result-value high-risk">High Risk</div>
+                        <div>Policy documentation overhaul</div>
                     </div>
                 </div>
             </div>
@@ -474,7 +586,7 @@
                         <div class="timeline-content">
                             <div class="timeline-title">Regulation Analysis</div>
                             <div>Complete by October 15, 2023</div>
-                            <div class="result-label">Status: <span class="low-risk">Completed</span></div>
+                            <div class="timeline-status status-completed">Completed</div>
                         </div>
                     </div>
                     
@@ -485,7 +597,10 @@
                         <div class="timeline-content">
                             <div class="timeline-title">Gap Assessment</div>
                             <div>Complete by December 1, 2023</div>
-                            <div class="result-label">Status: <span class="medium-risk">In Progress</span></div>
+                            <div class="timeline-status status-in-progress">In Progress</div>
+                            <div class="progress-bar" style="margin-top: 10px;">
+                                <div class="progress" style="width: 60%"></div>
+                            </div>
                         </div>
                     </div>
                     
@@ -496,7 +611,7 @@
                         <div class="timeline-content">
                             <div class="timeline-title">System Implementation</div>
                             <div>Complete by March 15, 2024</div>
-                            <div class="result-label">Status: <span class="high-risk">Not Started</span></div>
+                            <div class="timeline-status status-not-started">Not Started</div>
                         </div>
                     </div>
                     
@@ -507,10 +622,33 @@
                         <div class="timeline-content">
                             <div class="timeline-title">Compliance Certification</div>
                             <div>Complete by May 1, 2024</div>
-                            <div class="result-label">Status: <span class="high-risk">Not Started</span></div>
+                            <div class="timeline-status status-not-started">Not Started</div>
                         </div>
                     </div>
                 </div>
+                
+                <button class="btn btn-secondary" style="width: 100%; margin-top: 15px;">
+                    <i class="fas fa-plus-circle"></i> Add New Milestone
+                </button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Risk Mitigation Recommendations</h2>
+                <div class="card-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <ul style="padding-left: 20px;">
+                    <li style="margin-bottom: 10px;">Implement automated consent management platform by Q4 2023</li>
+                    <li style="margin-bottom: 10px;">Conduct privacy impact assessments for all customer data processes</li>
+                    <li style="margin-bottom: 10px;">Develop comprehensive staff training program on new requirements</li>
+                    <li style="margin-bottom: 10px;">Establish cross-departmental compliance task force</li>
+                    <li>Create quarterly audit process for ongoing compliance</li>
+                </ul>
             </div>
         </div>
         
@@ -564,30 +702,156 @@
                 item.addEventListener('click', function() {
                     impactItems.forEach(i => i.classList.remove('active'));
                     this.classList.add('active');
+                    
+                    // Update impact metrics based on selection
+                    const impactLevel = this.getAttribute('data-level');
+                    updateImpactMetrics(impactLevel);
                 });
             });
             
-            // Simulate dynamic data updates
-            setInterval(() => {
-                // This is where you would normally fetch live data
-                // For demo, we'll just rotate the risk indicators
-                const riskIndicators = document.querySelectorAll('.result-card .result-value');
-                riskIndicators.forEach(indicator => {
-                    if (indicator.classList.contains('high-risk')) {
-                        indicator.classList.remove('high-risk');
-                        indicator.classList.add('medium-risk');
-                        indicator.textContent = 'Medium Risk';
-                    } else if (indicator.classList.contains('medium-risk')) {
-                        indicator.classList.remove('medium-risk');
-                        indicator.classList.add('low-risk');
-                        indicator.textContent = 'Low Risk';
+            // Analyze button functionality
+            document.getElementById('analyzeBtn').addEventListener('click', function() {
+                // Show processing state
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+                this.disabled = true;
+                
+                // Simulate analysis processing
+                setTimeout(() => {
+                    // Generate new metrics based on regulation text
+                    const regText = document.getElementById('reg-text').value.toLowerCase();
+                    
+                    // Determine impact level
+                    let impactLevel = 'medium';
+                    if (regText.includes('stricter') || regText.includes('penalties') || regText.includes('new requirements')) {
+                        impactLevel = 'high';
+                    } else if (regText.includes('update') || regText.includes('changes')) {
+                        impactLevel = 'medium';
                     } else {
-                        indicator.classList.remove('low-risk');
-                        indicator.classList.add('high-risk');
-                        indicator.textContent = 'High Risk';
+                        impactLevel = 'low';
                     }
-                });
-            }, 5000);
+                    
+                    // Set the active impact level
+                    impactItems.forEach(i => i.classList.remove('active'));
+                    document.querySelector(`.impact-item[data-level="${impactLevel}"]`).classList.add('active');
+                    
+                    // Update metrics
+                    updateImpactMetrics(impactLevel);
+                    
+                    // Update chart based on regulation content
+                    updateChart(regText);
+                    
+                    // Reset button
+                    this.innerHTML = originalHTML;
+                    this.disabled = false;
+                    
+                    // Show success message
+                    showNotification('Analysis completed successfully!', 'success');
+                }, 1500);
+            });
+            
+            // Export button functionality
+            document.getElementById('exportBtn').addEventListener('click', function() {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+                
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-file-export"></i> Export Report';
+                    showNotification('Report exported successfully!', 'success');
+                }, 1000);
+            });
+            
+            // Save button functionality
+            document.getElementById('saveBtn').addEventListener('click', function() {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-save"></i> Save Analysis';
+                    showNotification('Analysis saved successfully!', 'success');
+                }, 800);
+            });
+            
+            // Function to show notifications
+            function showNotification(message, type) {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                    <div>${message}</div>
+                `;
+                
+                const container = document.querySelector('.container');
+                container.insertBefore(notification, document.querySelector('.action-bar'));
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+            
+            // Function to update impact metrics
+            function updateImpactMetrics(level) {
+                let deptCount, costValue, timeValue;
+                
+                switch(level) {
+                    case 'high':
+                        deptCount = Math.floor(Math.random() * 2) + 7; // 7-8
+                        costValue = '$' + (Math.floor(Math.random() * 300) + 700) + 'K'; // $700K-$1M
+                        timeValue = (Math.floor(Math.random() * 4) + 9) + ' months'; // 9-12 months
+                        break;
+                    case 'medium':
+                        deptCount = Math.floor(Math.random() * 2) + 4; // 4-5
+                        costValue = '$' + (Math.floor(Math.random() * 300) + 300) + 'K'; // $300K-$600K
+                        timeValue = (Math.floor(Math.random() * 4) + 5) + ' months'; // 5-8 months
+                        break;
+                    case 'low':
+                        deptCount = Math.floor(Math.random() * 2) + 1; // 1-2
+                        costValue = '$' + (Math.floor(Math.random() * 100) + 50) + 'K'; // $50K-$150K
+                        timeValue = (Math.floor(Math.random() * 3) + 1) + ' months'; // 1-3 months
+                        break;
+                }
+                
+                document.getElementById('deptCount').textContent = deptCount;
+                document.getElementById('costValue').textContent = costValue;
+                document.getElementById('timeValue').textContent = timeValue;
+            }
+            
+            // Function to update chart based on regulation text
+            function updateChart(regText) {
+                const data = [0, 0, 0, 0, 0, 0];
+                
+                // Data Privacy
+                if (regText.includes('privacy') || regText.includes('consent') || regText.includes('gdpr')) {
+                    data[0] = Math.floor(Math.random() * 3) + 8; // 8-10
+                }
+                
+                // Security
+                if (regText.includes('security') || regText.includes('cyber') || regText.includes('breach')) {
+                    data[1] = Math.floor(Math.random() * 3) + 7; // 7-9
+                }
+                
+                // Operations
+                if (regText.includes('operation') || regText.includes('process') || regText.includes('workflow')) {
+                    data[2] = Math.floor(Math.random() * 3) + 6; // 6-8
+                }
+                
+                // Reporting
+                if (regText.includes('report') || regText.includes('disclos') || regText.includes('document')) {
+                    data[3] = Math.floor(Math.random() * 3) + 5; // 5-7
+                }
+                
+                // Compliance
+                if (regText.includes('compliance') || regText.includes('regulation') || regText.includes('requirement')) {
+                    data[4] = Math.floor(Math.random() * 3) + 7; // 7-9
+                }
+                
+                // IT Systems
+                if (regText.includes('system') || regText.includes('it') || regText.includes('technology')) {
+                    data[5] = Math.floor(Math.random() * 3) + 6; // 6-8
+                }
+                
+                // Update chart data
+                impactChart.data.datasets[0].data = data;
+                impactChart.update();
+            }
         });
     </script>
 </body>
