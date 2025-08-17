@@ -17,7 +17,7 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-bg: rgba(255, 255, 255, 0.9);
             --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -35,6 +35,7 @@
             min-height: 100vh;
             padding: 1rem;
             line-height: 1.6;
+            overflow-x: hidden;
         }
         
         .container {
@@ -158,7 +159,7 @@
             color: var(--secondary);
         }
         
-        input, select, button {
+        input, select, button, textarea {
             width: 100%;
             padding: 0.875rem 1.25rem;
             border-radius: 0.75rem;
@@ -404,17 +405,9 @@
         }
         
         /* Advanced mobile styles */
-        .mobile-optimized {
-            display: none;
-        }
-        
         @media (max-width: 767px) {
             .desktop-only {
                 display: none;
-            }
-            
-            .mobile-optimized {
-                display: block;
             }
             
             .card {
@@ -445,6 +438,14 @@
             .stats {
                 flex-direction: column;
             }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
         }
         
         /* Animation */
@@ -457,6 +458,59 @@
         .floating {
             animation: float 6s ease-in-out infinite;
         }
+        
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            100% { left: 100%; }
+        }
+        
+        .generation-panel {
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        
+        .generation-option {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .generation-option label {
+            display: block;
+            margin-bottom: 0.25rem;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        .data-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .mobile-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -468,7 +522,7 @@
                 </div>
                 <h1>QuantumSynth</h1>
             </div>
-            <p class="subtitle">Generate sophisticated synthetic datasets with AI-powered realism and advanced customization</p>
+            <p class="subtitle">Generate premium synthetic datasets with AI-powered realism</p>
         </header>
         
         <div class="dashboard">
@@ -478,9 +532,28 @@
                         <h2><div class="card-icon"><i class="fas fa-sliders-h"></i></div> Configuration</h2>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="rowCount"><i class="fas fa-list-ol"></i> Number of Rows</label>
-                        <input type="number" id="rowCount" min="1" max="100000" value="50">
+                    <div class="generation-panel">
+                        <div class="generation-option">
+                            <label for="rowCount"><i class="fas fa-list-ol"></i> Rows</label>
+                            <input type="number" id="rowCount" min="1" max="100000" value="50">
+                        </div>
+                        <div class="generation-option">
+                            <label for="dataQuality"><i class="fas fa-star"></i> Quality</label>
+                            <select id="dataQuality">
+                                <option value="basic">Basic</option>
+                                <option value="premium" selected>Premium</option>
+                                <option value="enterprise">Enterprise</option>
+                            </select>
+                        </div>
+                        <div class="generation-option">
+                            <label for="dataRegion"><i class="fas fa-globe"></i> Region</label>
+                            <select id="dataRegion">
+                                <option value="us" selected>United States</option>
+                                <option value="eu">Europe</option>
+                                <option value="asia">Asia</option>
+                                <option value="global">Global</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -506,7 +579,7 @@
                                 </div>
                             </div>
                             <div class="schema-row">
-                                <input type="text" class="field-name" placeholder="Field name" value="name">
+                                <input type="text" class="field-name" placeholder="Field name" value="customer_name">
                                 <select class="field-type">
                                     <option value="autoIncrement">Auto Increment</option>
                                     <option value="name" selected>Full Name</option>
@@ -563,7 +636,7 @@
                                 </div>
                             </div>
                             <div class="schema-row">
-                                <input type="text" class="field-name" placeholder="Field name" value="balance">
+                                <input type="text" class="field-name" placeholder="Field name" value="lifetime_value">
                                 <select class="field-type">
                                     <option value="autoIncrement">Auto Increment</option>
                                     <option value="name">Full Name</option>
@@ -588,7 +661,7 @@
                     
                     <div class="btn-group">
                         <button id="generateBtn"><i class="fas fa-bolt"></i> Generate Data</button>
-                        <button id="resetBtn" class="btn-outline"><i class="fas fa-sync"></i> Reset</button>
+                        <button id="randomizeBtn"><i class="fas fa-random"></i> Randomize</button>
                     </div>
                     
                     <div class="stats">
@@ -601,8 +674,8 @@
                             <div class="stat-label">Fields Defined</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value" id="dataSizeStat">1.2 KB</div>
-                            <div class="stat-label">Data Size</div>
+                            <div class="stat-value" id="dataValueStat">$1,250</div>
+                            <div class="stat-label">Estimated Value</div>
                         </div>
                     </div>
                 </div>
@@ -612,7 +685,9 @@
                 <div class="card">
                     <div class="card-header">
                         <h2><div class="card-icon"><i class="fas fa-chart-bar"></i></div> Data Output</h2>
-                        <button id="downloadCsv" class="btn-success"><i class="fas fa-download"></i> <span class="desktop-only">Download CSV</span></button>
+                        <div class="desktop-only">
+                            <button id="downloadCsv" class="btn-success"><i class="fas fa-download"></i> Download CSV</button>
+                        </div>
                     </div>
                     
                     <div class="tabs">
@@ -626,88 +701,36 @@
                                 <thead>
                                     <tr>
                                         <th>id</th>
-                                        <th>name</th>
+                                        <th>customer_name</th>
                                         <th>email</th>
                                         <th>signup_date</th>
-                                        <th>balance</th>
+                                        <th>lifetime_value</th>
+                                        <th>status</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>Johnathan Reynolds</td>
-                                        <td>john.reynolds@example.com</td>
-                                        <td>2023-05-15</td>
-                                        <td>$2,450.75</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Amelia Chen</td>
-                                        <td>amelia.chen@example.org</td>
-                                        <td>2023-06-20</td>
-                                        <td>$1,850.50</td>
-                                    </tr>
-                                    <tr>
-                                        <td>3</td>
-                                        <td>Marcus Johnson</td>
-                                        <td>marcusj@business.net</td>
-                                        <td>2023-07-12</td>
-                                        <td>$3,200.00</td>
-                                    </tr>
-                                    <tr>
-                                        <td>4</td>
-                                        <td>Samantha Williams</td>
-                                        <td>sam.w@example.io</td>
-                                        <td>2023-08-05</td>
-                                        <td>$4,125.30</td>
-                                    </tr>
-                                    <tr>
-                                        <td>5</td>
-                                        <td>David Kim</td>
-                                        <td>david.kim@tech.com</td>
-                                        <td>2023-09-18</td>
-                                        <td>$1,975.25</td>
-                                    </tr>
+                                <tbody id="tableBody">
+                                    <!-- Data will be generated here -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
                     
                     <div id="jsonContent" class="tab-content">
-                        <pre id="jsonOutput">[
-  {
-    "id": 1,
-    "name": "Johnathan Reynolds",
-    "email": "john.reynolds@example.com",
-    "signup_date": "2023-05-15",
-    "balance": 2450.75
-  },
-  {
-    "id": 2,
-    "name": "Amelia Chen",
-    "email": "amelia.chen@example.org",
-    "signup_date": "2023-06-20",
-    "balance": 1850.50
-  },
-  {
-    "id": 3,
-    "name": "Marcus Johnson",
-    "email": "marcusj@business.net",
-    "signup_date": "2023-07-12",
-    "balance": 3200.00
-  }
-]</pre>
+                        <pre id="jsonOutput">{
+  "data": "Will be generated after clicking Generate Data"
+}</pre>
                     </div>
                     
-                    <div class="mobile-optimized" style="margin-top: 1.5rem;">
-                        <button id="mobileDownload" class="btn-success" style="width: 100%;"><i class="fas fa-download"></i> Download CSV</button>
+                    <div class="mobile-actions">
+                        <button id="mobileDownload" class="btn-success" style="flex:1;"><i class="fas fa-download"></i> CSV</button>
+                        <button id="mobileJson" class="btn-outline" style="flex:1;"><i class="fas fa-code"></i> JSON</button>
                     </div>
                 </div>
             </div>
         </div>
         
         <div class="footer">
-            <p>QuantumSynth Data Generator v2.0 | Proprietary Algorithm Technology © 2023</p>
+            <p>QuantumSynth Data Generator v3.0 | Proprietary Algorithm Technology © 2023</p>
         </div>
     </div>
     
@@ -724,18 +747,25 @@
             const schemaFields = document.getElementById('schemaFields');
             const addFieldBtn = document.getElementById('addField');
             const generateBtn = document.getElementById('generateBtn');
-            const resetBtn = document.getElementById('resetBtn');
+            const randomizeBtn = document.getElementById('randomizeBtn');
             const downloadCsvBtn = document.getElementById('downloadCsv');
             const mobileDownloadBtn = document.getElementById('mobileDownload');
+            const mobileJsonBtn = document.getElementById('mobileJson');
             const tabs = document.querySelectorAll('.tab');
             const tabContents = document.querySelectorAll('.tab-content');
             const dataTable = document.getElementById('dataTable');
+            const tableBody = document.getElementById('tableBody');
             const jsonOutput = document.getElementById('jsonOutput');
             const notification = document.getElementById('notification');
             const rowCountInput = document.getElementById('rowCount');
             const rowCountStat = document.getElementById('rowCountStat');
             const fieldCountStat = document.getElementById('fieldCountStat');
-            const dataSizeStat = document.getElementById('dataSizeStat');
+            const dataValueStat = document.getElementById('dataValueStat');
+            const dataQuality = document.getElementById('dataQuality');
+            const dataRegion = document.getElementById('dataRegion');
+            
+            // Initialize Faker with a random seed
+            faker.seed(Math.floor(Math.random() * 1000));
             
             // Add new field row
             addFieldBtn.addEventListener('click', function() {
@@ -798,39 +828,40 @@
                 });
             });
             
-            // Reset to default schema
-            resetBtn.addEventListener('click', function() {
+            // Randomize button
+            randomizeBtn.addEventListener('click', function() {
+                // Randomize field names and types
+                const fieldNames = ['customer', 'product', 'transaction', 'location', 'value', 
+                                  'date', 'category', 'rating', 'status', 'premium'];
+                const fieldTypes = ['name', 'email', 'date', 'number', 'boolean', 'custom'];
+                
                 // Clear existing fields
                 while (schemaFields.firstChild) {
                     schemaFields.removeChild(schemaFields.firstChild);
                 }
                 
-                // Add default fields
-                const defaultSchema = [
-                    {name: 'id', type: 'autoIncrement'},
-                    {name: 'name', type: 'name'},
-                    {name: 'email', type: 'email'},
-                    {name: 'signup_date', type: 'date'},
-                    {name: 'balance', type: 'number'}
-                ];
-                
-                defaultSchema.forEach(field => {
+                // Add 5 random fields
+                for (let i = 0; i < 5; i++) {
+                    const name = fieldNames[Math.floor(Math.random() * fieldNames.length)] + 
+                                '_' + Math.floor(Math.random() * 100);
+                    const type = fieldTypes[Math.floor(Math.random() * fieldTypes.length)];
+                    
                     const newRow = document.createElement('div');
                     newRow.className = 'schema-row';
                     newRow.innerHTML = `
-                        <input type="text" class="field-name" placeholder="Field name" value="${field.name}">
+                        <input type="text" class="field-name" placeholder="Field name" value="${name}">
                         <select class="field-type">
-                            <option value="autoIncrement" ${field.type === 'autoIncrement' ? 'selected' : ''}>Auto Increment</option>
-                            <option value="name" ${field.type === 'name' ? 'selected' : ''}>Full Name</option>
-                            <option value="email" ${field.type === 'email' ? 'selected' : ''}>Email</option>
-                            <option value="phone" ${field.type === 'phone' ? 'selected' : ''}>Phone</option>
-                            <option value="address" ${field.type === 'address' ? 'selected' : ''}>Address</option>
-                            <option value="city" ${field.type === 'city' ? 'selected' : ''}>City</option>
-                            <option value="country" ${field.type === 'country' ? 'selected' : ''}>Country</option>
-                            <option value="date" ${field.type === 'date' ? 'selected' : ''}>Date</option>
-                            <option value="number" ${field.type === 'number' ? 'selected' : ''}>Number</option>
-                            <option value="boolean" ${field.type === 'boolean' ? 'selected' : ''}>Boolean</option>
-                            <option value="custom" ${field.type === 'custom' ? 'selected' : ''}>Custom Text</option>
+                            <option value="autoIncrement" ${type === 'autoIncrement' ? 'selected' : ''}>Auto Increment</option>
+                            <option value="name" ${type === 'name' ? 'selected' : ''}>Full Name</option>
+                            <option value="email" ${type === 'email' ? 'selected' : ''}>Email</option>
+                            <option value="phone" ${type === 'phone' ? 'selected' : ''}>Phone</option>
+                            <option value="address" ${type === 'address' ? 'selected' : ''}>Address</option>
+                            <option value="city" ${type === 'city' ? 'selected' : ''}>City</option>
+                            <option value="country" ${type === 'country' ? 'selected' : ''}>Country</option>
+                            <option value="date" ${type === 'date' ? 'selected' : ''}>Date</option>
+                            <option value="number" ${type === 'number' ? 'selected' : ''}>Number</option>
+                            <option value="boolean" ${type === 'boolean' ? 'selected' : ''}>Boolean</option>
+                            <option value="custom" ${type === 'custom' ? 'selected' : ''}>Custom Text</option>
                         </select>
                         <div class="schema-options">
                             <button class="remove-btn"><i class="fas fa-times"></i></button>
@@ -845,29 +876,57 @@
                             updateStats();
                         }
                     });
-                });
+                }
                 
-                rowCountInput.value = 50;
+                // Randomize row count
+                rowCountInput.value = Math.floor(Math.random() * 900) + 100;
+                
+                // Randomize quality and region
+                const qualities = ['basic', 'premium', 'enterprise'];
+                const regions = ['us', 'eu', 'asia', 'global'];
+                dataQuality.value = qualities[Math.floor(Math.random() * qualities.length)];
+                dataRegion.value = regions[Math.floor(Math.random() * regions.length)];
+                
                 updateStats();
-                showNotification('Reset to default schema');
+                showNotification('Schema randomized successfully');
             });
             
             // Generate data
             generateBtn.addEventListener('click', function() {
                 const rowCount = parseInt(rowCountInput.value) || 50;
                 const schema = getSchema();
-                const data = generateData(rowCount, schema);
                 
-                displayTable(data);
-                displayJson(data);
-                updateStats(rowCount, schema, data);
+                // Show loading state
+                generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                generateBtn.disabled = true;
                 
-                showNotification(`Generated ${rowCount} rows of synthetic data`);
+                // Simulate processing time for large datasets
+                setTimeout(() => {
+                    const data = generateData(rowCount, schema);
+                    
+                    displayTable(data);
+                    displayJson(data);
+                    updateStats(rowCount, schema, data);
+                    
+                    showNotification(`Generated ${rowCount} rows of synthetic data`);
+                    
+                    // Reset button
+                    generateBtn.innerHTML = '<i class="fas fa-bolt"></i> Generate Data';
+                    generateBtn.disabled = false;
+                }, 500);
             });
             
             // Download CSV
             downloadCsvBtn.addEventListener('click', downloadData);
             mobileDownloadBtn.addEventListener('click', downloadData);
+            
+            // Show JSON on mobile
+            mobileJsonBtn.addEventListener('click', function() {
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                document.querySelector('.tab[data-tab="json"]').classList.add('active');
+                document.getElementById('jsonContent').classList.add('active');
+            });
             
             function downloadData() {
                 const schema = getSchema();
@@ -894,10 +953,10 @@
                 if (schema.length === 0) {
                     return [
                         {name: 'id', type: 'autoIncrement'},
-                        {name: 'name', type: 'name'},
+                        {name: 'customer_name', type: 'name'},
                         {name: 'email', type: 'email'},
                         {name: 'signup_date', type: 'date'},
-                        {name: 'balance', type: 'number'}
+                        {name: 'lifetime_value', type: 'number'}
                     ];
                 }
                 
@@ -906,6 +965,8 @@
             
             function generateData(rowCount, schema) {
                 const data = [];
+                const region = dataRegion.value;
+                const quality = dataQuality.value;
                 
                 // Advanced data generation with more realistic patterns
                 for (let i = 0; i < rowCount; i++) {
@@ -917,20 +978,58 @@
                                 row[field.name] = i + 1;
                                 break;
                             case 'name':
-                                row[field.name] = faker.name.findName();
+                                if (region === 'eu') {
+                                    row[field.name] = faker.name.findName() + ' ' + faker.name.lastName();
+                                } else if (region === 'asia') {
+                                    row[field.name] = faker.name.lastName() + ' ' + faker.name.firstName();
+                                } else {
+                                    row[field.name] = faker.name.findName();
+                                }
                                 break;
                             case 'email':
                                 // More realistic email patterns
-                                const namePart = faker.name.firstName().toLowerCase() + '.' + faker.name.lastName().toLowerCase();
-                                const domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'company.io', 'business.org'];
-                                const domain = domains[Math.floor(Math.random() * domains.length)];
-                                row[field.name] = `${namePart}@${domain}`;
+                                const firstName = faker.name.firstName().toLowerCase();
+                                const lastName = faker.name.lastName().toLowerCase();
+                                
+                                let email;
+                                if (quality === 'basic') {
+                                    email = `${firstName}${Math.floor(Math.random()*100)}@example.com`;
+                                } else if (quality === 'premium') {
+                                    const domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'];
+                                    email = `${firstName}.${lastName}@${domains[Math.floor(Math.random() * domains.length)]}`;
+                                } else {
+                                    const company = faker.company.companyName().replace(/\s+/g, '').toLowerCase();
+                                    email = `${firstName[0]}${lastName}@${company}.com`;
+                                }
+                                
+                                row[field.name] = email;
                                 break;
                             case 'phone':
-                                row[field.name] = faker.phone.phoneNumber('(###) ###-####');
+                                let phone;
+                                if (region === 'eu') {
+                                    phone = faker.phone.phoneNumber('+49 ### ########');
+                                } else if (region === 'asia') {
+                                    phone = faker.phone.phoneNumber('+81 ### #######');
+                                } else {
+                                    phone = faker.phone.phoneNumber('(###) ###-####');
+                                }
+                                row[field.name] = phone;
                                 break;
                             case 'address':
-                                row[field.name] = faker.address.streetAddress();
+                                if (region === 'eu') {
+                                    row[field.name] = faker.address.streetAddress() + ', ' + 
+                                                     faker.address.city() + ', ' + 
+                                                     faker.address.country();
+                                } else if (region === 'asia') {
+                                    row[field.name] = faker.address.streetAddress() + ', ' + 
+                                                     faker.address.city() + ', ' + 
+                                                     faker.address.country();
+                                } else {
+                                    row[field.name] = faker.address.streetAddress() + ', ' + 
+                                                     faker.address.city() + ', ' + 
+                                                     faker.address.stateAbbr() + ' ' + 
+                                                     faker.address.zipCode();
+                                }
                                 break;
                             case 'city':
                                 row[field.name] = faker.address.city();
@@ -947,12 +1046,25 @@
                                 break;
                             case 'number':
                                 // More realistic number distributions
-                                const value = (Math.random() * 10000);
-                                // 70% of numbers between 100 and 5000
-                                const adjustedValue = Math.random() < 0.7 ? 
-                                    (100 + Math.random() * 4900) : 
-                                    (Math.random() * 10000);
-                                row[field.name] = parseFloat(adjustedValue.toFixed(2));
+                                let value;
+                                if (quality === 'basic') {
+                                    value = Math.random() * 10000;
+                                } else if (quality === 'premium') {
+                                    // Normal distribution
+                                    value = gaussianRandom(5000, 3000);
+                                    value = Math.abs(value);
+                                } else {
+                                    // Enterprise quality with industry-specific patterns
+                                    if (field.name.includes('value') || field.name.includes('price')) {
+                                        value = gaussianRandom(10000, 5000);
+                                    } else if (field.name.includes('age')) {
+                                        value = gaussianRandom(40, 15);
+                                    } else {
+                                        value = gaussianRandom(500, 300);
+                                    }
+                                    value = Math.abs(value);
+                                }
+                                row[field.name] = parseFloat(value.toFixed(2));
                                 break;
                             case 'boolean':
                                 row[field.name] = Math.random() > 0.5;
@@ -965,45 +1077,73 @@
                         }
                     });
                     
+                    // Add premium fields for enterprise quality
+                    if (quality === 'enterprise') {
+                        row['customer_segment'] = ['Platinum', 'Gold', 'Silver', 'Bronze'][Math.floor(Math.random() * 4)];
+                        row['loyalty_score'] = Math.floor(Math.random() * 100);
+                        row['preferred_channel'] = ['Email', 'SMS', 'Push', 'In-App'][Math.floor(Math.random() * 4)];
+                    }
+                    
                     data.push(row);
                 }
                 
                 return data;
             }
             
+            // Gaussian distribution for more realistic numbers
+            function gaussianRandom(mean, stdDev) {
+                let u = 0, v = 0;
+                while(u === 0) u = Math.random();
+                while(v === 0) v = Math.random();
+                const num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+                return num * stdDev + mean;
+            }
+            
             function displayTable(data) {
                 if (data.length === 0) {
-                    dataTable.innerHTML = '<tr><td colspan="5">No data generated</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="6">No data generated</td></tr>';
                     return;
                 }
                 
-                // Create table header
-                let thead = '<thead><tr>';
-                Object.keys(data[0]).forEach(key => {
-                    thead += `<th>${key}</th>`;
-                });
-                thead += '</tr></thead>';
-                
                 // Create table body (first 50 rows only for performance)
                 const displayData = data.slice(0, 50);
-                let tbody = '<tbody>';
+                let tbody = '';
                 displayData.forEach(row => {
                     tbody += '<tr>';
-                    Object.values(row).forEach(value => {
+                    Object.entries(row).forEach(([key, value]) => {
                         // Format specific types for display
                         let displayValue = value;
                         if (typeof value === 'number' && !Number.isInteger(value)) {
                             displayValue = '$' + value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
                         } else if (typeof value === 'boolean') {
-                            displayValue = value ? '<span style="color:var(--success)">✓</span>' : '<span style="color:var(--danger)">✗</span>';
+                            displayValue = value ? 
+                                '<span style="color:var(--success)"><i class="fas fa-check-circle"></i> Yes</span>' : 
+                                '<span style="color:var(--danger)"><i class="fas fa-times-circle"></i> No</span>';
+                        } else if (key === 'customer_segment') {
+                            const colors = {
+                                'Platinum': '#e5e7eb',
+                                'Gold': '#fbbf24',
+                                'Silver': '#9ca3af',
+                                'Bronze': '#92400e'
+                            };
+                            displayValue = `<span style="background:${colors[value]}; padding: 3px 8px; border-radius: 20px; color: ${value === 'Gold' ? '#000' : '#fff'}">${value}</span>`;
+                        } else if (key === 'loyalty_score') {
+                            let color = '#ef4444';
+                            if (value > 70) color = '#10b981';
+                            else if (value > 40) color = '#f59e0b';
+                            displayValue = `<div style="display:flex; align-items:center;">
+                                <div style="width:100%; background:#e5e7eb; border-radius:10px; height:8px;">
+                                    <div style="width:${value}%; background:${color}; height:8px; border-radius:10px;"></div>
+                                </div>
+                                <span style="margin-left:8px; min-width:30px;">${value}%</span>
+                            </div>`;
                         }
                         tbody += `<td>${displayValue}</td>`;
                     });
                     tbody += '</tr>';
                 });
-                tbody += '</tbody>';
                 
-                dataTable.innerHTML = thead + tbody;
+                tableBody.innerHTML = tbody;
             }
             
             function displayJson(data) {
@@ -1016,7 +1156,7 @@
                 if (data.length === 0) return;
                 
                 // Create CSV content
-                const headers = schema.map(field => field.name);
+                const headers = Object.keys(data[0]);
                 let csvContent = headers.join(',') + '\n';
                 
                 data.forEach(row => {
@@ -1054,10 +1194,22 @@
                     // Row count
                     rowCountStat.textContent = rowCount.toLocaleString();
                     
-                    // Data size estimation
-                    const jsonData = JSON.stringify(data);
-                    const sizeInKB = (jsonData.length / 1024).toFixed(1);
-                    dataSizeStat.textContent = `${sizeInKB} KB`;
+                    // Data value estimation
+                    const qualityFactor = {
+                        'basic': 0.5,
+                        'premium': 1.5,
+                        'enterprise': 4
+                    }[dataQuality.value];
+                    
+                    const regionFactor = {
+                        'us': 1.2,
+                        'eu': 1.1,
+                        'asia': 1.0,
+                        'global': 1.3
+                    }[dataRegion.value];
+                    
+                    const value = (rowCount * fieldCount * qualityFactor * regionFactor).toFixed(2);
+                    dataValueStat.textContent = `$${parseFloat(value).toLocaleString()}`;
                 }
             }
             
