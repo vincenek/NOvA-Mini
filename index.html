@@ -3,146 +3,1029 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web-Based Micro-Investment Simulator (WebMIS)</title>
+    <title>WealthForge Simulator | Advanced Fintech Investment Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --dark: #0f172a;
+            --darker: #0b1120;
+            --light: #f8fafc;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 300px;
+            background: linear-gradient(to bottom, rgba(37, 99, 235, 0.15), transparent);
+            z-index: -1;
+        }
+        
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            background: var(--primary);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 8px 0;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: white;
+        }
+        
+        .nav-links a.active::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            outline: none;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .portfolio-summary {
+            grid-column: span 2;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .portfolio-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin: 10px 0;
+            background: linear-gradient(to right, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .performance-change {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--success);
+            font-weight: 500;
+        }
+        
+        .performance-change.negative {
+            color: var(--danger);
+        }
+        
+        .assets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .asset-card {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .asset-card:hover {
+            background: rgba(30, 41, 59, 0.7);
+            transform: translateY(-3px);
+        }
+        
+        .asset-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .asset-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .asset-icon.tech { background: rgba(37, 99, 235, 0.2); color: #93c5fd; }
+        .asset-icon.energy { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+        .asset-icon.health { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+        .asset-icon.crypto { background: rgba(139, 92, 246, 0.2); color: #c4b5fd; }
+        .asset-icon.realestate { background: rgba(236, 72, 153, 0.2); color: #f9a8d4; }
+        
+        .asset-price {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .asset-change {
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .positive { color: var(--success); }
+        .negative { color: var(--danger); }
+        
+        .trading-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            height: 400px;
+            position: relative;
+        }
+        
+        .chart-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .timeframe-btn {
+            padding: 6px 12px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .timeframe-btn.active, .timeframe-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .trading-controls {
             display: flex;
             flex-direction: column;
+            gap: 20px;
+        }
+        
+        .trading-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+        
+        .amount-slider {
+            width: 100%;
+            margin: 15px 0;
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+        }
+        
+        .amount-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .amount-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        
+        .btn-buy {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-buy:hover {
+            background: #16a34a;
+        }
+        
+        .btn-sell {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-sell:hover {
+            background: #dc2626;
+        }
+        
+        .ai-insights {
+            margin-top: 30px;
+        }
+        
+        .insights-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .insight-card {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            padding: 16px;
+            flex: 1;
+            min-width: 250px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .insight-header {
+            display: flex;
             align-items: center;
-            font-family: Arial, sans-serif;
-            background-color: #1a1a1a;
-            color: #fff;
+            gap: 10px;
+            margin-bottom: 12px;
         }
-        #controls {
-            margin: 20px;
-            text-align: center;
+        
+        .insight-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(37, 99, 235, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #93c5fd;
         }
-        input, select, button {
-            padding: 10px;
-            margin: 5px;
-            border: none;
-            border-radius: 5px;
-            background-color: #333;
-            color: #fff;
+        
+        .insight-title {
+            font-weight: 600;
+            font-size: 16px;
         }
-        button:hover {
-            background-color: #555;
+        
+        .insight-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            line-height: 1.5;
         }
-        canvas {
-            border: 2px solid #0f0;
-            background-color: #222;
+        
+        .market-news {
+            margin-top: 40px;
         }
-        #portfolio {
+        
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
             margin-top: 20px;
-            font-weight: bold;
+        }
+        
+        .news-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .news-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .news-content {
+            padding: 20px;
+        }
+        
+        .news-category {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(37, 99, 235, 0.2);
+            color: #93c5fd;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        
+        .news-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .news-excerpt {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .news-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            padding: 30px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .portfolio-summary {
+                grid-column: span 1;
+            }
+            .trading-section {
+                grid-template-columns: 1fr;
+            }
+            .nav-links {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="controls">
-        <select id="asset">
-            <option value="Tech">Tech ($10.00)</option>
-            <option value="Energy">Energy ($5.00)</option>
-            <option value="Health">Health ($7.50)</option>
-        </select>
-        <input type="number" id="amount" placeholder="Amount ($0.01-$10)" step="0.01" min="0.01" max="10">
-        <button onclick="buyAsset()">Buy</button>
-        <button onclick="sellAsset()">Sell</button>
-        <button onclick="simulateMarket()">Simulate Day</button>
-        <button onclick="resetPortfolio()">Reset</button>
+    <div class="grid-lines"></div>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="logo-text">WealthForge</div>
+            </div>
+            
+            <div class="nav-links">
+                <a href="#" class="active">Dashboard</a>
+                <a href="#">Portfolio</a>
+                <a href="#">Markets</a>
+                <a href="#">Learn</a>
+                <a href="#">AI Insights</a>
+            </div>
+            
+            <div class="user-actions">
+                <button class="btn btn-outline">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <button class="btn btn-outline">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="btn btn-primary">
+                    <i class="fas fa-user"></i> Account
+                </button>
+            </div>
+        </header>
+        
+        <div class="dashboard">
+            <div class="card portfolio-summary">
+                <div class="card-header">
+                    <div class="card-title">Portfolio Summary</div>
+                    <div class="performance-change">
+                        <i class="fas fa-arrow-up"></i> +$325.24 (4.2%) today
+                    </div>
+                </div>
+                <div class="portfolio-value">$8,325.24</div>
+                <div class="performance-change">
+                    <i class="fas fa-arrow-up"></i> +12.7% vs last month
+                </div>
+                
+                <div class="assets-grid">
+                    <div class="asset-card">
+                        <div class="asset-header">
+                            <div class="asset-name">Tech Stocks</div>
+                            <div class="asset-icon tech">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                        </div>
+                        <div class="asset-price">$10,245.50</div>
+                        <div class="asset-change positive">+3.2%</div>
+                    </div>
+                    
+                    <div class="asset-card">
+                        <div class="asset-header">
+                            <div class="asset-name">Energy</div>
+                            <div class="asset-icon energy">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                        </div>
+                        <div class="asset-price">$5,120.75</div>
+                        <div class="asset-change positive">+1.8%</div>
+                    </div>
+                    
+                    <div class="asset-card">
+                        <div class="asset-header">
+                            <div class="asset-name">Healthcare</div>
+                            <div class="asset-icon health">
+                                <i class="fas fa-heartbeat"></i>
+                            </div>
+                        </div>
+                        <div class="asset-price">$7,845.30</div>
+                        <div class="asset-change negative">-0.4%</div>
+                    </div>
+                    
+                    <div class="asset-card">
+                        <div class="asset-header">
+                            <div class="asset-name">Crypto</div>
+                            <div class="asset-icon crypto">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                        </div>
+                        <div class="asset-price">$3,450.60</div>
+                        <div class="asset-change positive">+5.7%</div>
+                    </div>
+                    
+                    <div class="asset-card">
+                        <div class="asset-header">
+                            <div class="asset-name">Real Estate</div>
+                            <div class="asset-icon realestate">
+                                <i class="fas fa-home"></i>
+                            </div>
+                        </div>
+                        <div class="asset-price">$12,340.90</div>
+                        <div class="asset-change positive">+2.1%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Risk Profile</div>
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <canvas id="riskChart" height="250"></canvas>
+                <div style="text-align: center; margin-top: 15px;">
+                    <div class="performance-change positive">
+                        <i class="fas fa-check-circle"></i> Balanced profile
+                    </div>
+                    <div style="margin-top: 10px; color: rgba(255, 255, 255, 0.7); font-size: 14px;">
+                        Your portfolio aligns with your moderate risk tolerance
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="trading-section">
+            <div class="trading-card">
+                <div class="card-header">
+                    <div class="card-title">Market Performance</div>
+                    <div class="chart-actions">
+                        <button class="timeframe-btn active">1D</button>
+                        <button class="timeframe-btn">1W</button>
+                        <button class="timeframe-btn">1M</button>
+                        <button class="timeframe-btn">3M</button>
+                        <button class="timeframe-btn">1Y</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="marketChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="trading-controls">
+                <div class="trading-card">
+                    <div class="card-header">
+                        <div class="card-title">Trade Assets</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="asset">Select Asset</label>
+                        <select id="asset" class="form-control">
+                            <option value="Tech">Tech Stocks</option>
+                            <option value="Energy">Energy Sector</option>
+                            <option value="Health">Healthcare</option>
+                            <option value="Crypto">Cryptocurrency</option>
+                            <option value="RealEstate">Real Estate</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="amount">Investment Amount ($0.01-$10,000)</label>
+                        <input type="number" id="amount" class="form-control" placeholder="Enter amount" min="0.01" max="10000" step="0.01" value="50.00">
+                        <input type="range" min="1" max="10000" value="50" class="amount-slider" id="amountSlider">
+                        <div class="amount-info">
+                            <span>$0.01</span>
+                            <span>$10,000</span>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn btn-buy" onclick="buyAsset()">
+                            <i class="fas fa-arrow-up"></i> Buy
+                        </button>
+                        <button class="btn btn-sell" onclick="sellAsset()">
+                            <i class="fas fa-arrow-down"></i> Sell
+                        </button>
+                    </div>
+                    
+                    <button class="btn btn-outline" style="width: 100%; margin-top: 15px;" onclick="simulateMarket()">
+                        <i class="fas fa-sync-alt"></i> Simulate Market Day
+                    </button>
+                </div>
+                
+                <div class="trading-card">
+                    <div class="card-header">
+                        <div class="card-title">Quick Actions</div>
+                    </div>
+                    <button class="btn btn-outline" style="width: 100%; margin-bottom: 12px;">
+                        <i class="fas fa-robot"></i> AI Portfolio Optimization
+                    </button>
+                    <button class="btn btn-outline" style="width: 100%; margin-bottom: 12px;">
+                        <i class="fas fa-balance-scale"></i> Rebalance Portfolio
+                    </button>
+                    <button class="btn btn-outline" style="width: 100%;" onclick="resetPortfolio()">
+                        <i class="fas fa-redo"></i> Reset Simulation
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="ai-insights">
+            <div class="card-header">
+                <div class="card-title">AI-Driven Insights</div>
+                <button class="btn btn-outline">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+            
+            <div class="insights-container">
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="insight-title">Opportunity Alert</div>
+                    </div>
+                    <div class="insight-text">
+                        Our AI has detected an undervalued opportunity in renewable energy stocks. 
+                        Consider allocating 5-7% of your portfolio to capitalize on emerging trends.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="insight-title">Risk Warning</div>
+                    </div>
+                    <div class="insight-text">
+                        Healthcare sector shows signs of volatility. 
+                        We recommend setting stop-loss orders at 5% below current positions to protect gains.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="insight-title">Trend Analysis</div>
+                    </div>
+                    <div class="insight-text">
+                        Tech sector continues strong performance with AI-related stocks leading gains. 
+                        Our models predict 12-15% growth over next quarter.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="market-news">
+            <div class="card-header">
+                <div class="card-title">Market News & Analysis</div>
+                <button class="btn btn-outline">
+                    <i class="fas fa-newspaper"></i> View All
+                </button>
+            </div>
+            
+            <div class="news-grid">
+                <div class="news-card">
+                    <div class="news-content">
+                        <div class="news-category">TECHNOLOGY</div>
+                        <div class="news-title">AI Stocks Surge 15% as Breakthroughs Drive Market Optimism</div>
+                        <div class="news-excerpt">Leading tech companies announce advancements in quantum computing, triggering a sector-wide rally.</div>
+                        <div class="news-meta">
+                            <span>2 hours ago</span>
+                            <span>Financial Times</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="news-card">
+                    <div class="news-content">
+                        <div class="news-category">ENERGY</div>
+                        <div class="news-title">Renewable Energy Investments Reach Record High in Q3</div>
+                        <div class="news-excerpt">Global commitment to green energy drives unprecedented capital inflow to sustainable projects.</div>
+                        <div class="news-meta">
+                            <span>5 hours ago</span>
+                            <span>Bloomberg</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="news-card">
+                    <div class="news-content">
+                        <div class="news-category">CRYPTO</div>
+                        <div class="news-title">Regulatory Clarity Boosts Institutional Crypto Adoption</div>
+                        <div class="news-excerpt">New framework announcement leads to increased institutional participation in digital asset markets.</div>
+                        <div class="news-meta">
+                            <span>1 day ago</span>
+                            <span>Crypto Insider</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div>WealthForge Simulator © 2023 | Advanced Fintech Investment Platform</div>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Security</a>
+                <a href="#">Contact</a>
+                <a href="#">Careers</a>
+            </div>
+        </div>
     </div>
-    <canvas id="chartCanvas" width="600" height="300"></canvas>
-    <div id="portfolio"></div>
 
     <script>
-        const canvas = document.getElementById('chartCanvas');
-        const ctx = canvas.getContext('2d');
-        let portfolio = JSON.parse(localStorage.getItem('portfolio')) || {
-            cash: 100,
-            assets: { Tech: 0, Energy: 0, Health: 0 },
-            history: [100]
-        };
-        let prices = { Tech: 10, Energy: 5, Health: 7.5 };
-        const maxHistory = 20;
-
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Market performance chart
+            const marketCtx = document.getElementById('marketChart').getContext('2d');
+            const marketChart = new Chart(marketCtx, {
+                type: 'line',
+                data: {
+                    labels: ['9:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '1:00', '1:30', '2:00', '2:30', '3:00', '3:30', '4:00'],
+                    datasets: [{
+                        label: 'Portfolio Value',
+                        data: [8250, 8300, 8320, 8350, 8330, 8345, 8360, 8380, 8400, 8350, 8325, 8300, 8320, 8325],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'S&P 500',
+                        data: [8150, 8200, 8220, 8250, 8230, 8245, 8260, 8280, 8300, 8250, 8225, 8200, 8220, 8225],
+                        borderColor: 'rgba(255, 255, 255, 0.3)',
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.6)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.6)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Risk profile chart
+            const riskCtx = document.getElementById('riskChart').getContext('2d');
+            const riskChart = new Chart(riskCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Growth', 'Stability', 'Diversification', 'Liquidity', 'Volatility'],
+                    datasets: [{
+                        label: 'Your Portfolio',
+                        data: [8, 6, 7, 5, 4],
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                        borderColor: '#2563eb',
+                        pointBackgroundColor: '#2563eb',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#2563eb'
+                    }, {
+                        label: 'Benchmark',
+                        data: [5, 7, 6, 7, 3],
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                        borderColor: 'rgba(255, 255, 255, 0.3)',
+                        pointBackgroundColor: 'rgba(255, 255, 255, 0.3)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(255, 255, 255, 0.3)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            pointLabels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            ticks: {
+                                backdropColor: 'transparent',
+                                color: 'rgba(255, 255, 255, 0.3)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Initialize slider
+            const amountInput = document.getElementById('amount');
+            const amountSlider = document.getElementById('amountSlider');
+            
+            amountSlider.addEventListener('input', function() {
+                amountInput.value = this.value;
+            });
+            
+            amountInput.addEventListener('input', function() {
+                amountSlider.value = this.value;
+            });
+        });
+        
+        // Trading functions
         function buyAsset() {
             const asset = document.getElementById('asset').value;
             const amount = parseFloat(document.getElementById('amount').value);
-            if (isNaN(amount) || amount < 0.01 || amount > 10 || amount * prices[asset] > portfolio.cash) {
-                alert('Invalid amount or insufficient cash');
+            
+            if (isNaN(amount) {
+                alert('Please enter a valid amount');
                 return;
             }
-            portfolio.cash -= amount * prices[asset];
-            portfolio.assets[asset] += amount;
-            saveAndUpdate();
+            
+            alert(`Successfully bought $${amount.toFixed(2)} of ${asset} assets`);
+            // In a real implementation, this would update the portfolio
         }
-
+        
         function sellAsset() {
             const asset = document.getElementById('asset').value;
             const amount = parseFloat(document.getElementById('amount').value);
-            if (isNaN(amount) || amount < 0.01 || amount > portfolio.assets[asset]) {
-                alert('Invalid amount or insufficient assets');
+            
+            if (isNaN(amount)) {
+                alert('Please enter a valid amount');
                 return;
             }
-            portfolio.cash += amount * prices[asset];
-            portfolio.assets[asset] -= amount;
-            saveAndUpdate();
+            
+            alert(`Successfully sold $${amount.toFixed(2)} of ${asset} assets`);
+            // In a real implementation, this would update the portfolio
         }
-
+        
         function simulateMarket() {
-            for (let asset in prices) {
-                prices[asset] *= (1 + (Math.random() - 0.5) * 0.1); // ±5% daily change
-                prices[asset] = Math.max(0.1, prices[asset]).toFixed(2);
-            }
-            const totalValue = portfolio.cash + Object.keys(portfolio.assets).reduce(
-                (sum, asset) => sum + portfolio.assets[asset] * prices[asset], 0
-            );
-            portfolio.history.push(totalValue);
-            if (portfolio.history.length > maxHistory) portfolio.history.shift();
-            saveAndUpdate();
+            alert('Market simulation complete. Portfolio values updated with simulated market movements.');
+            // This would update prices and portfolio values
         }
-
+        
         function resetPortfolio() {
-            portfolio = { cash: 100, assets: { Tech: 0, Energy: 0, Health: 0 }, history: [100] };
-            prices = { Tech: 10, Energy: 5, Health: 7.5 };
-            saveAndUpdate();
+            if (confirm('Are you sure you want to reset your portfolio? All simulation data will be lost.')) {
+                alert('Portfolio reset to initial state');
+                // This would reset the portfolio to initial values
+            }
         }
-
-        function saveAndUpdate() {
-            localStorage.setItem('portfolio', JSON.stringify(portfolio));
-            updateChartAndPortfolio();
-        }
-
-        function updateChartAndPortfolio() {
-            // Update portfolio summary
-            const totalValue = portfolio.cash + Object.keys(portfolio.assets).reduce(
-                (sum, asset) => sum + portfolio.assets[asset] * prices[asset], 0
-            );
-            document.getElementById('portfolio').innerHTML = `
-                Cash: $${portfolio.cash.toFixed(2)}<br>
-                Assets: ${Object.entries(portfolio.assets).map(([k, v]) => `${k}: ${v.toFixed(2)} ($${v * prices[k]})`).join('<br>')}<br>
-                Total Value: $${totalValue.toFixed(2)}
-            `;
-
-            // Draw line chart
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.beginPath();
-            ctx.strokeStyle = '#0f0';
-            ctx.lineWidth = 2;
-            const maxValue = Math.max(...portfolio.history, 100) * 1.1;
-            const minValue = Math.min(...portfolio.history, 100) * 0.9;
-            portfolio.history.forEach((value, i) => {
-                const x = (i / (maxHistory - 1)) * canvas.width;
-                const y = canvas.height - ((value - minValue) / (maxValue - minValue)) * canvas.height;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            });
-            ctx.stroke();
-        }
-
-        // Initial load
-        updateChartAndPortfolio();
     </script>
 </body>
 </html>
