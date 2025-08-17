@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WealthForge | Advanced Fintech Investment Platform</title>
+    <title>WealthForge | Advanced Investment Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -616,6 +616,32 @@
             border-bottom: none;
         }
         
+        .transaction-history {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+        
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .transaction-buy {
+            color: var(--success);
+        }
+        
+        .transaction-sell {
+            color: var(--danger);
+        }
+        
         @media (max-width: 768px) {
             .dashboard {
                 grid-template-columns: 1fr;
@@ -713,6 +739,10 @@
                         <div id="total-return">$0.00</div>
                     </div>
                 </div>
+                
+                <div class="transaction-history" id="transaction-history">
+                    <!-- Transactions will appear here -->
+                </div>
             </div>
             
             <div class="card">
@@ -737,11 +767,10 @@
                 <div class="card-header">
                     <div class="card-title">Portfolio Performance</div>
                     <div class="chart-actions">
-                        <button class="timeframe-btn active">1M</button>
-                        <button class="timeframe-btn">3M</button>
-                        <button class="timeframe-btn">6M</button>
-                        <button class="timeframe-btn">1Y</button>
-                        <button class="timeframe-btn">All</button>
+                        <button class="timeframe-btn active" data-timeframe="30">1M</button>
+                        <button class="timeframe-btn" data-timeframe="90">3M</button>
+                        <button class="timeframe-btn" data-timeframe="180">6M</button>
+                        <button class="timeframe-btn" data-timeframe="365">1Y</button>
                     </div>
                 </div>
                 <div class="chart-container">
@@ -887,7 +916,8 @@
                     RealEstate: { quantity: 0, avgPrice: 0 }
                 },
                 history: [],
-                valueHistory: [10000]
+                valueHistory: [10000],
+                transactions: []
             },
             prices: {
                 Tech: 245.50,
@@ -917,6 +947,7 @@
             // Initialize UI
             renderAssets();
             renderPortfolioSummary();
+            renderTransactionHistory();
             generateInsights();
             generateNews();
             
@@ -1072,6 +1103,16 @@
             document.getElementById('ai-optimize').addEventListener('click', optimizePortfolio);
             document.getElementById('rebalance').addEventListener('click', rebalancePortfolio);
             document.getElementById('refresh-insights').addEventListener('click', generateInsights);
+            
+            // Timeframe buttons
+            document.querySelectorAll('.timeframe-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    AppState.historyDays = parseInt(this.dataset.timeframe);
+                    updatePortfolio();
+                });
+            });
         }
 
         // Generate date labels for chart
@@ -1115,7 +1156,7 @@
                         ${Math.abs(change).toFixed(2)}%
                     </div>
                     <div style="margin-top: 10px; font-size: 14px; color: rgba(255, 255, 255, 0.7);">
-                        Holdings: ${assetData.quantity.toFixed(2)}<br>
+                        Holdings: ${assetData.quantity.toFixed(4)}<br>
                         Value: $${value.toFixed(2)}
                     </div>
                 `;
@@ -1168,6 +1209,35 @@
                 AppState.marketChart.data.datasets[0].data = AppState.portfolio.valueHistory;
                 AppState.marketChart.update();
             }
+        }
+
+        // Render transaction history
+        function renderTransactionHistory() {
+            const container = document.getElementById('transaction-history');
+            container.innerHTML = '';
+            
+            // Only show last 5 transactions
+            const transactions = AppState.portfolio.transactions.slice(-5).reverse();
+            
+            if (transactions.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5)">No transactions yet</div>';
+                return;
+            }
+            
+            transactions.forEach(transaction => {
+                const item = document.createElement('div');
+                item.className = 'transaction-item';
+                item.innerHTML = `
+                    <div class="${transaction.type === 'buy' ? 'transaction-buy' : 'transaction-sell'}">
+                        ${transaction.type === 'buy' ? '<i class="fas fa-arrow-circle-up"></i>' : '<i class="fas fa-arrow-circle-down"></i>'} 
+                        ${transaction.asset}
+                    </div>
+                    <div>${transaction.quantity.toFixed(4)}</div>
+                    <div>$${transaction.amount.toFixed(2)}</div>
+                    <div>$${transaction.price.toFixed(2)}</div>
+                `;
+                container.appendChild(item);
+            });
         }
 
         // Calculate total portfolio value
@@ -1232,15 +1302,17 @@
             assetData.avgPrice = totalCost / totalQuantity;
             assetData.quantity += quantity;
             
-            // Add to history
-            AppState.portfolio.history.push({
+            // Add transaction
+            const transaction = {
                 type: 'buy',
                 asset: asset,
                 quantity: quantity,
                 price: price,
                 amount: cost,
                 timestamp: new Date()
-            });
+            };
+            
+            AppState.portfolio.transactions.push(transaction);
             
             showNotification(`Successfully purchased $${cost.toFixed(2)} of ${assetSelect.options[assetSelect.selectedIndex].text}`);
             updatePortfolio();
@@ -1278,15 +1350,17 @@
             AppState.portfolio.cash += value;
             assetData.quantity -= quantity;
             
-            // Add to history
-            AppState.portfolio.history.push({
+            // Add transaction
+            const transaction = {
                 type: 'sell',
                 asset: asset,
                 quantity: quantity,
                 price: price,
                 amount: value,
                 timestamp: new Date()
-            });
+            };
+            
+            AppState.portfolio.transactions.push(transaction);
             
             showNotification(`Successfully sold $${value.toFixed(2)} of ${assetSelect.options[assetSelect.selectedIndex].text}`);
             updatePortfolio();
@@ -1333,7 +1407,8 @@
                         RealEstate: { quantity: 0, avgPrice: 0 }
                     },
                     history: [],
-                    valueHistory: [10000]
+                    valueHistory: [10000],
+                    transactions: []
                 };
                 
                 // Reset prices to initial values
@@ -1346,6 +1421,7 @@
                 };
                 
                 AppState.portfolio.valueHistory = [10000];
+                AppState.prevPrices = {};
                 
                 showNotification('Portfolio has been reset to initial state');
                 updatePortfolio();
@@ -1368,6 +1444,16 @@
                 
                 AppState.portfolio.assets[sellAsset].quantity -= quantity;
                 AppState.portfolio.cash += quantity * price;
+                
+                // Record transaction
+                AppState.portfolio.transactions.push({
+                    type: 'sell',
+                    asset: sellAsset,
+                    quantity: quantity,
+                    price: price,
+                    amount: quantity * price,
+                    timestamp: new Date()
+                });
             }
             
             // Buy a random asset
@@ -1378,6 +1464,16 @@
             
             AppState.portfolio.assets[buyAsset].quantity += buyQuantity;
             AppState.portfolio.cash -= buyAmount;
+            
+            // Record transaction
+            AppState.portfolio.transactions.push({
+                type: 'buy',
+                asset: buyAsset,
+                quantity: buyQuantity,
+                price: buyPrice,
+                amount: buyAmount,
+                timestamp: new Date()
+            });
             
             // Update portfolio
             updatePortfolio();
@@ -1401,11 +1497,31 @@
                     const quantity = difference / AppState.prices[asset];
                     AppState.portfolio.assets[asset].quantity += quantity;
                     AppState.portfolio.cash -= difference;
+                    
+                    // Record transaction
+                    AppState.portfolio.transactions.push({
+                        type: 'buy',
+                        asset: asset,
+                        quantity: quantity,
+                        price: AppState.prices[asset],
+                        amount: difference,
+                        timestamp: new Date()
+                    });
                 } else if (difference < 0) {
                     // Sell excess
                     const quantity = Math.abs(difference) / AppState.prices[asset];
                     AppState.portfolio.assets[asset].quantity -= quantity;
                     AppState.portfolio.cash += Math.abs(difference);
+                    
+                    // Record transaction
+                    AppState.portfolio.transactions.push({
+                        type: 'sell',
+                        asset: asset,
+                        quantity: quantity,
+                        price: AppState.prices[asset],
+                        amount: Math.abs(difference),
+                        timestamp: new Date()
+                    });
                 }
             }
             
@@ -1416,6 +1532,7 @@
         function updatePortfolio() {
             renderAssets();
             renderPortfolioSummary();
+            renderTransactionHistory();
         }
 
         // Simulate initial price changes
