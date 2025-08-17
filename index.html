@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuantumSynth | Advanced Synthetic Data Generator</title>
+    <title>QuantumSynth | Advanced Data Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/faker/5.5.3/faker.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -17,7 +17,7 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --card-bg: rgba(255, 255, 255, 0.9);
+            --card-bg: rgba(255, 255, 255, 0.95);
             --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -404,7 +404,7 @@
             color: rgba(255, 255, 255, 0.2);
         }
         
-        /* Advanced mobile styles */
+        /* Mobile styles */
         @media (max-width: 767px) {
             .desktop-only {
                 display: none;
@@ -511,6 +511,26 @@
             gap: 0.75rem;
             margin-top: 1rem;
         }
+        
+        .history-panel {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 0.75rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body>
@@ -535,7 +555,7 @@
                     <div class="generation-panel">
                         <div class="generation-option">
                             <label for="rowCount"><i class="fas fa-list-ol"></i> Rows</label>
-                            <input type="number" id="rowCount" min="1" max="100000" value="50">
+                            <input type="number" id="rowCount" min="1" max="10000" value="50">
                         </div>
                         <div class="generation-option">
                             <label for="dataQuality"><i class="fas fa-star"></i> Quality</label>
@@ -543,15 +563,6 @@
                                 <option value="basic">Basic</option>
                                 <option value="premium" selected>Premium</option>
                                 <option value="enterprise">Enterprise</option>
-                            </select>
-                        </div>
-                        <div class="generation-option">
-                            <label for="dataRegion"><i class="fas fa-globe"></i> Region</label>
-                            <select id="dataRegion">
-                                <option value="us" selected>United States</option>
-                                <option value="eu">Europe</option>
-                                <option value="asia">Asia</option>
-                                <option value="global">Global</option>
                             </select>
                         </div>
                     </div>
@@ -635,25 +646,6 @@
                                     <button class="remove-btn"><i class="fas fa-times"></i></button>
                                 </div>
                             </div>
-                            <div class="schema-row">
-                                <input type="text" class="field-name" placeholder="Field name" value="lifetime_value">
-                                <select class="field-type">
-                                    <option value="autoIncrement">Auto Increment</option>
-                                    <option value="name">Full Name</option>
-                                    <option value="email">Email</option>
-                                    <option value="phone">Phone</option>
-                                    <option value="address">Address</option>
-                                    <option value="city">City</option>
-                                    <option value="country">Country</option>
-                                    <option value="date">Date</option>
-                                    <option value="number" selected>Number</option>
-                                    <option value="boolean">Boolean</option>
-                                    <option value="custom">Custom Text</option>
-                                </select>
-                                <div class="schema-options">
-                                    <button class="remove-btn"><i class="fas fa-times"></i></button>
-                                </div>
-                            </div>
                         </div>
                         
                         <button id="addField" class="add-btn"><i class="fas fa-plus"></i> Add Field</button>
@@ -670,12 +662,23 @@
                             <div class="stat-label">Rows Generated</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value" id="fieldCountStat">5</div>
+                            <div class="stat-value" id="fieldCountStat">4</div>
                             <div class="stat-label">Fields Defined</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value" id="dataValueStat">$1,250</div>
+                            <div class="stat-value" id="dataValueStat">$375</div>
                             <div class="stat-label">Estimated Value</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h2><div class="card-icon"><i class="fas fa-history"></i></div> Generation History</h2>
+                    </div>
+                    <div class="history-panel" id="historyPanel">
+                        <div class="history-item">
+                            <span>No generation history yet</span>
                         </div>
                     </div>
                 </div>
@@ -730,7 +733,7 @@
         </div>
         
         <div class="footer">
-            <p>QuantumSynth Data Generator v3.0 | Proprietary Algorithm Technology © 2023</p>
+            <p>QuantumSynth Data Generator v3.5 | Proprietary Algorithm Technology © 2023</p>
         </div>
     </div>
     
@@ -753,7 +756,6 @@
             const mobileJsonBtn = document.getElementById('mobileJson');
             const tabs = document.querySelectorAll('.tab');
             const tabContents = document.querySelectorAll('.tab-content');
-            const dataTable = document.getElementById('dataTable');
             const tableBody = document.getElementById('tableBody');
             const jsonOutput = document.getElementById('jsonOutput');
             const notification = document.getElementById('notification');
@@ -762,7 +764,7 @@
             const fieldCountStat = document.getElementById('fieldCountStat');
             const dataValueStat = document.getElementById('dataValueStat');
             const dataQuality = document.getElementById('dataQuality');
-            const dataRegion = document.getElementById('dataRegion');
+            const historyPanel = document.getElementById('historyPanel');
             
             // Initialize Faker with a random seed
             faker.seed(Math.floor(Math.random() * 1000));
@@ -840,8 +842,8 @@
                     schemaFields.removeChild(schemaFields.firstChild);
                 }
                 
-                // Add 5 random fields
-                for (let i = 0; i < 5; i++) {
+                // Add 4 random fields
+                for (let i = 0; i < 4; i++) {
                     const name = fieldNames[Math.floor(Math.random() * fieldNames.length)] + 
                                 '_' + Math.floor(Math.random() * 100);
                     const type = fieldTypes[Math.floor(Math.random() * fieldTypes.length)];
@@ -881,11 +883,9 @@
                 // Randomize row count
                 rowCountInput.value = Math.floor(Math.random() * 900) + 100;
                 
-                // Randomize quality and region
+                // Randomize quality
                 const qualities = ['basic', 'premium', 'enterprise'];
-                const regions = ['us', 'eu', 'asia', 'global'];
                 dataQuality.value = qualities[Math.floor(Math.random() * qualities.length)];
-                dataRegion.value = regions[Math.floor(Math.random() * regions.length)];
                 
                 updateStats();
                 showNotification('Schema randomized successfully');
@@ -907,13 +907,14 @@
                     displayTable(data);
                     displayJson(data);
                     updateStats(rowCount, schema, data);
+                    addToHistory(rowCount, schema);
                     
                     showNotification(`Generated ${rowCount} rows of synthetic data`);
                     
                     // Reset button
                     generateBtn.innerHTML = '<i class="fas fa-bolt"></i> Generate Data';
                     generateBtn.disabled = false;
-                }, 500);
+                }, 300);
             });
             
             // Download CSV
@@ -955,8 +956,7 @@
                         {name: 'id', type: 'autoIncrement'},
                         {name: 'customer_name', type: 'name'},
                         {name: 'email', type: 'email'},
-                        {name: 'signup_date', type: 'date'},
-                        {name: 'lifetime_value', type: 'number'}
+                        {name: 'signup_date', type: 'date'}
                     ];
                 }
                 
@@ -965,7 +965,6 @@
             
             function generateData(rowCount, schema) {
                 const data = [];
-                const region = dataRegion.value;
                 const quality = dataQuality.value;
                 
                 // Advanced data generation with more realistic patterns
@@ -978,16 +977,9 @@
                                 row[field.name] = i + 1;
                                 break;
                             case 'name':
-                                if (region === 'eu') {
-                                    row[field.name] = faker.name.findName() + ' ' + faker.name.lastName();
-                                } else if (region === 'asia') {
-                                    row[field.name] = faker.name.lastName() + ' ' + faker.name.firstName();
-                                } else {
-                                    row[field.name] = faker.name.findName();
-                                }
+                                row[field.name] = faker.name.findName();
                                 break;
                             case 'email':
-                                // More realistic email patterns
                                 const firstName = faker.name.firstName().toLowerCase();
                                 const lastName = faker.name.lastName().toLowerCase();
                                 
@@ -1005,31 +997,13 @@
                                 row[field.name] = email;
                                 break;
                             case 'phone':
-                                let phone;
-                                if (region === 'eu') {
-                                    phone = faker.phone.phoneNumber('+49 ### ########');
-                                } else if (region === 'asia') {
-                                    phone = faker.phone.phoneNumber('+81 ### #######');
-                                } else {
-                                    phone = faker.phone.phoneNumber('(###) ###-####');
-                                }
-                                row[field.name] = phone;
+                                row[field.name] = faker.phone.phoneNumber('(###) ###-####');
                                 break;
                             case 'address':
-                                if (region === 'eu') {
-                                    row[field.name] = faker.address.streetAddress() + ', ' + 
-                                                     faker.address.city() + ', ' + 
-                                                     faker.address.country();
-                                } else if (region === 'asia') {
-                                    row[field.name] = faker.address.streetAddress() + ', ' + 
-                                                     faker.address.city() + ', ' + 
-                                                     faker.address.country();
-                                } else {
-                                    row[field.name] = faker.address.streetAddress() + ', ' + 
-                                                     faker.address.city() + ', ' + 
-                                                     faker.address.stateAbbr() + ' ' + 
-                                                     faker.address.zipCode();
-                                }
+                                row[field.name] = faker.address.streetAddress() + ', ' + 
+                                                 faker.address.city() + ', ' + 
+                                                 faker.address.stateAbbr() + ' ' + 
+                                                 faker.address.zipCode();
                                 break;
                             case 'city':
                                 row[field.name] = faker.address.city();
@@ -1201,16 +1175,39 @@
                         'enterprise': 4
                     }[dataQuality.value];
                     
-                    const regionFactor = {
-                        'us': 1.2,
-                        'eu': 1.1,
-                        'asia': 1.0,
-                        'global': 1.3
-                    }[dataRegion.value];
-                    
-                    const value = (rowCount * fieldCount * qualityFactor * regionFactor).toFixed(2);
+                    const value = (rowCount * fieldCount * qualityFactor).toFixed(2);
                     dataValueStat.textContent = `$${parseFloat(value).toLocaleString()}`;
                 }
+            }
+            
+            function addToHistory(rowCount, schema) {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                const now = new Date();
+                const timestamp = now.toLocaleTimeString();
+                
+                const fieldNames = schema.map(field => field.name).join(', ');
+                
+                historyItem.innerHTML = `
+                    <div>
+                        <strong>${timestamp}</strong>
+                        <div>${rowCount} rows, ${schema.length} fields</div>
+                    </div>
+                    <div>$${(rowCount * schema.length * {
+                        'basic': 0.5,
+                        'premium': 1.5,
+                        'enterprise': 4
+                    }[dataQuality.value]).toFixed(2)}</div>
+                `;
+                
+                // If it's the first item, remove placeholder
+                if (historyPanel.children.length === 1 && 
+                    historyPanel.children[0].textContent.includes('No generation history')) {
+                    historyPanel.innerHTML = '';
+                }
+                
+                historyPanel.insertBefore(historyItem, historyPanel.firstChild);
             }
             
             function showNotification(message) {
