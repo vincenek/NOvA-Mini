@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WealthForge | Advanced Investment Platform</title>
+    <title>WealthForge Pro | Investment Analysis Tool</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -170,7 +171,7 @@
         
         .dashboard {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -182,10 +183,6 @@
             padding: 24px;
             box-shadow: var(--card-shadow);
             border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .portfolio-summary {
-            grid-column: span 2;
         }
         
         .card-header {
@@ -642,12 +639,72 @@
             color: var(--danger);
         }
         
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 45px 12px 16px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .fundamental-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .data-item {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .data-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 5px;
+        }
+        
+        .data-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .data-value.positive {
+            color: var(--success);
+        }
+        
+        .data-value.negative {
+            color: var(--danger);
+        }
+        
         @media (max-width: 768px) {
             .dashboard {
                 grid-template-columns: 1fr;
-            }
-            .portfolio-summary {
-                grid-column: span 1;
             }
             .trading-section {
                 grid-template-columns: 1fr;
@@ -674,6 +731,22 @@
                 flex-direction: column;
             }
         }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -684,15 +757,15 @@
                 <div class="logo-icon">
                     <i class="fas fa-chart-line"></i>
                 </div>
-                <div class="logo-text">WealthForge</div>
+                <div class="logo-text">WealthForge Pro</div>
             </div>
             
             <div class="nav-links">
                 <a href="#" class="active">Dashboard</a>
+                <a href="#">Analysis</a>
                 <a href="#">Portfolio</a>
-                <a href="#">Markets</a>
-                <a href="#">Learn</a>
-                <a href="#">AI Insights</a>
+                <a href="#">Research</a>
+                <a href="#">Screener</a>
             </div>
             
             <div class="user-actions">
@@ -708,56 +781,63 @@
             </div>
         </header>
         
+        <div class="search-container">
+            <input type="text" id="stock-search" class="search-input" placeholder="Search stocks (e.g., AAPL, MSFT, GOOGL)" value="AAPL">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+        
         <div class="dashboard">
-            <div class="card portfolio-summary">
+            <div class="card">
                 <div class="card-header">
-                    <div class="card-title">Portfolio Summary</div>
-                    <div class="performance-change" id="daily-change">
-                        <i class="fas fa-arrow-up"></i> +$0.00 (0.0%) today
+                    <div class="card-title">Market Overview</div>
+                    <div class="performance-change" id="market-change">
+                        <i class="fas fa-arrow-up"></i> +0.45% today
                     </div>
                 </div>
-                <div class="portfolio-value" id="portfolio-value">$10,000.00</div>
-                <div class="performance-change" id="monthly-change">
-                    <i class="fas fa-arrow-up"></i> +0.0% vs last month
-                </div>
-                
-                <div class="assets-grid" id="assets-grid">
-                    <!-- Assets will be dynamically generated -->
+                <div class="portfolio-value" id="stock-price">$173.75</div>
+                <div class="performance-change" id="stock-change">
+                    <i class="fas fa-arrow-up"></i> +1.25% today
                 </div>
                 
-                <div class="portfolio-breakdown">
-                    <div class="breakdown-item">
-                        <div>Cash Balance</div>
-                        <div id="cash-balance">$10,000.00</div>
+                <div class="fundamental-data">
+                    <div class="data-item">
+                        <div class="data-label">Market Cap</div>
+                        <div class="data-value">$2.72T</div>
                     </div>
-                    <div class="breakdown-item">
-                        <div>Invested Value</div>
-                        <div id="invested-value">$0.00</div>
+                    <div class="data-item">
+                        <div class="data-label">P/E Ratio</div>
+                        <div class="data-value">29.8</div>
                     </div>
-                    <div class="breakdown-item">
-                        <div>Total Return</div>
-                        <div id="total-return">$0.00</div>
+                    <div class="data-item">
+                        <div class="data-label">Dividend Yield</div>
+                        <div class="data-value">0.54%</div>
                     </div>
-                </div>
-                
-                <div class="transaction-history" id="transaction-history">
-                    <!-- Transactions will appear here -->
+                    <div class="data-item">
+                        <div class="data-label">52W High</div>
+                        <div class="data-value">$198.23</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">52W Low</div>
+                        <div class="data-value">$124.17</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Volume</div>
+                        <div class="data-value">58.3M</div>
+                    </div>
                 </div>
             </div>
             
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title">Risk Profile</div>
-                    <i class="fas fa-shield-alt"></i>
+                    <div class="card-title">Technical Analysis</div>
+                    <i class="fas fa-chart-line"></i>
                 </div>
-                <canvas id="riskChart" height="250"></canvas>
-                <div style="text-align: center; margin-top: 15px;">
-                    <div class="performance-change positive">
-                        <i class="fas fa-check-circle"></i> Balanced profile
-                    </div>
-                    <div style="margin-top: 10px; color: rgba(255, 255, 255, 0.7); font-size: 14px;">
-                        Your portfolio aligns with your moderate risk tolerance
-                    </div>
+                <canvas id="techChart" height="300"></canvas>
+                <div class="chart-actions">
+                    <button class="timeframe-btn active">1D</button>
+                    <button class="timeframe-btn">1W</button>
+                    <button class="timeframe-btn">1M</button>
+                    <button class="timeframe-btn">3M</button>
                 </div>
             </div>
         </div>
@@ -765,105 +845,169 @@
         <div class="trading-section">
             <div class="trading-card">
                 <div class="card-header">
-                    <div class="card-title">Portfolio Performance</div>
-                    <div class="chart-actions">
-                        <button class="timeframe-btn active" data-timeframe="30">1M</button>
-                        <button class="timeframe-btn" data-timeframe="90">3M</button>
-                        <button class="timeframe-btn" data-timeframe="180">6M</button>
-                        <button class="timeframe-btn" data-timeframe="365">1Y</button>
-                    </div>
+                    <div class="card-title">Company Analysis</div>
                 </div>
                 <div class="chart-container">
-                    <canvas id="marketChart"></canvas>
+                    <canvas id="financialChart"></canvas>
                 </div>
             </div>
             
             <div class="trading-controls">
                 <div class="trading-card">
                     <div class="card-header">
-                        <div class="card-title">Trade Assets</div>
+                        <div class="card-title">Investment Strategy</div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="asset">Select Asset</label>
-                        <select id="asset" class="form-control">
-                            <option value="Tech">Tech Stocks</option>
-                            <option value="Energy">Energy Sector</option>
-                            <option value="Health">Healthcare</option>
-                            <option value="Crypto">Cryptocurrency</option>
-                            <option value="RealEstate">Real Estate</option>
+                        <label for="investment-amount">Investment Amount ($)</label>
+                        <input type="number" id="investment-amount" class="form-control" value="5000" min="100" step="100">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="time-horizon">Time Horizon</label>
+                        <select id="time-horizon" class="form-control">
+                            <option value="short">Short-term (1-2 years)</option>
+                            <option value="medium">Medium-term (3-5 years)</option>
+                            <option value="long">Long-term (5+ years)</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="amount">Investment Amount ($0.01-$10,000)</label>
-                        <input type="number" id="amount" class="form-control" placeholder="Enter amount" min="0.01" max="10000" step="0.01" value="100.00">
-                        <input type="range" min="1" max="10000" value="100" class="amount-slider" id="amountSlider">
-                        <div class="amount-info">
-                            <span>$0.01</span>
-                            <span>$10,000</span>
+                        <label for="risk-tolerance">Risk Tolerance</label>
+                        <select id="risk-tolerance" class="form-control">
+                            <option value="low">Low</option>
+                            <option value="moderate" selected>Moderate</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="analyze-btn" style="width: 100%; margin-top: 15px;">
+                        <i class="fas fa-chart-pie"></i> Generate Investment Plan
+                    </button>
+                    
+                    <div class="spinner" id="strategy-spinner"></div>
+                    
+                    <div id="strategy-result" style="margin-top: 20px; display: none;">
+                        <div class="card-title" style="margin-bottom: 15px;">Recommended Strategy</div>
+                        <div class="breakdown-item">
+                            <div>Buy AAPL</div>
+                            <div>$3,000 (60%)</div>
+                        </div>
+                        <div class="breakdown-item">
+                            <div>Buy MSFT</div>
+                            <div>$1,500 (30%)</div>
+                        </div>
+                        <div class="breakdown-item">
+                            <div>Cash Reserve</div>
+                            <div>$500 (10%)</div>
+                        </div>
+                        <div class="performance-change" style="margin-top: 15px;">
+                            <i class="fas fa-bullseye"></i> Expected Return: 8.2% annually
                         </div>
                     </div>
-                    
-                    <div class="btn-group">
-                        <button class="btn btn-buy" id="buy-btn">
-                            <i class="fas fa-arrow-up"></i> Buy
-                        </button>
-                        <button class="btn btn-sell" id="sell-btn">
-                            <i class="fas fa-arrow-down"></i> Sell
-                        </button>
-                    </div>
-                    
-                    <button class="btn btn-outline" style="width: 100%; margin-top: 15px;" id="simulate-btn">
-                        <i class="fas fa-sync-alt"></i> Simulate Market Day
-                    </button>
-                </div>
-                
-                <div class="trading-card">
-                    <div class="card-header">
-                        <div class="card-title">Quick Actions</div>
-                    </div>
-                    <button class="btn btn-outline" style="width: 100%; margin-bottom: 12px;" id="ai-optimize">
-                        <i class="fas fa-robot"></i> AI Portfolio Optimization
-                    </button>
-                    <button class="btn btn-outline" style="width: 100%; margin-bottom: 12px;" id="rebalance">
-                        <i class="fas fa-balance-scale"></i> Rebalance Portfolio
-                    </button>
-                    <button class="btn btn-outline" style="width: 100%;" id="reset-btn">
-                        <i class="fas fa-redo"></i> Reset Portfolio
-                    </button>
                 </div>
             </div>
         </div>
         
         <div class="ai-insights">
             <div class="card-header">
-                <div class="card-title">AI-Driven Insights</div>
+                <div class="card-title">AI Investment Insights</div>
                 <button class="btn btn-outline" id="refresh-insights">
                     <i class="fas fa-sync"></i> Refresh
                 </button>
             </div>
             
             <div class="insights-container" id="insights-container">
-                <!-- Insights will be dynamically generated -->
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="insight-title">Growth Opportunity</div>
+                    </div>
+                    <div class="insight-text">
+                        Apple shows strong growth potential in services segment with 20% YoY increase. 
+                        AI model recommends overweight position in portfolio.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="insight-title">Risk Assessment</div>
+                    </div>
+                    <div class="insight-text">
+                        Supply chain vulnerabilities identified. Recommend monitoring component shortages 
+                        and geopolitical risks in manufacturing regions.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="insight-title">Technical Outlook</div>
+                    </div>
+                    <div class="insight-text">
+                        AAPL is trading near support level. Technical indicators show potential breakout 
+                        above $175 resistance in next 30 days.
+                    </div>
+                </div>
             </div>
         </div>
         
         <div class="market-news">
             <div class="card-header">
-                <div class="card-title">Market News & Analysis</div>
+                <div class="card-title">Financial News & Analysis</div>
                 <button class="btn btn-outline" id="view-all-news">
                     <i class="fas fa-newspaper"></i> View All
                 </button>
             </div>
             
             <div class="news-grid" id="news-grid">
-                <!-- News will be dynamically generated -->
+                <div class="news-card">
+                    <div class="news-content">
+                        <div class="news-category">TECHNOLOGY</div>
+                        <div class="news-title">Apple Unveils Revolutionary AI Features at WWDC</div>
+                        <div class="news-excerpt">Apple announces groundbreaking AI integration across all devices, signaling major shift in strategy.</div>
+                        <div class="news-meta">
+                            <span>2 hours ago</span>
+                            <span>Financial Times</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="news-card">
+                    <div class="news-content">
+                        <div class="news-category">MARKETS</div>
+                        <div class="news-title">Tech Stocks Rally as AI Investments Surge</div>
+                        <div class="news-excerpt">Major tech companies see 15% average growth as AI adoption accelerates across industries.</div>
+                        <div class="news-meta">
+                            <span>5 hours ago</span>
+                            <span>Bloomberg</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="news-card">
+                    <div class="news-content">
+                        <div class="news-category">ANALYSIS</div>
+                        <div class="news-title">Why Apple is Positioned for Dominance in AI Era</div>
+                        <div class="news-excerpt">Deep dive into Apple's strategic advantages in the rapidly evolving artificial intelligence landscape.</div>
+                        <div class="news-meta">
+                            <span>1 day ago</span>
+                            <span>Seeking Alpha</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
         <div class="footer">
-            <div>WealthForge Simulator © 2023 | Advanced Fintech Investment Platform</div>
+            <div>WealthForge Pro © 2023 | Advanced Investment Analysis Platform</div>
             <div class="footer-links">
                 <a href="#">Privacy Policy</a>
                 <a href="#">Terms of Service</a>
@@ -882,7 +1026,7 @@
             </a>
             <a href="#" class="nav-item">
                 <i class="fas fa-chart-pie nav-icon"></i>
-                <span>Portfolio</span>
+                <span>Analysis</span>
             </a>
             <a href="#" class="nav-item">
                 <i class="fas fa-exchange-alt nav-icon"></i>
@@ -900,86 +1044,38 @@
     </div>
     
     <div class="transaction-notification" id="transaction-notification">
-        Transaction completed successfully!
+        Analysis completed successfully!
     </div>
 
     <script>
-        // App state and configuration
-        const AppState = {
-            portfolio: {
-                cash: 10000,
-                assets: {
-                    Tech: { quantity: 0, avgPrice: 0 },
-                    Energy: { quantity: 0, avgPrice: 0 },
-                    Health: { quantity: 0, avgPrice: 0 },
-                    Crypto: { quantity: 0, avgPrice: 0 },
-                    RealEstate: { quantity: 0, avgPrice: 0 }
-                },
-                history: [],
-                valueHistory: [10000],
-                transactions: []
-            },
-            prices: {
-                Tech: 245.50,
-                Energy: 120.75,
-                Health: 184.30,
-                Crypto: 3450.60,
-                RealEstate: 234.90
-            },
-            prevPrices: {},
-            assets: [
-                { name: "Tech", display: "Tech Stocks", icon: "fas fa-microchip", class: "tech" },
-                { name: "Energy", display: "Energy", icon: "fas fa-bolt", class: "energy" },
-                { name: "Health", display: "Healthcare", icon: "fas fa-heartbeat", class: "health" },
-                { name: "Crypto", display: "Crypto", icon: "fab fa-bitcoin", class: "crypto" },
-                { name: "RealEstate", display: "Real Estate", icon: "fas fa-home", class: "realestate" }
-            ],
-            marketChart: null,
-            riskChart: null,
-            historyDays: 30
-        };
-
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize charts
-            initCharts();
-            
-            // Initialize UI
-            renderAssets();
-            renderPortfolioSummary();
-            renderTransactionHistory();
-            generateInsights();
-            generateNews();
-            
-            // Set up event listeners
-            setupEventListeners();
-            
-            // Simulate initial price changes
-            simulatePriceChanges();
-        });
-
         // Initialize charts
-        function initCharts() {
-            // Market performance chart
-            const marketCtx = document.getElementById('marketChart').getContext('2d');
-            AppState.marketChart = new Chart(marketCtx, {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Technical Analysis Chart
+            const techCtx = document.getElementById('techChart').getContext('2d');
+            const techChart = new Chart(techCtx, {
                 type: 'line',
                 data: {
-                    labels: generateDateLabels(),
+                    labels: ['9:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00'],
                     datasets: [{
-                        label: 'Portfolio Value',
-                        data: AppState.portfolio.valueHistory,
+                        label: 'AAPL Price',
+                        data: [170.2, 170.8, 171.5, 172.1, 172.8, 173.2, 173.5, 173.2, 172.9, 173.1, 173.3, 173.5, 173.7, 173.75],
                         borderColor: '#10b981',
                         backgroundColor: 'rgba(16, 185, 129, 0.1)',
                         borderWidth: 3,
                         pointRadius: 0,
                         tension: 0.4,
                         fill: true
+                    }, {
+                        label: 'SMA (50)',
+                        data: [169.8, 170.0, 170.3, 170.6, 170.9, 171.2, 171.5, 171.8, 172.1, 172.4, 172.7, 173.0, 173.2, 173.3],
+                        borderColor: '#f59e0b',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.4
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             labels: {
@@ -988,12 +1084,7 @@
                         },
                         tooltip: {
                             mode: 'index',
-                            intersect: false,
-                            callbacks: {
-                                label: function(context) {
-                                    return `$${context.parsed.y.toFixed(2)}`;
-                                }
-                            }
+                            intersect: false
                         }
                     },
                     scales: {
@@ -1002,10 +1093,7 @@
                                 color: 'rgba(255, 255, 255, 0.05)'
                             },
                             ticks: {
-                                color: 'rgba(255, 255, 255, 0.6)',
-                                callback: function(value) {
-                                    return '$' + value;
-                                }
+                                color: 'rgba(255, 255, 255, 0.6)'
                             }
                         },
                         x: {
@@ -1020,621 +1108,172 @@
                 }
             });
             
-            // Risk profile chart
-            const riskCtx = document.getElementById('riskChart').getContext('2d');
-            AppState.riskChart = new Chart(riskCtx, {
-                type: 'radar',
+            // Financial Analysis Chart
+            const financialCtx = document.getElementById('financialChart').getContext('2d');
+            const financialChart = new Chart(financialCtx, {
+                type: 'bar',
                 data: {
-                    labels: ['Growth', 'Stability', 'Diversification', 'Liquidity', 'Volatility'],
+                    labels: ['2020', '2021', '2022', '2023', '2024*'],
                     datasets: [{
-                        label: 'Your Portfolio',
-                        data: [5, 6, 5, 7, 4],
-                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                        label: 'Revenue (Billions)',
+                        data: [274.5, 365.8, 394.3, 383.3, 405.6],
+                        backgroundColor: 'rgba(37, 99, 235, 0.7)',
                         borderColor: '#2563eb',
-                        pointBackgroundColor: '#2563eb',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#2563eb'
+                        borderWidth: 1
                     }, {
-                        label: 'Benchmark',
-                        data: [5, 7, 6, 7, 3],
-                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                        borderColor: 'rgba(255, 255, 255, 0.3)',
-                        pointBackgroundColor: 'rgba(255, 255, 255, 0.3)',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgba(255, 255, 255, 0.3)'
+                        label: 'Net Income (Billions)',
+                        data: [57.4, 94.7, 99.8, 97.0, 105.2],
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: '#10b981',
+                        borderWidth: 1
                     }]
                 },
                 options: {
-                    scales: {
-                        r: {
-                            angleLines: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            pointLabels: {
-                                color: 'rgba(255, 255, 255, 0.7)',
-                                font: {
-                                    size: 10
-                                }
-                            },
-                            ticks: {
-                                backdropColor: 'transparent',
-                                color: 'rgba(255, 255, 255, 0.3)',
-                                stepSize: 2
-                            }
-                        }
-                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             labels: {
-                                color: 'rgba(255, 255, 255, 0.7)',
-                                font: {
-                                    size: 11
-                                }
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.6)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.6)'
                             }
                         }
                     }
                 }
             });
             
-            // Initialize slider
-            const amountInput = document.getElementById('amount');
-            const amountSlider = document.getElementById('amountSlider');
-            
-            amountSlider.addEventListener('input', function() {
-                amountInput.value = this.value;
+            // Set up event listeners
+            document.getElementById('analyze-btn').addEventListener('click', generateInvestmentPlan);
+            document.getElementById('stock-search').addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    updateStockAnalysis();
+                }
             });
             
-            amountInput.addEventListener('input', function() {
-                amountSlider.value = this.value;
-            });
-        }
-
-        // Set up event listeners
-        function setupEventListeners() {
-            document.getElementById('buy-btn').addEventListener('click', buyAsset);
-            document.getElementById('sell-btn').addEventListener('click', sellAsset);
-            document.getElementById('simulate-btn').addEventListener('click', simulateMarketDay);
-            document.getElementById('reset-btn').addEventListener('click', resetPortfolio);
-            document.getElementById('ai-optimize').addEventListener('click', optimizePortfolio);
-            document.getElementById('rebalance').addEventListener('click', rebalancePortfolio);
-            document.getElementById('refresh-insights').addEventListener('click', generateInsights);
+            // Simulate real-time price updates
+            simulatePriceMovement();
+        });
+        
+        // Generate investment plan
+        function generateInvestmentPlan() {
+            const spinner = document.getElementById('strategy-spinner');
+            const result = document.getElementById('strategy-result');
             
-            // Timeframe buttons
-            document.querySelectorAll('.timeframe-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    AppState.historyDays = parseInt(this.dataset.timeframe);
-                    updatePortfolio();
-                });
-            });
-        }
-
-        // Generate date labels for chart
-        function generateDateLabels() {
-            const labels = [];
-            const today = new Date();
+            // Show loading spinner
+            spinner.style.display = 'block';
+            result.style.display = 'none';
             
-            for (let i = AppState.historyDays; i >= 0; i--) {
-                const date = new Date();
-                date.setDate(today.getDate() - i);
-                labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-            }
-            
-            return labels;
-        }
-
-        // Render assets in the UI
-        function renderAssets() {
-            const assetsGrid = document.getElementById('assets-grid');
-            assetsGrid.innerHTML = '';
-            
-            AppState.assets.forEach(asset => {
-                const assetData = AppState.portfolio.assets[asset.name];
-                const currentPrice = AppState.prices[asset.name];
-                const value = assetData.quantity * currentPrice;
-                const change = AppState.prevPrices[asset.name] ? 
-                    ((currentPrice - AppState.prevPrices[asset.name]) / AppState.prevPrices[asset.name] * 100) : 0;
+            // Simulate analysis time
+            setTimeout(() => {
+                // Hide spinner and show result
+                spinner.style.display = 'none';
+                result.style.display = 'block';
                 
-                const assetCard = document.createElement('div');
-                assetCard.className = 'asset-card';
-                assetCard.innerHTML = `
-                    <div class="asset-header">
-                        <div class="asset-name">${asset.display}</div>
-                        <div class="asset-icon ${asset.class}">
-                            <i class="${asset.icon}"></i>
-                        </div>
-                    </div>
-                    <div class="asset-price">$${currentPrice.toFixed(2)}</div>
-                    <div class="asset-change ${change >= 0 ? 'positive' : 'negative'}">
-                        ${change >= 0 ? '<i class="fas fa-arrow-up"></i>' : '<i class="fas fa-arrow-down"></i>'} 
-                        ${Math.abs(change).toFixed(2)}%
-                    </div>
-                    <div style="margin-top: 10px; font-size: 14px; color: rgba(255, 255, 255, 0.7);">
-                        Holdings: ${assetData.quantity.toFixed(4)}<br>
-                        Value: $${value.toFixed(2)}
-                    </div>
+                // Show notification
+                showNotification('Investment strategy generated successfully');
+            }, 1500);
+        }
+        
+        // Update stock analysis
+        function updateStockAnalysis() {
+            const symbol = document.getElementById('stock-search').value.toUpperCase();
+            
+            if (!symbol) return;
+            
+            // Show loading state
+            document.getElementById('stock-price').textContent = 'Loading...';
+            document.getElementById('stock-change').innerHTML = '<i class="fas fa-sync fa-spin"></i> Updating data';
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Update price and change
+                const newPrice = (170 + Math.random() * 8).toFixed(2);
+                const changePercent = (Math.random() * 3).toFixed(2);
+                const changeDirection = Math.random() > 0.3 ? 'up' : 'down';
+                
+                document.getElementById('stock-price').textContent = `$${newPrice}`;
+                document.getElementById('stock-change').innerHTML = `
+                    <i class="fas fa-arrow-${changeDirection}"></i> 
+                    ${changeDirection === 'up' ? '+' : '-'}${changePercent}% today
                 `;
+                document.getElementById('stock-change').className = `performance-change ${changeDirection === 'up' ? '' : 'negative'}`;
                 
-                assetsGrid.appendChild(assetCard);
-            });
-        }
-
-        // Render portfolio summary
-        function renderPortfolioSummary() {
-            const portfolioValue = calculatePortfolioValue();
-            const investedValue = calculateInvestedValue();
-            const cash = AppState.portfolio.cash;
-            
-            // Update portfolio value
-            document.getElementById('portfolio-value').textContent = `$${portfolioValue.toFixed(2)}`;
-            
-            // Update cash and invested value
-            document.getElementById('cash-balance').textContent = `$${cash.toFixed(2)}`;
-            document.getElementById('invested-value').textContent = `$${investedValue.toFixed(2)}`;
-            
-            // Calculate daily change
-            const prevValue = AppState.portfolio.valueHistory[AppState.portfolio.valueHistory.length - 2] || portfolioValue;
-            const dailyChange = portfolioValue - prevValue;
-            const dailyChangePct = (dailyChange / prevValue * 100);
-            
-            document.getElementById('daily-change').innerHTML = `
-                ${dailyChange >= 0 ? '<i class="fas fa-arrow-up"></i>' : '<i class="fas fa-arrow-down"></i>'} 
-                ${dailyChange >= 0 ? '+' : ''}$${Math.abs(dailyChange).toFixed(2)} (${Math.abs(dailyChangePct).toFixed(2)}%) today
-            `;
-            document.getElementById('daily-change').className = `performance-change ${dailyChange >= 0 ? '' : 'negative'}`;
-            
-            // Calculate monthly change (simplified)
-            const monthlyChange = portfolioValue - 10000;
-            const monthlyChangePct = (monthlyChange / 10000 * 100);
-            
-            document.getElementById('monthly-change').innerHTML = `
-                ${monthlyChange >= 0 ? '<i class="fas fa-arrow-up"></i>' : '<i class="fas fa-arrow-down"></i>'} 
-                ${monthlyChange >= 0 ? '+' : ''}${Math.abs(monthlyChangePct).toFixed(2)}% vs last month
-            `;
-            document.getElementById('monthly-change').className = `performance-change ${monthlyChange >= 0 ? '' : 'negative'}`;
-            
-            // Update total return
-            document.getElementById('total-return').textContent = `$${monthlyChange.toFixed(2)}`;
-            document.getElementById('total-return').className = monthlyChange >= 0 ? 'positive' : 'negative';
-            
-            // Update chart data
-            if (AppState.marketChart) {
-                AppState.marketChart.data.labels = generateDateLabels();
-                AppState.marketChart.data.datasets[0].data = AppState.portfolio.valueHistory;
-                AppState.marketChart.update();
-            }
-        }
-
-        // Render transaction history
-        function renderTransactionHistory() {
-            const container = document.getElementById('transaction-history');
-            container.innerHTML = '';
-            
-            // Only show last 5 transactions
-            const transactions = AppState.portfolio.transactions.slice(-5).reverse();
-            
-            if (transactions.length === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5)">No transactions yet</div>';
-                return;
-            }
-            
-            transactions.forEach(transaction => {
-                const item = document.createElement('div');
-                item.className = 'transaction-item';
-                item.innerHTML = `
-                    <div class="${transaction.type === 'buy' ? 'transaction-buy' : 'transaction-sell'}">
-                        ${transaction.type === 'buy' ? '<i class="fas fa-arrow-circle-up"></i>' : '<i class="fas fa-arrow-circle-down"></i>'} 
-                        ${transaction.asset}
-                    </div>
-                    <div>${transaction.quantity.toFixed(4)}</div>
-                    <div>$${transaction.amount.toFixed(2)}</div>
-                    <div>$${transaction.price.toFixed(2)}</div>
-                `;
-                container.appendChild(item);
-            });
-        }
-
-        // Calculate total portfolio value
-        function calculatePortfolioValue() {
-            let total = AppState.portfolio.cash;
-            
-            for (const asset in AppState.portfolio.assets) {
-                const assetData = AppState.portfolio.assets[asset];
-                total += assetData.quantity * AppState.prices[asset];
-            }
-            
-            return total;
-        }
-
-        // Calculate invested value
-        function calculateInvestedValue() {
-            let total = 0;
-            
-            for (const asset in AppState.portfolio.assets) {
-                const assetData = AppState.portfolio.assets[asset];
-                total += assetData.quantity * AppState.prices[asset];
-            }
-            
-            return total;
-        }
-
-        // Buy asset function
-        function buyAsset() {
-            const assetSelect = document.getElementById('asset');
-            const asset = assetSelect.value;
-            const amount = parseFloat(document.getElementById('amount').value);
-            
-            if (isNaN(amount) {
-                showNotification('Please enter a valid amount', true);
-                return;
-            }
-            
-            if (amount <= 0) {
-                showNotification('Amount must be greater than zero', true);
-                return;
-            }
-            
-            const price = AppState.prices[asset];
-            const cost = amount;
-            
-            if (cost > AppState.portfolio.cash) {
-                showNotification('Insufficient funds to complete purchase', true);
-                return;
-            }
-            
-            // Calculate quantity to buy
-            const quantity = amount / price;
-            
-            // Update portfolio
-            AppState.portfolio.cash -= cost;
-            const assetData = AppState.portfolio.assets[asset];
-            
-            // Calculate new average price
-            const totalCost = (assetData.quantity * assetData.avgPrice) + cost;
-            const totalQuantity = assetData.quantity + quantity;
-            
-            assetData.avgPrice = totalCost / totalQuantity;
-            assetData.quantity += quantity;
-            
-            // Add transaction
-            const transaction = {
-                type: 'buy',
-                asset: asset,
-                quantity: quantity,
-                price: price,
-                amount: cost,
-                timestamp: new Date()
-            };
-            
-            AppState.portfolio.transactions.push(transaction);
-            
-            showNotification(`Successfully purchased $${cost.toFixed(2)} of ${assetSelect.options[assetSelect.selectedIndex].text}`);
-            updatePortfolio();
-        }
-
-        // Sell asset function
-        function sellAsset() {
-            const assetSelect = document.getElementById('asset');
-            const asset = assetSelect.value;
-            const amount = parseFloat(document.getElementById('amount').value);
-            
-            if (isNaN(amount)) {
-                showNotification('Please enter a valid amount', true);
-                return;
-            }
-            
-            if (amount <= 0) {
-                showNotification('Amount must be greater than zero', true);
-                return;
-            }
-            
-            const price = AppState.prices[asset];
-            const assetData = AppState.portfolio.assets[asset];
-            
-            // Calculate value to sell
-            const value = amount;
-            const quantity = value / price;
-            
-            if (quantity > assetData.quantity) {
-                showNotification('Insufficient assets to complete sale', true);
-                return;
-            }
-            
-            // Update portfolio
-            AppState.portfolio.cash += value;
-            assetData.quantity -= quantity;
-            
-            // Add transaction
-            const transaction = {
-                type: 'sell',
-                asset: asset,
-                quantity: quantity,
-                price: price,
-                amount: value,
-                timestamp: new Date()
-            };
-            
-            AppState.portfolio.transactions.push(transaction);
-            
-            showNotification(`Successfully sold $${value.toFixed(2)} of ${assetSelect.options[assetSelect.selectedIndex].text}`);
-            updatePortfolio();
-        }
-
-        // Simulate market day
-        function simulateMarketDay() {
-            // Store previous prices for change calculation
-            AppState.prevPrices = {...AppState.prices};
-            
-            // Simulate price changes for each asset
-            for (const asset in AppState.prices) {
-                // Generate random price change (-5% to +5%)
-                const change = (Math.random() - 0.5) * 0.1;
-                AppState.prices[asset] *= (1 + change);
+                // Update chart
+                updateCharts(newPrice);
                 
-                // Ensure prices don't drop below $1
-                AppState.prices[asset] = Math.max(AppState.prices[asset], 1);
-            }
-            
-            // Add to portfolio value history
-            const portfolioValue = calculatePortfolioValue();
-            AppState.portfolio.valueHistory.push(portfolioValue);
-            
-            // Keep history to a reasonable length
-            if (AppState.portfolio.valueHistory.length > AppState.historyDays + 1) {
-                AppState.portfolio.valueHistory.shift();
-            }
-            
-            showNotification('Market simulation complete. Prices updated.');
-            updatePortfolio();
+                // Show notification
+                showNotification(`Analysis updated for ${symbol}`);
+            }, 800);
         }
-
-        // Reset portfolio
-        function resetPortfolio() {
-            if (confirm('Are you sure you want to reset your portfolio? All data will be lost.')) {
-                AppState.portfolio = {
-                    cash: 10000,
-                    assets: {
-                        Tech: { quantity: 0, avgPrice: 0 },
-                        Energy: { quantity: 0, avgPrice: 0 },
-                        Health: { quantity: 0, avgPrice: 0 },
-                        Crypto: { quantity: 0, avgPrice: 0 },
-                        RealEstate: { quantity: 0, avgPrice: 0 }
-                    },
-                    history: [],
-                    valueHistory: [10000],
-                    transactions: []
-                };
+        
+        // Update charts with new data
+        function updateCharts(price) {
+            const techChart = Chart.getChart("techChart");
+            const newPrice = parseFloat(price);
+            
+            if (techChart) {
+                // Update the last data point
+                const data = techChart.data.datasets[0].data;
+                data[data.length - 1] = newPrice;
                 
-                // Reset prices to initial values
-                AppState.prices = {
-                    Tech: 245.50,
-                    Energy: 120.75,
-                    Health: 184.30,
-                    Crypto: 3450.60,
-                    RealEstate: 234.90
-                };
+                // Add some variation to previous points
+                for (let i = data.length - 2; i >= 0; i--) {
+                    data[i] = newPrice - (data.length - i) * 0.1;
+                }
                 
-                AppState.portfolio.valueHistory = [10000];
-                AppState.prevPrices = {};
-                
-                showNotification('Portfolio has been reset to initial state');
-                updatePortfolio();
+                techChart.update();
             }
         }
-
-        // Optimize portfolio (AI feature)
-        function optimizePortfolio() {
-            showNotification('AI optimization applied to your portfolio');
-            
-            // Simulate optimization by making some adjustments
-            const assets = Object.keys(AppState.portfolio.assets);
-            
-            // Sell a random asset
-            const sellAsset = assets[Math.floor(Math.random() * assets.length)];
-            const sellAmount = AppState.portfolio.cash * 0.1;
-            if (AppState.portfolio.assets[sellAsset].quantity > 0) {
-                const price = AppState.prices[sellAsset];
-                const quantity = Math.min(AppState.portfolio.assets[sellAsset].quantity, sellAmount / price);
+        
+        // Simulate real-time price movement
+        function simulatePriceMovement() {
+            setInterval(() => {
+                const priceElement = document.getElementById('stock-price');
+                const changeElement = document.getElementById('stock-change');
                 
-                AppState.portfolio.assets[sellAsset].quantity -= quantity;
-                AppState.portfolio.cash += quantity * price;
-                
-                // Record transaction
-                AppState.portfolio.transactions.push({
-                    type: 'sell',
-                    asset: sellAsset,
-                    quantity: quantity,
-                    price: price,
-                    amount: quantity * price,
-                    timestamp: new Date()
-                });
-            }
-            
-            // Buy a random asset
-            const buyAsset = assets[Math.floor(Math.random() * assets.length)];
-            const buyAmount = AppState.portfolio.cash * 0.1;
-            const buyPrice = AppState.prices[buyAsset];
-            const buyQuantity = buyAmount / buyPrice;
-            
-            AppState.portfolio.assets[buyAsset].quantity += buyQuantity;
-            AppState.portfolio.cash -= buyAmount;
-            
-            // Record transaction
-            AppState.portfolio.transactions.push({
-                type: 'buy',
-                asset: buyAsset,
-                quantity: buyQuantity,
-                price: buyPrice,
-                amount: buyAmount,
-                timestamp: new Date()
-            });
-            
-            // Update portfolio
-            updatePortfolio();
-        }
-
-        // Rebalance portfolio
-        function rebalancePortfolio() {
-            showNotification('Portfolio rebalanced according to target allocation');
-            
-            // Simple rebalancing strategy - equal weight
-            const targetAllocation = 0.2; // 20% per asset
-            const portfolioValue = calculatePortfolioValue();
-            const targetValue = portfolioValue * targetAllocation;
-            
-            for (const asset in AppState.portfolio.assets) {
-                const currentValue = AppState.portfolio.assets[asset].quantity * AppState.prices[asset];
-                const difference = targetValue - currentValue;
-                
-                if (difference > 0) {
-                    // Buy more to reach target
-                    const quantity = difference / AppState.prices[asset];
-                    AppState.portfolio.assets[asset].quantity += quantity;
-                    AppState.portfolio.cash -= difference;
+                if (priceElement && changeElement) {
+                    const currentPrice = parseFloat(priceElement.textContent.replace('$', ''));
+                    if (isNaN(currentPrice)) return;
                     
-                    // Record transaction
-                    AppState.portfolio.transactions.push({
-                        type: 'buy',
-                        asset: asset,
-                        quantity: quantity,
-                        price: AppState.prices[asset],
-                        amount: difference,
-                        timestamp: new Date()
-                    });
-                } else if (difference < 0) {
-                    // Sell excess
-                    const quantity = Math.abs(difference) / AppState.prices[asset];
-                    AppState.portfolio.assets[asset].quantity -= quantity;
-                    AppState.portfolio.cash += Math.abs(difference);
+                    // Generate small random price change
+                    const change = (Math.random() - 0.5) * 0.5;
+                    const newPrice = (currentPrice * (1 + change/100)).toFixed(2);
                     
-                    // Record transaction
-                    AppState.portfolio.transactions.push({
-                        type: 'sell',
-                        asset: asset,
-                        quantity: quantity,
-                        price: AppState.prices[asset],
-                        amount: Math.abs(difference),
-                        timestamp: new Date()
-                    });
+                    // Update UI
+                    priceElement.textContent = `$${newPrice}`;
+                    
+                    const changeDirection = change >= 0 ? 'up' : 'down';
+                    changeElement.innerHTML = `
+                        <i class="fas fa-arrow-${changeDirection}"></i> 
+                        ${change >= 0 ? '+' : ''}${Math.abs(change).toFixed(2)}% today
+                    `;
+                    changeElement.className = `performance-change ${change >= 0 ? '' : 'negative'}`;
+                    
+                    // Update chart
+                    updateCharts(newPrice);
                 }
-            }
-            
-            updatePortfolio();
+            }, 5000);
         }
-
-        // Update portfolio UI
-        function updatePortfolio() {
-            renderAssets();
-            renderPortfolioSummary();
-            renderTransactionHistory();
-        }
-
-        // Simulate initial price changes
-        function simulatePriceChanges() {
-            // Store initial prices as previous prices
-            AppState.prevPrices = {...AppState.prices};
-            
-            // Generate some initial price movement
-            for (let i = 0; i < 5; i++) {
-                simulateMarketDay();
-            }
-        }
-
-        // Generate AI insights
-        function generateInsights() {
-            const insights = [
-                {
-                    icon: 'fas fa-lightbulb',
-                    title: 'Opportunity Alert',
-                    text: 'Our AI has detected an undervalued opportunity in renewable energy stocks. Consider allocating 5-7% of your portfolio to capitalize on emerging trends.'
-                },
-                {
-                    icon: 'fas fa-exclamation-triangle',
-                    title: 'Risk Warning',
-                    text: 'Tech sector shows signs of volatility. We recommend setting stop-loss orders at 5% below current positions to protect gains.'
-                },
-                {
-                    icon: 'fas fa-chart-line',
-                    title: 'Trend Analysis',
-                    text: 'Cryptocurrency continues strong performance with blockchain-related assets leading gains. Our models predict 8-12% growth over next quarter.'
-                }
-            ];
-            
-            const container = document.getElementById('insights-container');
-            container.innerHTML = '';
-            
-            insights.forEach(insight => {
-                const card = document.createElement('div');
-                card.className = 'insight-card';
-                card.innerHTML = `
-                    <div class="insight-header">
-                        <div class="insight-icon">
-                            <i class="${insight.icon}"></i>
-                        </div>
-                        <div class="insight-title">${insight.title}</div>
-                    </div>
-                    <div class="insight-text">${insight.text}</div>
-                `;
-                container.appendChild(card);
-            });
-            
-            showNotification('AI insights refreshed');
-        }
-
-        // Generate market news
-        function generateNews() {
-            const news = [
-                {
-                    category: 'TECHNOLOGY',
-                    title: 'AI Stocks Surge 15% as Breakthroughs Drive Market Optimism',
-                    excerpt: 'Leading tech companies announce advancements in quantum computing, triggering a sector-wide rally.',
-                    source: 'Financial Times',
-                    time: '2 hours ago'
-                },
-                {
-                    category: 'ENERGY',
-                    title: 'Renewable Energy Investments Reach Record High in Q3',
-                    excerpt: 'Global commitment to green energy drives unprecedented capital inflow to sustainable projects.',
-                    source: 'Bloomberg',
-                    time: '5 hours ago'
-                },
-                {
-                    category: 'CRYPTO',
-                    title: 'Regulatory Clarity Boosts Institutional Crypto Adoption',
-                    excerpt: 'New framework announcement leads to increased institutional participation in digital asset markets.',
-                    source: 'Crypto Insider',
-                    time: '1 day ago'
-                }
-            ];
-            
-            const container = document.getElementById('news-grid');
-            container.innerHTML = '';
-            
-            news.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'news-card';
-                card.innerHTML = `
-                    <div class="news-content">
-                        <div class="news-category">${item.category}</div>
-                        <div class="news-title">${item.title}</div>
-                        <div class="news-excerpt">${item.excerpt}</div>
-                        <div class="news-meta">
-                            <span>${item.time}</span>
-                            <span>${item.source}</span>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // Show transaction notification
+        
+        // Show notification
         function showNotification(message, isError = false) {
             const notification = document.getElementById('transaction-notification');
             notification.textContent = message;
