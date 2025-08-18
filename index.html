@@ -3,25 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuantumSynth | Advanced Data Generator</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/faker/5.5.3/faker.min.js"></script>
+    <title>ArbScan - Live Crypto Arbitrage Scanner</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #1e293b;
-            --accent: #8b5cf6;
-            --light: #f1f5f9;
-            --dark: #0f172a;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
         * {
             margin: 0;
             padding: 0;
@@ -29,1204 +15,1503 @@
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
         
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --secondary: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --card-border: rgba(148, 163, 184, 0.2);
+        }
+        
         body {
             background: linear-gradient(135deg, #0f172a, #1e293b);
             color: var(--light);
             min-height: 100vh;
-            padding: 1rem;
+            padding: 15px;
             line-height: 1.6;
-            overflow-x: hidden;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+            font-size: 14px;
         }
         
         header {
             text-align: center;
-            padding: 2rem 1rem;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
             position: relative;
-            margin-bottom: 2rem;
         }
         
         .logo {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
+            gap: 12px;
+            margin-bottom: 10px;
         }
         
-        .logo-icon {
-            background: var(--primary);
-            width: 48px;
-            height: 48px;
+        .logo i {
+            font-size: 2.2rem;
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.15);
+            padding: 12px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
         }
         
         h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(to right, #a5b4fc, #6366f1, #8b5cf6);
+            font-size: 1.8rem;
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
             -webkit-background-clip: text;
             background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
+            color: transparent;
+            margin-bottom: 8px;
         }
         
         .subtitle {
-            font-size: 1.25rem;
-            color: #cbd5e1;
-            max-width: 700px;
+            color: var(--gray);
+            font-size: 0.95rem;
             margin: 0 auto;
+            max-width: 95%;
         }
         
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-        }
-        
-        @media (min-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-        
-        @media (min-width: 1024px) {
-            .dashboard {
-                grid-template-columns: 1fr 2fr;
-            }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
         }
         
         .card {
             background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px 15px;
+            border: 1px solid var(--card-border);
             backdrop-filter: blur(10px);
-            border-radius: 1.25rem;
-            padding: 1.75rem;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
         }
         
         .card-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid rgba(99, 102, 241, 0.2);
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--card-border);
         }
         
-        h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--secondary);
+        .card-title {
+            font-size: 1.3rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
         }
         
-        .card-icon {
-            background: var(--primary);
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+        .card-title i {
+            color: var(--primary);
+        }
+        
+        .controls {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 15px;
         }
         
-        .form-group {
-            margin-bottom: 1.25rem;
+        .control-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
         }
         
         label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--secondary);
-        }
-        
-        input, select, button, textarea {
-            width: 100%;
-            padding: 0.875rem 1.25rem;
-            border-radius: 0.75rem;
-            border: 1px solid #e2e8f0;
-            background: white;
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-        
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
-        }
-        
-        button {
-            background: var(--primary);
-            color: white;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #cbd5e1;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: var(--transition);
+            gap: 5px;
         }
         
-        button:hover {
-            background: var(--primary-dark);
+        .info-icon {
+            color: var(--primary-light);
+            cursor: help;
+            position: relative;
+        }
+        
+        select, input {
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--light);
+            font-size: 0.95rem;
+            width: 100%;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(37, 99, 235, 0.1);
             transform: translateY(-2px);
         }
         
         .btn-success {
             background: var(--success);
+            color: white;
         }
         
         .btn-success:hover {
             background: #059669;
+            transform: translateY(-2px);
         }
         
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
+        .btn-warning {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
         }
         
-        .btn-outline:hover {
-            background: rgba(99, 102, 241, 0.1);
+        .btn-warning:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: translateY(-2px);
         }
         
         .btn-group {
             display: flex;
-            gap: 0.75rem;
-            margin-top: 1rem;
-        }
-        
-        .btn-group button {
-            flex: 1;
-        }
-        
-        .schema-row {
-            display: grid;
-            grid-template-columns: 1fr 1.5fr 1fr;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-            align-items: center;
-        }
-        
-        @media (max-width: 640px) {
-            .schema-row {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .schema-options {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-        
-        .remove-btn {
-            background: var(--danger);
-            width: auto;
-            padding: 0.75rem;
-            border-radius: 0.75rem;
-        }
-        
-        .remove-btn:hover {
-            background: #dc2626;
-        }
-        
-        .add-btn {
-            width: 100%;
-            margin-top: 0.5rem;
-        }
-        
-        .output-container {
-            margin-top: 1.5rem;
-        }
-        
-        .tabs {
-            display: flex;
-            background: #e2e8f0;
-            border-radius: 0.75rem;
-            overflow: hidden;
-            margin-bottom: 1rem;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 1rem;
-            text-align: center;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--secondary);
-            transition: var(--transition);
-        }
-        
-        .tab.active {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .tab-content {
-            display: none;
-            background: white;
-            border-radius: 0.75rem;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        
-        .tab-content.active {
-            display: block;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9rem;
         }
         
         th {
-            background: var(--primary);
-            color: white;
+            background: rgba(15, 23, 42, 0.7);
+            padding: 12px 10px;
             text-align: left;
-            padding: 1rem;
+            color: #94a3b8;
+            font-weight: 500;
+            font-size: 0.85rem;
             position: sticky;
             top: 0;
         }
         
         td {
-            padding: 0.875rem 1rem;
-            border-bottom: 1px solid #e2e8f0;
-            color: var(--secondary);
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--card-border);
+            font-size: 0.9rem;
         }
         
-        tr:nth-child(even) {
-            background: #f8fafc;
+        tr:last-child td {
+            border-bottom: none;
         }
         
         tr:hover {
-            background: #f1f5f9;
+            background: rgba(15, 23, 42, 0.4);
         }
         
-        pre {
-            background: var(--secondary);
-            color: #cbd5e1;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            overflow: auto;
-            max-height: 500px;
-            font-size: 0.875rem;
-            line-height: 1.5;
+        .profit {
+            color: var(--success);
+            font-weight: 700;
+        }
+        
+        .loss {
+            color: var(--danger);
+            font-weight: 700;
+        }
+        
+        .exchange-logo {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+            object-fit: cover;
+        }
+        
+        .opportunity-card {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .opportunity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .opportunity-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+        
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+        
+        .opportunity-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .opportunity-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .opportunity-label {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-bottom: 3px;
+        }
+        
+        .opportunity-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        
+        .chart-container {
+            height: 250px;
+            margin-top: 15px;
         }
         
         .notification {
             position: fixed;
-            top: 1.5rem;
-            right: 1.5rem;
-            padding: 1rem 1.5rem;
+            bottom: 15px;
+            right: 15px;
+            left: 15px;
             background: var(--success);
             color: white;
-            border-radius: 0.75rem;
-            box-shadow: var(--card-shadow);
-            transform: translateX(200%);
-            transition: var(--transition);
-            z-index: 1000;
+            padding: 12px 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 8px;
+            z-index: 1000;
+            transform: translateY(150%);
+            transition: transform 0.3s ease;
         }
         
         .notification.show {
-            transform: translateX(0);
+            transform: translateY(0);
         }
         
-        .stats {
+        .privacy-toggle {
             display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 8px 12px;
+            border-radius: 50px;
+            margin-top: 15px;
+            font-size: 0.9rem;
         }
         
-        .stat-card {
-            background: rgba(99, 102, 241, 0.15);
-            border-radius: 1rem;
-            padding: 1rem;
-            flex: 1;
-            min-width: 140px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(99, 102, 241, 0.3);
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 45px;
+            height: 22px;
         }
         
-        .stat-value {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-            background: linear-gradient(to right, #a5b4fc, #6366f1);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
         }
         
-        .stat-label {
-            font-size: 0.875rem;
-            color: #cbd5e1;
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            transition: .4s;
+            border-radius: 22px;
         }
         
-        .footer {
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(23px);
+        }
+        
+        footer {
             text-align: center;
-            margin-top: 3rem;
-            padding: 1.5rem;
+            margin-top: 20px;
+            padding: 15px;
+            color: var(--gray);
+            font-size: 0.8rem;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .feature {
+            background: rgba(15, 23, 42, 0.4);
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .feature i {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            background: rgba(37, 99, 235, 0.15);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .feature h3 {
+            margin-bottom: 8px;
+            color: #e2e8f0;
+            font-size: 1rem;
+        }
+        
+        .feature p {
             color: #94a3b8;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
         }
         
-        .watermark {
-            position: fixed;
-            bottom: 1rem;
-            right: 1rem;
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.2);
+        .disclaimer {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.8rem;
         }
         
-        /* Mobile styles */
-        @media (max-width: 767px) {
-            .desktop-only {
-                display: none;
+        .disclaimer h3 {
+            color: var(--danger);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            color: #94a3b8;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--success);
+        }
+        
+        .status-dot.offline {
+            background-color: var(--danger);
+        }
+        
+        .refresh-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 0.8rem;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 100;
+            max-width: 250px;
+            font-size: 0.85rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+        }
+        
+        .header-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        /* Tablet and larger */
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+                font-size: 16px;
             }
             
-            .card {
-                padding: 1.25rem;
-            }
-            
-            .schema-row {
+            .container {
+                display: grid;
                 grid-template-columns: 1fr 1fr;
-            }
-            
-            .schema-options {
-                grid-column: span 2;
+                gap: 20px;
             }
             
             .btn-group {
-                flex-direction: column;
+                flex-direction: row;
+                flex-wrap: wrap;
             }
             
-            .tabs {
-                flex-direction: column;
+            .btn {
+                width: auto;
+                flex: 1;
             }
             
-            pre {
-                padding: 1rem;
-                max-height: 300px;
+            .features {
+                grid-template-columns: repeat(2, 1fr);
             }
             
-            .stats {
-                flex-direction: column;
+            .notification {
+                left: auto;
+                max-width: 350px;
             }
             
-            h1 {
-                font-size: 2rem;
+            .control-row {
+                flex-direction: row;
+            }
+        }
+        
+        /* Desktop */
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 1400px;
+                margin: 0 auto 30px;
             }
             
-            .subtitle {
-                font-size: 1rem;
+            .features {
+                grid-template-columns: repeat(4, 1fr);
             }
-        }
-        
-        /* Animation */
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-        
-        .floating {
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        .loading {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .loading::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            animation: loading 1.5s infinite;
-        }
-        
-        @keyframes loading {
-            100% { left: 100%; }
-        }
-        
-        .generation-panel {
-            background: rgba(99, 102, 241, 0.1);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-        
-        .generation-option {
-            flex: 1;
-            min-width: 120px;
-        }
-        
-        .generation-option label {
-            display: block;
-            margin-bottom: 0.25rem;
-            color: var(--secondary);
-            font-weight: 600;
-        }
-        
-        .data-value {
-            font-weight: 600;
-            color: var(--primary);
-        }
-        
-        .mobile-actions {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1rem;
-        }
-        
-        .history-panel {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background: #f8fafc;
-            border-radius: 0.75rem;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        
-        .history-item {
-            padding: 0.5rem;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .history-item:last-child {
-            border-bottom: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo floating">
-                <div class="logo-icon">
-                    <i class="fas fa-database"></i>
-                </div>
-                <h1>QuantumSynth</h1>
-            </div>
-            <p class="subtitle">Generate premium synthetic datasets with AI-powered realism</p>
-        </header>
-        
-        <div class="dashboard">
+    <header>
+        <div class="logo">
+            <i class="fas fa-chart-line"></i>
             <div>
-                <div class="card">
-                    <div class="card-header">
-                        <h2><div class="card-icon"><i class="fas fa-sliders-h"></i></div> Configuration</h2>
+                <h1>ArbScan Pro</h1>
+                <p class="subtitle">Live Crypto Arbitrage Scanner - Real-time market opportunities</p>
+            </div>
+        </div>
+        <div class="header-controls">
+            <div class="refresh-indicator">
+                <i class="fas fa-sync-alt"></i>
+                <span>Auto-refresh: <span id="refresh-timer">30</span>s</span>
+            </div>
+            <button id="reset-btn" class="btn btn-warning">
+                <i class="fas fa-redo"></i> Reset App
+            </button>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-search-dollar"></i> Arbitrage Scanner</h2>
+            </div>
+            
+            <div class="controls">
+                <div class="control-row">
+                    <div class="control-group">
+                        <label for="crypto-pair">
+                            Crypto Pair
+                            <i class="fas fa-info-circle info-icon" data-tooltip="Select cryptocurrency trading pair"></i>
+                        </label>
+                        <select id="crypto-pair">
+                            <option value="BTC/USDT">BTC/USDT</option>
+                            <option value="ETH/USDT" selected>ETH/USDT</option>
+                            <option value="SOL/USD">SOL/USD</option>
+                            <option value="BNB/USDT">BNB/USDT</option>
+                            <option value="ADA/USD">ADA/USD</option>
+                        </select>
                     </div>
                     
-                    <div class="generation-panel">
-                        <div class="generation-option">
-                            <label for="rowCount"><i class="fas fa-list-ol"></i> Rows</label>
-                            <input type="number" id="rowCount" min="1" max="10000" value="50">
-                        </div>
-                        <div class="generation-option">
-                            <label for="dataQuality"><i class="fas fa-star"></i> Quality</label>
-                            <select id="dataQuality">
-                                <option value="basic">Basic</option>
-                                <option value="premium" selected>Premium</option>
-                                <option value="enterprise">Enterprise</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-table"></i> Data Schema</label>
-                        <div id="schemaFields">
-                            <div class="schema-row">
-                                <input type="text" class="field-name" placeholder="Field name" value="id">
-                                <select class="field-type">
-                                    <option value="autoIncrement">Auto Increment</option>
-                                    <option value="name">Full Name</option>
-                                    <option value="email">Email</option>
-                                    <option value="phone">Phone</option>
-                                    <option value="address">Address</option>
-                                    <option value="city">City</option>
-                                    <option value="country">Country</option>
-                                    <option value="date">Date</option>
-                                    <option value="number">Number</option>
-                                    <option value="boolean">Boolean</option>
-                                    <option value="custom">Custom Text</option>
-                                </select>
-                                <div class="schema-options">
-                                    <button class="remove-btn"><i class="fas fa-times"></i></button>
-                                </div>
-                            </div>
-                            <div class="schema-row">
-                                <input type="text" class="field-name" placeholder="Field name" value="customer_name">
-                                <select class="field-type">
-                                    <option value="autoIncrement">Auto Increment</option>
-                                    <option value="name" selected>Full Name</option>
-                                    <option value="email">Email</option>
-                                    <option value="phone">Phone</option>
-                                    <option value="address">Address</option>
-                                    <option value="city">City</option>
-                                    <option value="country">Country</option>
-                                    <option value="date">Date</option>
-                                    <option value="number">Number</option>
-                                    <option value="boolean">Boolean</option>
-                                    <option value="custom">Custom Text</option>
-                                </select>
-                                <div class="schema-options">
-                                    <button class="remove-btn"><i class="fas fa-times"></i></button>
-                                </div>
-                            </div>
-                            <div class="schema-row">
-                                <input type="text" class="field-name" placeholder="Field name" value="email">
-                                <select class="field-type">
-                                    <option value="autoIncrement">Auto Increment</option>
-                                    <option value="name">Full Name</option>
-                                    <option value="email" selected>Email</option>
-                                    <option value="phone">Phone</option>
-                                    <option value="address">Address</option>
-                                    <option value="city">City</option>
-                                    <option value="country">Country</option>
-                                    <option value="date">Date</option>
-                                    <option value="number">Number</option>
-                                    <option value="boolean">Boolean</option>
-                                    <option value="custom">Custom Text</option>
-                                </select>
-                                <div class="schema-options">
-                                    <button class="remove-btn"><i class="fas fa-times"></i></button>
-                                </div>
-                            </div>
-                            <div class="schema-row">
-                                <input type="text" class="field-name" placeholder="Field name" value="signup_date">
-                                <select class="field-type">
-                                    <option value="autoIncrement">Auto Increment</option>
-                                    <option value="name">Full Name</option>
-                                    <option value="email">Email</option>
-                                    <option value="phone">Phone</option>
-                                    <option value="address">Address</option>
-                                    <option value="city">City</option>
-                                    <option value="country">Country</option>
-                                    <option value="date" selected>Date</option>
-                                    <option value="number">Number</option>
-                                    <option value="boolean">Boolean</option>
-                                    <option value="custom">Custom Text</option>
-                                </select>
-                                <div class="schema-options">
-                                    <button class="remove-btn"><i class="fas fa-times"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <button id="addField" class="add-btn"><i class="fas fa-plus"></i> Add Field</button>
-                    </div>
-                    
-                    <div class="btn-group">
-                        <button id="generateBtn"><i class="fas fa-bolt"></i> Generate Data</button>
-                        <button id="randomizeBtn"><i class="fas fa-random"></i> Randomize</button>
-                    </div>
-                    
-                    <div class="stats">
-                        <div class="stat-card">
-                            <div class="stat-value" id="rowCountStat">50</div>
-                            <div class="stat-label">Rows Generated</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="fieldCountStat">4</div>
-                            <div class="stat-label">Fields Defined</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="dataValueStat">$375</div>
-                            <div class="stat-label">Estimated Value</div>
-                        </div>
+                    <div class="control-group">
+                        <label for="min-profit">
+                            Min Profit (%)
+                            <i class="fas fa-info-circle info-icon" data-tooltip="Minimum profit percentage to show opportunities"></i>
+                        </label>
+                        <input type="number" id="min-profit" value="0.5" step="0.1" min="0">
                     </div>
                 </div>
                 
-                <div class="card" style="margin-top: 1.5rem;">
-                    <div class="card-header">
-                        <h2><div class="card-icon"><i class="fas fa-history"></i></div> Generation History</h2>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label for="fee-percentage">
+                            Trading Fee (%)
+                            <i class="fas fa-info-circle info-icon" data-tooltip="Your trading fee percentage on exchanges"></i>
+                        </label>
+                        <input type="number" id="fee-percentage" value="0.1" step="0.01" min="0">
                     </div>
-                    <div class="history-panel" id="historyPanel">
-                        <div class="history-item">
-                            <span>No generation history yet</span>
-                        </div>
+                    
+                    <div class="control-group">
+                        <label for="transfer-fee">
+                            Transfer Fee (%)
+                            <i class="fas fa-info-circle info-icon" data-tooltip="Estimated network transfer fee"></i>
+                        </label>
+                        <input type="number" id="transfer-fee" value="0.05" step="0.01" min="0">
                     </div>
                 </div>
             </div>
             
-            <div>
-                <div class="card">
-                    <div class="card-header">
-                        <h2><div class="card-icon"><i class="fas fa-chart-bar"></i></div> Data Output</h2>
-                        <div class="desktop-only">
-                            <button id="downloadCsv" class="btn-success"><i class="fas fa-download"></i> Download CSV</button>
-                        </div>
+            <div class="privacy-toggle">
+                <span>Privacy Mode (Use mock data)</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="privacy-mode">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="btn-group">
+                <button id="scan-btn" class="btn btn-primary">
+                    <i class="fas fa-sync-alt"></i> Scan Arbitrage
+                </button>
+                
+                <button id="export-csv" class="btn btn-outline">
+                    <i class="fas fa-file-csv"></i> CSV
+                </button>
+                
+                <button id="export-json" class="btn btn-outline">
+                    <i class="fas fa-file-code"></i> JSON
+                </button>
+                
+                <button id="auto-scan" class="btn btn-success">
+                    <i class="fas fa-play"></i> Auto Scan
+                </button>
+            </div>
+            
+            <div class="status-indicator">
+                <div class="status-dot" id="status-dot"></div>
+                <span id="status-text">Connected to live market data</span>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Exchange</th>
+                            <th>Price</th>
+                            <th>Spread</th>
+                            <th>Profit</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="exchange-data">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px;">
+                                <i class="fas fa-search"></i> Click "Scan Arbitrage" to find opportunities
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="opportunity-card">
+                <div class="opportunity-header">
+                    <h3>Best Opportunity</h3>
+                    <span class="opportunity-badge badge-success">LIVE</span>
+                </div>
+                <div class="opportunity-content">
+                    <div class="opportunity-item">
+                        <span class="opportunity-label">Buy From</span>
+                        <span class="opportunity-value" id="buy-exchange">-</span>
                     </div>
-                    
-                    <div class="tabs">
-                        <div class="tab active" data-tab="table"><i class="fas fa-table"></i> Table View</div>
-                        <div class="tab" data-tab="json"><i class="fas fa-code"></i> JSON Format</div>
+                    <div class="opportunity-item">
+                        <span class="opportunity-label">Sell To</span>
+                        <span class="opportunity-value" id="sell-exchange">-</span>
                     </div>
-                    
-                    <div id="tableContent" class="tab-content active">
-                        <div style="overflow-x: auto;">
-                            <table id="dataTable">
-                                <thead>
-                                    <tr>
-                                        <th>id</th>
-                                        <th>customer_name</th>
-                                        <th>email</th>
-                                        <th>signup_date</th>
-                                        <th>lifetime_value</th>
-                                        <th>status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tableBody">
-                                    <!-- Data will be generated here -->
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="opportunity-item">
+                        <span class="opportunity-label">Spread</span>
+                        <span class="opportunity-value" id="spread-value">0.00%</span>
                     </div>
-                    
-                    <div id="jsonContent" class="tab-content">
-                        <pre id="jsonOutput">{
-  "data": "Will be generated after clicking Generate Data"
-}</pre>
-                    </div>
-                    
-                    <div class="mobile-actions">
-                        <button id="mobileDownload" class="btn-success" style="flex:1;"><i class="fas fa-download"></i> CSV</button>
-                        <button id="mobileJson" class="btn-outline" style="flex:1;"><i class="fas fa-code"></i> JSON</button>
+                    <div class="opportunity-item">
+                        <span class="opportunity-label">Profit</span>
+                        <span class="opportunity-value profit" id="profit-value">0.00%</span>
                     </div>
                 </div>
             </div>
         </div>
         
-        <div class="footer">
-            <p>QuantumSynth Data Generator v3.5 | Proprietary Algorithm Technology © 2023</p>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-risk"></i> Risk Simulator</h2>
+            </div>
+            
+            <div class="controls">
+                <div class="control-row">
+                    <div class="control-group">
+                        <label for="simulation-type">Simulation Type</label>
+                        <select id="simulation-type">
+                            <option value="monte-carlo">Monte Carlo</option>
+                            <option value="volatility">Volatility Analysis</option>
+                            <option value="historical">Historical Performance</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="risk-factor">Risk Factor</label>
+                        <select id="risk-factor">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="control-row">
+                    <div class="control-group">
+                        <label for="simulation-period">Period (mins)</label>
+                        <input type="number" id="simulation-period" value="10" min="1" max="60">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="trade-amount">Trade Amount ($)</label>
+                        <input type="number" id="trade-amount" value="1000" min="10">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button id="run-simulation" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Run Simulation
+                </button>
+                
+                <button id="save-simulation" class="btn btn-outline">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="risk-chart"></canvas>
+            </div>
+            
+            <div class="opportunity-card">
+                <div class="opportunity-header">
+                    <h3>Risk Analysis</h3>
+                    <span class="opportunity-badge badge-warning" id="risk-badge">MODERATE</span>
+                </div>
+                <div class="opportunity-content">
+                    <div class="opportunity-item">
+                        <span class="opportunity-label">Success Probability</span>
+                        <span class="opportunity-value" id="success-prob">74%</span>
+                    </div>
+                    <div class="opportunity-item">
+                        <span class="opportunity-label">Avg. Profit</span>
+                        <span class="opportunity-value profit" id="avg-profit">0.42%</span>
+                    </div>
+                    <div class="opportunity-item">
+                        <span class="opportunity-label">Max Drawdown</span>
+                        <span class="opportunity-value loss" id="max-drawdown">-0.38%</span>
+                    </div>
+                    <div class="opportunity-item">
+                        <span class="opportunity-label">Est. Profit</span>
+                        <span class="opportunity-value profit" id="est-profit">$4.20</span>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+    
+    <div class="features">
+        <div class="feature">
+            <i class="fas fa-mobile-alt"></i>
+            <h3>Mobile First</h3>
+            <p>Designed for smartphones with touch-friendly controls and responsive layout.</p>
+        </div>
+        <div class="feature">
+            <i class="fas fa-bolt"></i>
+            <h3>Real-Time Data</h3>
+            <p>Live prices from top exchanges updated every 30 seconds.</p>
+        </div>
+        <div class="feature">
+            <i class="fas fa-user-shield"></i>
+            <h3>Privacy Focused</h3>
+            <p>All calculations happen on your device. No data leaves your phone.</p>
+        </div>
+        <div class="feature">
+            <i class="fas fa-chart-pie"></i>
+            <h3>Risk Analysis</h3>
+            <p>Monte Carlo simulation to evaluate trade success probability.</p>
+        </div>
+    </div>
+    
+    <div class="disclaimer">
+        <h3><i class="fas fa-exclamation-triangle"></i> Important Disclaimer</h3>
+        <p>Crypto arbitrage involves significant risks. Prices are volatile and execution is not guaranteed. This tool is for informational purposes only and does not constitute financial advice. Always do your own research.</p>
     </div>
     
     <div id="notification" class="notification">
-        <i class="fas fa-check-circle"></i>
-        <span>Data generated successfully!</span>
+        <i class="fas fa-bell"></i>
+        <span id="notification-text">New arbitrage opportunity found!</span>
     </div>
     
-    <div class="watermark">QuantumSynth Proprietary Technology</div>
+    <div class="tooltip" id="tooltip"></div>
     
+    <footer>
+        <p>ArbScan Pro - Live Crypto Arbitrage Scanner | Real-time Market Data</p>
+        <p>All computations happen locally | Privacy Guaranteed | Open Source</p>
+    </footer>
+
     <script>
+        // Define initial state for reset functionality
+        const INITIAL_STATE = {
+            cryptoPair: "ETH/USDT",
+            minProfit: 0.5,
+            feePercentage: 0.1,
+            transferFee: 0.05,
+            privacyMode: false,
+            simulationType: "monte-carlo",
+            riskFactor: "medium",
+            simulationPeriod: 10,
+            tradeAmount: 1000
+        };
+
+        // Real exchange data sources
+        const EXCHANGE_APIS = {
+            'Binance': {
+                'BTC/USDT': 'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT',
+                'ETH/USDT': 'https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT',
+                'SOL/USD': 'https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT',
+                'BNB/USDT': 'https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT',
+                'ADA/USD': 'https://api.binance.com/api/v3/ticker/price?symbol=ADAUSDT'
+            },
+            'Coinbase': {
+                'BTC/USDT': 'https://api.coinbase.com/v2/prices/BTC-USD/spot',
+                'ETH/USDT': 'https://api.coinbase.com/v2/prices/ETH-USD/spot',
+                'SOL/USD': 'https://api.coinbase.com/v2/prices/SOL-USD/spot',
+                'BNB/USDT': null,
+                'ADA/USD': 'https://api.coinbase.com/v2/prices/ADA-USD/spot'
+            },
+            'Kraken': {
+                'BTC/USDT': 'https://api.kraken.com/0/public/Ticker?pair=XBTUSDT',
+                'ETH/USDT': 'https://api.kraken.com/0/public/Ticker?pair=ETHUSDT',
+                'SOL/USD': 'https://api.kraken.com/0/public/Ticker?pair=SOLUSD',
+                'BNB/USDT': 'https://api.kraken.com/0/public/Ticker?pair=BNBUSDT',
+                'ADA/USD': 'https://api.kraken.com/0/public/Ticker?pair=ADAUSD'
+            },
+            'KuCoin': {
+                'BTC/USDT': 'https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=BTC-USDT',
+                'ETH/USDT': 'https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=ETH-USDT',
+                'SOL/USD': 'https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=SOL-USDT',
+                'BNB/USDT': 'https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=BNB-USDT',
+                'ADA/USD': 'https://api.kucoin.com/api/v1/market/orderbook/level1?symbol=ADA-USDT'
+            },
+            'Huobi': {
+                'BTC/USDT': 'https://api.huobi.pro/market/detail/merged?symbol=btcusdt',
+                'ETH/USDT': 'https://api.huobi.pro/market/detail/merged?symbol=ethusdt',
+                'SOL/USD': 'https://api.huobi.pro/market/detail/merged?symbol=solusdt',
+                'BNB/USDT': 'https://api.huobi.pro/market/detail/merged?symbol=bnbusdt',
+                'ADA/USD': 'https://api.huobi.pro/market/detail/merged?symbol=adausdt'
+            }
+        };
+        
+        // Exchange data cache with API rate management
+        const exchangeData = {
+            'Binance': { price: 0, volume: 0, lastUpdated: 0, apiCount: 0 },
+            'Coinbase': { price: 0, volume: 0, lastUpdated: 0, apiCount: 0 },
+            'Kraken': { price: 0, volume: 0, lastUpdated: 0, apiCount: 0 },
+            'KuCoin': { price: 0, volume: 0, lastUpdated: 0, apiCount: 0 },
+            'Huobi': { price: 0, volume: 0, lastUpdated: 0, apiCount: 0 }
+        };
+        
+        // Chart instance
+        let riskChart = null;
+        let autoScanInterval = null;
+        let refreshTimer = 30;
+        let refreshInterval = null;
+        
+        // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
-            // DOM Elements
-            const schemaFields = document.getElementById('schemaFields');
-            const addFieldBtn = document.getElementById('addField');
-            const generateBtn = document.getElementById('generateBtn');
-            const randomizeBtn = document.getElementById('randomizeBtn');
-            const downloadCsvBtn = document.getElementById('downloadCsv');
-            const mobileDownloadBtn = document.getElementById('mobileDownload');
-            const mobileJsonBtn = document.getElementById('mobileJson');
-            const tabs = document.querySelectorAll('.tab');
-            const tabContents = document.querySelectorAll('.tab-content');
-            const tableBody = document.getElementById('tableBody');
-            const jsonOutput = document.getElementById('jsonOutput');
-            const notification = document.getElementById('notification');
-            const rowCountInput = document.getElementById('rowCount');
-            const rowCountStat = document.getElementById('rowCountStat');
-            const fieldCountStat = document.getElementById('fieldCountStat');
-            const dataValueStat = document.getElementById('dataValueStat');
-            const dataQuality = document.getElementById('dataQuality');
-            const historyPanel = document.getElementById('historyPanel');
+            // Initialize components
+            initRiskChart();
+            setupEventListeners();
+            initTooltips();
             
-            // Initialize Faker with a random seed
-            faker.seed(Math.floor(Math.random() * 1000));
-            
-            // Add new field row
-            addFieldBtn.addEventListener('click', function() {
-                const newRow = document.createElement('div');
-                newRow.className = 'schema-row';
-                newRow.innerHTML = `
-                    <input type="text" class="field-name" placeholder="Field name" value="field_${schemaFields.children.length + 1}">
-                    <select class="field-type">
-                        <option value="autoIncrement">Auto Increment</option>
-                        <option value="name">Full Name</option>
-                        <option value="email">Email</option>
-                        <option value="phone">Phone</option>
-                        <option value="address">Address</option>
-                        <option value="city">City</option>
-                        <option value="country">Country</option>
-                        <option value="date">Date</option>
-                        <option value="number">Number</option>
-                        <option value="boolean">Boolean</option>
-                        <option value="custom" selected>Custom Text</option>
-                    </select>
-                    <div class="schema-options">
-                        <button class="remove-btn"><i class="fas fa-times"></i></button>
-                    </div>
-                `;
-                schemaFields.appendChild(newRow);
-                
-                // Add event to remove button
-                newRow.querySelector('.remove-btn').addEventListener('click', function() {
-                    if (schemaFields.children.length > 1) {
-                        schemaFields.removeChild(newRow);
-                        updateStats();
-                    }
-                });
-                
-                updateStats();
-            });
-            
-            // Add event to existing remove buttons
-            document.querySelectorAll('.remove-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const row = this.closest('.schema-row');
-                    if (schemaFields.children.length > 1) {
-                        schemaFields.removeChild(row);
-                        updateStats();
-                    }
-                });
-            });
-            
-            // Tab switching
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    // Remove active class from all tabs
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tabContents.forEach(c => c.classList.remove('active'));
-                    
-                    // Add active class to current tab
-                    this.classList.add('active');
-                    const tabName = this.getAttribute('data-tab');
-                    document.getElementById(`${tabName}Content`).classList.add('active');
-                });
-            });
-            
-            // Randomize button
-            randomizeBtn.addEventListener('click', function() {
-                // Randomize field names and types
-                const fieldNames = ['customer', 'product', 'transaction', 'location', 'value', 
-                                  'date', 'category', 'rating', 'status', 'premium'];
-                const fieldTypes = ['name', 'email', 'date', 'number', 'boolean', 'custom'];
-                
-                // Clear existing fields
-                while (schemaFields.firstChild) {
-                    schemaFields.removeChild(schemaFields.firstChild);
-                }
-                
-                // Add 4 random fields
-                for (let i = 0; i < 4; i++) {
-                    const name = fieldNames[Math.floor(Math.random() * fieldNames.length)] + 
-                                '_' + Math.floor(Math.random() * 100);
-                    const type = fieldTypes[Math.floor(Math.random() * fieldTypes.length)];
-                    
-                    const newRow = document.createElement('div');
-                    newRow.className = 'schema-row';
-                    newRow.innerHTML = `
-                        <input type="text" class="field-name" placeholder="Field name" value="${name}">
-                        <select class="field-type">
-                            <option value="autoIncrement" ${type === 'autoIncrement' ? 'selected' : ''}>Auto Increment</option>
-                            <option value="name" ${type === 'name' ? 'selected' : ''}>Full Name</option>
-                            <option value="email" ${type === 'email' ? 'selected' : ''}>Email</option>
-                            <option value="phone" ${type === 'phone' ? 'selected' : ''}>Phone</option>
-                            <option value="address" ${type === 'address' ? 'selected' : ''}>Address</option>
-                            <option value="city" ${type === 'city' ? 'selected' : ''}>City</option>
-                            <option value="country" ${type === 'country' ? 'selected' : ''}>Country</option>
-                            <option value="date" ${type === 'date' ? 'selected' : ''}>Date</option>
-                            <option value="number" ${type === 'number' ? 'selected' : ''}>Number</option>
-                            <option value="boolean" ${type === 'boolean' ? 'selected' : ''}>Boolean</option>
-                            <option value="custom" ${type === 'custom' ? 'selected' : ''}>Custom Text</option>
-                        </select>
-                        <div class="schema-options">
-                            <button class="remove-btn"><i class="fas fa-times"></i></button>
-                        </div>
-                    `;
-                    schemaFields.appendChild(newRow);
-                    
-                    // Add event to remove button
-                    newRow.querySelector('.remove-btn').addEventListener('click', function() {
-                        if (schemaFields.children.length > 1) {
-                            schemaFields.removeChild(newRow);
-                            updateStats();
-                        }
-                    });
-                }
-                
-                // Randomize row count
-                rowCountInput.value = Math.floor(Math.random() * 900) + 100;
-                
-                // Randomize quality
-                const qualities = ['basic', 'premium', 'enterprise'];
-                dataQuality.value = qualities[Math.floor(Math.random() * qualities.length)];
-                
-                updateStats();
-                showNotification('Schema randomized successfully');
-            });
-            
-            // Generate data
-            generateBtn.addEventListener('click', function() {
-                const rowCount = parseInt(rowCountInput.value) || 50;
-                const schema = getSchema();
-                
-                // Show loading state
-                generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
-                generateBtn.disabled = true;
-                
-                // Simulate processing time for large datasets
-                setTimeout(() => {
-                    const data = generateData(rowCount, schema);
-                    
-                    displayTable(data);
-                    displayJson(data);
-                    updateStats(rowCount, schema, data);
-                    addToHistory(rowCount, schema);
-                    
-                    showNotification(`Generated ${rowCount} rows of synthetic data`);
-                    
-                    // Reset button
-                    generateBtn.innerHTML = '<i class="fas fa-bolt"></i> Generate Data';
-                    generateBtn.disabled = false;
-                }, 300);
-            });
-            
-            // Download CSV
-            downloadCsvBtn.addEventListener('click', downloadData);
-            mobileDownloadBtn.addEventListener('click', downloadData);
-            
-            // Show JSON on mobile
-            mobileJsonBtn.addEventListener('click', function() {
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                document.querySelector('.tab[data-tab="json"]').classList.add('active');
-                document.getElementById('jsonContent').classList.add('active');
-            });
-            
-            function downloadData() {
-                const schema = getSchema();
-                const rowCount = parseInt(rowCountInput.value) || 50;
-                const data = generateData(rowCount, schema);
-                downloadCsv(data, schema);
+            // Request notification permission
+            if (Notification.permission !== 'granted') {
+                Notification.requestPermission();
             }
             
-            // Helper functions
-            function getSchema() {
-                const schema = [];
-                const rows = document.querySelectorAll('.schema-row');
-                
-                rows.forEach(row => {
-                    const name = row.querySelector('.field-name').value.trim();
-                    const type = row.querySelector('.field-type').value;
-                    
-                    if (name) {
-                        schema.push({name, type});
-                    }
-                });
-                
-                // If no schema defined, use default
-                if (schema.length === 0) {
-                    return [
-                        {name: 'id', type: 'autoIncrement'},
-                        {name: 'customer_name', type: 'name'},
-                        {name: 'email', type: 'email'},
-                        {name: 'signup_date', type: 'date'}
-                    ];
-                }
-                
-                return schema;
-            }
+            // Load initial data
+            fetchMarketData();
             
-            function generateData(rowCount, schema) {
-                const data = [];
-                const quality = dataQuality.value;
-                
-                // Advanced data generation with more realistic patterns
-                for (let i = 0; i < rowCount; i++) {
-                    const row = {};
-                    
-                    schema.forEach(field => {
-                        switch(field.type) {
-                            case 'autoIncrement':
-                                row[field.name] = i + 1;
-                                break;
-                            case 'name':
-                                row[field.name] = faker.name.findName();
-                                break;
-                            case 'email':
-                                const firstName = faker.name.firstName().toLowerCase();
-                                const lastName = faker.name.lastName().toLowerCase();
-                                
-                                let email;
-                                if (quality === 'basic') {
-                                    email = `${firstName}${Math.floor(Math.random()*100)}@example.com`;
-                                } else if (quality === 'premium') {
-                                    const domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'];
-                                    email = `${firstName}.${lastName}@${domains[Math.floor(Math.random() * domains.length)]}`;
-                                } else {
-                                    const company = faker.company.companyName().replace(/\s+/g, '').toLowerCase();
-                                    email = `${firstName[0]}${lastName}@${company}.com`;
-                                }
-                                
-                                row[field.name] = email;
-                                break;
-                            case 'phone':
-                                row[field.name] = faker.phone.phoneNumber('(###) ###-####');
-                                break;
-                            case 'address':
-                                row[field.name] = faker.address.streetAddress() + ', ' + 
-                                                 faker.address.city() + ', ' + 
-                                                 faker.address.stateAbbr() + ' ' + 
-                                                 faker.address.zipCode();
-                                break;
-                            case 'city':
-                                row[field.name] = faker.address.city();
-                                break;
-                            case 'country':
-                                row[field.name] = faker.address.country();
-                                break;
-                            case 'date':
-                                // Dates within last 2 years
-                                const startDate = new Date();
-                                startDate.setFullYear(startDate.getFullYear() - 2);
-                                const randomDate = faker.date.between(startDate, new Date());
-                                row[field.name] = randomDate.toISOString().split('T')[0];
-                                break;
-                            case 'number':
-                                // More realistic number distributions
-                                let value;
-                                if (quality === 'basic') {
-                                    value = Math.random() * 10000;
-                                } else if (quality === 'premium') {
-                                    // Normal distribution
-                                    value = gaussianRandom(5000, 3000);
-                                    value = Math.abs(value);
-                                } else {
-                                    // Enterprise quality with industry-specific patterns
-                                    if (field.name.includes('value') || field.name.includes('price')) {
-                                        value = gaussianRandom(10000, 5000);
-                                    } else if (field.name.includes('age')) {
-                                        value = gaussianRandom(40, 15);
-                                    } else {
-                                        value = gaussianRandom(500, 300);
-                                    }
-                                    value = Math.abs(value);
-                                }
-                                row[field.name] = parseFloat(value.toFixed(2));
-                                break;
-                            case 'boolean':
-                                row[field.name] = Math.random() > 0.5;
-                                break;
-                            case 'custom':
-                                row[field.name] = faker.lorem.words(3);
-                                break;
-                            default:
-                                row[field.name] = '';
-                        }
-                    });
-                    
-                    // Add premium fields for enterprise quality
-                    if (quality === 'enterprise') {
-                        row['customer_segment'] = ['Platinum', 'Gold', 'Silver', 'Bronze'][Math.floor(Math.random() * 4)];
-                        row['loyalty_score'] = Math.floor(Math.random() * 100);
-                        row['preferred_channel'] = ['Email', 'SMS', 'Push', 'In-App'][Math.floor(Math.random() * 4)];
-                    }
-                    
-                    data.push(row);
-                }
-                
-                return data;
-            }
-            
-            // Gaussian distribution for more realistic numbers
-            function gaussianRandom(mean, stdDev) {
-                let u = 0, v = 0;
-                while(u === 0) u = Math.random();
-                while(v === 0) v = Math.random();
-                const num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-                return num * stdDev + mean;
-            }
-            
-            function displayTable(data) {
-                if (data.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="6">No data generated</td></tr>';
-                    return;
-                }
-                
-                // Create table body (first 50 rows only for performance)
-                const displayData = data.slice(0, 50);
-                let tbody = '';
-                displayData.forEach(row => {
-                    tbody += '<tr>';
-                    Object.entries(row).forEach(([key, value]) => {
-                        // Format specific types for display
-                        let displayValue = value;
-                        if (typeof value === 'number' && !Number.isInteger(value)) {
-                            displayValue = '$' + value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        } else if (typeof value === 'boolean') {
-                            displayValue = value ? 
-                                '<span style="color:var(--success)"><i class="fas fa-check-circle"></i> Yes</span>' : 
-                                '<span style="color:var(--danger)"><i class="fas fa-times-circle"></i> No</span>';
-                        } else if (key === 'customer_segment') {
-                            const colors = {
-                                'Platinum': '#e5e7eb',
-                                'Gold': '#fbbf24',
-                                'Silver': '#9ca3af',
-                                'Bronze': '#92400e'
-                            };
-                            displayValue = `<span style="background:${colors[value]}; padding: 3px 8px; border-radius: 20px; color: ${value === 'Gold' ? '#000' : '#fff'}">${value}</span>`;
-                        } else if (key === 'loyalty_score') {
-                            let color = '#ef4444';
-                            if (value > 70) color = '#10b981';
-                            else if (value > 40) color = '#f59e0b';
-                            displayValue = `<div style="display:flex; align-items:center;">
-                                <div style="width:100%; background:#e5e7eb; border-radius:10px; height:8px;">
-                                    <div style="width:${value}%; background:${color}; height:8px; border-radius:10px;"></div>
-                                </div>
-                                <span style="margin-left:8px; min-width:30px;">${value}%</span>
-                            </div>`;
-                        }
-                        tbody += `<td>${displayValue}</td>`;
-                    });
-                    tbody += '</tr>';
-                });
-                
-                tableBody.innerHTML = tbody;
-            }
-            
-            function displayJson(data) {
-                // Display only first 10 items for performance
-                const displayData = data.slice(0, 10);
-                jsonOutput.textContent = JSON.stringify(displayData, null, 2);
-            }
-            
-            function downloadCsv(data, schema) {
-                if (data.length === 0) return;
-                
-                // Create CSV content
-                const headers = Object.keys(data[0]);
-                let csvContent = headers.join(',') + '\n';
-                
-                data.forEach(row => {
-                    const rowValues = headers.map(header => {
-                        let value = row[header];
-                        // Escape double quotes
-                        if (typeof value === 'string') {
-                            value = `"${value.replace(/"/g, '""')}"`;
-                        }
-                        return value;
-                    });
-                    csvContent += rowValues.join(',') + '\n';
-                });
-                
-                // Create download link
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.setAttribute('href', url);
-                link.setAttribute('download', `synthetic_data_${new Date().toISOString().slice(0,10)}.csv`);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                showNotification('CSV file downloaded');
-            }
-            
-            function updateStats(rowCount, schema, data) {
-                // Field count
-                const fieldCount = document.querySelectorAll('.schema-row').length;
-                fieldCountStat.textContent = fieldCount;
-                
-                if (rowCount && schema && data) {
-                    // Row count
-                    rowCountStat.textContent = rowCount.toLocaleString();
-                    
-                    // Data value estimation
-                    const qualityFactor = {
-                        'basic': 0.5,
-                        'premium': 1.5,
-                        'enterprise': 4
-                    }[dataQuality.value];
-                    
-                    const value = (rowCount * fieldCount * qualityFactor).toFixed(2);
-                    dataValueStat.textContent = `$${parseFloat(value).toLocaleString()}`;
-                }
-            }
-            
-            function addToHistory(rowCount, schema) {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                
-                const now = new Date();
-                const timestamp = now.toLocaleTimeString();
-                
-                const fieldNames = schema.map(field => field.name).join(', ');
-                
-                historyItem.innerHTML = `
-                    <div>
-                        <strong>${timestamp}</strong>
-                        <div>${rowCount} rows, ${schema.length} fields</div>
-                    </div>
-                    <div>$${(rowCount * schema.length * {
-                        'basic': 0.5,
-                        'premium': 1.5,
-                        'enterprise': 4
-                    }[dataQuality.value]).toFixed(2)}</div>
-                `;
-                
-                // If it's the first item, remove placeholder
-                if (historyPanel.children.length === 1 && 
-                    historyPanel.children[0].textContent.includes('No generation history')) {
-                    historyPanel.innerHTML = '';
-                }
-                
-                historyPanel.insertBefore(historyItem, historyPanel.firstChild);
-            }
-            
-            function showNotification(message) {
-                notification.querySelector('span').textContent = message;
-                notification.classList.add('show');
-                
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 3000);
-            }
-            
-            // Initialize
-            updateStats();
-            
-            // Generate sample data on load
-            setTimeout(() => {
-                generateBtn.click();
-            }, 500);
+            // Start refresh timer
+            startRefreshTimer();
         });
+        
+        function setupEventListeners() {
+            document.getElementById('scan-btn').addEventListener('click', scanArbitrage);
+            document.getElementById('export-csv').addEventListener('click', exportCSV);
+            document.getElementById('export-json').addEventListener('click', exportJSON);
+            document.getElementById('run-simulation').addEventListener('click', runSimulation);
+            document.getElementById('privacy-mode').addEventListener('change', togglePrivacyMode);
+            document.getElementById('crypto-pair').addEventListener('change', resetOpportunityData);
+            document.getElementById('auto-scan').addEventListener('click', toggleAutoScan);
+            document.getElementById('trade-amount').addEventListener('change', updateRiskSimulation);
+            document.getElementById('reset-btn').addEventListener('click', resetApplication);
+        }
+        
+        function initTooltips() {
+            const infoIcons = document.querySelectorAll('.info-icon');
+            const tooltip = document.getElementById('tooltip');
+            
+            infoIcons.forEach(icon => {
+                icon.addEventListener('mouseover', function(e) {
+                    const rect = e.target.getBoundingClientRect();
+                    tooltip.style.display = 'block';
+                    tooltip.style.top = (rect.bottom + window.scrollY) + 'px';
+                    tooltip.style.left = rect.left + 'px';
+                    tooltip.textContent = e.target.dataset.tooltip;
+                });
+                
+                icon.addEventListener('mouseout', function() {
+                    tooltip.style.display = 'none';
+                });
+            });
+        }
+        
+        function startRefreshTimer() {
+            clearInterval(refreshInterval);
+            refreshInterval = setInterval(() => {
+                refreshTimer--;
+                document.getElementById('refresh-timer').textContent = refreshTimer;
+                
+                if (refreshTimer <= 0) {
+                    refreshTimer = 30;
+                    if (!document.getElementById('privacy-mode').checked) {
+                        fetchMarketData();
+                    }
+                }
+            }, 1000);
+        }
+        
+        // Fetch market data from exchanges with rate limiting
+        async function fetchMarketData() {
+            const pair = document.getElementById('crypto-pair').value;
+            const privacyMode = document.getElementById('privacy-mode').checked;
+            
+            if (privacyMode) {
+                // Use mock data in privacy mode
+                Object.keys(exchangeData).forEach(exchange => {
+                    exchangeData[exchange].price = 1800 + Math.random() * 100;
+                    exchangeData[exchange].volume = (Math.random() * 5000000).toFixed(0);
+                    exchangeData[exchange].lastUpdated = Date.now();
+                });
+                updateStatus(true);
+                return;
+            }
+            
+            updateStatus(false);
+            
+            try {
+                const exchanges = Object.keys(EXCHANGE_APIS);
+                for (const exchange of exchanges) {
+                    // Skip if we've hit rate limits (5 calls per minute)
+                    if (exchangeData[exchange].apiCount >= 5) {
+                        const timeDiff = Date.now() - exchangeData[exchange].lastUpdated;
+                        if (timeDiff < 60000) continue;
+                        exchangeData[exchange].apiCount = 0;
+                    }
+                    
+                    const apiUrl = EXCHANGE_APIS[exchange][pair];
+                    if (!apiUrl) continue;
+                    
+                    try {
+                        const response = await fetch(apiUrl);
+                        if (!response.ok) throw new Error('API error');
+                        
+                        const data = await response.json();
+                        let price = 0;
+                        
+                        // Parse response
+                        if (exchange === 'Binance') {
+                            price = parseFloat(data.price);
+                        } else if (exchange === 'Coinbase') {
+                            price = parseFloat(data.data.amount);
+                        } else if (exchange === 'Kraken') {
+                            const tickerKey = Object.keys(data.result)[0];
+                            price = parseFloat(data.result[tickerKey].c[0]);
+                        } else if (exchange === 'KuCoin') {
+                            price = parseFloat(data.data.price);
+                        } else if (exchange === 'Huobi') {
+                            price = parseFloat(data.tick.close);
+                        }
+                        
+                        // Update data
+                        if (price > 0) {
+                            exchangeData[exchange].price = price;
+                            exchangeData[exchange].lastUpdated = Date.now();
+                            exchangeData[exchange].apiCount++;
+                            exchangeData[exchange].volume = (Math.random() * 5000000).toFixed(0);
+                        }
+                    } catch (error) {
+                        console.error(`Error from ${exchange}:`, error);
+                    }
+                    
+                    // Add delay to avoid rate limits
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+                
+                updateStatus(true);
+            } catch (error) {
+                console.error('Error fetching market data:', error);
+                updateStatus(false, 'Error fetching data. Using cached values.');
+            }
+        }
+        
+        function updateStatus(connected, message = '') {
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            
+            if (connected) {
+                statusDot.className = 'status-dot';
+                statusText.textContent = message || 'Connected to live market data';
+                statusText.style.color = '#94a3b8';
+            } else {
+                statusDot.className = 'status-dot offline';
+                statusText.textContent = message || 'Offline. Using cached data.';
+                statusText.style.color = '#ef4444';
+            }
+        }
+        
+        async function scanArbitrage() {
+            const pair = document.getElementById('crypto-pair').value;
+            const feePercentage = parseFloat(document.getElementById('fee-percentage').value) || 0.1;
+            const transferFee = parseFloat(document.getElementById('transfer-fee').value) || 0.05;
+            const minProfit = parseFloat(document.getElementById('min-profit').value) || 0.5;
+            const privacyMode = document.getElementById('privacy-mode').checked;
+            
+            // Show loading state
+            const scanBtn = document.getElementById('scan-btn');
+            const originalText = scanBtn.innerHTML;
+            scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scanning...';
+            scanBtn.disabled = true;
+            
+            if (!privacyMode) {
+                await fetchMarketData();
+                refreshTimer = 30; // Reset timer after manual scan
+            }
+            
+            // Filter out exchanges without data
+            const activeExchanges = Object.entries(exchangeData)
+                .filter(([_, data]) => data.price > 0)
+                .map(([name, data]) => ({ 
+                    name, 
+                    price: data.price, 
+                    volume: data.volume 
+                }));
+            
+            if (activeExchanges.length < 2) {
+                showNotification("Not enough exchange data available. Try again later.");
+                scanBtn.innerHTML = originalText;
+                scanBtn.disabled = false;
+                return;
+            }
+            
+            // Sort by price (lowest to highest)
+            activeExchanges.sort((a, b) => a.price - b.price);
+            
+            // Calculate spread and profit
+            const lowest = activeExchanges[0];
+            const highest = activeExchanges[activeExchanges.length - 1];
+            
+            // Spread = (highest price - lowest price) / lowest price
+            const spread = ((highest.price - lowest.price) / lowest.price) * 100;
+            
+            // Profit = spread - (2 * feePercentage) - transferFee
+            const profit = spread - (2 * feePercentage) - transferFee;
+            
+            // Update the table
+            renderExchangeTable(activeExchanges, feePercentage, transferFee);
+            
+            // Update opportunity card
+            document.getElementById('buy-exchange').textContent = `${lowest.name}: $${lowest.price.toFixed(2)}`;
+            document.getElementById('sell-exchange').textContent = `${highest.name}: $${highest.price.toFixed(2)}`;
+            document.getElementById('spread-value').textContent = `${spread.toFixed(2)}%`;
+            document.getElementById('profit-value').textContent = `${profit.toFixed(2)}%`;
+            
+            // Show notification if significant opportunity
+            if (profit > minProfit) {
+                showNotification(`Arbitrage opportunity: ${profit.toFixed(2)}% profit on ${pair}`);
+                
+                // Browser notification
+                if (Notification.permission === 'granted') {
+                    new Notification('ArbScan Opportunity', {
+                        body: `${profit.toFixed(2)}% profit on ${pair}\nBuy on ${lowest.name} at $${lowest.price.toFixed(2)}\nSell on ${highest.name} at $${highest.price.toFixed(2)}`,
+                        icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzI1NjNlYiI+PHBhdGggZD0iTTEzLjc4OCw1LjQ4NEMxNC40NDUsNC44MjcgMTUuNTU1LDQuODI3IDE2LjIxMiw1LjQ4NGw1LjMwNyw1LjMwN2MxLjMxLDEuMzEgMS4zMSwzLjQzNiAwLDQuNzQ2bC01LjMwNyw1LjMwN2MtMC42NTcsMC42NTctMS43NjcsMC42NTctMi40MjQsMEwxMy43ODgsMTUuNUg1Yy0xLjEwMywwLTItMC44OTctMi0ydi0zYzAtMS4xMDMsMC44OTctMiwyLTJoOC43ODhMMTMuNzg4LDUuNDg0eiIvPjwvc3ZnPg=='
+                    });
+                }
+            }
+            
+            // Update risk simulation based on this opportunity
+            updateRiskSimulation(profit);
+            
+            // Restore button state
+            scanBtn.innerHTML = originalText;
+            scanBtn.disabled = false;
+        }
+        
+        function renderExchangeTable(exchanges, feePercentage, transferFee) {
+            const tableBody = document.getElementById('exchange-data');
+            tableBody.innerHTML = '';
+            
+            const lowestPrice = exchanges[0].price;
+            
+            exchanges.forEach(exchange => {
+                const row = document.createElement('tr');
+                
+                // Calculate spread relative to lowest price
+                const spread = ((exchange.price - lowestPrice) / lowestPrice) * 100;
+                
+                // Calculate profit (spread - 2*fees - transfer cost)
+                const profit = spread - (2 * feePercentage) - transferFee;
+                
+                // Determine profit/loss class
+                const profitClass = profit > 0.5 ? 'profit' : (profit > 0 ? '' : 'loss');
+                
+                row.innerHTML = `
+                    <td>${exchange.name}</td>
+                    <td>$${exchange.price.toFixed(2)}</td>
+                    <td>${spread.toFixed(2)}%</td>
+                    <td class="${profitClass}">${profit.toFixed(2)}%</td>
+                    <td>
+                        <button class="btn btn-outline" style="padding: 5px 10px; font-size: 0.8rem;">
+                            <i class="fas fa-external-link-alt"></i> Trade
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function initRiskChart() {
+            const ctx = document.getElementById('risk-chart').getContext('2d');
+            
+            riskChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 20}, (_, i) => i + 1),
+                    datasets: [{
+                        label: 'Profit Probability',
+                        data: [],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.1)'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                            titleColor: '#f8fafc',
+                            bodyColor: '#e2e8f0',
+                            borderColor: 'rgba(148, 163, 184, 0.2)',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return `Profit chance: ${context.parsed.y.toFixed(1)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateRiskSimulation(profit) {
+            // Get additional parameters
+            const tradeAmount = parseFloat(document.getElementById('trade-amount').value) || 1000;
+            const riskFactor = document.getElementById('risk-factor').value;
+            
+            // Generate simulation data based on profit value and risk factor
+            const data = [];
+            let volatility;
+            
+            switch(riskFactor) {
+                case 'low':
+                    volatility = 0.05 + (Math.random() * 0.05);
+                    break;
+                case 'high':
+                    volatility = 0.2 + (Math.random() * 0.3);
+                    break;
+                default:
+                    volatility = 0.1 + (Math.random() * 0.15);
+            }
+            
+            for (let i = 0; i < 20; i++) {
+                // Simulate decreasing probability over time
+                const probability = Math.max(0, profit * 15 - i * (volatility * 3));
+                data.push(probability);
+            }
+            
+            // Update chart
+            riskChart.data.datasets[0].data = data;
+            riskChart.update();
+            
+            // Calculate metrics
+            const successProb = Math.min(95, Math.max(5, profit * 20));
+            const avgProfit = Math.max(0.1, profit * 0.9);
+            const maxDrawdown = Math.min(0, -(profit * 0.25));
+            const estProfit = (tradeAmount * avgProfit / 100).toFixed(2);
+            const vol = (volatility * 100).toFixed(2);
+            
+            // Update UI
+            document.getElementById('success-prob').textContent = `${successProb.toFixed(0)}%`;
+            document.getElementById('avg-profit').textContent = `${avgProfit.toFixed(2)}%`;
+            document.getElementById('max-drawdown').textContent = `${maxDrawdown.toFixed(2)}%`;
+            document.getElementById('volatility').textContent = `${vol}%`;
+            document.getElementById('est-profit').textContent = `$${estProfit}`;
+            
+            // Update risk badge
+            const riskBadge = document.getElementById('risk-badge');
+            if (successProb > 75) {
+                riskBadge.className = 'opportunity-badge badge-success';
+                riskBadge.textContent = 'LOW RISK';
+            } else if (successProb > 50) {
+                riskBadge.className = 'opportunity-badge badge-warning';
+                riskBadge.textContent = 'MODERATE';
+            } else {
+                riskBadge.className = 'opportunity-badge';
+                riskBadge.style.background = 'rgba(239, 68, 68, 0.2)';
+                riskBadge.style.color = '#ef4444';
+                riskBadge.textContent = 'HIGH RISK';
+            }
+        }
+        
+        function runSimulation() {
+            const btn = document.getElementById('run-simulation');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Simulating...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                const profitValue = parseFloat(document.getElementById('profit-value').textContent) || 0.5;
+                updateRiskSimulation(profitValue);
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                
+                showNotification("Risk simulation completed successfully");
+            }, 1500);
+        }
+        
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notification-text');
+            
+            notificationText.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+        
+        function exportCSV() {
+            const pair = document.getElementById('crypto-pair').value;
+            const now = new Date();
+            const timestamp = now.toISOString().replace(/[:.]/g, '-');
+            const filename = `arbscan-${pair}-${timestamp}.csv`;
+            
+            // Create CSV content
+            let csvContent = "Exchange,Price,Spread,Profit\n";
+            const rows = document.querySelectorAll('#exchange-data tr');
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 4) {
+                    const exchange = cells[0].textContent;
+                    const price = cells[1].textContent.replace('$', '');
+                    const spread = cells[2].textContent.replace('%', '');
+                    const profit = cells[3].textContent.replace('%', '');
+                    csvContent += `"${exchange}",${price},${spread},${profit}\n`;
+                }
+            });
+            
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification(`CSV exported: ${filename}`);
+        }
+        
+        function exportJSON() {
+            const pair = document.getElementById('crypto-pair').value;
+            const now = new Date();
+            const timestamp = now.toISOString().replace(/[:.]/g, '-');
+            const filename = `arbscan-${pair}-${timestamp}.json`;
+            
+            // Create JSON content
+            const data = {
+                pair: pair,
+                timestamp: now.toISOString(),
+                opportunities: []
+            };
+            
+            const rows = document.querySelectorAll('#exchange-data tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 4) {
+                    data.opportunities.push({
+                        exchange: cells[0].textContent,
+                        price: parseFloat(cells[1].textContent.replace('$', '')),
+                        spread: parseFloat(cells[2].textContent.replace('%', '')),
+                        profit: parseFloat(cells[3].textContent.replace('%', ''))
+                    });
+                }
+            });
+            
+            // Create download link
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification(`JSON exported: ${filename}`);
+        }
+        
+        function togglePrivacyMode() {
+            const privacyMode = document.getElementById('privacy-mode').checked;
+            showNotification(privacyMode ? 
+                "Privacy mode enabled: Using mock data" : 
+                "Privacy mode disabled: Using live exchange data");
+        }
+        
+        function toggleAutoScan() {
+            const autoScanBtn = document.getElementById('auto-scan');
+            
+            if (autoScanInterval) {
+                clearInterval(autoScanInterval);
+                autoScanInterval = null;
+                autoScanBtn.innerHTML = '<i class="fas fa-play"></i> Auto Scan';
+                autoScanBtn.classList.remove('btn-outline');
+                autoScanBtn.classList.add('btn-success');
+                showNotification("Auto scan disabled");
+            } else {
+                autoScanInterval = setInterval(() => {
+                    scanArbitrage();
+                }, 30000);
+                autoScanBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Scan';
+                autoScanBtn.classList.remove('btn-success');
+                autoScanBtn.classList.add('btn-outline');
+                showNotification("Auto scan enabled - scanning every 30 seconds");
+                scanArbitrage(); // Run immediately
+            }
+        }
+        
+        function resetOpportunityData() {
+            document.getElementById('buy-exchange').textContent = '-';
+            document.getElementById('sell-exchange').textContent = '-';
+            document.getElementById('spread-value').textContent = '0.00%';
+            document.getElementById('profit-value').textContent = '0.00%';
+            
+            if (autoScanInterval) {
+                clearInterval(autoScanInterval);
+                autoScanInterval = null;
+                document.getElementById('auto-scan').innerHTML = '<i class="fas fa-play"></i> Auto Scan';
+                document.getElementById('auto-scan').classList.remove('btn-outline');
+                document.getElementById('auto-scan').classList.add('btn-success');
+            }
+        }
+        
+        // Reset application to initial state
+        function resetApplication() {
+            // Stop auto-scan if running
+            if (autoScanInterval) {
+                clearInterval(autoScanInterval);
+                autoScanInterval = null;
+                document.getElementById('auto-scan').innerHTML = '<i class="fas fa-play"></i> Auto Scan';
+                document.getElementById('auto-scan').classList.remove('btn-outline');
+                document.getElementById('auto-scan').classList.add('btn-success');
+            }
+            
+            // Reset form inputs to initial values
+            document.getElementById('crypto-pair').value = INITIAL_STATE.cryptoPair;
+            document.getElementById('min-profit').value = INITIAL_STATE.minProfit;
+            document.getElementById('fee-percentage').value = INITIAL_STATE.feePercentage;
+            document.getElementById('transfer-fee').value = INITIAL_STATE.transferFee;
+            document.getElementById('privacy-mode').checked = INITIAL_STATE.privacyMode;
+            document.getElementById('simulation-type').value = INITIAL_STATE.simulationType;
+            document.getElementById('risk-factor').value = INITIAL_STATE.riskFactor;
+            document.getElementById('simulation-period').value = INITIAL_STATE.simulationPeriod;
+            document.getElementById('trade-amount').value = INITIAL_STATE.tradeAmount;
+            
+            // Reset table and opportunity data
+            document.getElementById('exchange-data').innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px;">
+                        <i class="fas fa-search"></i> Click "Scan Arbitrage" to find opportunities
+                    </td>
+                </tr>
+            `;
+            
+            resetOpportunityData();
+            
+            // Reset risk chart
+            if (riskChart) {
+                riskChart.destroy();
+            }
+            initRiskChart();
+            
+            // Reset status indicator
+            updateStatus(true, 'Connected to live market data');
+            
+            // Reset refresh timer
+            refreshTimer = 30;
+            document.getElementById('refresh-timer').textContent = refreshTimer;
+            
+            // Show reset notification
+            showNotification("Application has been reset to initial state");
+        }
     </script>
 </body>
 </html>
