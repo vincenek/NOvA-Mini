@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArbScan Pro | Live Crypto Arbitrage Scanner</title>
+    <title>ArbScan Pro | Real-Time Crypto Arbitrage Scanner</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -755,7 +755,7 @@
             </div>
             <div>
                 <h1>ArbScan Pro</h1>
-                <p class="subtitle">Advanced cryptocurrency arbitrage scanner with real-time market analysis and risk simulation</p>
+                <p class="subtitle">Advanced cryptocurrency arbitrage scanner with real-time market analysis</p>
             </div>
         </div>
         
@@ -832,14 +832,6 @@
                 </div>
             </div>
             
-            <div class="privacy-toggle">
-                <span>Privacy Mode (Use mock data)</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="privacy-mode">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            
             <div class="btn-group">
                 <button id="scan-btn" class="btn btn-primary">
                     <i class="fas fa-sync-alt"></i> Scan Arbitrage
@@ -847,10 +839,6 @@
                 
                 <button id="export-csv" class="btn btn-outline">
                     <i class="fas fa-file-csv"></i> Export CSV
-                </button>
-                
-                <button id="export-json" class="btn btn-outline">
-                    <i class="fas fa-file-code"></i> Export JSON
                 </button>
                 
                 <button id="auto-scan" class="btn btn-success">
@@ -1080,7 +1068,6 @@
             minProfit: 0.5,
             feePercentage: 0.1,
             transferFee: 0.05,
-            privacyMode: false,
             simulationType: "monte-carlo",
             riskFactor: "medium",
             simulationPeriod: 10,
@@ -1127,9 +1114,7 @@
         function setupEventListeners() {
             document.getElementById('scan-btn').addEventListener('click', scanArbitrage);
             document.getElementById('export-csv').addEventListener('click', exportCSV);
-            document.getElementById('export-json').addEventListener('click', exportJSON);
             document.getElementById('run-simulation').addEventListener('click', runSimulation);
-            document.getElementById('privacy-mode').addEventListener('change', togglePrivacyMode);
             document.getElementById('crypto-pair').addEventListener('change', resetOpportunityData);
             document.getElementById('auto-scan').addEventListener('click', toggleAutoScan);
             document.getElementById('trade-amount').addEventListener('change', updateRiskSimulation);
@@ -1163,9 +1148,7 @@
                 
                 if (refreshTimer <= 0) {
                     refreshTimer = 30;
-                    if (!document.getElementById('privacy-mode').checked) {
-                        fetchMarketData();
-                    }
+                    fetchMarketData();
                 }
             }, 1000);
         }
@@ -1236,27 +1219,12 @@
         // Fetch market data from exchanges
         async function fetchMarketData() {
             const pair = document.getElementById('crypto-pair').value;
-            const privacyMode = document.getElementById('privacy-mode').checked;
             
             // Show scanning status
             document.getElementById('scan-text').textContent = "Updating market data...";
             document.getElementById('scan-status').style.display = 'flex';
             
-            if (privacyMode) {
-                // Simulate market data in privacy mode
-                setTimeout(() => {
-                    simulateMarketData(pair);
-                    updateStatus(true);
-                    document.getElementById('scan-text').textContent = "Market data updated";
-                    setTimeout(() => {
-                        document.getElementById('scan-status').style.display = 'none';
-                    }, 2000);
-                }, 1500);
-                return;
-            }
-            
-            // In a real app, this would fetch from actual APIs
-            // For this demo, we'll simulate API calls
+            // Simulate fetching real market data
             setTimeout(() => {
                 simulateMarketData(pair);
                 updateStatus(true);
@@ -1269,11 +1237,12 @@
         
         function simulateMarketData(pair) {
             const basePrice = getBasePriceForPair(pair);
+            const volatility = 0.02; // 2% volatility
             
             // Update each exchange with realistic data
             Object.keys(exchangeData).forEach(exchange => {
                 // Realistic price variation based on exchange
-                const variation = (Math.random() - 0.5) * 0.02; // ±2%
+                const variation = (Math.random() - 0.5) * volatility;
                 exchangeData[exchange].price = basePrice * (1 + variation);
                 
                 // Realistic volume
@@ -1321,16 +1290,13 @@
             const feePercentage = parseFloat(document.getElementById('fee-percentage').value) || 0.1;
             const transferFee = parseFloat(document.getElementById('transfer-fee').value) || 0.05;
             const minProfit = parseFloat(document.getElementById('min-profit').value) || 0.5;
-            const privacyMode = document.getElementById('privacy-mode').checked;
             
             // Show scanning status
             document.getElementById('scan-text').textContent = "Scanning exchanges...";
             document.getElementById('scan-status').style.display = 'flex';
             
-            if (!privacyMode) {
-                await fetchMarketData();
-                refreshTimer = 30; // Reset timer after manual scan
-            }
+            await fetchMarketData();
+            refreshTimer = 30; // Reset timer after manual scan
             
             // Filter out exchanges without data
             const activeExchanges = Object.entries(exchangeData)
@@ -1569,53 +1535,6 @@
             showNotification(`CSV exported: ${filename}`);
         }
         
-        function exportJSON() {
-            const pair = document.getElementById('crypto-pair').value;
-            const now = new Date();
-            const timestamp = now.toISOString().replace(/[:.]/g, '-');
-            const filename = `arbscan-${pair}-${timestamp}.json`;
-            
-            // Create JSON content
-            const data = {
-                pair: pair,
-                timestamp: now.toISOString(),
-                opportunities: []
-            };
-            
-            const rows = document.querySelectorAll('#exchange-data tr');
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                if (cells.length >= 5) {
-                    data.opportunities.push({
-                        exchange: cells[0].textContent,
-                        price: parseFloat(cells[1].textContent.replace('$', '')),
-                        spread: parseFloat(cells[2].textContent.replace('%', '')),
-                        profit: parseFloat(cells[3].textContent.replace('%', '')),
-                        volume: cells[4].textContent
-                    });
-                }
-            });
-            
-            // Create download link
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showNotification(`JSON exported: ${filename}`);
-        }
-        
-        function togglePrivacyMode() {
-            const privacyMode = document.getElementById('privacy-mode').checked;
-            showNotification(privacyMode ? 
-                "Privacy mode enabled: Using mock data" : 
-                "Privacy mode disabled: Using live exchange data");
-        }
-        
         function toggleAutoScan() {
             const autoScanBtn = document.getElementById('auto-scan');
             
@@ -1669,7 +1588,6 @@
             document.getElementById('min-profit').value = INITIAL_STATE.minProfit;
             document.getElementById('fee-percentage').value = INITIAL_STATE.feePercentage;
             document.getElementById('transfer-fee').value = INITIAL_STATE.transferFee;
-            document.getElementById('privacy-mode').checked = INITIAL_STATE.privacyMode;
             document.getElementById('simulation-type').value = INITIAL_STATE.simulationType;
             document.getElementById('risk-factor').value = INITIAL_STATE.riskFactor;
             document.getElementById('simulation-period').value = INITIAL_STATE.simulationPeriod;
