@@ -998,14 +998,14 @@
                 <div class="auth-buttons">
                     <div id="userInfo" class="user-info" style="display: none;">
                         <div class="user-avatar" id="userAvatar">U</div>
-                        <div class="user-email" id="userEmail">user@example.com</div>
+                        <div class="user-email" id="userEmail"></div>
                     </div>
                     <button id="signInBtn" class="auth-btn">Sign In</button>
                     <button id="signUpBtn" class="auth-btn">Sign Up</button>
                     <button id="signOutBtn" class="auth-btn" style="display: none;">Sign Out</button>
                     <button id="installBtn" class="auth-btn" style="display: none;">Install App</button>
                     <div style="position: relative;">
-                        <button id="notificationsBtn" class="auth-btn">🔔</button>
+                        <button id="notificationsBtn" class="auth-btn" style="display: none;">🔔</button>
                         <span id="notificationCount" class="notification-badge" style="display: none;">0</span>
                     </div>
                     <button id="helpBtn" class="auth-btn">❓ Help</button>
@@ -1604,7 +1604,11 @@
         
         // Check for notifications
         function checkForNotifications() {
-            if (!state.currentUser) return;
+            if (!state.currentUser) {
+                // Hide notification button if user is not logged in
+                elements.notificationsBtn.style.display = 'none';
+                return;
+            }
             
             const now = new Date();
             const today = now.getDate();
@@ -1620,6 +1624,7 @@
             if (notificationCount > 0) {
                 elements.notificationCount.textContent = notificationCount;
                 elements.notificationCount.style.display = 'block';
+                elements.notificationsBtn.style.display = 'block';
                 
                 // Show desktop notification if permitted
                 if (Notification.permission === 'granted') {
@@ -1630,6 +1635,7 @@
                 }
             } else {
                 elements.notificationCount.style.display = 'none';
+                elements.notificationsBtn.style.display = 'block';
             }
         }
         
@@ -1661,6 +1667,9 @@
                 // User is signed out
                 state.currentUser = null;
                 showWelcomeContent();
+                // Hide notifications when logged out
+                elements.notificationsBtn.style.display = 'none';
+                elements.notificationCount.style.display = 'none';
             }
         }
         
@@ -1669,15 +1678,19 @@
             elements.welcomeContent.style.display = 'none';
             elements.appContent.style.display = 'block';
             
-            // Update user info
+            // Update user info - show only first letter of email
             elements.userInfo.style.display = 'flex';
-            elements.userEmail.textContent = state.currentUser.email;
+            elements.userEmail.textContent = ''; // Clear the full email
             elements.userAvatar.textContent = state.currentUser.email.charAt(0).toUpperCase();
             
             // Update auth buttons
             elements.signInBtn.style.display = 'none';
             elements.signUpBtn.style.display = 'none';
             elements.signOutBtn.style.display = 'block';
+            elements.notificationsBtn.style.display = 'block'; // Show notifications button when logged in
+            
+            // Check for notifications
+            checkForNotifications();
         }
         
         // Show welcome content
@@ -1692,6 +1705,8 @@
             elements.signInBtn.style.display = 'block';
             elements.signUpBtn.style.display = 'block';
             elements.signOutBtn.style.display = 'none';
+            elements.notificationsBtn.style.display = 'none'; // Hide notifications button when logged out
+            elements.notificationCount.style.display = 'none'; // Hide notification count
         }
         
         // Setup auth listeners
@@ -2466,7 +2481,7 @@
                 renderPaymentHistory();
                 document.getElementById('paymentsTab').classList.add('active');
                 document.getElementById('loansTab').classList.remove('active');
-                document.querySelector('.tab[data-tab="payments"]').classList.add('active');
+                document.querySelector('.tab[data-tab="payments"]').classlassList.add('active');
                 document.querySelector('.tab[data-tab="loans"]').classList.remove('active');
             });
             
