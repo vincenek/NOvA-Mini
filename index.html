@@ -3,1338 +3,1731 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Resume & Cover Letter Generator</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>SoulBoard Pro | Mental Wellness Journal & Map</title>
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS Support -->
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <meta name="apple-mobile-web-app-status-bar" content="#2563eb">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#2563eb">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- D3.js for network graph visualization -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
     <style>
         :root {
-            --primary: #4361ee;
-            --secondary: #3a0ca3;
-            --accent: #f72585;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --success: #4cc9f0;
-            --warning: #f9c74f;
-            --danger: #f94144;
-            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
-            --transition: all 0.3s ease;
+            --primary: #2A9D8F;
+            --secondary: #E9C46A;
+            --background: #F4F9F7;
+            --text: #264653;
+            --border: #C4D8D2;
+            --accent: #83C5BE;
+            --error: #E76F51;
+            --auth-bg: rgba(255, 255, 255, 0.95);
+            --nav-bg: rgba(255, 255, 255, 0.9);
+            --timeline-bg: rgba(244, 249, 247, 0.8);
+            --node-reflection: #FFADAD;
+            --node-goal: #9BF6FF;
+            --node-affirmation: #CAFFBF;
+            --node-habit: #BDB2FF;
+            --node-default: #FFD6A5;
         }
 
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: var(--dark);
+            background: linear-gradient(160deg, #F4F9F7 0%, #E9F5F1 100%);
+            color: var(--text);
             line-height: 1.6;
-            padding: 15px;
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
             min-height: 100vh;
+            transition: background 0.3s ease;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        header {
+        .header {
             text-align: center;
-            margin-bottom: 20px;
-            padding: 20px;
-            background: linear-gradient(120deg, var(--primary), var(--secondary));
-            color: white;
-            border-radius: 12px;
-            box-shadow: var(--card-shadow);
+            margin-bottom: 1rem;
+            animation: fadeIn 0.8s ease-out;
         }
 
-        h1 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-            font-weight: 700;
+        .logo {
+            font-size: 3.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            animation: pulse 2s infinite;
         }
 
-        .subtitle {
-            font-size: 1rem;
-            opacity: 0.9;
-            max-width: 700px;
-            margin: 0 auto;
+        .tagline {
+            color: #5C8374;
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
         }
 
-        .app-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 992px) {
-            .app-container {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 20px;
-        }
-
-        .card-title {
-            font-size: 1.3rem;
-            color: var(--secondary);
-            margin-bottom: 15px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid var(--light);
+        /* Navigation */
+        .nav-container {
             display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .input-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        @media (max-width: 768px) {
-            .input-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: var(--secondary);
-            font-size: 0.95rem;
-        }
-
-        input, textarea, select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: var(--transition);
-            -webkit-appearance: none;
-        }
-
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        @media (max-width: 480px) {
-            .btn-group {
-                flex-direction: column;
-            }
-        }
-
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
             justify-content: center;
-            gap: 8px;
-            min-height: 44px;
+            margin-bottom: 1.5rem;
+            background: var(--nav-bg);
+            border-radius: 1rem;
+            padding: 0.5rem;
+            box-shadow: 0 4px 12px rgba(42, 157, 143, 0.08);
         }
 
-        .btn-primary {
+        .nav-btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 0.6rem;
+            background: transparent;
+            color: var(--text);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn.active {
             background: var(--primary);
             color: white;
         }
 
-        .btn-primary:hover, .btn-primary:focus {
-            background: var(--secondary);
-            transform: translateY(-2px);
+        /* Views */
+        .view {
+            display: none;
         }
 
-        .btn-success {
-            background: var(--success);
-            color: white;
+        .view.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
         }
 
-        .btn-success:hover, .btn-success:focus {
-            background: #3aa8d0;
-            transform: translateY(-2px);
+        .journal-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(42, 157, 143, 0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
         }
 
-        .btn-warning {
-            background: var(--warning);
-            color: var(--dark);
+        .editor textarea {
+            width: 100%;
+            padding: 1.2rem;
+            border: 2px solid var(--border);
+            border-radius: 0.8rem;
+            min-height: 140px;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            resize: vertical;
+            transition: all 0.2s ease;
+            background: rgba(244, 249, 247, 0.8);
         }
 
-        .btn-warning:hover, .btn-warning:focus {
-            background: #e6b741;
-            transform: translateY(-2px);
+        .editor textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
         }
 
-        .btn-danger {
-            background: var(--danger);
-            color: white;
+        .mood-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
         }
 
-        .btn-danger:hover, .btn-danger:focus {
-            background: #e03537;
-            transform: translateY(-2px);
-        }
-
-        .style-selector {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-
-        .style-option {
-            flex: 1;
-            min-width: 100px;
-            text-align: center;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
+        .mood-btn {
+            padding: 0.6rem;
+            border: 2px solid var(--border);
+            border-radius: 0.6rem;
+            background: rgba(244, 249, 247, 0.8);
             cursor: pointer;
-            transition: var(--transition);
-            min-height: 80px;
+            transition: all 0.2s ease;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 0.4rem;
         }
 
-        .style-option:hover, .style-option:focus {
+        .mood-btn:hover {
+            background: rgba(42, 157, 143, 0.1);
             border-color: var(--primary);
         }
 
-        .style-option.active {
+        .mood-btn.active {
+            background: var(--primary);
+            color: white;
             border-color: var(--primary);
-            background: rgba(67, 97, 238, 0.1);
+            transform: scale(1.05);
         }
 
-        .style-option i {
-            font-size: 20px;
-            margin-bottom: 8px;
-            color: var(--primary);
+        .post-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, #34A798 100%);
+            color: white;
+            border: none;
+            border-radius: 0.6rem;
+            padding: 1rem 2rem;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(42, 157, 143, 0.2);
         }
 
-        .style-option div {
-            font-size: 0.85rem;
+        .post-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(42, 157, 143, 0.3);
         }
 
-        .resume-output, .letter-output {
-            background: white;
-            min-height: 400px;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--card-shadow);
+        .post-btn:active {
+            transform: translateY(0);
         }
 
-        .output-header {
+        .search-container {
+            margin: 1.5rem 0;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            border: 2px solid var(--border);
+            border-radius: 0.6rem;
+            font-size: 1rem;
+            background: rgba(244, 249, 247, 0.8);
+            transition: all 0.2s ease;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
+        }
+
+        .posts-feed {
+            margin-top: 1rem;
+        }
+
+        .post-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem;
+            border-radius: 0.8rem;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 2px 12px rgba(42, 157, 143, 0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            border-left: 4px solid var(--primary);
+        }
+
+        .post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(42, 157, 143, 0.1);
+        }
+
+        .post-meta {
             display: flex;
-            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid var(--light);
-            gap: 10px;
+            margin-bottom: 0.8rem;
         }
 
-        .resume-content, .letter-content {
-            line-height: 1.7;
-            font-size: 0.95rem;
-        }
-
-        .resume-section {
-            margin-bottom: 20px;
-        }
-
-        .resume-section-title {
-            color: var(--primary);
-            border-bottom: 2px solid var(--light);
-            padding-bottom: 6px;
-            margin-bottom: 12px;
-            font-weight: 600;
-            font-size: 1.2rem;
-        }
-
-        .skills-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            list-style-type: none;
-        }
-
-        .skill-item {
-            background: rgba(67, 97, 238, 0.1);
-            color: var(--primary);
-            padding: 6px 12px;
-            border-radius: 20px;
+        .post-date {
+            color: #5C8374;
             font-size: 0.85rem;
             font-weight: 500;
         }
 
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            left: 20px;
-            padding: 12px 20px;
-            background: var(--success);
-            color: white;
-            border-radius: 8px;
-            box-shadow: var(--card-shadow);
-            opacity: 0;
-            transform: translateY(20px);
-            transition: var(--transition);
-            z-index: 1000;
+        .post-mood {
+            font-size: 1.4rem;
+        }
+
+        .post-content {
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin: 1rem 0;
+            color: #2D3E40;
+        }
+
+        .highlight {
+            background-color: rgba(233, 196, 106, 0.3);
+            padding: 0.1em 0.3em;
+            border-radius: 0.3em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #83A69B;
+            font-style: italic;
+        }
+
+        /* SoulMap Styles */
+        .soulmap-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(42, 157, 143, 0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(4px);
+            min-height: 500px;
+            position: relative;
+        }
+
+        .visualization-controls {
             display: flex;
-            align-items: center;
             justify-content: center;
-            gap: 10px;
-            text-align: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
 
-        @media (min-width: 768px) {
-            .toast {
-                left: auto;
-                right: 20px;
-                width: auto;
-            }
+        .viz-btn {
+            padding: 0.6rem 1.2rem;
+            border: 2px solid var(--border);
+            border-radius: 0.6rem;
+            background: rgba(244, 249, 247, 0.8);
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 30px;
-            padding: 20px;
-            color: var(--dark);
-            opacity: 0.7;
-            font-size: 0.85rem;
-        }
-
-        /* Resume Styles */
-        .resume.modern {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #2d3748;
-        }
-
-        .resume.modern .resume-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .resume.modern .name {
-            font-size: 2rem;
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
-
-        .resume.modern .title {
-            font-size: 1.1rem;
-            color: var(--dark);
-            opacity: 0.8;
-        }
-
-        .resume.classic {
-            font-family: 'Georgia', serif;
-            color: #2d3748;
-        }
-
-        .resume.classic .resume-header {
-            border-bottom: 2px solid #cbd5e0;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-
-        .resume.classic .name {
-            font-size: 1.8rem;
-            color: var(--dark);
-            margin-bottom: 5px;
-        }
-
-        .resume.creative {
-            font-family: 'Arial', sans-serif;
-            color: #2d3748;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
-            padding: 20px;
-            border-radius: 12px;
-        }
-
-        .resume.creative .resume-header {
-            text-align: center;
-            background: linear-gradient(120deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .resume.creative .name {
-            font-size: 2rem;
-            margin-bottom: 5px;
-        }
-
-        /* Country-specific styles */
-        .resume.usa .contact-item::before {
-            content: "📞 ";
-        }
-
-        .resume.uk .contact-item::before {
-            content: "📞 +44 ";
-        }
-
-        .resume.nga .contact-item::before {
-            content: "📞 +234 ";
-        }
-
-        .resume.eu .contact-item::before {
-            content: "📞 +33 ";
-        }
-
-        .progress-bar {
-            height: 6px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 12px 0;
-        }
-
-        .progress {
-            height: 100%;
+        .viz-btn.active {
             background: var(--primary);
-            border-radius: 4px;
-            transition: width 0.5s ease;
+            color: white;
+            border-color: var(--primary);
         }
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
+        .timeline-view {
+            padding: 1rem;
+            background: var(--timeline-bg);
+            border-radius: 0.8rem;
+            max-height: 600px;
+            overflow-y: auto;
         }
 
-        @media (max-width: 480px) {
-            .stats {
-                grid-template-columns: 1fr;
-            }
+        .timeline-item {
+            position: relative;
+            padding: 1rem 1rem 1rem 2rem;
+            border-left: 2px solid var(--primary);
+            margin-left: 1rem;
+            margin-bottom: 1.5rem;
         }
 
-        .stat-item {
-            text-align: center;
-            padding: 12px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: var(--card-shadow);
+        .timeline-item:last-child {
+            margin-bottom: 0;
         }
 
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
+        .timeline-date {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
             color: var(--primary);
         }
 
-        .stat-label {
-            font-size: 0.8rem;
-            color: var(--dark);
-            opacity: 0.7;
-        }
-
-        .tutorial-container {
-            margin: 15px 0;
-        }
-
-        .tutorial-step {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            padding: 12px;
+        .timeline-content {
             background: white;
-            border-radius: 8px;
-            box-shadow: var(--card-shadow);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        .step-number {
-            width: 32px;
-            height: 32px;
-            background: var(--primary);
-            color: white;
+        .timeline-mood {
+            position: absolute;
+            left: -1.2rem;
+            top: 1rem;
+            background: white;
             border-radius: 50%;
+            width: 2rem;
+            height: 2rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            margin-right: 12px;
-            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .network-graph {
+            width: 100%;
+            height: 500px;
+            border-radius: 0.8rem;
+            background: var(--timeline-bg);
+            overflow: hidden;
+        }
+
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node.reflection {
+            fill: var(--node-reflection);
+        }
+
+        .node.goal {
+            fill: var(--node-goal);
+        }
+
+        .node.affirmation {
+            fill: var(--node-affirmation);
+        }
+
+        .node.habit {
+            fill: var(--node-habit);
+        }
+
+        .node.default {
+            fill: var(--node-default);
+        }
+
+        .node:hover {
+            stroke: var(--primary);
+            stroke-width: 2px;
+            transform: scale(1.05);
+        }
+
+        .node-label {
+            font-size: 10px;
+            pointer-events: none;
+            text-anchor: middle;
+            font-weight: 500;
+        }
+
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+
+        .graph-tooltip {
+            position: absolute;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            pointer-events: none;
+            font-size: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Auth container styles */
+        .auth-container {
+            background: var(--auth-bg);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(42, 157, 143, 0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(4px);
+            max-width: 500px;
+            margin: 2rem auto;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .auth-title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .form-input {
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 0.6rem;
+            font-size: 1rem;
+            background: rgba(244, 249, 247, 0.8);
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
+        }
+
+        .auth-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, #34A798 100%);
+            color: white;
+            border: none;
+            border-radius: 0.6rem;
+            padding: 0.8rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 0.5rem;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(42, 157, 143, 0.2);
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 1rem;
             font-size: 0.9rem;
         }
 
-        .mobile-tabs {
-            display: none;
+        .auth-switch a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
         }
 
-        @media (max-width: 992px) {
-            .mobile-tabs {
-                display: flex;
-                margin-bottom: 15px;
-                background: white;
-                border-radius: 12px;
-                overflow: hidden;
-                box-shadow: var(--card-shadow);
-            }
-            
-            .mobile-tab {
-                flex: 1;
-                text-align: center;
-                padding: 15px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: var(--transition);
-            }
-            
-            .mobile-tab.active {
-                background: var(--primary);
-                color: white;
-            }
-            
-            .tab-content {
-                display: none;
-            }
-            
-            .tab-content.active {
-                display: block;
-            }
+        .auth-switch a:hover {
+            text-decoration: underline;
         }
 
-        /* Mobile menu */
-        .mobile-menu-btn {
-            display: none;
+        .error-message {
+            color: var(--error);
+            font-size: 0.9rem;
+            margin-top: 0.2rem;
+            text-align: center;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 0.8rem 1.2rem;
+            background: rgba(42, 157, 143, 0.1);
+            border-radius: 0.6rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .user-email {
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            color: #1e7a6f;
+        }
+
+        .sync-indicator {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            z-index: 900;
+            background: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            animation: slideIn 0.3s ease;
+        }
+
+        .sync-indicator .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .sync-complete {
+            background: #2A9D8F;
+            animation: slideIn 0.3s ease;
+        }
+
+        /* PWA Install Button */
+        .pwa-install-container {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .pwa-install-btn {
             width: 60px;
             height: 60px;
             border-radius: 50%;
             background: var(--primary);
             color: white;
-            border: none;
-            font-size: 24px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: flex;
             justify-content: center;
             align-items: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            border: none;
+            animation: pulse 2s infinite;
         }
 
-        @media (max-width: 992px) {
-            .mobile-menu-btn {
-                display: flex;
-            }
-        }
-        
-        /* Loading spinner for PDF generation */
-        .pdf-loading {
-            display: none;
+        /* Install Prompt */
+        .install-prompt {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-        
-        .pdf-loading.active {
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1000;
+            transform: translateY(150%);
+            transition: transform 0.5s ease;
         }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(67, 97, 238, 0.2);
-            border-radius: 50%;
-            border-top: 5px solid var(--primary);
-            animation: spin 1s linear infinite;
+
+        .install-prompt.show {
+            transform: translateY(0);
         }
-        
+
+        .install-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .install-text {
+            flex: 1;
+        }
+
+        .install-close {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
+        /* Offline Indicator */
+        .offline-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #f59e0b;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .offline-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        .pdf-loading p {
-            margin-top: 20px;
-            font-size: 1.2rem;
-            color: var(--dark);
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(0.95); }
+        }
+
+        @keyframes pulseInstall {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(42, 157, 143, 0.7);
+            }
+            
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(42, 157, 143, 0);
+            }
+            
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(42, 157, 143, 0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .journal-container, .auth-container, .soulmap-container {
+                padding: 1.5rem;
+            }
+            
+            .mood-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .nav-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .network-graph {
+                height: 400px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-file-alt"></i> Resume & Cover Letter Generator</h1>
-            <p class="subtitle">Create professional resumes and cover letters tailored to different countries and styles</p>
-        </header>
-        
-        <div class="tutorial-container">
-            <div class="tutorial-step">
-                <div class="step-number">1</div>
-                <div>Fill in your personal and professional information</div>
+    <header class="header">
+        <div class="logo">🌿</div>
+        <h1 class="tagline">SoulBoard Pro - Mindful Journaling</h1>
+    </header>
+
+    <!-- Navigation -->
+    <div class="nav-container">
+        <button id="soulboardBtn" class="nav-btn active">SoulBoard</button>
+        <button id="soulmapBtn" class="nav-btn">SoulMap</button>
+    </div>
+
+    <!-- Views -->
+    <div id="authSection" class="auth-container">
+        <h2 class="auth-title">Sign In to SoulBoard Pro</h2>
+        <div id="authForm" class="auth-form">
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" id="emailInput" class="form-input" placeholder="your.email@example.com">
             </div>
-            <div class="tutorial-step">
-                <div class="step-number">2</div>
-                <div>Choose your preferred style and country format</div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="passwordInput" class="form-input" placeholder="••••••••">
             </div>
-            <div class="tutorial-step">
-                <div class="step-number">3</div>
-                <div>Generate your resume and cover letter</div>
+            <button id="signInBtn" class="auth-btn">Sign In</button>
+            <div class="auth-switch">
+                Don't have an account? <a id="switchToSignUp">Sign Up</a>
             </div>
-            <div class="tutorial-step">
-                <div class="step-number">4</div>
-                <div>Export to PDF or copy to clipboard</div>
+            <div id="authError" class="error-message"></div>
+        </div>
+
+        <div id="signUpForm" class="auth-form" style="display: none;">
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" id="signUpEmail" class="form-input" placeholder="your.email@example.com">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="signUpPassword" class="form-input" placeholder="••••••••">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" id="signUpPasswordConfirm" class="form-input" placeholder="••••••••">
+            </div>
+            <button id="signUpBtn" class="auth-btn">Create Account</button>
+            <div class="auth-switch">
+                Already have an account? <a id="switchToSignIn">Sign In</a>
+            </div>
+            <div id="signUpError" class="error-message"></div>
+        </div>
+    </div>
+
+    <div id="journalSection" style="display: none;">
+        <div id="userInfo" class="user-info">
+            <div>
+                <span class="user-email" id="userEmail">user@example.com</span>
+            </div>
+            <button id="logoutBtn" class="logout-btn">
+                <span>Logout</span>
+            </button>
+        </div>
+
+        <!-- SoulBoard View -->
+        <div id="soulboardView" class="view active">
+            <div class="journal-container">
+                <section class="editor">
+                    <textarea id="journalText" placeholder="What's growing in your mind today?"></textarea>
+                    
+                    <div class="mood-grid">
+                        <button class="mood-btn" onclick="selectMood(this, '🌻 Happy')">🌻 Happy</button>
+                        <button class="mood-btn" onclick="selectMood(this, '🍃 Calm')">🍃 Calm</button>
+                        <button class="mood-btn" onclick="selectMood(this, '🌧️ Reflective')">🌧️ Reflective</button>
+                        <button class="mood-btn" onclick="selectMood(this, '💡 Inspired')">💡 Inspired</button>
+                        <button class="mood-btn" onclick="selectMood(this, '🌊 Flow')">🌊 Flow</button>
+                        <button class="mood-btn" onclick="selectMood(this, '🔥 Passionate')">🔥 Passionate</button>
+                        <button class="mood-btn" onclick="selectMood(this, '🌙 Restful')">🌙 Restful</button>
+                        <button class="mood-btn" onclick="selectMood(this, '🎉 Celebratory')">🎉 Celebratory</button>
+                    </div>
+
+                    <button class="post-btn" onclick="createPost()">Plant This Thought</button>
+
+                    <div class="search-container">
+                        <input 
+                            type="text" 
+                            class="search-bar" 
+                            id="searchInput"
+                            placeholder="Search your thoughts..."
+                            oninput="searchPosts()">
+                    </div>
+                </section>
+
+                <section class="posts-feed" id="postsFeed">
+                    <div class="empty-state">
+                        Your mental garden is empty... Plant your first thought seed
+                    </div>
+                </section>
             </div>
         </div>
-        
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-value" id="resumeCount">1,243</div>
-                <div class="stat-label">Resumes Generated</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="coverLetterCount">982</div>
-                <div class="stat-label">Cover Letters Created</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">94%</div>
-                <div class="stat-label">Success Rate</div>
-            </div>
-        </div>
-        
-        <div class="mobile-tabs">
-            <div class="mobile-tab active" data-tab="inputs">Inputs</div>
-            <div class="mobile-tab" data-tab="resume">Resume</div>
-            <div class="mobile-tab" data-tab="letter">Cover Letter</div>
-        </div>
-        
-        <div class="app-container">
-            <div class="input-section tab-content active" id="inputs-tab">
-                <div class="card">
-                    <h2 class="card-title"><i class="fas fa-user-edit"></i> Your Information</h2>
-                    
-                    <div class="input-grid">
-                        <div class="input-group">
-                            <label for="fullName">Full Name *</label>
-                            <input type="text" id="fullName" placeholder="John Doe" required>
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="jobTitle">Job Title *</label>
-                            <input type="text" id="jobTitle" placeholder="Software Engineer" required>
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="email">Email *</label>
-                            <input type="email" id="email" placeholder="john.doe@example.com" required>
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="phone">Phone</label>
-                            <input type="text" id="phone" placeholder="+1 (555) 123-4567">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="location">Location</label>
-                            <input type="text" id="location" placeholder="San Francisco, CA">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="yearsExperience">Years of Experience</label>
-                            <input type="number" id="yearsExperience" placeholder="5">
-                            <div class="progress-bar">
-                                <div class="progress" id="experienceProgress" style="width: 0%"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="skills">Skills (comma separated) *</label>
-                        <input type="text" id="skills" placeholder="JavaScript, React, Node.js, CSS" required>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="education">Education *</label>
-                        <textarea id="education" placeholder="BS in Computer Science, University of Example, 2015-2019&#10;GPA: 3.8/4.0" required></textarea>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="workExperience">Work Experience *</label>
-                        <textarea id="workExperience" placeholder="Senior Developer at Tech Corp, 2019-Present&#10;- Led team of 5 developers&#10;- Improved system performance by 40%&#10;&#10;Software Engineer at Startup Inc, 2017-2019&#10;- Developed key features using React and Node.js" required></textarea>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="careerObjective">Career Objective/Summary *</label>
-                        <textarea id="careerObjective" placeholder="Seeking a challenging role where I can utilize my skills and experience to contribute to company success." required></textarea>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="companyName">Target Company (for cover letter)</label>
-                        <input type="text" id="companyName" placeholder="Acme Inc.">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="hiringManager">Hiring Manager Name</label>
-                        <input type="text" id="hiringManager" placeholder="Sarah Johnson">
-                    </div>
-                    
-                    <div class="btn-group">
-                        <button id="generateResume" class="btn btn-primary"><i class="fas fa-file-alt"></i> Generate Resume</button>
-                        <button id="generateCoverLetter" class="btn btn-primary"><i class="fas fa-envelope"></i> Generate Cover Letter</button>
-                        <button id="clearStorage" class="btn btn-danger"><i class="fas fa-trash"></i> Clear Data</button>
-                    </div>
+
+        <!-- SoulMap View -->
+        <div id="soulmapView" class="view">
+            <div class="soulmap-container">
+                <div class="visualization-controls">
+                    <button id="timelineBtn" class="viz-btn active" onclick="switchVisualization('timeline')">Timeline</button>
+                    <button id="networkBtn" class="viz-btn" onclick="switchVisualization('network')">Network Graph</button>
                 </div>
                 
-                <div class="card">
-                    <h2 class="card-title"><i class="fas fa-paint-brush"></i> Customization Options</h2>
-                    
-                    <div class="input-group">
-                        <label>Resume Style</label>
-                        <div class="style-selector">
-                            <div class="style-option active" data-style="modern">
-                                <i class="fas fa-desktop"></i>
-                                <div>Modern</div>
-                            </div>
-                            <div class="style-option" data-style="classic">
-                                <i class="fas fa-feather-alt"></i>
-                                <div>Classic</div>
-                            </div>
-                            <div class="style-option" data-style="creative">
-                                <i class="fas fa-palette"></i>
-                                <div>Creative</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>Country Format</label>
-                        <div class="style-selector">
-                            <div class="style-option active" data-country="usa">
-                                <i class="fas fa-flag-usa"></i>
-                                <div>USA</div>
-                            </div>
-                            <div class="style-option" data-country="uk">
-                                <i class="fas fa-flag-uk"></i>
-                                <div>UK</div>
-                            </div>
-                            <div class="style-option" data-country="eu">
-                                <i class="fas fa-flag-eu"></i>
-                                <div>EU</div>
-                            </div>
-                            <div class="style-option" data-country="nga">
-                                <i class="fas fa-flag"></i>
-                                <div>Nigeria</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="colorPicker">Accent Color</label>
-                        <input type="color" id="colorPicker" value="#4361ee">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="output-section">
-                <div class="card tab-content" id="resume-tab">
-                    <div class="output-header">
-                        <h2 class="card-title"><i class="fas fa-file-pdf"></i> Professional Resume</h2>
-                        <div class="btn-group">
-                            <button id="copyResume" class="btn btn-success"><i class="fas fa-copy"></i> Copy</button>
-                            <button id="pdfResume" class="btn btn-warning"><i class="fas fa-download"></i> PDF</button>
-                        </div>
-                    </div>
-                    <div id="resumeContent" class="resume-content">
-                        <div class="resume modern usa">
-                            <div class="resume-header">
-                                <h1 class="name">John Doe</h1>
-                                <p class="title">Software Engineer</p>
-                                <p class="contact">
-                                    <span class="contact-item">john.doe@example.com</span> • 
-                                    <span class="contact-item">+1 (555) 123-4567</span> • 
-                                    <span class="contact-item">San Francisco, CA</span>
-                                </p>
-                            </div>
-                            
-                            <div class="resume-section">
-                                <h3 class="resume-section-title">Professional Summary</h3>
-                                <p>Seeking a challenging role where I can utilize my skills and experience to contribute to company success.</p>
-                            </div>
-                            
-                            <div class="resume-section">
-                                <h3 class="resume-section-title">Skills</h3>
-                                <ul class="skills-list">
-                                    <li class="skill-item">JavaScript</li>
-                                    <li class="skill-item">React</li>
-                                    <li class="skill-item">Node.js</li>
-                                    <li class="skill-item">CSS</li>
-                                </ul>
-                            </div>
-                            
-                            <div class="resume-section">
-                                <h3 class="resume-section-title">Work Experience</h3>
-                                <p>Senior Developer at Tech Corp, 2019-Present<br>
-                                - Led team of 5 developers<br>
-                                - Improved system performance by 40%</p>
-                            </div>
-                            
-                            <div class="resume-section">
-                                <h3 class="resume-section-title">Education</h3>
-                                <p>BS in Computer Science, University of Example, 2015-2019<br>
-                                GPA: 3.8/4.0</p>
-                            </div>
-                        </div>
-                    </div>
+                <div id="timelineView" class="timeline-view">
+                    <!-- Timeline will be rendered here -->
                 </div>
                 
-                <div class="card tab-content" id="letter-tab">
-                    <div class="output-header">
-                        <h2 class="card-title"><i class="fas fa-envelope-open-text"></i> Cover Letter</h2>
-                        <div class="btn-group">
-                            <button id="copyCoverLetter" class="btn btn-success"><i class="fas fa-copy"></i> Copy</button>
-                            <button id="pdfCoverLetter" class="btn btn-warning"><i class="fas fa-download"></i> PDF</button>
-                        </div>
-                    </div>
-                    <div id="coverLetterContent" class="letter-content">
-                        <p>October 20, 2023</p><br>
-                        <p>Sarah Johnson<br>
-                        Hiring Manager<br>
-                        Acme Inc.<br>
-                        123 Business Ave<br>
-                        San Francisco, CA 94107</p><br>
-                        <p>Dear Ms. Johnson,</p><br>
-                        <p>I am writing to express my interest in the Software Engineer position at Acme Inc. With 5 years of experience in the field, I have developed a strong skill set that I believe would be valuable to your team.</p><br>
-                        <p>My experience includes:</p>
-                        <p>Senior Developer at Tech Corp, 2019-Present<br>
-                        - Led team of 5 developers<br>
-                        - Improved system performance by 40%</p><br>
-                        <p>My key skills include: JavaScript, React, Node.js, CSS.</p><br>
-                        <p>I am excited about the opportunity to contribute to your team and help achieve company goals.</p><br>
-                        <p>Thank you for considering my application. I look forward to the opportunity to discuss how my skills and experience can benefit your organization.</p><br>
-                        <p>Sincerely,<br>
-                        John Doe</p>
-                    </div>
+                <div id="networkView" class="network-graph" style="display: none;">
+                    <!-- Network graph will be rendered here -->
                 </div>
             </div>
         </div>
-        
-        <footer>
-            <p>Professional Resume & Cover Letter Generator | All data is stored locally in your browser | © 2023</p>
-        </footer>
+    </div>
+
+    <!-- PWA Install Button -->
+    <div class="pwa-install-container" id="pwaInstallContainer">
+        <button class="pwa-install-btn" id="pwaInstallBtn">
+            <i class="fas fa-download"></i>
+        </button>
     </div>
     
-    <button class="mobile-menu-btn" id="mobileMenuBtn">
-        <i class="fas fa-bars"></i>
-    </button>
+    <!-- Install Prompt -->
+    <div class="install-prompt" id="installPrompt">
+        <div class="install-icon">
+            <i class="fas fa-download"></i>
+        </div>
+        <div class="install-text">
+            <strong>Install SoulBoard Pro</strong>
+            <p>Add to home screen for quick access</p>
+        </div>
+        <button class="install-close" id="closePrompt">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
     
-    <div id="toast" class="toast"><i class="fas fa-check-circle"></i> Copied to clipboard!</div>
-    
-    <div class="pdf-loading" id="pdfLoading">
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator">
+        <i class="fas fa-wifi-slash"></i>
+        <span>You are currently offline</span>
+    </div>
+
+    <div id="syncIndicator" class="sync-indicator" style="display: none;">
         <div class="spinner"></div>
-        <p>Generating PDF, please wait...</p>
+        <span>Syncing with cloud...</span>
     </div>
 
     <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBbfiIeI-LkRNF60p4BYw2l4BY0wfeIRuI",
+            authDomain: "soulboard-524df.firebaseapp.com",
+            projectId: "soulboard-524df",
+            storageBucket: "soulboard-524df.appspot.com",
+            messagingSenderId: "659350261512",
+            appId: "1:659350261512:web:528a224cec97664bf2a6bd",
+            measurementId: "G-CMSL9H2B8H"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
         // DOM Elements
-        const fullNameInput = document.getElementById('fullName');
-        const jobTitleInput = document.getElementById('jobTitle');
-        const emailInput = document.getElementById('email');
-        const phoneInput = document.getElementById('phone');
-        const locationInput = document.getElementById('location');
-        const yearsExperienceInput = document.getElementById('yearsExperience');
-        const skillsInput = document.getElementById('skills');
-        const educationInput = document.getElementById('education');
-        const workExperienceInput = document.getElementById('workExperience');
-        const careerObjectiveInput = document.getElementById('careerObjective');
-        const companyNameInput = document.getElementById('companyName');
-        const hiringManagerInput = document.getElementById('hiringManager');
-        const colorPicker = document.getElementById('colorPicker');
-        const experienceProgress = document.getElementById('experienceProgress');
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const mobileTabs = document.querySelectorAll('.mobile-tab');
-        const pdfLoading = document.getElementById('pdfLoading');
+        const authSection = document.getElementById('authSection');
+        const journalSection = document.getElementById('journalSection');
+        const userEmail = document.getElementById('userEmail');
+        const signInBtn = document.getElementById('signInBtn');
+        const signUpBtn = document.getElementById('signUpBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const switchToSignUp = document.getElementById('switchToSignUp');
+        const switchToSignIn = document.getElementById('switchToSignIn');
+        const authForm = document.getElementById('authForm');
+        const signUpForm = document.getElementById('signUpForm');
+        const authError = document.getElementById('authError');
+        const signUpError = document.getElementById('signUpError');
+        const syncIndicator = document.getElementById('syncIndicator');
+        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+        const pwaInstallContainer = document.getElementById('pwaInstallContainer');
+        const installPrompt = document.getElementById('installPrompt');
+        const closePrompt = document.getElementById('closePrompt');
+        const offlineIndicator = document.getElementById('offlineIndicator');
         
-        const generateResumeBtn = document.getElementById('generateResume');
-        const generateCoverLetterBtn = document.getElementById('generateCoverLetter');
-        const clearStorageBtn = document.getElementById('clearStorage');
-        const copyResumeBtn = document.getElementById('copyResume');
-        const copyCoverLetterBtn = document.getElementById('copyCoverLetter');
-        const pdfResumeBtn = document.getElementById('pdfResume');
-        const pdfCoverLetterBtn = document.getElementById('pdfCoverLetter');
+        // SoulMap elements
+        const soulboardBtn = document.getElementById('soulboardBtn');
+        const soulmapBtn = document.getElementById('soulmapBtn');
+        const soulboardView = document.getElementById('soulboardView');
+        const soulmapView = document.getElementById('soulmapView');
+        const timelineView = document.getElementById('timelineView');
+        const networkView = document.getElementById('networkView');
+        const timelineBtn = document.getElementById('timelineBtn');
+        const networkBtn = document.getElementById('networkBtn');
         
-        const resumeContent = document.getElementById('resumeContent');
-        const coverLetterContent = document.getElementById('coverLetterContent');
-        const toast = document.getElementById('toast');
-        
-        const styleOptions = document.querySelectorAll('.style-option[data-style]');
-        const countryOptions = document.querySelectorAll('.style-option[data-country]');
-        
-        // Current settings
-        let currentStyle = 'modern';
-        let currentCountry = 'usa';
-        
-        // Initialize
-        loadSavedData();
-        setEventListeners();
-        updateStats();
-        setupMobileNavigation();
-        
-        // Set up mobile navigation
-        function setupMobileNavigation() {
-            // Mobile tabs functionality
-            mobileTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabName = tab.getAttribute('data-tab');
-                    
-                    // Update active tab
-                    mobileTabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    
-                    // Show corresponding content
-                    document.querySelectorAll('.tab-content').forEach(content => {
-                        content.classList.remove('active');
-                    });
-                    
-                    if (tabName === 'inputs') {
-                        document.getElementById('inputs-tab').classList.add('active');
-                    } else {
-                        document.getElementById(`${tabName}-tab`).classList.add('active');
+        let deferredPrompt;
+
+        // Global variables
+        let allPosts = [];
+        let selectedMood = '🌱 Neutral';
+        let currentUser = null;
+        let isOnline = navigator.onLine;
+        let unsubscribeListener = null;
+        let currentVisualization = 'timeline';
+        let soulMapData = [];
+
+        // PWA Installation Handling
+        function handlePWAInstall() {
+            // Listen for beforeinstallprompt event
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent the mini-infobar from appearing on mobile
+                e.preventDefault();
+                // Stash the event so it can be triggered later
+                deferredPrompt = e;
+                // Show the install button
+                pwaInstallContainer.style.display = 'block';
+                
+                // Also show the install prompt after 5 seconds
+                setTimeout(() => {
+                    if (deferredPrompt) {
+                        installPrompt.classList.add('show');
                     }
+                }, 5000);
+            });
+            
+            // Handle install button click
+            pwaInstallBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    // Show the install prompt
+                    deferredPrompt.prompt();
+                    // Wait for the user to respond to the prompt
+                    const { outcome } = await deferredPrompt.userChoice;
+                    // Optionally, send analytics event with outcome of user choice
+                    console.log(`User response to the install prompt: ${outcome}`);
+                    // Hide the install button
+                    pwaInstallContainer.style.display = 'none';
+                    // Clear the deferredPrompt variable
+                    deferredPrompt = null;
+                    // Hide the prompt
+                    installPrompt.classList.remove('show');
+                }
+            });
+            
+            // Close prompt
+            closePrompt.addEventListener('click', () => {
+                installPrompt.classList.remove('show');
+            });
+            
+            // Listen for app installed event
+            window.addEventListener('appinstalled', () => {
+                // Hide the install button
+                pwaInstallContainer.style.display = 'none';
+                // Clear the deferredPrompt variable
+                deferredPrompt = null;
+                // Hide the prompt
+                installPrompt.classList.remove('show');
+                // Show success message
+                showToast('App installed successfully!');
+            });
+        }
+
+        // Register Service Worker
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    // Create service worker script as a blob
+                    const swContent = `
+                        const CACHE_NAME = 'soulboard-pro-v1';
+                        const urlsToCache = [
+                            './',
+                            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+                            'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js',
+                            'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js',
+                            'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js',
+                            'https://d3js.org/d3.v7.min.js'
+                        ];
+                        
+                        self.addEventListener('install', event => {
+                            event.waitUntil(
+                                caches.open(CACHE_NAME)
+                                    .then(cache => {
+                                        return cache.addAll(urlsToCache);
+                                    })
+                            );
+                        });
+                        
+                        self.addEventListener('activate', event => {
+                            event.waitUntil(
+                                caches.keys().then(cacheNames => {
+                                    return Promise.all(
+                                        cacheNames.map(cacheName => {
+                                            if (cacheName !== CACHE_NAME) {
+                                                return caches.delete(cacheName);
+                                            }
+                                        })
+                                    );
+                                })
+                            );
+                        });
+                        
+                        self.addEventListener('fetch', event => {
+                            event.respondWith(
+                                caches.match(event.request)
+                                    .then(response => {
+                                        return response || fetch(event.request);
+                                    })
+                            );
+                        });
+                    `;
                     
-                    // Hide mobile menu after selection
-                    document.querySelector('.mobile-tabs').style.display = 'none';
-                    mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
-                    mobileMenuBtn.setAttribute('aria-expanded', 'false');
+                    const blob = new Blob([swContent], { type: 'application/javascript' });
+                    const swUrl = URL.createObjectURL(blob);
+                    
+                    navigator.serviceWorker.register(swUrl)
+                        .then(registration => {
+                            console.log('Service Worker registered with scope:', registration.scope);
+                        })
+                        .catch(error => {
+                            console.error('Service Worker registration failed:', error);
+                        });
                 });
-            });
-            
-            // Mobile menu button functionality
-            mobileMenuBtn.addEventListener('click', () => {
-                const isExpanded = mobileMenuBtn.getAttribute('aria-expanded') === 'true';
-                
-                if (isExpanded) {
-                    // Hide menu
-                    mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
-                    mobileMenuBtn.setAttribute('aria-expanded', 'false');
-                    document.querySelector('.mobile-tabs').style.display = 'none';
-                } else {
-                    // Show menu
-                    mobileMenuBtn.innerHTML = '<i class="fas fa-times"></i>';
-                    mobileMenuBtn.setAttribute('aria-expanded', 'true');
-                    document.querySelector('.mobile-tabs').style.display = 'flex';
-                }
-            });
-        }
-        
-        // Set up event listeners
-        function setEventListeners() {
-            generateResumeBtn.addEventListener('click', generateResume);
-            generateCoverLetterBtn.addEventListener('click', generateCoverLetter);
-            clearStorageBtn.addEventListener('click', clearStorage);
-            
-            copyResumeBtn.addEventListener('click', () => copyToClipboard(resumeContent));
-            copyCoverLetterBtn.addEventListener('click', () => copyToClipboard(coverLetterContent));
-            
-            pdfResumeBtn.addEventListener('click', () => generatePDF(resumeContent, 'resume'));
-            pdfCoverLetterBtn.addEventListener('click', () => generatePDF(coverLetterContent, 'cover-letter'));
-            
-            // Style selection
-            styleOptions.forEach(option => {
-                option.addEventListener('click', () => {
-                    styleOptions.forEach(o => o.classList.remove('active'));
-                    option.classList.add('active');
-                    currentStyle = option.getAttribute('data-style');
-                    generateResume();
-                });
-            });
-            
-            // Country selection
-            countryOptions.forEach(option => {
-                option.addEventListener('click', () => {
-                    countryOptions.forEach(o => o.classList.remove('active'));
-                    option.classList.add('active');
-                    currentCountry = option.getAttribute('data-country');
-                    generateResume();
-                    generateCoverLetter();
-                });
-            });
-            
-            // Color picker
-            colorPicker.addEventListener('input', updateAccentColor);
-            
-            // Experience progress
-            yearsExperienceInput.addEventListener('input', updateExperienceProgress);
-            
-            // Save data on input
-            const inputs = document.querySelectorAll('input, textarea');
-            inputs.forEach(input => {
-                input.addEventListener('input', saveData);
-            });
-        }
-        
-        // Update experience progress
-        function updateExperienceProgress() {
-            const years = parseInt(yearsExperienceInput.value) || 0;
-            const width = Math.min(100, years * 10);
-            experienceProgress.style.width = `${width}%`;
-        }
-        
-        // Update stats
-        function updateStats() {
-            // Simulate increasing numbers
-            setInterval(() => {
-                const resumeCount = document.getElementById('resumeCount');
-                const coverLetterCount = document.getElementById('coverLetterCount');
-                
-                let currentResumeCount = parseInt(resumeCount.textContent.replace(/,/g, ''));
-                let currentCoverCount = parseInt(coverLetterCount.textContent.replace(/,/g, ''));
-                
-                resumeCount.textContent = (currentResumeCount + 1).toLocaleString();
-                coverLetterCount.textContent = (currentCoverCount + 1).toLocaleString();
-            }, 5000);
-        }
-        
-        // Load saved data from localStorage
-        function loadSavedData() {
-            if (localStorage.getItem('resumeData')) {
-                const data = JSON.parse(localStorage.getItem('resumeData'));
-                
-                fullNameInput.value = data.fullName || '';
-                jobTitleInput.value = data.jobTitle || '';
-                emailInput.value = data.email || '';
-                phoneInput.value = data.phone || '';
-                locationInput.value = data.location || '';
-                yearsExperienceInput.value = data.yearsExperience || '';
-                skillsInput.value = data.skills || '';
-                educationInput.value = data.education || '';
-                workExperienceInput.value = data.workExperience || '';
-                careerObjectiveInput.value = data.careerObjective || '';
-                companyNameInput.value = data.companyName || '';
-                hiringManagerInput.value = data.hiringManager || '';
-                
-                if (data.currentStyle) {
-                    currentStyle = data.currentStyle;
-                    document.querySelector(`.style-option[data-style="${currentStyle}"]`).classList.add('active');
-                }
-                
-                if (data.currentCountry) {
-                    currentCountry = data.currentCountry;
-                    document.querySelector(`.style-option[data-country="${currentCountry}"]`).classList.add('active');
-                }
-                
-                if (data.accentColor) {
-                    colorPicker.value = data.accentColor;
-                    updateAccentColor();
-                }
-                
-                updateExperienceProgress();
-                
-                // Generate resume with saved data
-                generateResume();
-                generateCoverLetter();
             }
         }
+
+        // Online status detection
+        window.addEventListener('online', () => {
+            isOnline = true;
+            showSyncIndicator();
+            if (currentUser) syncLocalChanges();
+            offlineIndicator.classList.remove('show');
+        });
         
-        // Save data to localStorage
-        function saveData() {
-            const data = {
-                fullName: fullNameInput.value,
-                jobTitle: jobTitleInput.value,
-                email: emailInput.value,
-                phone: phoneInput.value,
-                location: locationInput.value,
-                yearsExperience: yearsExperienceInput.value,
-                skills: skillsInput.value,
-                education: educationInput.value,
-                workExperience: workExperienceInput.value,
-                careerObjective: careerObjectiveInput.value,
-                companyName: companyNameInput.value,
-                hiringManager: hiringManagerInput.value,
-                currentStyle,
-                currentCountry,
-                accentColor: colorPicker.value
-            };
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            showSyncIndicator("Offline - changes saved locally");
+            offlineIndicator.classList.add('show');
+        });
+
+        // Show sync indicator
+        function showSyncIndicator(message = "Syncing with cloud...") {
+            syncIndicator.innerHTML = `<div class="spinner"></div><span>${message}</span>`;
+            syncIndicator.style.display = 'flex';
             
-            localStorage.setItem('resumeData', JSON.stringify(data));
+            if (message !== "Syncing with cloud...") {
+                setTimeout(() => {
+                    syncIndicator.style.display = 'none';
+                }, 3000);
+            }
         }
-        
-        // Update accent color
-        function updateAccentColor() {
-            document.documentElement.style.setProperty('--primary', colorPicker.value);
-            document.documentElement.style.setProperty('--secondary', adjustColor(colorPicker.value, -20));
-            saveData();
-        }
-        
-        // Helper function to adjust color
-        function adjustColor(color, amount) {
-            return '#' + color.replace(/^#/, '').replace(/../g, color => ('0'+Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
-        }
-        
-        // Show toast notification
-        function showToast(message) {
-            toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
-            toast.classList.add('show');
+
+        // Hide sync indicator
+        function hideSyncIndicator() {
+            syncIndicator.innerHTML = `<div class="spinner"></div><span>Sync complete!</span>`;
+            syncIndicator.classList.add('sync-complete');
             
             setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+                syncIndicator.style.display = 'none';
+                syncIndicator.classList.remove('sync-complete');
+            }, 2000);
         }
-        
-        // Generate Resume
-        function generateResume() {
-            if (!fullNameInput.value) {
-                showToast('Please enter your name');
-                return;
+
+        // Auth state listener
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                userEmail.textContent = user.email;
+                authSection.style.display = 'none';
+                journalSection.style.display = 'block';
+                
+                // Set up real-time listener
+                setupFirestoreListener();
+            } else {
+                currentUser = null;
+                authSection.style.display = 'block';
+                journalSection.style.display = 'none';
+                allPosts = [];
+                
+                // Unsubscribe from listener when logged out
+                if (unsubscribeListener) {
+                    unsubscribeListener();
+                    unsubscribeListener = null;
+                }
             }
+        });
+
+        // Set up Firestore real-time listener
+        function setupFirestoreListener() {
+            if (unsubscribeListener) unsubscribeListener();
             
-            const skills = skillsInput.value.split(',').map(skill => skill.trim());
+            const postsRef = db.collection('users').doc(currentUser.uid).collection('posts');
             
-            resumeContent.innerHTML = `
-                <div class="resume ${currentStyle} ${currentCountry}">
-                    <div class="resume-header">
-                        <h1 class="name">${fullNameInput.value}</h1>
-                        <p class="title">${jobTitleInput.value} ${yearsExperienceInput.value ? '| ' + yearsExperienceInput.value + ' years of experience' : ''}</p>
-                        <p class="contact">
-                            ${emailInput.value ? `<span class="contact-item">${emailInput.value}</span> • ` : ''}
-                            ${phoneInput.value ? `<span class="contact-item">${phoneInput.value}</span> • ` : ''}
-                            ${locationInput.value ? `<span class="contact-item">${locationInput.value}</span>` : ''}
-                        </p>
-                    </div>
-                    
-                    <div class="resume-section">
-                        <h3 class="resume-section-title">Professional Summary</h3>
-                        <p>${careerObjectiveInput.value || 'Not specified'}</p>
-                    </div>
-                    
-                    <div class="resume-section">
-                        <h3 class="resume-section-title">Skills</h3>
-                        <ul class="skills-list">
-                            ${skills.map(skill => `<li class="skill-item">${skill}</li>`).join('')}
-                        </ul>
-                    </div>
-                    
-                    <div class="resume-section">
-                        <h3 class="resume-section-title">Work Experience</h3>
-                        <p>${workExperienceInput.value.replace(/\n/g, '<br>') || 'Not specified'}</p>
-                    </div>
-                    
-                    <div class="resume-section">
-                        <h3 class="resume-section-title">Education</h3>
-                        <p>${educationInput.value.replace(/\n/g, '<br>') || 'Not specified'}</p>
-                    </div>
-                </div>
-            `;
+            showSyncIndicator();
             
-            saveData();
-            showToast('Resume generated successfully!');
-        }
-        
-        // Generate Cover Letter
-        function generateCoverLetter() {
-            if (!fullNameInput.value) {
-                showToast('Please enter your name');
-                return;
-            }
-            
-            const today = new Date();
-            const date = today.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+            unsubscribeListener = postsRef.orderBy('date', 'desc').onSnapshot(snapshot => {
+                const updatedPosts = [];
+                
+                snapshot.forEach(doc => {
+                    updatedPosts.push(doc.data());
+                });
+                
+                // Update allPosts and display
+                allPosts = updatedPosts;
+                displayPosts(allPosts);
+                
+                // Process data for SoulMap
+                processSoulMapData();
+                
+                // Save to local storage
+                savePostsToLocal();
+                
+                hideSyncIndicator();
+            }, error => {
+                console.error('Firestore listener error:', error);
+                hideSyncIndicator();
+                
+                // Load from local storage on error
+                loadLocalPosts();
             });
-            
-            const hiringManager = hiringManagerInput.value ? hiringManagerInput.value : 'Hiring Manager';
-            const companyName = companyNameInput.value ? companyNameInput.value : 'Company';
-            
-            coverLetterContent.innerHTML = `
-                <p>${date}</p><br>
-                <p>${hiringManager}<br>
-                Hiring Manager<br>
-                ${companyName}<br>
-                ${locationInput.value || 'Address'}</p><br>
-                <p>Dear ${getSalutation(hiringManager)},</p><br>
-                <p>I am writing to express my interest in the ${jobTitleInput.value || 'position'} at ${companyName}. With ${yearsExperienceInput.value || 'several'} years of experience in the field, I have developed a strong skill set that I believe would be valuable to your team.</p><br>
-                <p>My experience includes:</p>
-                <p>${workExperienceInput.value.replace(/\n/g, '<br>') || 'Not specified'}</p><br>
-                <p>My key skills include: ${skillsInput.value || 'Not specified'}.</p><br>
-                <p>${careerObjectiveInput.value || 'I am excited about the opportunity to contribute to your team and help achieve company goals.'}</p><br>
-                <p>Thank you for considering my application. I look forward to the opportunity to discuss how my skills and experience can benefit your organization.</p><br>
-                <p>Sincerely,<br>
-                ${fullNameInput.value}</p>
-            `;
-            
-            saveData();
-            showToast('Cover letter generated successfully!');
         }
-        
-        // Get appropriate salutation based on hiring manager name
-        function getSalutation(name) {
-            if (!name || name === 'Hiring Manager') return 'Hiring Manager';
+
+        // Sign in
+        signInBtn.addEventListener('click', () => {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
             
-            // If it's likely a first and last name
-            if (name.includes(' ')) {
-                return 'Mr./Ms. ' + name.split(' ')[1];
+            authError.textContent = '';
+            
+            if (!email || !password) {
+                authError.textContent = 'Please fill in all fields';
+                return;
             }
             
-            return name;
-        }
-        
-        // Copy to Clipboard
-        function copyToClipboard(element) {
-            const text = element.innerText;
-            navigator.clipboard.writeText(text)
-                .then(() => {
-                    showToast('Copied to clipboard!');
+            auth.signInWithEmailAndPassword(email, password)
+                .catch(error => {
+                    authError.textContent = error.message;
+                });
+        });
+
+        // Sign up
+        signUpBtn.addEventListener('click', () => {
+            const email = document.getElementById('signUpEmail').value;
+            const password = document.getElementById('signUpPassword').value;
+            const passwordConfirm = document.getElementById('signUpPasswordConfirm').value;
+            
+            signUpError.textContent = '';
+            
+            if (!email || !password || !passwordConfirm) {
+                signUpError.textContent = 'Please fill in all fields';
+                return;
+            }
+            
+            if (password !== passwordConfirm) {
+                signUpError.textContent = 'Passwords do not match';
+                return;
+            }
+            
+            if (password.length < 6) {
+                signUpError.textContent = 'Password should be at least 6 characters';
+                return;
+            }
+            
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Create user document in Firestore
+                    return db.collection('users').doc(userCredential.user.uid).set({
+                        email: email,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                 })
-                .catch(err => {
-                    console.error('Failed to copy: ', err);
-                    showToast('Failed to copy to clipboard');
+                .catch(error => {
+                    signUpError.textContent = error.message;
                 });
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut();
+        });
+
+        // Switch auth forms
+        switchToSignUp.addEventListener('click', () => {
+            authForm.style.display = 'none';
+            signUpForm.style.display = 'block';
+        });
+
+        switchToSignIn.addEventListener('click', () => {
+            signUpForm.style.display = 'none';
+            authForm.style.display = 'block';
+        });
+
+        // Load posts from local storage
+        function loadLocalPosts() {
+            try {
+                const saved = localStorage.getItem('journalPosts');
+                const localPosts = saved ? JSON.parse(saved) : [];
+                
+                if (localPosts.length > 0) {
+                    allPosts = localPosts;
+                    displayPosts(allPosts);
+                    // Process data for SoulMap
+                    processSoulMapData();
+                }
+            } catch (e) {
+                console.error('Error loading local posts:', e);
+            }
         }
-        
-        // Generate PDF
-        function generatePDF(element, filename) {
-            // Show loading indicator
-            pdfLoading.classList.add('active');
+
+        // Save posts to local storage
+        function savePostsToLocal() {
+            try {
+                localStorage.setItem('journalPosts', JSON.stringify(allPosts));
+                // Also save processed SoulMap data
+                localStorage.setItem('soulMapData', JSON.stringify(soulMapData));
+            } catch (e) {
+                console.error('Error saving to local storage:', e);
+            }
+        }
+
+        // Sync local changes to Firestore
+        function syncLocalChanges() {
+            if (!currentUser) return;
             
-            // Use setTimeout to allow the UI to update before starting the PDF generation
-            setTimeout(() => {
-                // Create a clone of the element to avoid modifying the original
-                const clonedElement = element.cloneNode(true);
+            const localPosts = JSON.parse(localStorage.getItem('journalPosts') || []);
+            const cloudPosts = allPosts;
+            
+            // Find posts that exist locally but not in cloud
+            const postsToSync = localPosts.filter(localPost => 
+                !cloudPosts.some(cloudPost => cloudPost.id === localPost.id)
+            );
+            
+            if (postsToSync.length > 0) {
+                showSyncIndicator("Syncing local changes...");
                 
-                // Remove any buttons or actions from the clone
-                clonedElement.querySelectorAll('button').forEach(button => button.remove());
+                const batch = db.batch();
+                const userRef = db.collection('users').doc(currentUser.uid);
                 
-                // Add specific PDF styling
-                clonedElement.style.padding = '20px';
-                clonedElement.style.width = '210mm'; // A4 width
-                clonedElement.style.background = 'white';
+                postsToSync.forEach(post => {
+                    const postRef = userRef.collection('posts').doc(post.id);
+                    batch.set(postRef, post);
+                });
                 
-                document.body.appendChild(clonedElement);
-                
-                html2canvas(clonedElement, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false
-                }).then(canvas => {
-                    const imgData = canvas.toDataURL('image/png');
-                    const pdf = new jspdf.jsPDF({
-                        orientation: 'portrait',
-                        unit: 'mm',
-                        format: 'a4'
+                batch.commit()
+                    .then(() => {
+                        console.log('Local changes synced to Firestore');
+                        hideSyncIndicator();
+                    })
+                    .catch(error => {
+                        console.error('Error syncing local changes:', error);
+                        hideSyncIndicator();
                     });
-                    
-                    const imgWidth = 210; // A4 width in mm
-                    const pageHeight = 297; // A4 height in mm
-                    const imgHeight = canvas.height * imgWidth / canvas.width;
-                    let heightLeft = imgHeight;
-                    let position = 0;
-                    
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-                    
-                    // Add more pages if needed
-                    while (heightLeft >= 0) {
-                        position = heightLeft - imgHeight;
-                        pdf.addPage();
-                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                        heightLeft -= pageHeight;
-                    }
-                    
-                    pdf.save(`${filename}-${new Date().getTime()}.pdf`);
-                    document.body.removeChild(clonedElement);
-                    
-                    // Hide loading indicator
-                    pdfLoading.classList.remove('active');
-                    
-                    showToast('PDF generated successfully!');
-                }).catch(error => {
-                    console.error('Error generating PDF:', error);
-                    pdfLoading.classList.remove('active');
-                    showToast('Error generating PDF. Please try again.');
+            }
+        }
+
+        // Select mood
+        function selectMood(button, mood) {
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+            selectedMood = mood;
+        }
+
+        // Create new post
+        function createPost() {
+            const text = document.getElementById('journalText').value.trim();
+            
+            if (!text) {
+                alert('Please write something before posting!');
+                return;
+            }
+
+            const newPost = {
+                id: Date.now().toString(),
+                text: text,
+                mood: selectedMood,
+                date: Date.now()
+            };
+
+            // Add to local array immediately for responsive UI
+            allPosts.unshift(newPost);
+            displayPosts(allPosts);
+            
+            // Process data for SoulMap
+            processSoulMapData();
+            
+            // Save to local storage
+            savePostsToLocal();
+            
+            // Save to Firestore if online
+            if (isOnline && currentUser) {
+                showSyncIndicator();
+                
+                db.collection('users').doc(currentUser.uid)
+                    .collection('posts').doc(newPost.id).set(newPost)
+                    .then(() => {
+                        hideSyncIndicator();
+                    })
+                    .catch(error => {
+                        console.error('Error saving to Firestore:', error);
+                        hideSyncIndicator();
+                    });
+            } else {
+                showSyncIndicator("Offline - changes saved locally");
+            }
+            
+            // Clear form
+            document.getElementById('journalText').value = '';
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            selectedMood = '🌱 Neutral';
+            
+            // Clear search
+            document.getElementById('searchInput').value = '';
+        }
+
+        // Search posts
+        function searchPosts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (!searchTerm) {
+                displayPosts(allPosts);
+                return;
+            }
+
+            const filtered = allPosts.filter(post => {
+                return post.text.toLowerCase().includes(searchTerm) ||
+                       post.mood.toLowerCase().includes(searchTerm);
+            });
+
+            displayPosts(filtered);
+        }
+
+        // Display posts
+        function displayPosts(posts) {
+            const feed = document.getElementById('postsFeed');
+            
+            if (posts.length === 0) {
+                feed.innerHTML = `
+                    <div class="empty-state">
+                        ${allPosts.length === 0 ? 
+                          'Your mental garden is empty... Plant your first thought seed' : 
+                          'No posts match your search'}
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            posts.forEach(post => {
+                const date = new Date(post.date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
                 });
-            }, 500);
+
+                html += `
+                    <div class="post-card">
+                        <div class="post-meta">
+                            <div class="post-date">${date}</div>
+                            <div class="post-mood">${post.mood}</div>
+                        </div>
+                        <div class="post-content">${post.text.replace(/\n/g, '<br>')}</div>
+                    </div>
+                `;
+            });
+
+            feed.innerHTML = html;
         }
-        
-        // Clear localStorage
-        function clearStorage() {
-            localStorage.removeItem('resumeData');
+
+        // Process data for SoulMap visualization
+        function processSoulMapData() {
+            soulMapData = allPosts.map(post => {
+                // Categorize posts based on content and mood
+                let category = 'default';
+                const text = post.text.toLowerCase();
+                
+                if (text.includes('reflect') || text.includes('think') || text.includes('feel')) {
+                    category = 'reflection';
+                } else if (text.includes('goal') || text.includes('achieve') || text.includes('target')) {
+                    category = 'goal';
+                } else if (text.includes('affirm') || text.includes('positive') || text.includes('gratitude')) {
+                    category = 'affirmation';
+                } else if (text.includes('habit') || text.includes('routine') || text.includes('practice')) {
+                    category = 'habit';
+                }
+                
+                // Extract keywords for connections
+                const keywords = extractKeywords(post.text);
+                
+                return {
+                    id: post.id,
+                    text: post.text,
+                    mood: post.mood,
+                    date: post.date,
+                    category: category,
+                    keywords: keywords
+                };
+            });
             
-            fullNameInput.value = '';
-            jobTitleInput.value = '';
-            emailInput.value = '';
-            phoneInput.value = '';
-            locationInput.value = '';
-            yearsExperienceInput.value = '';
-            skillsInput.value = '';
-            educationInput.value = '';
-            workExperienceInput.value = '';
-            careerObjectiveInput.value = '';
-            companyNameInput.value = '';
-            hiringManagerInput.value = '';
-            
-            resumeContent.innerHTML = '<p>Your resume will appear here after you click "Generate Resume".</p>';
-            coverLetterContent.innerHTML = '<p>Your cover letter will appear here after you click "Generate Cover Letter".</p>';
-            
-            // Reset to default style and country
-            styleOptions.forEach(option => option.classList.remove('active'));
-            document.querySelector('.style-option[data-style="modern"]').classList.add('active');
-            currentStyle = 'modern';
-            
-            countryOptions.forEach(option => option.classList.remove('active'));
-            document.querySelector('.style-option[data-country="usa"]').classList.add('active');
-            currentCountry = 'usa';
-            
-            colorPicker.value = '#4361ee';
-            updateAccentColor();
-            updateExperienceProgress();
-            
-            showToast('All data cleared!');
+            // If we're on the SoulMap view, update the visualization
+            if (soulmapView.classList.contains('active')) {
+                renderVisualization();
+            }
         }
+
+        // Extract keywords from text for network connections
+        function extractKeywords(text) {
+            const commonWords = new Set(['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'my', 'i', 'a', 'an', 'on', 'with', 'that', 'this', 'but', 'or', 'if']);
+            const words = text.toLowerCase()
+                .replace(/[^\w\s]/g, '')
+                .split(/\s+/)
+                .filter(word => word.length > 3 && !commonWords.has(word));
+            
+            // Return top 3 unique keywords
+            return [...new Set(words)].slice(0, 3);
+        }
+
+        // Switch between timeline and network graph
+        function switchVisualization(type) {
+            currentVisualization = type;
+            
+            // Update button states
+            timelineBtn.classList.toggle('active', type === 'timeline');
+            networkBtn.classList.toggle('active', type === 'network');
+            
+            // Show/hide views
+            timelineView.style.display = type === 'timeline' ? 'block' : 'none';
+            networkView.style.display = type === 'network' ? 'block' : 'none';
+            
+            // Render the selected visualization
+            renderVisualization();
+        }
+
+        // Render the current visualization
+        function renderVisualization() {
+            if (currentVisualization === 'timeline') {
+                renderTimeline();
+            } else {
+                renderNetworkGraph();
+            }
+        }
+
+        // Render timeline visualization
+        function renderTimeline() {
+            // Group posts by date
+            const postsByDate = {};
+            soulMapData.forEach(post => {
+                const date = new Date(post.date).toDateString();
+                if (!postsByDate[date]) {
+                    postsByDate[date] = [];
+                }
+                postsByDate[date].push(post);
+            });
+            
+            // Generate HTML for timeline
+            let html = '';
+            Object.keys(postsByDate).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
+                html += `<div class="timeline-date">${date}</div>`;
+                
+                postsByDate[date].forEach(post => {
+                    const time = new Date(post.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    html += `
+                        <div class="timeline-item">
+                            <div class="timeline-mood">${post.mood}</div>
+                            <div class="timeline-content">
+                                <div><strong>${time}</strong> - ${post.category}</div>
+                                <div>${post.text}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+            
+            timelineView.innerHTML = html || '<div class="empty-state">No timeline data available</div>';
+        }
+
+        // Render network graph visualization
+        function renderNetworkGraph() {
+            // Clear previous graph
+            networkView.innerHTML = '';
+            
+            if (soulMapData.length === 0) {
+                networkView.innerHTML = '<div class="empty-state">No data available for network graph</div>';
+                return;
+            }
+            
+            // Set up dimensions
+            const width = networkView.clientWidth;
+            const height = networkView.clientHeight;
+            
+            // Create SVG
+            const svg = d3.select(netview)
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+            
+            // Create tooltip
+            const tooltip = d3.select('body')
+                .append('div')
+                .attr('class', 'graph-tooltip')
+                .style('opacity', 0);
+            
+            // Create nodes and links
+            const nodes = soulMapData.map(post => ({
+                id: post.id,
+                text: post.text,
+                mood: post.mood,
+                category: post.category,
+                radius: 8 + (post.text.length / 20) // Size based on content length
+            }));
+            
+            // Create links based on shared keywords and categories
+            const links = [];
+            const linkSet = new Set(); // To avoid duplicate links
+            
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const sourcePost = soulMapData.find(p => p.id === nodes[i].id);
+                    const targetPost = soulMapData.find(p => p.id === nodes[j].id);
+                    
+                    // Connect nodes that share keywords or categories
+                    const sharedKeywords = sourcePost.keywords.filter(k => 
+                        targetPost.keywords.includes(k));
+                    
+                    if (sharedKeywords.length > 0 || sourcePost.category === targetPost.category) {
+                        const linkId = `${sourcePost.id}-${targetPost.id}`;
+                        if (!linkSet.has(linkId)) {
+                            links.push({
+                                source: nodes[i].id,
+                                target: nodes[j].id,
+                                value: sharedKeywords.length > 0 ? sharedKeywords.length : 1
+                            });
+                            linkSet.add(linkId);
+                        }
+                    }
+                }
+            }
+            
+            // Set up force simulation
+            const simulation = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('center', d3.forceCenter(width / 2, height / 2));
+            
+            // Draw links
+            const link = svg.append('g')
+                .attr('class', 'links')
+                .selectAll('line')
+                .data(links)
+                .enter().append('line')
+                .attr('class', 'link')
+                .attr('stroke-width', d => Math.sqrt(d.value));
+            
+            // Draw nodes
+            const node = svg.append('g')
+                .attr('class', 'nodes')
+                .selectAll('circle')
+                .data(nodes)
+                .enter().append('circle')
+                .attr('class', d => `node ${d.category}`)
+                .attr('r', d => d.radius)
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+            
+            // Add node labels
+            const label = svg.append('g')
+                .attr('class', 'labels')
+                .selectAll('text')
+                .data(nodes)
+                .enter().append('text')
+                .attr('class', 'node-label')
+                .text(d => d.mood)
+                .style('font-size', '10px');
+            
+            // Update positions on each tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+                
+                node
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+                
+                label
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y - 15);
+            });
+            
+            // Add interactivity
+            node.on('mouseover', function(event, d) {
+                tooltip.transition()
+                    .duration(200)
+                    .style('opacity', .9);
+                tooltip.html(`${d.mood}<br/>${d.text.substring(0, 100)}${d.text.length > 100 ? '...' : ''}`)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 28) + 'px');
+                
+                // Highlight connected nodes
+                node.style('opacity', otherNode => {
+                    return isConnected(d, otherNode) ? 1 : 0.2;
+                });
+                
+                link.style('stroke-opacity', l => {
+                    return l.source.id === d.id || l.target.id === d.id ? 1 : 0.1;
+                });
+            })
+            .on('mouseout', function() {
+                tooltip.transition()
+                    .duration(500)
+                    .style('opacity', 0);
+                
+                // Reset opacity
+                node.style('opacity', 1);
+                link.style('stroke-opacity', 0.6);
+            });
+            
+            // Helper function to check if nodes are connected
+            function isConnected(a, b) {
+                return links.some(l => 
+                    (l.source.id === a.id && l.target.id === b.id) || 
+                    (l.source.id === b.id && l.target.id === a.id)
+                );
+            }
+            
+            // Drag functions
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+            
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+            
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+        }
+
+        // Switch between SoulBoard and SoulMap views
+        soulboardBtn.addEventListener('click', () => {
+            soulboardBtn.classList.add('active');
+            soulmapBtn.classList.remove('active');
+            soulboardView.classList.add('active');
+            soulmapView.classList.remove('active');
+        });
+
+        soulmapBtn.addEventListener('click', () => {
+            soulmapBtn.classList.add('active');
+            soulboardBtn.classList.remove('active');
+            soulmapView.classList.add('active');
+            soulboardView.classList.remove('active');
+            
+            // Process and render SoulMap data if needed
+            if (soulMapData.length === 0 && allPosts.length > 0) {
+                processSoulMapData();
+            }
+            renderVisualization();
+        });
+
+        // Initialize app when page loads
+        window.onload = function() {
+            // Check if we have local posts to display while loading
+            loadLocalPosts();
+            
+            // Initialize PWA features
+            handlePWAInstall();
+            registerServiceWorker();
+            
+            // Initialize offline status
+            if (!navigator.onLine) {
+                offlineIndicator.classList.add('show');
+            }
+            
+            // Focus on email field
+            document.getElementById('emailInput').focus();
+        };
     </script>
 </body>
 </html>
