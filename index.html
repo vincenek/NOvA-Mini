@@ -22,6 +22,9 @@
     <!-- D3.js for network graph visualization -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
             --primary: #2A9D8F;
@@ -39,6 +42,8 @@
             --node-affirmation: #CAFFBF;
             --node-habit: #BDB2FF;
             --node-default: #FFD6A5;
+            --node-emotion: #FFC6FF;
+            --node-connection: #A0C4FF;
         }
 
         * {
@@ -52,11 +57,16 @@
             background: linear-gradient(160deg, #F4F9F7 0%, #E9F5F1 100%);
             color: var(--text);
             line-height: 1.6;
-            max-width: 680px;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 2rem 1rem;
+            padding: 1rem;
             min-height: 100vh;
             transition: background 0.3s ease;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .header {
@@ -99,6 +109,9 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .nav-btn.active {
@@ -210,7 +223,7 @@
             border: 2px solid var(--border);
             border-radius: 0.6rem;
             font-size: 1rem;
-            background: rgba(244, 249, 247, 极速加速器);
+            background: rgba(244, 249, 247, 0.8);
             transition: all 0.2s ease;
         }
 
@@ -229,7 +242,7 @@
             padding: 1.5rem;
             border-radius: 0.8rem;
             margin-bottom: 1.2rem;
-            box-shadow: 极速加速器 2px 12px rgba(42, 157, 143, 0.05);
+            box-shadow: 0 2px 12px rgba(42, 157, 143, 0.05);
             transition: all 0.3s ease;
             position: relative;
             border-left: 4px solid var(--primary);
@@ -285,7 +298,7 @@
             padding: 2rem;
             margin-bottom: 2rem;
             backdrop-filter: blur(4px);
-            min-height: 500px;
+            min-height: 600px;
             position: relative;
         }
 
@@ -303,6 +316,9 @@
             background: rgba(244, 249, 247, 0.8);
             cursor: pointer;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .viz-btn.active {
@@ -360,11 +376,32 @@
 
         .network-graph {
             width: 100%;
-            height: 500px;
+            height: 600px;
             border-radius: 0.8rem;
             background: var(--timeline-bg);
             overflow: hidden;
             position: relative;
+        }
+
+        .graph-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .graph-control-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin: 0 2px;
+            cursor: pointer;
         }
 
         .node {
@@ -392,6 +429,10 @@
             fill: var(--node-default);
         }
 
+        .node.emotion {
+            fill: var(--node-emotion);
+        }
+
         .node:hover {
             stroke: var(--primary);
             stroke-width: 2px;
@@ -406,7 +447,7 @@
         }
 
         .link {
-            stroke: #999;
+            stroke: var(--node-connection);
             stroke-opacity: 0.6;
         }
 
@@ -419,45 +460,39 @@
             pointer-events: none;
             font-size: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 300px;
             z-index: 100;
         }
 
-        .graph-controls {
+        .cluster {
+            stroke: var(--primary);
+            stroke-width: 2px;
+            stroke-dasharray: 5,5;
+            fill: none;
+        }
+
+        .legend {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.8);
+            bottom: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
             padding: 10px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 10;
         }
 
-        .control-btn {
-            padding: 5px 10px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
         }
 
-        .control-btn:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .cluster {
-            stroke: #fff;
-            stroke-width: 1.5px;
-        }
-
-        .cluster-label {
-            font-size: 14px;
-            font-weight: bold;
-            pointer-events: none;
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 5px;
         }
 
         /* Auth container styles */
@@ -605,7 +640,7 @@
         .sync-indicator .spinner {
             width: 16px;
             height: 16px;
-            border: 2px solid rgba极速加速器,255,255,0.3);
+            border: 2px solid rgba(255,255,255,0.3);
             border-top: 2px solid white;
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -635,7 +670,7 @@
             justify-content: center;
             align-items: center;
             font-size: 1.5rem;
-            box-shadow: 0 极速加速器 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             cursor: pointer;
             border: none;
             animation: pulse 2s infinite;
@@ -666,7 +701,7 @@
             width: 40px;
             height: 40px;
             background: var(--primary);
-            border-radius: 极速加速器px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -700,7 +735,7 @@
             gap: 8px;
             z-index: 100;
             opacity: 0;
-            transform: translate极速加速器(20px);
+            transform: translateY(20px);
             transition: all 0.3s ease;
         }
 
@@ -715,7 +750,7 @@
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20极速加速器); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -752,9 +787,9 @@
             }
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
             body {
-                padding: 1rem;
+                padding: 0.5rem;
             }
             
             .journal-container, .auth-container, .soulmap-container {
@@ -773,162 +808,201 @@
             .network-graph {
                 height: 400px;
             }
+            
+            .visualization-controls {
+                flex-direction: column;
+                align-items: center;
+            }
         }
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class极速加速器="logo">🌿</div>
-        <h1 class="tagline">SoulBoard Pro - Mindful Journaling</h1>
-    </header>
+    <div class="app-container">
+        <header class="header">
+            <div class="logo">🌿</div>
+            <h1 class="tagline">SoulBoard Pro - Mindful Journaling & Mapping</h1>
+        </header>
 
-    <!-- Navigation -->
-    <div class="nav-container">
-        <button id="soulboardBtn" class="nav-btn active">SoulBoard</button>
-        <button id="soulmapBtn" class="nav-btn">SoulMap</button>
-    </div>
-
-    <!-- Views -->
-    <div id="authSection" class="auth-container">
-        <h2 class="auth-title">Sign In to SoulBoard Pro</h2>
-        <div id="authForm" class="auth-form">
-            <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" id="emailInput" class="form-input" placeholder="your.email@example.com">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" id="passwordInput" class="form-input" placeholder="••••••••">
-            </div>
-            <button id="signIn极速加速器" class="auth-btn">Sign In</button>
-            <div class="auth极速加速器switch">
-                Don't have an account? <a id="switchToSignUp">Sign Up</a>
-            </div>
-            <div id="authError" class="error-message"></div>
-        </div>
-
-        <div id="signUpForm" class="auth-form" style="display: none;">
-            <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" id="signUpEmail" class="form-input" placeholder="your.email@example.com">
-            </极速加速器div>
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" id="signUpPassword" class="form-input" placeholder="••••••••">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Confirm Password</label>
-                <input type="password" id="signUpPasswordConfirm" class="form-input" placeholder="••••••••">
-            </div>
-            <button id="signUpBtn" class="auth-btn">Create Account</button>
-            <div class="auth-switch">
-                Already have an account? <a id="switchToSignIn">Sign In</a>
-            </div>
-            <div id="signUpError" class="error-message"></div>
-        </div>
-    </div>
-
-    <div id="journalSection" style="display: none;">
-        <div id="userInfo" class="user-info">
-            <div>
-                <span class="user-email" id="userEmail">user@example.com</span>
-            </div>
-            <button id="logoutBtn" class="logout-btn">
-                <span>Logout</span>
+        <!-- Navigation -->
+        <div class="nav-container">
+            <button id="soulboardBtn" class="nav-btn active">
+                <i class="fas fa-clipboard-list"></i> SoulBoard
+            </button>
+            <button id="soulmapBtn" class="nav-btn">
+                <i class="fas fa-project-diagram"></i> SoulMap
             </button>
         </div>
 
-        <!-- SoulBoard View -->
-        <div id="soulboardView" class="view active">
-            <div class="journal-container">
-                <section class="editor">
-                    <textarea id="journalText" placeholder="What's growing in your mind today?"></textarea>
+        <!-- Auth Section -->
+        <div id="authSection" class="auth-container">
+            <h2 class="auth-title">Sign In to SoulBoard Pro</h2>
+            <div id="authForm" class="auth-form">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="emailInput" class="form-input" placeholder="your.email@example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="passwordInput" class="form-input" placeholder="••••••••">
+                </div>
+                <button id="signInBtn" class="auth-btn">Sign In</button>
+                <div class="auth-switch">
+                    Don't have an account? <a id="switchToSignUp">Sign Up</a>
+                </div>
+                <div id="authError" class="error-message"></div>
+            </div>
+
+            <div id="signUpForm" class="auth-form" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="signUpEmail" class="form-input" placeholder="your.email@example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="signUpPassword" class="form-input" placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" id="signUpPasswordConfirm" class="form-input" placeholder="••••••••">
+                </div>
+                <button id="signUpBtn" class="auth-btn">Create Account</button>
+                <div class="auth-switch">
+                    Already have an account? <a id="switchToSignIn">Sign In</a>
+                </div>
+                <div id="signUpError" class="error-message"></div>
+            </div>
+        </div>
+
+        <!-- Journal Section -->
+        <div id="journalSection" style="display: none;">
+            <div id="userInfo" class="user-info">
+                <div>
+                    <span class="user-email" id="userEmail">user@example.com</span>
+                </div>
+                <button id="logoutBtn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+
+            <!-- SoulBoard View -->
+            <div id="soulboardView" class="view active">
+                <div class="journal-container">
+                    <section class="editor">
+                        <textarea id="journalText" placeholder="What's growing in your mind today?"></textarea>
+                        
+                        <div class="mood-grid">
+                            <button class="mood-btn" onclick="selectMood(this, '🌻 Happy')">🌻 Happy</button>
+                            <button class="mood-btn" onclick="selectMood(this, '🍃 Calm')">🍃 Calm</button>
+                            <button class="mood-btn" onclick="selectMood(this, '🌧️ Reflective')">🌧️ Reflective</button>
+                            <button class="mood-btn" onclick="selectMood(this, '💡 Inspired')">💡 Inspired</button>
+                            <button class="mood-btn" onclick="selectMood(this, '🌊 Flow')">🌊 Flow</button>
+                            <button class="mood-btn" onclick="selectMood(this, '🔥 Passionate')">🔥 Passionate</button>
+                            <button class="mood-btn" onclick="selectMood(this, '🌙 Restful')">🌙 Restful</button>
+                            <button class="mood-btn" onclick="selectMood(this, '🎉 Celebratory')">🎉 Celebratory</button>
+                        </div>
+
+                        <button class="post-btn" onclick="createPost()">Plant This Thought</button>
+
+                        <div class="search-container">
+                            <input 
+                                type="text" 
+                                class="search-bar" 
+                                id="searchInput"
+                                placeholder="Search your thoughts..."
+                                oninput="searchPosts()">
+                        </div>
+                    </section>
+
+                    <section class="posts-feed" id="postsFeed">
+                        <div class="empty-state">
+                            Your mental garden is empty... Plant your first thought seed
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- SoulMap View -->
+            <div id="soulmapView" class="view">
+                <div class="soulmap-container">
+                    <div class="visualization-controls">
+                        <button id="timelineBtn" class="viz-btn active" onclick="switchVisualization('timeline')">
+                            <i class="fas fa-history"></i> Timeline
+                        </button>
+                        <button id="networkBtn" class="viz-btn" onclick="switchVisualization('network')">
+                            <i class="fas fa-project-diagram"></i> Network Graph
+                        </button>
+                    </div>
                     
-                    <div class="mood-grid">
-                        <button class="mood-btn" onclick="selectMood(this, '🌻 Happy')">🌻 Happy</button>
-                        <button class="mood-btn" onclick="selectMood(this, '🍃 Calm')">🍃 Calm</button>
-                        <button class="mood-btn" onclick="selectMood(this, '🌧️ Reflective')">🌧️ Reflective</button>
-                        <button class="mood-btn" onclick="select极速加速器ood(this, '💡 Inspired')">💡 Inspired</button>
-                        <button class="mood-btn" onclick="selectMood(this, '🌊 Flow')">🌊 Flow</button>
-                        <button class="mood-btn" onclick="selectMood(this, '🔥 Passionate')">🔥 Passionate</button>
-                        <button class="mood-btn" onclick="selectMood(this, '🌙 Restful')">🌙 Restful</button>
-                        <button class="mood-btn" onclick="selectMood(this, '🎉 Celebratory')">🎉 Celebratory</button>
+                    <div id="timelineView" class="timeline-view">
+                        <!-- Timeline will be rendered here -->
                     </div>
-
-                    <button class="post-btn" onclick="createPost()">Plant This Thought</button>
-
-                    <div class="search-container">
-                        <input 
-                            type="text" 
-                            class="search-bar" 
-                            id="searchInput"
-                            placeholder="Search your thoughts..."
-                            oninput="searchPosts()">
-                    </div>
-                </section>
-
-                <section class="posts-feed" id="postsFeed">
-                    <div class="empty-state">
-                        Your mental garden is empty... Plant your first thought seed
-                    </div>
-                </section>
-            </div>
-        </div>
-
-        <!-- SoulMap View -->
-        <div id="soulmapView" class="view">
-            <div class="soulmap-container">
-                <div class="visualization-controls">
-                    <button id="timelineBtn" class="viz-btn active" onclick="switchVisualization('timeline')">Timeline</button>
-                    <button id="networkBtn" class="viz-btn" onclick="switchVisualization('network')">Network Graph</button>
-                </div>
-                
-                <div id="timelineView" class="timeline-view">
-                    <!-- Timeline will be rendered here -->
-                </div>
-                
-                <div id="networkView" class="network-graph" style="display: none;">
-                    <!-- Network graph will be rendered here -->
-                    <div class="graph-controls">
-                        <button class="control-btn" onclick="zoomIn()">+</button>
-                        <button class="control-btn" onclick="zoomOut()">-</button>
-                        <button class="control-btn" onclick="resetView()">Reset</button>
+                    
+                    <div id="networkView" class="network-graph" style="display: none;">
+                        <!-- Network graph will be rendered here -->
+                        <div class="graph-controls">
+                            <button class="graph-control-btn" onclick="zoomIn()"><i class="fas fa-search-plus"></i></button>
+                            <button class="graph-control-btn" onclick="zoomOut()"><i class="fas fa-search-minus"></i></button>
+                            <button class="graph-control-btn" onclick="resetView()"><i class="fas fa-sync"></i></button>
+                        </div>
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: var(--node-reflection);"></div>
+                                <span>Reflection</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: var(--node-goal);"></div>
+                                <span>Goal</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: var(--node-affirmation);"></div>
+                                <span>Affirmation</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: var(--node-habit);"></div>
+                                <span>Habit</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: var(--node-emotion);"></div>
+                                <span>Emotion</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- PWA Install Button -->
-    <div class="pwa-install-container" id="pwaInstallContainer">
-        <button class="pwa-install-btn" id="pwaInstallBtn">
-            <i class="fas fa-download"></i>
-        </button>
-    </div>
-    
-    <!-- Install Prompt -->
-    <div class="install-prompt"极速加速器id="installPrompt">
-        <div class="install-icon">
-            <i class="fas fa-download"></i>
+        <!-- PWA Install Button -->
+        <div class="pwa-install-container" id="pwaInstallContainer">
+            <button class="pwa-install-btn" id="pwaInstallBtn">
+                <i class="fas fa-download"></i>
+            </button>
         </div>
-        <div class="install-text">
-            <strong>Install SoulBoard Pro</strong>
-            <p>Add to home screen for quick access</p>
+        
+        <!-- Install Prompt -->
+        <div class="install-prompt" id="installPrompt">
+            <div class="install-icon">
+                <i class="fas fa-download"></i>
+            </div>
+            <div class="install-text">
+                <strong>Install SoulBoard Pro</strong>
+                <p>Add to home screen for quick access</p>
+            </div>
+            <button class="install-close" id="closePrompt">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        <button class="install-close" id="closePrompt">
-            <i class="fas fa-times"></i>
-        </button>
-    </div>
-    
-    <!-- Offline Indicator -->
-    <div class="offline-indicator" id="offlineIndicator">
-        <i class="fas fa-wifi-slash"></i>
-        <span>You are currently offline</span>
-    </div>
+        
+        <!-- Offline Indicator -->
+        <div class="offline-indicator" id="offlineIndicator">
+            <i class="fas fa-wifi-slash"></i>
+            <span>You are currently offline</span>
+        </div>
 
-    <div id="syncIndicator" class="sync-indicator" style="display: none;">
-        <div class="spinner"></div>
-        <span>Syncing with cloud...</span>
+        <div id="syncIndicator" class="sync-indicator" style="display: none;">
+            <div class="spinner"></div>
+            <span>Syncing with cloud...</span>
+        </div>
     </div>
 
     <script>
@@ -971,7 +1045,7 @@
         // SoulMap elements
         const soulboardBtn = document.getElementById('soulboardBtn');
         const soulmapBtn = document.getElementById('soulmapBtn');
-        const soulboardView = document.getElementById('soulboard极速加速器iew');
+        const soulboardView = document.getElementById('soulboardView');
         const soulmapView = document.getElementById('soulmapView');
         const timelineView = document.getElementById('timelineView');
         const networkView = document.getElementById('networkView');
@@ -988,8 +1062,9 @@
         let unsubscribeListener = null;
         let currentVisualization = 'timeline';
         let soulMapData = [];
-        let networkSimulation = null;
-        let currentZoom = 1;
+        let simulation = null;
+        let svg = null;
+        let zoom = null;
 
         // PWA Installation Handling
         function handlePWAInstall() {
@@ -1030,7 +1105,7 @@
             
             // Close prompt
             closePrompt.addEventListener('click', () => {
-                installPrompt.classList.remove极速加速器('show');
+                installPrompt.classList.remove('show');
             });
             
             // Listen for app installed event
@@ -1056,9 +1131,9 @@
                         const urlsToCache = [
                             './',
                             'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-                            'https://www.gstatic.com/firebasejs/9.22.0/f极速加速器irebase-app-compat.js',
+                            'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js',
                             'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js',
-                            '极速加速器ttps://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js',
+                            'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js',
                             'https://d3js.org/d3.v7.min.js'
                         ];
                         
@@ -1231,7 +1306,7 @@
             
             signUpError.textContent = '';
             
-            if (!email || !password || !passwordConfirm极速加速器) {
+            if (!email || !password || !passwordConfirm) {
                 signUpError.textContent = 'Please fill in all fields';
                 return;
             }
@@ -1246,7 +1321,7 @@
                 return;
             }
             
-            auth.createUser极速加速器WithEmailAndPassword(email, password)
+            auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     // Create user document in Firestore
                     return db.collection('users').doc(userCredential.user.uid).set({
@@ -1318,7 +1393,7 @@
             if (postsToSync.length > 0) {
                 showSyncIndicator("Syncing local changes...");
                 
-                const batch极速加速器 = db.batch();
+                const batch = db.batch();
                 const userRef = db.collection('users').doc(currentUser.uid);
                 
                 postsToSync.forEach(post => {
@@ -1464,14 +1539,16 @@
                 let category = 'default';
                 const text = post.text.toLowerCase();
                 
-                if (text.includes('reflect') || text.includes('think') || text.includes('feel') || post.mood.includes('Reflective')) {
+                if (text.includes('reflect') || text.includes('think') || text.includes('contemplate') || text.includes('meditate')) {
                     category = 'reflection';
-                } else if (text.includes('goal') || text.includes('achieve') || text.includes('target') || text.includes('want')) {
+                } else if (text.includes('goal') || text.includes('achieve') || text.includes('target') || text.includes('objective')) {
                     category = 'goal';
                 } else if (text.includes('affirm') || text.includes('positive') || text.includes('gratitude') || text.includes('thank')) {
                     category = 'affirmation';
                 } else if (text.includes('habit') || text.includes('routine') || text.includes('practice') || text.includes('daily')) {
                     category = 'habit';
+                } else if (text.includes('feel') || text.includes('emotion') || text.includes('mood') || text.includes('happy') || text.includes('sad') || text.includes('anxious')) {
+                    category = 'emotion';
                 }
                 
                 // Extract keywords for connections
@@ -1495,7 +1572,7 @@
 
         // Extract keywords from text for network connections
         function extractKeywords(text) {
-            const commonWords = new Set(['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'my', 'i', 'a', 'an', 'on', 'with', 'that', 'this', 'but', 'or', 'if', 'am', 'are', 'was', 'were', 'have', 'has', 'had', 'be', 'been', 'not', 'so', 'very', 'just', 'like', 'as', 'at']);
+            const commonWords = new Set(['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'my', 'i', 'a', 'an', 'on', 'with', 'that', 'this', 'but', 'or', 'if', 'be', 'are', 'at', 'so', 'was', 'have', 'has', 'had']);
             const words = text.toLowerCase()
                 .replace(/[^\w\s]/g, '')
                 .split(/\s+/)
@@ -1503,18 +1580,6 @@
             
             // Return top 5 unique keywords
             return [...new Set(words)].slice(0, 5);
-        }
-
-        // Calculate text similarity between two posts
-        function calculateSimilarity(text1, text2) {
-            // Simple implementation of Jaccard similarity
-            const words1 = new Set(text1.toLowerCase().split(/\W+/).filter(w => w.length > 3));
-            const words2 = new Set(text2.toLowerCase().split(/\W+/).filter(w => w.length > 3));
-            
-            const intersection = new Set([...words1].filter(x => words2.has(x)));
-            const union = new Set([...words1, ...words2]);
-            
-            return union.size === 0 ? 0 : intersection.size / union.size;
         }
 
         // Switch between timeline and network graph
@@ -1549,7 +1614,7 @@
             soulMapData.forEach(post => {
                 const date = new Date(post.date).toDateString();
                 if (!postsByDate[date]) {
-                    posts极速加速器ByDate[date] = [];
+                    postsByDate[date] = [];
                 }
                 postsByDate[date].push(post);
             });
@@ -1566,7 +1631,7 @@
                         <div class="timeline-item">
                             <div class="timeline-mood">${post.mood}</div>
                             <div class="timeline-content">
-                                <div><strong>${time}</strong> - ${post.category}</div>
+                                <div><strong>${time}</strong> - ${post.category.charAt(0).toUpperCase() + post.category.slice(1)}</div>
                                 <div>${post.text}</div>
                             </div>
                         </div>
@@ -1580,20 +1645,10 @@
         // Render network graph visualization
         function renderNetworkGraph() {
             // Clear previous graph
-            networkView.innerHTML = '';
-            
-            // Add control buttons
-            const controls = document.createElement('div');
-            controls.className = 'graph-controls';
-            controls.innerHTML = `
-                <button class="control-btn" onclick="zoomIn()">+</button>
-                <button class="control-btn" onclick="zoomOut()">-</button>
-                <button class="control-btn" onclick="resetView()">Reset</button>
-            `;
-            networkView.appendChild(controls);
+            d3.select("#networkView").selectAll("*").remove();
             
             if (soulMapData.length === 0) {
-                networkView.innerHTML += '<div class="empty-state">No data available for network graph</div>';
+                networkView.innerHTML = '<div class="empty-state">No data available for network graph</div>';
                 return;
             }
             
@@ -1602,17 +1657,18 @@
             const height = networkView.clientHeight;
             
             // Create SVG
-            const svg = d3.select(networkView)
-                .append('svg')
-                .attr('width', width)
-                .attr('height', height)
-                .attr('id', 'network-svg');
+            svg = d3.select("#networkView")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", [0, 0, width, height])
+                .attr("style", "max-width: 100%; height: auto;");
             
             // Create tooltip
-            const tooltip = d3.select('body')
-                .append('div')
-                .attr('class', 'graph-tooltip')
-                .style('opacity', 0);
+            const tooltip = d3.select("body")
+                .append("div")
+                .attr("class", "graph-tooltip")
+                .style("opacity", 0);
             
             // Create nodes
             const nodes = soulMapData.map(post => ({
@@ -1620,11 +1676,11 @@
                 text: post.text,
                 mood: post.mood,
                 category: post.category,
-                radius: 6 + (post.text.length / 30), // Size based on content length
+                radius: 10 + (post.text.length / 30), // Size based on content length
                 date: post.date
             }));
             
-            // Create links based on semantic similarity
+            // Create links based on shared keywords and categories
             const links = [];
             const linkSet = new Set(); // To avoid duplicate links
             
@@ -1633,18 +1689,19 @@
                     const sourcePost = soulMapData.find(p => p.id === nodes[i].id);
                     const targetPost = soulMapData.find(p => p.id === nodes[j].id);
                     
-                    // Calculate similarity between posts
-                    const similarity = calculateSimilarity(sourcePost.text, targetPost.text);
+                    // Connect nodes that share keywords or categories
+                    const sharedKeywords = sourcePost.keywords.filter(k => 
+                        targetPost.keywords.includes(k));
                     
-                    // Connect nodes with similarity above threshold
-                    if (similarity > 0.2) {
+                    if (sharedKeywords.length > 0 || sourcePost.category === targetPost.category) {
                         const linkId = `${sourcePost.id}-${targetPost.id}`;
-                        if (!linkSet.has(linkId)) {
+                        const reverseLinkId = `${targetPost.id}-${sourcePost.id}`;
+                        if (!linkSet.has(linkId) && !linkSet.has(reverseLinkId)) {
                             links.push({
                                 source: nodes[i].id,
                                 target: nodes[j].id,
-                                value: similarity,
-                                strength: similarity * 2
+                                value: sharedKeywords.length > 0 ? sharedKeywords.length : 1,
+                                type: sharedKeywords.length > 0 ? 'keyword' : 'category'
                             });
                             linkSet.add(linkId);
                         }
@@ -1653,108 +1710,98 @@
             }
             
             // Set up force simulation
-            const simulation = d3.forceSimulation(nodes)
-                .force('link', d3.forceLink(links).id(d => d.id).distance(d => 150 - (d.value * 100)).strength(d => d.strength))
-                .force('charge', d3.forceManyBody().strength(-200))
-                .force('center', d3.forceCenter(width / 2, height / 2))
-                .force('collision', d3.forceCollide().radius(d => d.radius + 5));
-            
-            // Store simulation for later use
-            networkSimulation = simulation;
+            simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id).distance(100).strength(0.1))
+                .force("charge", d3.forceManyBody().strength(-300))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collision", d3.forceCollide().radius(d => d.radius + 5));
             
             // Draw links
-            const link = svg.append('g')
-                .attr('class', 'links')
-                .selectAll('line')
+            const link = svg.append("g")
+                .attr("class", "links")
+                .selectAll("line")
                 .data(links)
-                .enter().append('line')
-                .attr('class', 'link')
-                .attr('stroke-width', d => d.value * 3);
+                .enter().append("line")
+                .attr("class", "link")
+                .attr("stroke-width", d => Math.sqrt(d.value));
             
             // Draw nodes
-            const node = svg.append('g')
-                .attr('class', 'nodes')
-                .selectAll('circle')
+            const node = svg.append("g")
+                .attr("class", "nodes")
+                .selectAll("circle")
                 .data(nodes)
-                .enter().append('circle')
-                .attr('class', d => `node ${d.category}`)
-                .attr('r', d => d.radius)
+                .enter().append("circle")
+                .attr("class", d => `node ${d.category}`)
+                .attr("r", d => d.radius)
                 .call(d3.drag()
-                    .on('start', dragstarted)
-                    .on('drag', dragged)
-                    .on('end', dragended));
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
             
             // Add node labels
-            const label = svg.append('g')
-                .attr('class', 'labels')
-                .selectAll('text')
+            const label = svg.append("g")
+                .attr("class", "labels")
+                .selectAll("text")
                 .data(nodes)
-                .enter().append('text')
-                .attr('class', 'node-label')
-                .text(d => {
-                    // Use mood emoji or first few letters for label
-                    const moodWords = d.mood.split(' ');
-                    return moodWords.length > 1 ? moodWords[0] : d.mood.substring(0, 3);
-                })
-                .style('font-size', '9px');
+                .enter().append("text")
+                .attr("class", "node-label")
+                .text(d => d.mood)
+                .style("font-size", "10px");
+            
+            // Add zoom capabilities
+            zoom = d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on("zoom", (event) => {
+                    svg.attr("transform", event.transform);
+                });
+            
+            svg.call(zoom);
             
             // Update positions on each tick
-            simulation.on('tick', () => {
+            simulation.on("tick", () => {
                 link
-                    .attr('x1', d => d.source.x)
-                    .attr('y1', d => d.source.y)
-                    .attr('x2', d => d.target.x)
-                    .attr('y2', d => d.target.y);
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
                 
                 node
-                    .attr('cx', d => d.x)
-                    .attr('cy', d => d.y);
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
                 
                 label
-                    .attr('x', d => d.x)
-                    .attr('y', d => d.y + 3);
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y - d.radius - 5);
             });
             
             // Add interactivity
-            node.on('mouseover', function(event, d) {
+            node.on("mouseover", function(event, d) {
                 tooltip.transition()
                     .duration(200)
-                    .style('opacity', .9);
+                    .style("opacity", .9);
                 
                 const date = new Date(d.date).toLocaleDateString();
-                tooltip.html(`${d.mood}<br/>${date}<br/>${d.text.substring(0, 100)}${d.text.length > 100 ? '...' : ''}`)
-                    .style('left', (event.pageX + 10) + 'px')
-                    .style('top', (event.pageY - 28) + 'px');
+                tooltip.html(`<strong>${d.mood}</strong><br/>${date}<br/>${d.text.substring(0, 100)}${d.text.length > 100 ? '...' : ''}`)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 28) + "px");
                 
                 // Highlight connected nodes
-                node.style('opacity', otherNode => {
+                node.style("opacity", otherNode => {
                     return isConnected(d, otherNode) ? 1 : 0.2;
                 });
                 
-                link.style('stroke-opacity', l => {
+                link.style("stroke-opacity", l => {
                     return l.source.id === d.id || l.target.id === d.id ? 1 : 0.1;
                 });
             })
-            .on('mouseout', function() {
+            .on("mouseout", function() {
                 tooltip.transition()
                     .duration(500)
-                    .style('opacity', 0);
+                    .style("opacity", 0);
                 
                 // Reset opacity
-                node.style('opacity', 1);
-                link.style('stroke-opacity', 0.6);
-            })
-            .on('click', function(event, d) {
-                // Center on node when clicked
-                const scale = currentZoom;
-                const translate = [
-                    (width / 2) - d.x * scale,
-                    (height / 2) - d.y * scale
-                ];
-                
-                svg.transition()
-                    .duration(750)
-                    .call(zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
+                node.style("opacity", 1);
+                link.style("stroke-opacity", 0.6);
             });
             
             // Helper function to check if nodes are connected
@@ -1783,44 +1830,61 @@
                 d.fy = null;
             }
             
-            // Add zoom capabilities
-            const zoom = d3.zoom()
-                .scaleExtent([0.5, 4])
-                .on('zoom', function(event) {
-                    svg.selectAll('g').attr('transform', event.transform);
-                    currentZoom = event.transform.k;
-                });
+            // Draw clusters around nodes of the same category
+            drawClusters();
+        }
+
+        // Draw clusters around nodes of the same category
+        function drawClusters() {
+            const categories = [...new Set(soulMapData.map(post => post.category))];
             
-            svg.call(zoom);
+            categories.forEach(category => {
+                const categoryNodes = soulMapData.filter(post => post.category === category);
+                if (categoryNodes.length > 1) {
+                    const nodePoints = categoryNodes.map(node => {
+                        const d3Node = simulation.nodes().find(n => n.id === node.id);
+                        return [d3Node.x, d3Node.y];
+                    });
+                    
+                    // Calculate cluster center and radius
+                    const centerX = d3.mean(nodePoints, d => d[0]);
+                    const centerY = d3.mean(nodePoints, d => d[1]);
+                    const radius = d3.max(nodePoints, d => Math.sqrt(Math.pow(d[0] - centerX, 2) + Math.pow(d[1] - centerY, 2))) + 20;
+                    
+                    // Draw cluster circle
+                    svg.append("circle")
+                        .attr("class", "cluster")
+                        .attr("cx", centerX)
+                        .attr("cy", centerY)
+                        .attr("r", radius)
+                        .style("stroke", getCategoryColor(category));
+                }
+            });
         }
 
-        // Zoom in function
+        // Get color for a category
+        function getCategoryColor(category) {
+            switch(category) {
+                case 'reflection': return 'var(--node-reflection)';
+                case 'goal': return 'var(--node-goal)';
+                case 'affirmation': return 'var(--node-affirmation)';
+                case 'habit': return 'var(--node-habit)';
+                case 'emotion': return 'var(--node-emotion)';
+                default: return 'var(--node-default)';
+            }
+        }
+
+        // Zoom functions
         function zoomIn() {
-            const svg = d3.select('#network-svg');
-            const currentTransform = d3.zoomTransform(svg.node());
-            svg.transition().duration(300).call(
-                d3.zoom().transform, 
-                d3.zoomIdentity.translate(currentTransform.x, currentTransform.y).scale(currentTransform.k * 1.2)
-            );
+            svg.transition().call(zoom.scaleBy, 1.5);
         }
 
-        // Zoom out function
         function zoomOut() {
-            const svg = d3.select('#network-svg');
-            const currentTransform = d3.zoomTransform(svg.node());
-            svg.transition().duration(300).call(
-                d3.zoom().transform, 
-                d3.zoomIdentity.translate(currentTransform.x, currentTransform.y).scale(currentTransform.k * 0.8)
-            );
+            svg.transition().call(zoom.scaleBy, 0.75);
         }
 
-        // Reset view function
         function resetView() {
-            const svg = d3.select('#network-svg');
-            svg.transition().duration(300).call(
-                d3.zoom().transform, 
-                d3.zoomIdentity
-            );
+            svg.transition().call(zoom.transform, d3.zoomIdentity);
         }
 
         // Switch between SoulBoard and SoulMap views
@@ -1861,6 +1925,27 @@
             // Focus on email field
             document.getElementById('emailInput').focus();
         };
+
+        // Utility function to show toast messages
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '20px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            toast.style.backgroundColor = 'var(--primary)';
+            toast.style.color = 'white';
+            toast.style.padding = '10px 20px';
+            toast.style.borderRadius = '30px';
+            toast.style.zIndex = '1000';
+            toast.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 3000);
+        }
     </script>
 </body>
 </html>
