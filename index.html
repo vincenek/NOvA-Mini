@@ -521,36 +521,52 @@
             text-align: center;
         }
         
-        .auth-buttons {
+        .auth-tabs {
             display: flex;
-            flex-direction: column;
-            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--light-gray);
+        }
+        
+        .auth-tab {
+            padding: 1rem;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--gray);
+            transition: var(--smooth-transition);
+        }
+        
+        .auth-tab.active {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+        }
+        
+        .auth-form {
+            display: none;
+        }
+        
+        .auth-form.active {
+            display: block;
         }
         
         .auth-btn {
             width: 100%;
             padding: 1rem;
             border-radius: 12px;
-            border: 2px solid var(--light-gray);
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
+            border: none;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
             font-size: 1.1rem;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             transition: var(--smooth-transition);
+            margin-top: 1rem;
         }
         
-        .auth-btn.google {
-            border-color: #dd4b39;
-            color: #dd4b39;
-        }
-        
-        .auth-btn.google:hover {
-            background: #dd4b39;
-            color: white;
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
         }
         
         /* Responsive adjustments */
@@ -589,70 +605,6 @@
             }
         }
     </style>
-    <!-- Firebase SDK -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
-        import { 
-            getAuth, 
-            signInWithPopup, 
-            GoogleAuthProvider, 
-            signOut,
-            onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-        import {
-            getFirestore,
-            collection,
-            addDoc,
-            query,
-            where,
-            onSnapshot,
-            updateDoc,
-            doc,
-            getDocs,
-            orderBy,
-            serverTimestamp
-        } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDR8V9TeOIpexlYo9bSDV7hb2njVq7rQ-8",
-            authDomain: "skill-exchange-536ac.firebaseapp.com",
-            projectId: "skill-exchange-536ac",
-            storageBucket: "skill-exchange-536ac.firebasestorage.app",
-            messagingSenderId: "881829679478",
-            appId: "1:881829679478:web:ef474f2b53700055582a57",
-            measurementId: "G-QTWEQLV7M3"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        
-        // Make Firebase available globally
-        window.firebase = {
-            app,
-            auth,
-            db,
-            GoogleAuthProvider,
-            signInWithPopup,
-            signOut,
-            onAuthStateChanged,
-            collection,
-            addDoc,
-            query,
-            where,
-            onSnapshot,
-            updateDoc,
-            doc,
-            getDocs,
-            orderBy,
-            serverTimestamp
-        };
-    </script>
 </head>
 <body>
     <!-- Header -->
@@ -789,13 +741,44 @@
             <button class="auth-close" id="auth-close">
                 <i class="fas fa-times"></i>
             </button>
-            <h2 class="auth-title">Sign In to SkillExchange</h2>
-            <div class="auth-buttons">
-                <button class="auth-btn google" id="google-signin">
-                    <i class="fab fa-google"></i>
-                    Sign in with Google
-                </button>
+            <h2 class="auth-title">Join SkillExchange</h2>
+            
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Sign In</div>
+                <div class="auth-tab" data-tab="register">Create Account</div>
             </div>
+            
+            <form id="login-form" class="auth-form active">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="auth-btn">Sign In</button>
+            </form>
+            
+            <form id="register-form" class="auth-form">
+                <div class="form-group">
+                    <label for="register-name">Full Name</label>
+                    <input type="text" id="register-name" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" placeholder="Create a password" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm">Confirm Password</label>
+                    <input type="password" id="register-confirm" placeholder="Confirm your password" required>
+                </div>
+                <button type="submit" class="auth-btn">Create Account</button>
+            </form>
         </div>
     </div>
 
@@ -827,72 +810,127 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize variables
             let currentUser = null;
-            let users = [];
-            let exchanges = [];
-            let userExchanges = [];
+            let users = JSON.parse(localStorage.getItem('lseUsers')) || [];
+            let exchanges = JSON.parse(localStorage.getItem('lseExchanges')) || [];
             
             // DOM Elements
             const authBtn = document.getElementById('auth-btn');
             const authModal = document.getElementById('auth-modal');
             const authClose = document.getElementById('auth-close');
-            const googleSignin = document.getElementById('google-signin');
+            const authTabs = document.querySelectorAll('.auth-tab');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
             const mainCta = document.getElementById('main-cta');
             const skillForm = document.getElementById('skill-form');
             const exchangeList = document.getElementById('exchange-list');
             const notificationToast = document.querySelector('.notification-toast');
             
-            // Firebase references
-            const { 
-                auth, 
-                db, 
-                GoogleAuthProvider, 
-                signInWithPopup, 
-                signOut, 
-                onAuthStateChanged,
-                collection,
-                addDoc,
-                query,
-                where,
-                onSnapshot,
-                updateDoc,
-                doc,
-                getDocs,
-                orderBy,
-                serverTimestamp
-            } = window.firebase;
+            // Check if user is already logged in
+            const loggedInUser = localStorage.getItem('lseCurrentUser');
+            if (loggedInUser) {
+                currentUser = JSON.parse(loggedInUser);
+                updateUIForUser(currentUser);
+                loadExchanges();
+            }
             
-            // Set up authentication state observer
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    // User is signed in
-                    currentUser = user;
-                    updateUIForUser(user);
-                    loadUserData(user);
-                    loadExchanges();
-                    hideAuthModal();
+            // Event Listeners
+            authBtn.addEventListener('click', function() {
+                if (currentUser) {
+                    // User is logged in, so log them out
+                    logout();
                 } else {
-                    // User is signed out
-                    currentUser = null;
-                    updateUIForGuest();
-                    exchangeList.innerHTML = '<div class="skill-item">Please sign in to view skill exchanges</div>';
+                    // User is not logged in, show auth modal
+                    showAuthModal();
                 }
             });
             
-            // Event Listeners
-            authBtn.addEventListener('click', showAuthModal);
             authClose.addEventListener('click', hideAuthModal);
             mainCta.addEventListener('click', showAuthModal);
             
-            googleSignin.addEventListener('click', function() {
-                const provider = new GoogleAuthProvider();
-                signInWithPopup(auth, provider)
-                    .then((result) => {
-                        // User signed in
-                        showNotification('Signed in successfully!', 'success');
-                    }).catch((error) => {
-                        console.error('Authentication error:', error);
-                        showNotification('Error signing in: ' + error.message, 'error');
+            // Auth tab switching
+            authTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    authTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding form
+                    document.querySelectorAll('.auth-form').forEach(form => {
+                        form.classList.remove('active');
                     });
+                    document.getElementById(`${tabId}-form`).classList.add('active');
+                });
+            });
+            
+            // Login form submission
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                
+                // Validate credentials
+                const user = users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
+                    // Login successful
+                    currentUser = user;
+                    localStorage.setItem('lseCurrentUser', JSON.stringify(user));
+                    updateUIForUser(user);
+                    loadExchanges();
+                    hideAuthModal();
+                    showNotification('Login successful!', 'success');
+                } else {
+                    // Login failed
+                    showNotification('Invalid email or password', 'error');
+                }
+            });
+            
+            // Register form submission
+            registerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('register-name').value;
+                const email = document.getElementById('register-email').value;
+                const password = document.getElementById('register-password').value;
+                const confirm = document.getElementById('register-confirm').value;
+                
+                // Validate form
+                if (password !== confirm) {
+                    showNotification('Passwords do not match', 'error');
+                    return;
+                }
+                
+                if (users.some(u => u.email === email)) {
+                    showNotification('Email already registered', 'error');
+                    return;
+                }
+                
+                // Create new user
+                const newUser = {
+                    id: 'user_' + Date.now(),
+                    name: name,
+                    email: email,
+                    password: password,
+                    credits: 10
+                };
+                
+                users.push(newUser);
+                localStorage.setItem('lseUsers', JSON.stringify(users));
+                
+                // Log the user in
+                currentUser = newUser;
+                localStorage.setItem('lseCurrentUser', JSON.stringify(newUser));
+                updateUIForUser(newUser);
+                loadExchanges();
+                hideAuthModal();
+                
+                // Switch to login tab for next time
+                authTabs[0].click();
+                
+                showNotification('Account created successfully!', 'success');
             });
             
             // Form submission handler
@@ -926,25 +964,28 @@
                 authModal.classList.remove('active');
             }
             
+            // Logout function
+            function logout() {
+                currentUser = null;
+                localStorage.removeItem('lseCurrentUser');
+                updateUIForGuest();
+                exchangeList.innerHTML = '<div class="skill-item">Please sign in to view skill exchanges</div>';
+                showNotification('Signed out successfully', 'success');
+            }
+            
             // Update UI for authenticated user
             function updateUIForUser(user) {
                 const avatar = document.querySelector('.avatar');
                 const userName = document.querySelector('.user-name');
                 const userEmail = document.querySelector('.user-email');
+                const creditBalance = document.querySelector('.credit-balance');
                 
-                avatar.textContent = user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase();
-                userName.textContent = user.displayName || 'User';
+                avatar.textContent = user.name.charAt(0).toUpperCase();
+                userName.textContent = user.name;
                 userEmail.textContent = user.email;
+                creditBalance.textContent = user.credits + ' credits';
                 
                 authBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Sign Out';
-                authBtn.removeEventListener('click', showAuthModal);
-                authBtn.addEventListener('click', function() {
-                    signOut(auth).then(() => {
-                        showNotification('Signed out successfully', 'success');
-                    }).catch((error) => {
-                        console.error('Sign out error:', error);
-                    });
-                });
             }
             
             // Update UI for guest
@@ -960,82 +1001,12 @@
                 creditBalance.textContent = '10 credits';
                 
                 authBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
-                authBtn.removeEventListener('click', function() {
-                    signOut(auth).then(() => {
-                        showNotification('Signed out successfully', 'success');
-                    }).catch((error) => {
-                        console.error('Sign out error:', error);
-                    });
-                });
-                authBtn.addEventListener('click', showAuthModal);
             }
             
-            // Load user data from Firestore
-            function loadUserData(user) {
-                const usersRef = collection(db, 'users');
-                const q = query(usersRef, where('uid', '==', user.uid));
-                
-                getDocs(q)
-                    .then((querySnapshot) => {
-                        if (querySnapshot.empty) {
-                            // Create new user document
-                            addDoc(usersRef, {
-                                uid: user.uid,
-                                name: user.displayName || 'User',
-                                email: user.email,
-                                credits: 10,
-                                createdAt: serverTimestamp()
-                            }).then(() => {
-                                document.querySelector('.credit-balance').textContent = '10 credits';
-                            });
-                        } else {
-                            // User exists, update credits display
-                            querySnapshot.forEach((doc) => {
-                                const userData = doc.data();
-                                document.querySelector('.credit-balance').textContent = userData.credits + ' credits';
-                            });
-                        }
-                    })
-                    .catch((error) => {
-                        console.error('Error loading user data:', error);
-                    });
-            }
-            
-            // Load exchanges from Firestore
+            // Load exchanges from localStorage
             function loadExchanges() {
-                exchangeList.innerHTML = '<div class="spinner"></div>';
+                exchanges = JSON.parse(localStorage.getItem('lseExchanges')) || [];
                 
-                const exchangesRef = collection(db, 'exchanges');
-                const q = query(exchangesRef, orderBy('createdAt', 'desc'));
-                
-                onSnapshot(q, (snapshot) => {
-                    exchanges = [];
-                    snapshot.forEach((doc) => {
-                        exchanges.push({ id: doc.id, ...doc.data() });
-                    });
-                    
-                    // Also load users for display
-                    const usersRef = collection(db, 'users');
-                    getDocs(usersRef)
-                        .then((userSnapshot) => {
-                            users = [];
-                            userSnapshot.forEach((doc) => {
-                                users.push({ id: doc.id, ...doc.data() });
-                            });
-                            
-                            renderExchanges();
-                        })
-                        .catch((error) => {
-                            console.error('Error loading users:', error);
-                        });
-                }, (error) => {
-                    console.error('Error loading exchanges:', error);
-                    exchangeList.innerHTML = '<div class="skill-item">Error loading exchanges. Please try again.</div>';
-                });
-            }
-            
-            // Render exchanges to the UI
-            function renderExchanges() {
                 if (exchanges.length === 0) {
                     exchangeList.innerHTML = '<div class="skill-item">No skill exchanges yet. Be the first to add one!</div>';
                     return;
@@ -1043,7 +1014,7 @@
                 
                 // Get current user's wants
                 const currentUserWants = exchanges
-                    .filter(e => e.userId === currentUser?.uid)
+                    .filter(e => e.userId === currentUser?.id)
                     .map(e => e.want.toLowerCase());
                 
                 exchangeList.innerHTML = '';
@@ -1053,11 +1024,11 @@
                     listItem.classList.add('skill-item');
                     
                     // Find the user who created this exchange
-                    const exchangeUser = users.find(u => u.uid === exchange.userId) || { name: 'Unknown User' };
+                    const exchangeUser = users.find(u => u.id === exchange.userId) || { name: 'Unknown User' };
                     
                     // Check if this exchange matches any of the current user's wants
                     const isMatch = currentUser && currentUserWants.includes(exchange.offer.toLowerCase()) && 
-                                   exchange.userId !== currentUser.uid;
+                                   exchange.userId !== currentUser.id;
                     
                     if (isMatch) {
                         listItem.classList.add('match');
@@ -1101,57 +1072,44 @@
             function addSkillExchange(offer, offerCategory, want, wantCategory) {
                 if (!currentUser) return;
                 
-                const exchangesRef = collection(db, 'exchanges');
-                
-                addDoc(exchangesRef, {
-                    userId: currentUser.uid,
+                const newExchange = {
+                    id: 'exchange_' + Date.now(),
+                    userId: currentUser.id,
                     offer: offer,
                     offerCategory: offerCategory,
                     want: want,
                     wantCategory: wantCategory,
-                    createdAt: serverTimestamp()
-                })
-                .then(() => {
-                    showNotification('Skill exchange added successfully!', 'success');
-                    
-                    // Update user credits (+5 for offering a skill)
-                    updateUserCredits(5);
-                })
-                .catch((error) => {
-                    console.error('Error adding exchange:', error);
-                    showNotification('Error adding skill exchange: ' + error.message, 'error');
-                });
+                    createdAt: new Date().toISOString()
+                };
+                
+                exchanges.push(newExchange);
+                localStorage.setItem('lseExchanges', JSON.stringify(exchanges));
+                
+                // Update user credits (+5 for offering a skill)
+                updateUserCredits(5);
+                
+                showNotification('Skill exchange added successfully!', 'success');
+                
+                // Reload exchanges
+                loadExchanges();
             }
             
             // Update user credits
             function updateUserCredits(amount) {
                 if (!currentUser) return;
                 
-                const usersRef = collection(db, 'users');
-                const q = query(usersRef, where('uid', '==', currentUser.uid));
-                
-                getDocs(q)
-                    .then((querySnapshot) => {
-                        if (!querySnapshot.empty) {
-                            querySnapshot.forEach((userDoc) => {
-                                const userData = userDoc.data();
-                                const newCredits = userData.credits + amount;
-                                
-                                updateDoc(doc(db, 'users', userDoc.id), {
-                                    credits: newCredits
-                                })
-                                .then(() => {
-                                    document.querySelector('.credit-balance').textContent = newCredits + ' credits';
-                                })
-                                .catch((error) => {
-                                    console.error('Error updating credits:', error);
-                                });
-                            });
-                        }
-                    })
-                    .catch((error) => {
-                        console.error('Error finding user:', error);
-                    });
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                if (userIndex !== -1) {
+                    users[userIndex].credits += amount;
+                    localStorage.setItem('lseUsers', JSON.stringify(users));
+                    
+                    // Update current user
+                    currentUser = users[userIndex];
+                    localStorage.setItem('lseCurrentUser', JSON.stringify(currentUser));
+                    
+                    // Update UI
+                    document.querySelector('.credit-balance').textContent = currentUser.credits + ' credits';
+                }
             }
             
             // Receive a skill (match)
