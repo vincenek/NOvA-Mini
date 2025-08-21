@@ -3,1949 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SoulBoard Pro | Mental Wellness Journal & Map</title>
-    
-    <!-- Manifest -->
-    <link rel="manifest" href="manifest.json">
-
-    <!-- iOS Support -->
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <meta name="apple-mobile-web-app-status-bar" content="#2563eb">
-
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#2563eb">
-    
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    
-    <!-- D3.js for network graph visualization -->
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <title>Local Skill Exchange</title>
     <style>
-        :root {
-            --primary: #2A9D8F;
-            --secondary: #E9C46A;
-            --background: #F4F9F7;
-            --text: #264653;
-            --border: #C4D8D2;
-            --accent: #83C5BE;
-            --error: #E76F51;
-            --auth-bg: rgba(255, 255, 255, 0.95);
-            --nav-bg: rgba(255, 255, 255, 0.9);
-            --timeline-bg: rgba(244, 249, 247, 0.8);
-            --node-reflection: #FFADAD;
-            --node-goal: #9BF6FF;
-            --node-affirmation: #CAFFBF;
-            --node-habit: #BDB2FF;
-            --node-default: #FFD6A5;
-            --node-emotion: #FFC6FF;
-            --node-connection: #A0C4FF;
-        }
-
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', system-ui, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        
         body {
-            background: linear-gradient(160deg, #F4F9F7 0%, #E9F5F1 100%);
-            color: var(--text);
+            background-color: #f5f7f9;
+            color: #333;
             line-height: 1.6;
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 1rem;
-            min-height: 100vh;
-            transition: background 0.3s ease;
-        }
-
-        .app-container {
-            max-width: 1200px;
+            padding: 20px;
+            max-width: 1000px;
             margin: 0 auto;
         }
-
-        .header {
+        
+        header {
             text-align: center;
-            margin-bottom: 1rem;
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        .logo {
-            font-size: 3.2rem;
-            margin-bottom: 0.5rem;
-            color: var(--primary);
-            animation: pulse 2s infinite;
-        }
-
-        .tagline {
-            color: #5C8374;
-            font-size: 1.1rem;
-            font-weight: 500;
-            letter-spacing: -0.02em;
-        }
-
-        /* Navigation */
-        .nav-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-            background: var(--nav-bg);
-            border-radius: 1rem;
-            padding: 0.5rem;
-            box-shadow: 0 4px 12px rgba(42, 157, 143, 0.08);
-        }
-
-        .nav-btn {
-            padding: 0.8rem 1.5rem;
-            border: none;
-            border-radius: 0.6rem;
-            background: transparent;
-            color: var(--text);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-btn.active {
-            background: var(--primary);
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-
-        /* Views */
-        .view {
-            display: none;
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
         }
-
-        .view.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .journal-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 1rem;
-            box-shadow: 0 8px 32px rgba(42, 157, 143, 0.08);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            backdrop-filter: blur(4px);
-            transition: all 0.3s ease;
-        }
-
-        .editor textarea {
-            width: 100%;
-            padding: 1.2rem;
-            border: 2px solid var(--border);
-            border-radius: 0.8rem;
-            min-height: 140px;
-            margin-bottom: 1.5rem;
-            font-size: 1rem;
-            resize: vertical;
-            transition: all 0.2s ease;
-            background: rgba(244, 249, 247, 0.8);
-        }
-
-        .editor textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
-        }
-
-        .mood-grid {
+        
+        .container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 0.8rem;
-            margin-bottom: 1.5rem;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
-
-        .mood-btn {
-            padding: 0.6rem;
-            border: 2px solid var(--border);
-            border-radius: 0.6rem;
-            background: rgba(244, 249, 247, 0.8);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
         }
-
-        .mood-btn:hover {
-            background: rgba(42, 157, 143, 0.1);
-            border-color: var(--primary);
-        }
-
-        .mood-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            transform: scale(1.05);
-        }
-
-        .post-btn {
-            background: linear-gradient(135deg, var(--primary) 0%, #34A798 100%);
-            color: white;
-            border: none;
-            border-radius: 0.6rem;
-            padding: 1rem 2rem;
-            width: 100%;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(42, 157, 143, 0.2);
-        }
-
-        .post-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(42, 157, 143, 0.3);
-        }
-
-        .post-btn:active {
-            transform: translateY(0);
-        }
-
-        .search-container {
-            margin: 1.5rem 0;
-        }
-
-        .search-bar {
-            width: 100%;
-            padding: 0.8rem 1.2rem;
-            border: 2px solid var(--border);
-            border-radius: 0.6rem;
-            font-size: 1rem;
-            background: rgba(244, 249, 247, 0.8);
-            transition: all 0.2s ease;
-        }
-
-        .search-bar:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
-        }
-
-        .posts-feed {
-            margin-top: 1rem;
-        }
-
-        .post-card {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 1.5rem;
-            border-radius: 0.8rem;
-            margin-bottom: 1.2rem;
-            box-shadow: 0 2px 12px rgba(42, 157, 143, 0.05);
-            transition: all 0.3s ease;
-            position: relative;
-            border-left: 4px solid var(--primary);
-        }
-
-        .post-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(42, 157, 143, 0.1);
-        }
-
-        .post-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.8rem;
-        }
-
-        .post-date {
-            color: #5C8374;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .post-mood {
-            font-size: 1.4rem;
-        }
-
-        .post-content {
-            white-space: pre-wrap;
-            line-height: 1.5;
-            margin: 1rem 0;
-            color: #2D3E40;
-        }
-
-        .highlight {
-            background-color: rgba(233, 196, 106, 0.3);
-            padding: 0.1em 0.3em;
-            border-radius: 0.3em;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #83A69B;
-            font-style: italic;
-        }
-
-        /* SoulMap Styles */
-        .soulmap-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 1rem;
-            box-shadow: 0 8px 32px rgba(42, 157, 143, 0.08);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            backdrop-filter: blur(4px);
-            min-height: 600px;
-            position: relative;
-        }
-
-        .visualization-controls {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .viz-btn {
-            padding: 0.6rem 1.2rem;
-            border: 2px solid var(--border);
-            border-radius: 0.6rem;
-            background: rgba(244, 249, 247, 0.8);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .viz-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .timeline-view {
-            padding: 1rem;
-            background: var(--timeline-bg);
-            border-radius: 0.8rem;
-            max-height: 600px;
-            overflow-y: auto;
-        }
-
-        .timeline-item {
-            position: relative;
-            padding: 1rem 1rem 1rem 2rem;
-            border-left: 2px solid var(--primary);
-            margin-left: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .timeline-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .timeline-date {
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-            color: var(--primary);
-        }
-
-        .timeline-content {
+        
+        .card {
             background: white;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
-
-        .timeline-mood {
-            position: absolute;
-            left: -1.2rem;
-            top: 1rem;
-            background: white;
-            border-radius: 50%;
-            width: 2rem;
-            height: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        
+        .card h2 {
+            color: #2575fc;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
         }
-
-        .network-graph {
-            width: 100%;
-            height: 600px;
-            border-radius: 0.8rem;
-            background: var(--timeline-bg);
-            overflow: hidden;
-            position: relative;
-        }
-
-        .graph-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .graph-control-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 5px 10px;
-            margin: 0 2px;
-            cursor: pointer;
-        }
-
-        .node {
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .node.reflection {
-            fill: var(--node-reflection);
-        }
-
-        .node.goal {
-            fill: var(--node-goal);
-        }
-
-        .node.affirmation {
-            fill: var(--node-affirmation);
-        }
-
-        .node.habit {
-            fill: var(--node-habit);
-        }
-
-        .node.default {
-            fill: var(--node-default);
-        }
-
-        .node.emotion {
-            fill: var(--node-emotion);
-        }
-
-        .node:hover {
-            stroke: var(--primary);
-            stroke-width: 2px;
-            transform: scale(1.05);
-        }
-
-        .node-label {
-            font-size: 10px;
-            pointer-events: none;
-            text-anchor: middle;
-            font-weight: 500;
-        }
-
-        .link {
-            stroke: var(--node-connection);
-            stroke-opacity: 0.6;
-        }
-
-        .graph-tooltip {
-            position: absolute;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            pointer-events: none;
-            font-size: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            max-width: 300px;
-            z-index: 100;
-        }
-
-        .cluster {
-            stroke: var(--primary);
-            stroke-width: 2px;
-            stroke-dasharray: 5,5;
-            fill: none;
-        }
-
-        .legend {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 10;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-
-        .legend-color {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            margin-right: 5px;
-        }
-
-        /* Auth container styles */
-        .auth-container {
-            background: var(--auth-bg);
-            border-radius: 1rem;
-            box-shadow: 0 8px 32px rgba(42, 157, 143, 0.08);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            backdrop-filter: blur(4px);
-            max-width: 500px;
-            margin: 2rem auto;
-            animation: slideUp 0.5s ease-out;
-        }
-
-        .auth-title {
-            text-align: center;
-            margin-bottom: 1.5rem;
-            color: var(--primary);
-        }
-
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.2rem;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-        }
-
-        .form-label {
-            font-weight: 500;
-            color: var(--text);
-        }
-
-        .form-input {
-            padding: 0.8rem 1rem;
-            border: 2px solid var(--border);
-            border-radius: 0.6rem;
-            font-size: 1rem;
-            background: rgba(244, 249, 247, 0.8);
-            transition: all 0.2s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
-        }
-
-        .auth-btn {
-            background: linear-gradient(135deg, var(--primary) 0%, #34A798 100%);
-            color: white;
-            border: none;
-            border-radius: 0.6rem;
-            padding: 0.8rem;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 0.5rem;
-        }
-
-        .auth-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(42, 157, 143, 0.2);
-        }
-
-        .auth-switch {
-            text-align: center;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-        }
-
-        .auth-switch a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .auth-switch a:hover {
-            text-decoration: underline;
-        }
-
-        .error-message {
-            color: var(--error);
-            font-size: 0.9rem;
-            margin-top: 0.2rem;
-            text-align: center;
-        }
-
+        
         .user-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
-            padding: 0.8rem 1.2rem;
-            background: rgba(42, 157, 143, 0.1);
-            border-radius: 0.6rem;
-            animation: fadeIn 0.5s ease;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #e8f4fc;
+            border-radius: 8px;
         }
-
-        .user-email {
-            font-weight: 500;
-            color: var(--text);
-        }
-
-        .logout-btn {
-            background: none;
-            border: none;
-            color: var(--primary);
-            cursor: pointer;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-            transition: all 0.2s ease;
-        }
-
-        .logout-btn:hover {
-            color: #1e7a6f;
-        }
-
-        .sync-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--primary);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 100;
-            animation: slideIn 0.3s ease;
-        }
-
-        .sync-indicator .spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        .sync-complete {
-            background: #2A9D8F;
-            animation: slideIn 0.3s ease;
-        }
-
-        /* PWA Install Button */
-        .pwa-install-container {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            z-index: 1000;
-            display: none;
-        }
-
-        .pwa-install-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            border: none;
-            animation: pulse 2s infinite;
-        }
-
-        /* Install Prompt */
-        .install-prompt {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
+        
+        .credit-count {
+            font-weight: bold;
+            color: #2575fc;
             background: white;
-            border-radius: 16px;
-            padding: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        
+        form {
+            display: grid;
             gap: 15px;
-            z-index: 1000;
-            transform: translateY(150%);
-            transition: transform 0.5s ease;
         }
-
-        .install-prompt.show {
-            transform: translateY(0);
+        
+        input, button {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 16px;
         }
-
-        .install-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--primary);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        
+        input:focus {
+            outline: none;
+            border-color: #2575fc;
+            box-shadow: 0 0 0 2px rgba(37, 117, 252, 0.2);
+        }
+        
+        button {
+            background: #2575fc;
             color: white;
-            font-size: 20px;
-        }
-
-        .install-text {
-            flex: 1;
-        }
-
-        .install-close {
-            background: transparent;
             border: none;
-            font-size: 20px;
-            color: #94a3b8;
             cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
         }
-
-        /* Offline Indicator */
-        .offline-indicator {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: #f59e0b;
+        
+        button:hover {
+            background: #1a63cf;
+        }
+        
+        .skill-list {
+            list-style-type: none;
+        }
+        
+        .skill-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 4px solid #ddd;
+        }
+        
+        .match {
+            border-left: 4px solid #4caf50;
+            background: #f0fff0;
+        }
+        
+        .match-indicator {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 3px 8px;
+            background: #4caf50;
             color: white;
-            padding: 10px 15px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            z-index: 100;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s ease;
+            border-radius: 20px;
+            font-size: 12px;
         }
-
-        .offline-indicator.show {
-            opacity: 1;
-            transform: translateY(0);
+        
+        .skill-name {
+            font-weight: bold;
+            color: #2575fc;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        .divider {
+            color: #999;
+            margin: 0 5px;
         }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        .instructions {
+            grid-column: 1 / -1;
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
         }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
+        
+        .instructions h2 {
+            color: #ff9800;
+            margin-bottom: 10px;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        
+        .instructions ul {
+            margin-left: 20px;
         }
-
-        @keyframes pulse {
-            0% { transform: scale(0.95); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(0.95); }
-        }
-
-        @keyframes pulseInstall {
-            0% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(42, 157, 143, 0.7);
-            }
-            
-            70% {
-                transform: scale(1);
-                box-shadow: 0 0 0 10px rgba(42, 157, 143, 0);
-            }
-            
-            100% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(42, 157, 143, 0);
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 0.5rem;
-            }
-            
-            .journal-container, .auth-container, .soulmap-container {
-                padding: 1.5rem;
-            }
-            
-            .mood-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .nav-btn {
-                padding: 0.6rem 1rem;
-                font-size: 0.9rem;
-            }
-            
-            .network-graph {
-                height: 400px;
-            }
-            
-            .visualization-controls {
-                flex-direction: column;
-                align-items: center;
-            }
+        
+        .instructions li {
+            margin-bottom: 8px;
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <header class="header">
-            <div class="logo">🌿</div>
-            <h1 class="tagline">SoulBoard Pro - Mindful Journaling & Mapping</h1>
-        </header>
-
-        <!-- Navigation -->
-        <div class="nav-container">
-            <button id="soulboardBtn" class="nav-btn active">
-                <i class="fas fa-clipboard-list"></i> SoulBoard
-            </button>
-            <button id="soulmapBtn" class="nav-btn">
-                <i class="fas fa-project-diagram"></i> SoulMap
-            </button>
-        </div>
-
-        <!-- Auth Section -->
-        <div id="authSection" class="auth-container">
-            <h2 class="auth-title">Sign In to SoulBoard Pro</h2>
-            <div id="authForm" class="auth-form">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="emailInput" class="form-input" placeholder="your.email@example.com">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" id="passwordInput" class="form-input" placeholder="••••••••">
-                </div>
-                <button id="signInBtn" class="auth-btn">Sign In</button>
-                <div class="auth-switch">
-                    Don't have an account? <a id="switchToSignUp">Sign Up</a>
-                </div>
-                <div id="authError" class="error-message"></div>
+    <header>
+        <h1>Local Skill Exchange</h1>
+        <p>Share your skills and learn from others in your community</p>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            <h2>Your Profile</h2>
+            <div class="user-info">
+                <span id="username">Guest User</span>
+                <span class="credit-count">Credits: <span id="credit-balance">10</span></span>
             </div>
-
-            <div id="signUpForm" class="auth-form" style="display: none;">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="signUpEmail" class="form-input" placeholder="your.email@example.com">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" id="signUpPassword" class="form-input" placeholder="••••••••">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Confirm Password</label>
-                    <input type="password" id="signUpPasswordConfirm" class="form-input" placeholder="••••••••">
-                </div>
-                <button id="signUpBtn" class="auth-btn">Create Account</button>
-                <div class="auth-switch">
-                    Already have an account? <a id="switchToSignIn">Sign In</a>
-                </div>
-                <div id="signUpError" class="error-message"></div>
-            </div>
-        </div>
-
-        <!-- Journal Section -->
-        <div id="journalSection" style="display: none;">
-            <div id="userInfo" class="user-info">
-                <div>
-                    <span class="user-email" id="userEmail">user@example.com</span>
-                </div>
-                <button id="logoutBtn" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </button>
-            </div>
-
-            <!-- SoulBoard View -->
-            <div id="soulboardView" class="view active">
-                <div class="journal-container">
-                    <section class="editor">
-                        <textarea id="journalText" placeholder="What's growing in your mind today?"></textarea>
-                        
-                        <div class="mood-grid">
-                            <button class="mood-btn" onclick="selectMood(this, '🌻 Happy')">🌻 Happy</button>
-                            <button class="mood-btn" onclick="selectMood(this, '🍃 Calm')">🍃 Calm</button>
-                            <button class="mood-btn" onclick="selectMood(this, '🌧️ Reflective')">🌧️ Reflective</button>
-                            <button class="mood-btn" onclick="selectMood(this, '💡 Inspired')">💡 Inspired</button>
-                            <button class="mood-btn" onclick="selectMood(this, '🌊 Flow')">🌊 Flow</button>
-                            <button class="mood-btn" onclick="selectMood(this, '🔥 Passionate')">🔥 Passionate</button>
-                            <button class="mood-btn" onclick="selectMood(this, '🌙 Restful')">🌙 Restful</button>
-                            <button class="mood-btn" onclick="selectMood(this, '🎉 Celebratory')">🎉 Celebratory</button>
-                        </div>
-
-                        <button class="post-btn" onclick="createPost()">Plant This Thought</button>
-
-                        <div class="search-container">
-                            <input 
-                                type="text" 
-                                class="search-bar" 
-                                id="searchInput"
-                                placeholder="Search your thoughts..."
-                                oninput="searchPosts()">
-                        </div>
-                    </section>
-
-                    <section class="posts-feed" id="postsFeed">
-                        <div class="empty-state">
-                            Your mental garden is empty... Plant your first thought seed
-                        </div>
-                    </section>
-                </div>
-            </div>
-
-            <!-- SoulMap View -->
-            <div id="soulmapView" class="view">
-                <div class="soulmap-container">
-                    <div class="visualization-controls">
-                        <button id="timelineBtn" class="viz-btn active" onclick="switchVisualization('timeline')">
-                            <i class="fas fa-history"></i> Timeline
-                        </button>
-                        <button id="networkBtn" class="viz-btn" onclick="switchVisualization('network')">
-                            <i class="fas fa-project-diagram"></i> Network Graph
-                        </button>
-                    </div>
-                    
-                    <div id="timelineView" class="timeline-view">
-                        <!-- Timeline will be rendered here -->
-                    </div>
-                    
-                    <div id="networkView" class="network-graph" style="display: none;">
-                        <!-- Network graph will be rendered here -->
-                        <div class="graph-controls">
-                            <button class="graph-control-btn" onclick="zoomIn()"><i class="fas fa-search-plus"></i></button>
-                            <button class="graph-control-btn" onclick="zoomOut()"><i class="fas fa-search-minus"></i></button>
-                            <button class="graph-control-btn" onclick="resetView()"><i class="fas fa-sync"></i></button>
-                        </div>
-                        <div class="legend">
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: var(--node-reflection);"></div>
-                                <span>Reflection</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: var(--node-goal);"></div>
-                                <span>Goal</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: var(--node-affirmation);"></div>
-                                <span>Affirmation</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: var(--node-habit);"></div>
-                                <span>Habit</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: var(--node-emotion);"></div>
-                                <span>Emotion</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- PWA Install Button -->
-        <div class="pwa-install-container" id="pwaInstallContainer">
-            <button class="pwa-install-btn" id="pwaInstallBtn">
-                <i class="fas fa-download"></i>
-            </button>
+            
+            <form id="skill-form">
+                <input type="text" id="offer-skill" placeholder="Skill you can OFFER (e.g., Web Development)" required>
+                <input type="text" id="want-skill" placeholder="Skill you WANT (e.g., Graphic Design)" required>
+                <button type="submit">Add Skill Exchange</button>
+            </form>
         </div>
         
-        <!-- Install Prompt -->
-        <div class="install-prompt" id="installPrompt">
-            <div class="install-icon">
-                <i class="fas fa-download"></i>
-            </div>
-            <div class="install-text">
-                <strong>Install SoulBoard Pro</strong>
-                <p>Add to home screen for quick access</p>
-            </div>
-            <button class="install-close" id="closePrompt">
-                <i class="fas fa-times"></i>
-            </button>
+        <div class="card">
+            <h2>Available Exchanges</h2>
+            <ul id="exchange-list" class="skill-list">
+                <!-- Skill exchanges will be listed here -->
+            </ul>
         </div>
         
-        <!-- Offline Indicator -->
-        <div class="offline-indicator" id="offlineIndicator">
-            <i class="fas fa-wifi-slash"></i>
-            <span>You are currently offline</span>
-        </div>
-
-        <div id="syncIndicator" class="sync-indicator" style="display: none;">
-            <div class="spinner"></div>
-            <span>Syncing with cloud...</span>
+        <div class="instructions">
+            <h2>How It Works</h2>
+            <ul>
+                <li>Enter a skill you can OFFER and a skill you WANT to learn</li>
+                <li>Earn 5 credits when you add a skill offering</li>
+                <li>Spend 5 credits when you receive a skill through a match</li>
+                <li>Matches are highlighted in green when someone's OFFER matches your WANT</li>
+                <li>All data is stored locally in your browser</li>
+            </ul>
         </div>
     </div>
 
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBbfiIeI-LkRNF60p4BYw2l4BY0wfeIRuI",
-            authDomain: "soulboard-524df.firebaseapp.com",
-            projectId: "soulboard-524df",
-            storageBucket: "soulboard-524df.appspot.com",
-            messagingSenderId: "659350261512",
-            appId: "1:659350261512:web:528a224cec97664bf2a6bd",
-            measurementId: "G-CMSL9H2B8H"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-
-        // DOM Elements
-        const authSection = document.getElementById('authSection');
-        const journalSection = document.getElementById('journalSection');
-        const userEmail = document.getElementById('userEmail');
-        const signInBtn = document.getElementById('signInBtn');
-        const signUpBtn = document.getElementById('signUpBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const switchToSignUp = document.getElementById('switchToSignUp');
-        const switchToSignIn = document.getElementById('switchToSignIn');
-        const authForm = document.getElementById('authForm');
-        const signUpForm = document.getElementById('signUpForm');
-        const authError = document.getElementById('authError');
-        const signUpError = document.getElementById('signUpError');
-        const syncIndicator = document.getElementById('syncIndicator');
-        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
-        const pwaInstallContainer = document.getElementById('pwaInstallContainer');
-        const installPrompt = document.getElementById('installPrompt');
-        const closePrompt = document.getElementById('closePrompt');
-        const offlineIndicator = document.getElementById('offlineIndicator');
-        
-        // SoulMap elements
-        const soulboardBtn = document.getElementById('soulboardBtn');
-        const soulmapBtn = document.getElementById('soulmapBtn');
-        const soulboardView = document.getElementById('soulboardView');
-        const soulmapView = document.getElementById('soulmapView');
-        const timelineView = document.getElementById('timelineView');
-        const networkView = document.getElementById('networkView');
-        const timelineBtn = document.getElementById('timelineBtn');
-        const networkBtn = document.getElementById('networkBtn');
-        
-        let deferredPrompt;
-
-        // Global variables
-        let allPosts = [];
-        let selectedMood = '🌱 Neutral';
-        let currentUser = null;
-        let isOnline = navigator.onLine;
-        let unsubscribeListener = null;
-        let currentVisualization = 'timeline';
-        let soulMapData = [];
-        let simulation = null;
-        let svg = null;
-        let zoom = null;
-
-        // PWA Installation Handling
-        function handlePWAInstall() {
-            // Listen for beforeinstallprompt event
-            window.addEventListener('beforeinstallprompt', (e) => {
-                // Prevent the mini-infobar from appearing on mobile
-                e.preventDefault();
-                // Stash the event so it can be triggered later
-                deferredPrompt = e;
-                // Show the install button
-                pwaInstallContainer.style.display = 'block';
-                
-                // Also show the install prompt after 5 seconds
-                setTimeout(() => {
-                    if (deferredPrompt) {
-                        installPrompt.classList.add('show');
-                    }
-                }, 5000);
-            });
-            
-            // Handle install button click
-            pwaInstallBtn.addEventListener('click', async () => {
-                if (deferredPrompt) {
-                    // Show the install prompt
-                    deferredPrompt.prompt();
-                    // Wait for the user to respond to the prompt
-                    const { outcome } = await deferredPrompt.userChoice;
-                    // Optionally, send analytics event with outcome of user choice
-                    console.log(`User response to the install prompt: ${outcome}`);
-                    // Hide the install button
-                    pwaInstallContainer.style.display = 'none';
-                    // Clear the deferredPrompt variable
-                    deferredPrompt = null;
-                    // Hide the prompt
-                    installPrompt.classList.remove('show');
-                }
-            });
-            
-            // Close prompt
-            closePrompt.addEventListener('click', () => {
-                installPrompt.classList.remove('show');
-            });
-            
-            // Listen for app installed event
-            window.addEventListener('appinstalled', () => {
-                // Hide the install button
-                pwaInstallContainer.style.display = 'none';
-                // Clear the deferredPrompt variable
-                deferredPrompt = null;
-                // Hide the prompt
-                installPrompt.classList.remove('show');
-                // Show success message
-                showToast('App installed successfully!');
-            });
-        }
-
-        // Register Service Worker
-        function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    // Create service worker script as a blob
-                    const swContent = `
-                        const CACHE_NAME = 'soulboard-pro-v1';
-                        const urlsToCache = [
-                            './',
-                            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-                            'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js',
-                            'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js',
-                            'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js',
-                            'https://d3js.org/d3.v7.min.js'
-                        ];
-                        
-                        self.addEventListener('install', event => {
-                            event.waitUntil(
-                                caches.open(CACHE_NAME)
-                                    .then(cache => {
-                                        return cache.addAll(urlsToCache);
-                                    })
-                            );
-                        });
-                        
-                        self.addEventListener('activate', event => {
-                            event.waitUntil(
-                                caches.keys().then(cacheNames => {
-                                    return Promise.all(
-                                        cacheNames.map(cacheName => {
-                                            if (cacheName !== CACHE_NAME) {
-                                                return caches.delete(cacheName);
-                                            }
-                                        })
-                                    );
-                                })
-                            );
-                        });
-                        
-                        self.addEventListener('fetch', event => {
-                            event.respondWith(
-                                caches.match(event.request)
-                                    .then(response => {
-                                        return response || fetch(event.request);
-                                    })
-                            );
-                        });
-                    `;
-                    
-                    const blob = new Blob([swContent], { type: 'application/javascript' });
-                    const swUrl = URL.createObjectURL(blob);
-                    
-                    navigator.serviceWorker.register(swUrl)
-                        .then(registration => {
-                            console.log('Service Worker registered with scope:', registration.scope);
-                        })
-                        .catch(error => {
-                            console.error('Service Worker registration failed:', error);
-                        });
-                });
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize data if not exists
+            if (!localStorage.getItem('lseUsers')) {
+                localStorage.setItem('lseUsers', JSON.stringify([]));
             }
-        }
-
-        // Online status detection
-        window.addEventListener('online', () => {
-            isOnline = true;
-            showSyncIndicator();
-            if (currentUser) syncLocalChanges();
-            offlineIndicator.classList.remove('show');
-        });
-        
-        window.addEventListener('offline', () => {
-            isOnline = false;
-            showSyncIndicator("Offline - changes saved locally");
-            offlineIndicator.classList.add('show');
-        });
-
-        // Show sync indicator
-        function showSyncIndicator(message = "Syncing with cloud...") {
-            syncIndicator.innerHTML = `<div class="spinner"></div><span>${message}</span>`;
-            syncIndicator.style.display = 'flex';
-            
-            if (message !== "Syncing with cloud...") {
-                setTimeout(() => {
-                    syncIndicator.style.display = 'none';
-                }, 3000);
-            }
-        }
-
-        // Hide sync indicator
-        function hideSyncIndicator() {
-            syncIndicator.innerHTML = `<div class="spinner"></div><span>Sync complete!</span>`;
-            syncIndicator.classList.add('sync-complete');
-            
-            setTimeout(() => {
-                syncIndicator.style.display = 'none';
-                syncIndicator.classList.remove('sync-complete');
-            }, 2000);
-        }
-
-        // Auth state listener
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUser = user;
-                userEmail.textContent = user.email;
-                authSection.style.display = 'none';
-                journalSection.style.display = 'block';
-                
-                // Set up real-time listener
-                setupFirestoreListener();
-            } else {
-                currentUser = null;
-                authSection.style.display = 'block';
-                journalSection.style.display = 'none';
-                allPosts = [];
-                
-                // Unsubscribe from listener when logged out
-                if (unsubscribeListener) {
-                    unsubscribeListener();
-                    unsubscribeListener = null;
-                }
-            }
-        });
-
-        // Set up Firestore real-time listener
-        function setupFirestoreListener() {
-            if (unsubscribeListener) unsubscribeListener();
-            
-            const postsRef = db.collection('users').doc(currentUser.uid).collection('posts');
-            
-            showSyncIndicator();
-            
-            unsubscribeListener = postsRef.orderBy('date', 'desc').onSnapshot(snapshot => {
-                const updatedPosts = [];
-                
-                snapshot.forEach(doc => {
-                    updatedPosts.push(doc.data());
-                });
-                
-                // Update allPosts and display
-                allPosts = updatedPosts;
-                displayPosts(allPosts);
-                
-                // Process data for SoulMap
-                processSoulMapData();
-                
-                // Save to local storage
-                savePostsToLocal();
-                
-                hideSyncIndicator();
-            }, error => {
-                console.error('Firestore listener error:', error);
-                hideSyncIndicator();
-                
-                // Load from local storage on error
-                loadLocalPosts();
-            });
-        }
-
-        // Sign in
-        signInBtn.addEventListener('click', () => {
-            const email = document.getElementById('emailInput').value;
-            const password = document.getElementById('passwordInput').value;
-            
-            authError.textContent = '';
-            
-            if (!email || !password) {
-                authError.textContent = 'Please fill in all fields';
-                return;
+            if (!localStorage.getItem('lseExchanges')) {
+                localStorage.setItem('lseExchanges', JSON.stringify([]));
             }
             
-            auth.signInWithEmailAndPassword(email, password)
-                .catch(error => {
-                    authError.textContent = error.message;
-                });
-        });
-
-        // Sign up
-        signUpBtn.addEventListener('click', () => {
-            const email = document.getElementById('signUpEmail').value;
-            const password = document.getElementById('signUpPassword').value;
-            const passwordConfirm = document.getElementById('signUpPasswordConfirm').value;
-            
-            signUpError.textContent = '';
-            
-            if (!email || !password || !passwordConfirm) {
-                signUpError.textContent = 'Please fill in all fields';
-                return;
+            // Generate a unique user ID if not exists
+            let userId = localStorage.getItem('lseUserId');
+            if (!userId) {
+                userId = 'user_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('lseUserId', userId);
             }
             
-            if (password !== passwordConfirm) {
-                signUpError.textContent = 'Passwords do not match';
-                return;
+            // Generate a username if not exists
+            let username = localStorage.getItem('lseUsername');
+            if (!username) {
+                const adjectives = ['Clever', 'Creative', 'Smart', 'Kind', 'Expert', 'Skilled'];
+                const nouns = ['Helper', 'Teacher', 'Mentor', 'Guide', 'Tutor', 'Coach'];
+                username = adjectives[Math.floor(Math.random() * adjectives.length)] + 
+                          ' ' + 
+                          nouns[Math.floor(Math.random() * nouns.length)];
+                localStorage.setItem('lseUsername', username);
             }
             
-            if (password.length < 6) {
-                signUpError.textContent = 'Password should be at least 6 characters';
-                return;
-            }
+            // Set username in UI
+            document.getElementById('username').textContent = username;
             
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Create user document in Firestore
-                    return db.collection('users').doc(userCredential.user.uid).set({
-                        email: email,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                })
-                .catch(error => {
-                    signUpError.textContent = error.message;
-                });
-        });
-
-        // Logout
-        logoutBtn.addEventListener('click', () => {
-            auth.signOut();
-        });
-
-        // Switch auth forms
-        switchToSignUp.addEventListener('click', () => {
-            authForm.style.display = 'none';
-            signUpForm.style.display = 'block';
-        });
-
-        switchToSignIn.addEventListener('click', () => {
-            signUpForm.style.display = 'none';
-            authForm.style.display = 'block';
-        });
-
-        // Load posts from local storage
-        function loadLocalPosts() {
-            try {
-                const saved = localStorage.getItem('journalPosts');
-                const localPosts = saved ? JSON.parse(saved) : [];
-                
-                if (localPosts.length > 0) {
-                    allPosts = localPosts;
-                    displayPosts(allPosts);
-                    // Process data for SoulMap
-                    processSoulMapData();
-                }
-            } catch (e) {
-                console.error('Error loading local posts:', e);
-            }
-        }
-
-        // Save posts to local storage
-        function savePostsToLocal() {
-            try {
-                localStorage.setItem('journalPosts', JSON.stringify(allPosts));
-                // Also save processed SoulMap data
-                localStorage.setItem('soulMapData', JSON.stringify(soulMapData));
-            } catch (e) {
-                console.error('Error saving to local storage:', e);
-            }
-        }
-
-        // Sync local changes to Firestore
-        function syncLocalChanges() {
-            if (!currentUser) return;
+            // Initialize user data if not exists
+            const users = JSON.parse(localStorage.getItem('lseUsers'));
+            let currentUser = users.find(u => u.id === userId);
             
-            const localPosts = JSON.parse(localStorage.getItem('journalPosts') || []);
-            const cloudPosts = allPosts;
-            
-            // Find posts that exist locally but not in cloud
-            const postsToSync = localPosts.filter(localPost => 
-                !cloudPosts.some(cloudPost => cloudPost.id === localPost.id)
-            );
-            
-            if (postsToSync.length > 0) {
-                showSyncIndicator("Syncing local changes...");
-                
-                const batch = db.batch();
-                const userRef = db.collection('users').doc(currentUser.uid);
-                
-                postsToSync.forEach(post => {
-                    const postRef = userRef.collection('posts').doc(post.id);
-                    batch.set(postRef, post);
-                });
-                
-                batch.commit()
-                    .then(() => {
-                        console.log('Local changes synced to Firestore');
-                        hideSyncIndicator();
-                    })
-                    .catch(error => {
-                        console.error('Error syncing local changes:', error);
-                        hideSyncIndicator();
-                    });
-            }
-        }
-
-        // Select mood
-        function selectMood(button, mood) {
-            document.querySelectorAll('.mood-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            button.classList.add('active');
-            selectedMood = mood;
-        }
-
-        // Create new post
-        function createPost() {
-            const text = document.getElementById('journalText').value.trim();
-            
-            if (!text) {
-                alert('Please write something before posting!');
-                return;
-            }
-
-            const newPost = {
-                id: Date.now().toString(),
-                text: text,
-                mood: selectedMood,
-                date: Date.now()
-            };
-
-            // Add to local array immediately for responsive UI
-            allPosts.unshift(newPost);
-            displayPosts(allPosts);
-            
-            // Process data for SoulMap
-            processSoulMapData();
-            
-            // Save to local storage
-            savePostsToLocal();
-            
-            // Save to Firestore if online
-            if (isOnline && currentUser) {
-                showSyncIndicator();
-                
-                db.collection('users').doc(currentUser.uid)
-                    .collection('posts').doc(newPost.id).set(newPost)
-                    .then(() => {
-                        hideSyncIndicator();
-                    })
-                    .catch(error => {
-                        console.error('Error saving to Firestore:', error);
-                        hideSyncIndicator();
-                    });
-            } else {
-                showSyncIndicator("Offline - changes saved locally");
-            }
-            
-            // Clear form
-            document.getElementById('journalText').value = '';
-            document.querySelectorAll('.mood-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            selectedMood = '🌱 Neutral';
-            
-            // Clear search
-            document.getElementById('searchInput').value = '';
-        }
-
-        // Search posts
-        function searchPosts() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
-            if (!searchTerm) {
-                displayPosts(allPosts);
-                return;
-            }
-
-            const filtered = allPosts.filter(post => {
-                return post.text.toLowerCase().includes(searchTerm) ||
-                       post.mood.toLowerCase().includes(searchTerm);
-            });
-
-            displayPosts(filtered);
-        }
-
-        // Display posts
-        function displayPosts(posts) {
-            const feed = document.getElementById('postsFeed');
-            
-            if (posts.length === 0) {
-                feed.innerHTML = `
-                    <div class="empty-state">
-                        ${allPosts.length === 0 ? 
-                          'Your mental garden is empty... Plant your first thought seed' : 
-                          'No posts match your search'}
-                    </div>
-                `;
-                return;
-            }
-
-            let html = '';
-            posts.forEach(post => {
-                const date = new Date(post.date).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                html += `
-                    <div class="post-card">
-                        <div class="post-meta">
-                            <div class="post-date">${date}</div>
-                            <div class="post-mood">${post.mood}</div>
-                        </div>
-                        <div class="post-content">${post.text.replace(/\n/g, '<br>')}</div>
-                    </div>
-                `;
-            });
-
-            feed.innerHTML = html;
-        }
-
-        // Process data for SoulMap visualization
-        function processSoulMapData() {
-            soulMapData = allPosts.map(post => {
-                // Categorize posts based on content and mood
-                let category = 'default';
-                const text = post.text.toLowerCase();
-                
-                if (text.includes('reflect') || text.includes('think') || text.includes('contemplate') || text.includes('meditate')) {
-                    category = 'reflection';
-                } else if (text.includes('goal') || text.includes('achieve') || text.includes('target') || text.includes('objective')) {
-                    category = 'goal';
-                } else if (text.includes('affirm') || text.includes('positive') || text.includes('gratitude') || text.includes('thank')) {
-                    category = 'affirmation';
-                } else if (text.includes('habit') || text.includes('routine') || text.includes('practice') || text.includes('daily')) {
-                    category = 'habit';
-                } else if (text.includes('feel') || text.includes('emotion') || text.includes('mood') || text.includes('happy') || text.includes('sad') || text.includes('anxious')) {
-                    category = 'emotion';
-                }
-                
-                // Extract keywords for connections
-                const keywords = extractKeywords(post.text);
-                
-                return {
-                    id: post.id,
-                    text: post.text,
-                    mood: post.mood,
-                    date: post.date,
-                    category: category,
-                    keywords: keywords
+            if (!currentUser) {
+                currentUser = {
+                    id: userId,
+                    name: username,
+                    credits: 10
                 };
-            });
-            
-            // If we're on the SoulMap view, update the visualization
-            if (soulmapView.classList.contains('active')) {
-                renderVisualization();
+                users.push(currentUser);
+                localStorage.setItem('lseUsers', JSON.stringify(users));
             }
-        }
-
-        // Extract keywords from text for network connections
-        function extractKeywords(text) {
-            const commonWords = new Set(['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'my', 'i', 'a', 'an', 'on', 'with', 'that', 'this', 'but', 'or', 'if', 'be', 'are', 'at', 'so', 'was', 'have', 'has', 'had']);
-            const words = text.toLowerCase()
-                .replace(/[^\w\s]/g, '')
-                .split(/\s+/)
-                .filter(word => word.length > 3 && !commonWords.has(word));
             
-            // Return top 5 unique keywords
-            return [...new Set(words)].slice(0, 5);
-        }
-
-        // Switch between timeline and network graph
-        function switchVisualization(type) {
-            currentVisualization = type;
+            // Set credit balance in UI
+            document.getElementById('credit-balance').textContent = currentUser.credits;
             
-            // Update button states
-            timelineBtn.classList.toggle('active', type === 'timeline');
-            networkBtn.classList.toggle('active', type === 'network');
+            // Load all exchanges
+            loadExchanges();
             
-            // Show/hide views
-            timelineView.style.display = type === 'timeline' ? 'block' : 'none';
-            networkView.style.display = type === 'network' ? 'block' : 'none';
-            
-            // Render the selected visualization
-            renderVisualization();
-        }
-
-        // Render the current visualization
-        function renderVisualization() {
-            if (currentVisualization === 'timeline') {
-                renderTimeline();
-            } else {
-                renderNetworkGraph();
-            }
-        }
-
-        // Render timeline visualization
-        function renderTimeline() {
-            // Group posts by date
-            const postsByDate = {};
-            soulMapData.forEach(post => {
-                const date = new Date(post.date).toDateString();
-                if (!postsByDate[date]) {
-                    postsByDate[date] = [];
-                }
-                postsByDate[date].push(post);
-            });
-            
-            // Generate HTML for timeline
-            let html = '';
-            Object.keys(postsByDate).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
-                html += `<div class="timeline-date">${date}</div>`;
+            // Form submission handler
+            document.getElementById('skill-form').addEventListener('submit', function(e) {
+                e.preventDefault();
                 
-                postsByDate[date].forEach(post => {
-                    const time = new Date(post.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    
-                    html += `
-                        <div class="timeline-item">
-                            <div class="timeline-mood">${post.mood}</div>
-                            <div class="timeline-content">
-                                <div><strong>${time}</strong> - ${post.category.charAt(0).toUpperCase() + post.category.slice(1)}</div>
-                                <div>${post.text}</div>
-                            </div>
-                        </div>
-                    `;
-                });
+                const offerSkill = document.getElementById('offer-skill').value.trim();
+                const wantSkill = document.getElementById('want-skill').value.trim();
+                
+                if (offerSkill && wantSkill) {
+                    addSkillExchange(offerSkill, wantSkill);
+                    this.reset();
+                }
             });
             
-            timelineView.innerHTML = html || '<div class="empty-state">No timeline data available</div>';
-        }
-
-        // Render network graph visualization
-        function renderNetworkGraph() {
-            // Clear previous graph
-            d3.select("#networkView").selectAll("*").remove();
-            
-            if (soulMapData.length === 0) {
-                networkView.innerHTML = '<div class="empty-state">No data available for network graph</div>';
-                return;
+            function addSkillExchange(offer, want) {
+                const exchanges = JSON.parse(localStorage.getItem('lseExchanges'));
+                const users = JSON.parse(localStorage.getItem('lseUsers'));
+                
+                // Add the new exchange
+                const newExchange = {
+                    id: Date.now().toString(),
+                    userId: userId,
+                    userName: username,
+                    offer: offer,
+                    want: want,
+                    timestamp: new Date().toISOString()
+                };
+                
+                exchanges.push(newExchange);
+                localStorage.setItem('lseExchanges', JSON.stringify(exchanges));
+                
+                // Update user credits (+5 for offering a skill)
+                const userIndex = users.findIndex(u => u.id === userId);
+                if (userIndex !== -1) {
+                    users[userIndex].credits += 5;
+                    localStorage.setItem('lseUsers', JSON.stringify(users));
+                    document.getElementById('credit-balance').textContent = users[userIndex].credits;
+                }
+                
+                // Reload the exchanges list
+                loadExchanges();
             }
             
-            // Set up dimensions
-            const width = networkView.clientWidth;
-            const height = networkView.clientHeight;
-            
-            // Create SVG
-            svg = d3.select("#networkView")
-                .append("svg")
-                .attr("width", width)
-                .attr("height", height)
-                .attr("viewBox", [0, 0, width, height])
-                .attr("style", "max-width: 100%; height: auto;");
-            
-            // Create tooltip
-            const tooltip = d3.select("body")
-                .append("div")
-                .attr("class", "graph-tooltip")
-                .style("opacity", 0);
-            
-            // Create nodes
-            const nodes = soulMapData.map(post => ({
-                id: post.id,
-                text: post.text,
-                mood: post.mood,
-                category: post.category,
-                radius: 10 + (post.text.length / 30), // Size based on content length
-                date: post.date
-            }));
-            
-            // Create links based on shared keywords and categories
-            const links = [];
-            const linkSet = new Set(); // To avoid duplicate links
-            
-            for (let i = 0; i < nodes.length; i++) {
-                for (let j = i + 1; j < nodes.length; j++) {
-                    const sourcePost = soulMapData.find(p => p.id === nodes[i].id);
-                    const targetPost = soulMapData.find(p => p.id === nodes[j].id);
+            function loadExchanges() {
+                const exchanges = JSON.parse(localStorage.getItem('lseExchanges'));
+                const users = JSON.parse(localStorage.getItem('lseUsers'));
+                const currentUser = users.find(u => u.id === userId);
+                const exchangeList = document.getElementById('exchange-list');
+                
+                exchangeList.innerHTML = '';
+                
+                if (exchanges.length === 0) {
+                    exchangeList.innerHTML = '<li class="skill-item">No skill exchanges yet. Be the first to add one!</li>';
+                    return;
+                }
+                
+                // Get all wants of the current user
+                const currentUserWants = exchanges
+                    .filter(e => e.userId === userId)
+                    .map(e => e.want);
+                
+                exchanges.forEach(exchange => {
+                    const listItem = document.createElement('li');
+                    listItem.classList.add('skill-item');
                     
-                    // Connect nodes that share keywords or categories
-                    const sharedKeywords = sourcePost.keywords.filter(k => 
-                        targetPost.keywords.includes(k));
+                    // Check if this exchange matches any of the current user's wants
+                    const isMatch = currentUserWants.includes(exchange.offer) && exchange.userId !== userId;
                     
-                    if (sharedKeywords.length > 0 || sourcePost.category === targetPost.category) {
-                        const linkId = `${sourcePost.id}-${targetPost.id}`;
-                        const reverseLinkId = `${targetPost.id}-${sourcePost.id}`;
-                        if (!linkSet.has(linkId) && !linkSet.has(reverseLinkId)) {
-                            links.push({
-                                source: nodes[i].id,
-                                target: nodes[j].id,
-                                value: sharedKeywords.length > 0 ? sharedKeywords.length : 1,
-                                type: sharedKeywords.length > 0 ? 'keyword' : 'category'
-                            });
-                            linkSet.add(linkId);
-                        }
+                    if (isMatch) {
+                        listItem.classList.add('match');
                     }
-                }
-            }
-            
-            // Set up force simulation
-            simulation = d3.forceSimulation(nodes)
-                .force("link", d3.forceLink(links).id(d => d.id).distance(100).strength(0.1))
-                .force("charge", d3.forceManyBody().strength(-300))
-                .force("center", d3.forceCenter(width / 2, height / 2))
-                .force("collision", d3.forceCollide().radius(d => d.radius + 5));
-            
-            // Draw links
-            const link = svg.append("g")
-                .attr("class", "links")
-                .selectAll("line")
-                .data(links)
-                .enter().append("line")
-                .attr("class", "link")
-                .attr("stroke-width", d => Math.sqrt(d.value));
-            
-            // Draw nodes
-            const node = svg.append("g")
-                .attr("class", "nodes")
-                .selectAll("circle")
-                .data(nodes)
-                .enter().append("circle")
-                .attr("class", d => `node ${d.category}`)
-                .attr("r", d => d.radius)
-                .call(d3.drag()
-                    .on("start", dragstarted)
-                    .on("drag", dragged)
-                    .on("end", dragended));
-            
-            // Add node labels
-            const label = svg.append("g")
-                .attr("class", "labels")
-                .selectAll("text")
-                .data(nodes)
-                .enter().append("text")
-                .attr("class", "node-label")
-                .text(d => d.mood)
-                .style("font-size", "10px");
-            
-            // Add zoom capabilities
-            zoom = d3.zoom()
-                .scaleExtent([0.1, 4])
-                .on("zoom", (event) => {
-                    svg.attr("transform", event.transform);
-                });
-            
-            svg.call(zoom);
-            
-            // Update positions on each tick
-            simulation.on("tick", () => {
-                link
-                    .attr("x1", d => d.source.x)
-                    .attr("y1", d => d.source.y)
-                    .attr("x2", d => d.target.x)
-                    .attr("y2", d => d.target.y);
-                
-                node
-                    .attr("cx", d => d.x)
-                    .attr("cy", d => d.y);
-                
-                label
-                    .attr("x", d => d.x)
-                    .attr("y", d => d.y - d.radius - 5);
-            });
-            
-            // Add interactivity
-            node.on("mouseover", function(event, d) {
-                tooltip.transition()
-                    .duration(200)
-                    .style("opacity", .9);
-                
-                const date = new Date(d.date).toLocaleDateString();
-                tooltip.html(`<strong>${d.mood}</strong><br/>${date}<br/>${d.text.substring(0, 100)}${d.text.length > 100 ? '...' : ''}`)
-                    .style("left", (event.pageX + 10) + "px")
-                    .style("top", (event.pageY - 28) + "px");
-                
-                // Highlight connected nodes
-                node.style("opacity", otherNode => {
-                    return isConnected(d, otherNode) ? 1 : 0.2;
-                });
-                
-                link.style("stroke-opacity", l => {
-                    return l.source.id === d.id || l.target.id === d.id ? 1 : 0.1;
-                });
-            })
-            .on("mouseout", function() {
-                tooltip.transition()
-                    .duration(500)
-                    .style("opacity", 0);
-                
-                // Reset opacity
-                node.style("opacity", 1);
-                link.style("stroke-opacity", 0.6);
-            });
-            
-            // Helper function to check if nodes are connected
-            function isConnected(a, b) {
-                return links.some(l => 
-                    (l.source.id === a.id && l.target.id === b.id) || 
-                    (l.source.id === b.id && l.target.id === a.id)
-                );
-            }
-            
-            // Drag functions
-            function dragstarted(event, d) {
-                if (!event.active) simulation.alphaTarget(0.3).restart();
-                d.fx = d.x;
-                d.fy = d.y;
-            }
-            
-            function dragged(event, d) {
-                d.fx = event.x;
-                d.fy = event.y;
-            }
-            
-            function dragended(event, d) {
-                if (!event.active) simulation.alphaTarget(0);
-                d.fx = null;
-                d.fy = null;
-            }
-            
-            // Draw clusters around nodes of the same category
-            drawClusters();
-        }
-
-        // Draw clusters around nodes of the same category
-        function drawClusters() {
-            const categories = [...new Set(soulMapData.map(post => post.category))];
-            
-            categories.forEach(category => {
-                const categoryNodes = soulMapData.filter(post => post.category === category);
-                if (categoryNodes.length > 1) {
-                    const nodePoints = categoryNodes.map(node => {
-                        const d3Node = simulation.nodes().find(n => n.id === node.id);
-                        return [d3Node.x, d3Node.y];
-                    });
                     
-                    // Calculate cluster center and radius
-                    const centerX = d3.mean(nodePoints, d => d[0]);
-                    const centerY = d3.mean(nodePoints, d => d[1]);
-                    const radius = d3.max(nodePoints, d => Math.sqrt(Math.pow(d[0] - centerX, 2) + Math.pow(d[1] - centerY, 2))) + 20;
+                    let exchangeHTML = `
+                        <div>
+                            <strong>${exchange.userName}</strong> offers 
+                            <span class="skill-name">${exchange.offer}</span>
+                            <span class="divider">|</span> wants 
+                            <span class="skill-name">${exchange.want}</span>
+                    `;
                     
-                    // Draw cluster circle
-                    svg.append("circle")
-                        .attr("class", "cluster")
-                        .attr("cx", centerX)
-                        .attr("cy", centerY)
-                        .attr("r", radius)
-                        .style("stroke", getCategoryColor(category));
+                    if (isMatch) {
+                        exchangeHTML += ` <span class="match-indicator">MATCH!</span>`;
+                        
+                        // Add a receive button for matches
+                        exchangeHTML += `</div>
+                            <div style="margin-top: 10px;">
+                                <button onclick="receiveSkill('${exchange.id}')" 
+                                        ${currentUser.credits < 5 ? 'disabled' : ''}>
+                                    Receive Skill (-5 credits)
+                                </button>
+                            </div>`;
+                    } else {
+                        exchangeHTML += `</div>`;
+                    }
+                    
+                    listItem.innerHTML = exchangeHTML;
+                    exchangeList.appendChild(listItem);
+                });
+            }
+            
+            // Make receiveSkill function available globally
+            window.receiveSkill = function(exchangeId) {
+                const exchanges = JSON.parse(localStorage.getItem('lseExchanges'));
+                const users = JSON.parse(localStorage.getItem('lseUsers'));
+                
+                const exchange = exchanges.find(e => e.id === exchangeId);
+                if (!exchange) return;
+                
+                // Find the current user
+                const userIndex = users.findIndex(u => u.id === userId);
+                if (userIndex === -1) return;
+                
+                // Check if user has enough credits
+                if (users[userIndex].credits < 5) {
+                    alert('Not enough credits to receive this skill!');
+                    return;
                 }
-            });
-        }
-
-        // Get color for a category
-        function getCategoryColor(category) {
-            switch(category) {
-                case 'reflection': return 'var(--node-reflection)';
-                case 'goal': return 'var(--node-goal)';
-                case 'affirmation': return 'var(--node-affirmation)';
-                case 'habit': return 'var(--node-habit)';
-                case 'emotion': return 'var(--node-emotion)';
-                default: return 'var(--node-default)';
-            }
-        }
-
-        // Zoom functions
-        function zoomIn() {
-            svg.transition().call(zoom.scaleBy, 1.5);
-        }
-
-        function zoomOut() {
-            svg.transition().call(zoom.scaleBy, 0.75);
-        }
-
-        function resetView() {
-            svg.transition().call(zoom.transform, d3.zoomIdentity);
-        }
-
-        // Switch between SoulBoard and SoulMap views
-        soulboardBtn.addEventListener('click', () => {
-            soulboardBtn.classList.add('active');
-            soulmapBtn.classList.remove('active');
-            soulboardView.classList.add('active');
-            soulmapView.classList.remove('active');
+                
+                // Deduct credits
+                users[userIndex].credits -= 5;
+                localStorage.setItem('lseUsers', JSON.stringify(users));
+                document.getElementById('credit-balance').textContent = users[userIndex].credits;
+                
+                alert(`You've received skill: ${exchange.offer} from ${exchange.userName}!`);
+                
+                // Reload exchanges to update UI
+                loadExchanges();
+            };
+            
+            // Initial load
+            loadExchanges();
         });
-
-        soulmapBtn.addEventListener('click', () => {
-            soulmapBtn.classList.add('active');
-            soulboardBtn.classList.remove('active');
-            soulmapView.classList.add('active');
-            soulboardView.classList.remove('active');
-            
-            // Process and render SoulMap data if needed
-            if (soulMapData.length === 0 && allPosts.length > 0) {
-                processSoulMapData();
-            }
-            renderVisualization();
-        });
-
-        // Initialize app when page loads
-        window.onload = function() {
-            // Check if we have local posts to display while loading
-            loadLocalPosts();
-            
-            // Initialize PWA features
-            handlePWAInstall();
-            registerServiceWorker();
-            
-            // Initialize offline status
-            if (!navigator.onLine) {
-                offlineIndicator.classList.add('show');
-            }
-            
-            // Focus on email field
-            document.getElementById('emailInput').focus();
-        };
-
-        // Utility function to show toast messages
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.textContent = message;
-            toast.style.position = 'fixed';
-            toast.style.bottom = '20px';
-            toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
-            toast.style.backgroundColor = 'var(--primary)';
-            toast.style.color = 'white';
-            toast.style.padding = '10px 20px';
-            toast.style.borderRadius = '30px';
-            toast.style.zIndex = '1000';
-            toast.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                document.body.removeChild(toast);
-            }, 3000);
-        }
     </script>
 </body>
 </html>
