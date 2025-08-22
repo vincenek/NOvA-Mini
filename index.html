@@ -3,29 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FXOS Trading Journal</title>
-    
-    <!-- Manifest -->
-<link rel="manifest" href="manifest.json">
-
-<!-- iOS Support -->
-<link rel="apple-touch-icon" href="icons/icon-192x192.png">
-<meta name="apple-mobile-web-app-status-bar" content="#2563eb">
-
-<!-- Theme Color -->
-<meta name="theme-color" content="#2563eb">
+    <title>TraderOS - Advanced Trading Journal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
     <style>
-        /* Existing styles */
         :root {
             --primary: #2563eb;
             --secondary: #0f172a;
@@ -56,7 +40,7 @@
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 5px;
         }
@@ -541,130 +525,96 @@
             transform: translateY(-3px);
         }
         
-        /* PWA Install Button */
-        .pwa-install-container {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            z-index: 1000;
-            display: none;
+        /* CBS Score Styles */
+        .cbs-score {
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            display: inline-block;
+            text-align: center;
+            min-width: 35px;
         }
         
-        .pwa-install-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: var(--success);
-            color: white;
+        .cbs-low {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+        
+        .cbs-medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+        
+        .cbs-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        /* Bias Insight Banner */
+        .bias-insight {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
             display: flex;
-            justify-content: center;
             align-items: center;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            border: none;
-            animation: pulse 2s infinite;
+            gap: 10px;
+            font-weight: 500;
         }
         
-        @keyframes pulse {
-            0% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-            }
-            
-            70% {
-                transform: scale(1);
-                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
-            }
-            
-            100% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-            }
+        .bias-warning {
+            background: rgba(239, 68, 68, 0.15);
+            border-left: 4px solid var(--danger);
         }
         
-        .pwa-install-btn:hover {
-            background: #0da271;
-            transform: scale(1.05);
+        .bias-positive {
+            background: rgba(16, 185, 129, 0.15);
+            border-left: 4px solid var(--success);
         }
         
-        /* Install Prompt */
-        .install-prompt {
+        .bias-insight i {
+            font-size: 1.2rem;
+        }
+        
+        .bias-warning i {
+            color: var(--danger);
+        }
+        
+        .bias-positive i {
+            color: var(--success);
+        }
+        
+        /* Real-time Bias Alert */
+        .bias-alert {
             position: fixed;
-            bottom: 20px;
+            top: 20px;
             right: 20px;
             background: white;
-            border-radius: 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 2000;
             padding: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            z-index: 1000;
-            transform: translateY(150%);
-            transition: transform 0.5s ease;
-        }
-        
-        .install-prompt.show {
-            transform: translateY(0);
-        }
-        
-        .install-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--primary);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 20px;
-        }
-        
-        .install-text {
-            flex: 1;
+            max-width: 350px;
+            display: none;
             color: #333;
         }
         
-        .install-text p {
-            color: #666;
-            font-size: 0.9rem;
-            margin-top: 3px;
-        }
-        
-        .install-close {
-            background: transparent;
-            border: none;
-            font-size: 20px;
-            color: var(--gray);
-            cursor: pointer;
-        }
-        
-        /* Offline Indicator */
-        .offline-indicator {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: var(--warning);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 30px;
+        .bias-alert h3 {
+            margin: 0 0 10px 0;
+            color: #e74c3c;
             display: flex;
             align-items: center;
             gap: 8px;
-            z-index: 100;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s ease;
         }
         
-        .offline-indicator.show {
-            opacity: 1;
-            transform: translateY(0);
+        .bias-alert-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
         }
         
-        /* Auth Modals */
-        .auth-modal {
+        /* Education Modal */
+        .education-modal {
             display: none;
             position: fixed;
             top: 0;
@@ -677,152 +627,42 @@
             align-items: center;
         }
         
-        .auth-container {
+        .education-content {
             background: var(--dark);
             border: 1px solid var(--border);
             border-radius: 10px;
             width: 100%;
-            max-width: 400px;
-            padding: 25px;
+            max-width: 600px;
+            padding: 20px;
             position: relative;
         }
         
-        .auth-header {
-            text-align: center;
-            margin-bottom: 20px;
+        .education-content h2 {
+            margin-bottom: 15px;
+            color: var(--primary);
         }
         
-        .auth-header h2 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
+        .education-content p {
+            margin-bottom: 15px;
+            line-height: 1.6;
         }
         
-        .auth-header p {
-            color: var(--gray);
+        .education-content h3 {
+            margin: 20px 0 10px 0;
+            color: var(--warning);
         }
         
-        .auth-tabs {
-            display: flex;
-            margin-bottom: 20px;
-        }
-        
-        .auth-tab {
-            flex: 1;
-            text-align: center;
-            padding: 12px;
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid var(--border);
-            cursor: pointer;
-            font-weight: 600;
-        }
-        
-        .auth-tab:first-child {
-            border-radius: 6px 0 0 6px;
-        }
-        
-        .auth-tab:last-child {
-            border-radius: 0 6px 6px 0;
-        }
-        
-        .auth-tab.active {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
-        
-        .auth-form {
-            display: none;
-        }
-        
-        .auth-form.active {
-            display: block;
-        }
-        
-        .auth-form-group {
+        .education-content ul {
+            padding-left: 20px;
             margin-bottom: 15px;
         }
         
-        .auth-form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
+        .education-content li {
+            margin-bottom: 8px;
+            line-height: 1.5;
         }
         
-        .auth-form-control {
-            width: 100%;
-            padding: 12px;
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--light);
-            font-size: 1rem;
-        }
-        
-        .auth-form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        
-        .auth-btn {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        
-        .auth-error {
-            color: var(--danger);
-            text-align: center;
-            margin-top: 15px;
-            min-height: 20px;
-        }
-        
-        .auth-footer {
-            text-align: center;
-            margin-top: 20px;
-            color: var(--gray);
-        }
-        
-        .auth-footer a {
-            color: var(--primary);
-            cursor: pointer;
-        }
-        
-        /* User info */
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        
-        .logout-btn {
-            background: transparent;
-            border: none;
-            color: var(--gray);
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        
-        .logout-btn:hover {
-            color: var(--light);
-        }
-        
-        /* Mobile-specific adjustments */
+        /* Responsive adjustments */
         @media (min-width: 576px) {
             .stats-container {
                 grid-template-columns: repeat(4, 1fr);
@@ -914,65 +754,6 @@
             font-size: 0.75rem;
         }
         
-        /* CBS Score Styles */
-        .cbs-score {
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            display: inline-block;
-            text-align: center;
-            min-width: 35px;
-        }
-        
-        .cbs-low {
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--success);
-        }
-        
-        .cbs-medium {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--warning);
-        }
-        
-        .cbs-high {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
-        }
-        
-        /* Bias Insight Banner */
-        .bias-insight {
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 500;
-        }
-        
-        .bias-warning {
-            background: rgba(239, 68, 68, 0.15);
-            border-left: 4px solid var(--danger);
-        }
-        
-        .bias-positive {
-            background: rgba(16, 185, 129, 0.15);
-            border-left: 4px solid var(--success);
-        }
-        
-        .bias-insight i {
-            font-size: 1.2rem;
-        }
-        
-        .bias-warning i {
-            color: var(--danger);
-        }
-        
-        .bias-positive i {
-            color: var(--success);
-        }
-        
         @media (max-width: 575px) {
             .table-wrapper table {
                 display: block;
@@ -1010,10 +791,6 @@
                 justify-content: flex-end;
             }
             
-            .auth-container {
-                width: 95%;
-            }
-            
             .stats-container {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -1021,88 +798,35 @@
     </style>
 </head>
 <body>
-    <!-- Auth Modals -->
-    <div class="auth-modal" id="authModal">
-        <div class="auth-container">
-            <div class="auth-header">
-                <div class="logo">
-                    <i class="fas fa-chart-line"></i>
-                    <h1>FX Trading Journal</h1>
-                </div>
-                <p>Track, analyze, and improve your trading performance</p>
-            </div>
-            
-            <div class="auth-tabs">
-                <div class="auth-tab active" data-tab="signin">Sign In</div>
-                <div class="auth-tab" data-tab="signup">Sign Up</div>
-            </div>
-            
-            <div class="auth-form active" id="signinForm">
-                <div class="auth-form-group">
-                    <label>Email</label>
-                    <input type="email" class="auth-form-control" id="loginEmail" placeholder="your@email.com">
-                </div>
-                
-                <div class="auth-form-group">
-                    <label>Password</label>
-                    <input type="password" class="auth-form-control" id="loginPassword" placeholder="••••••••">
-                </div>
-                
-                <button class="auth-btn" id="signInBtn">Sign In</button>
-                
-                <div class="auth-error" id="loginError"></div>
-                
-                <div class="auth-footer">
-                    <p>Forgot your password? <a id="resetPasswordLink">Reset it</a></p>
-                </div>
-            </div>
-            
-            <div class="auth-form" id="signupForm">
-                <div class="auth-form-group">
-                    <label>Name</label>
-                    <input type="text" class="auth-form-control" id="signupName" placeholder="Your Name">
-                </div>
-                
-                <div class="auth-form-group">
-                    <label>Email</label>
-                    <input type="email" class="auth-form-control" id="signupEmail" placeholder="your@email.com">
-                </div>
-                
-                <div class="auth-form-group">
-                    <label>Password</label>
-                    <input type="password" class="auth-form-control" id="signupPassword" placeholder="••••••••">
-                </div>
-                
-                <div class="auth-form-group">
-                    <label>Confirm Password</label>
-                    <input type="password" class="auth-form-control" id="signupConfirmPassword" placeholder="••••••••">
-                </div>
-                
-                <button class="auth-btn" id="signUpBtn">Create Account</button>
-                
-                <div class="auth-error" id="signupError"></div>
-                
-                <div class="auth-footer">
-                    <p>Already have an account? <a id="switchToLogin">Sign in</a></p>
-                </div>
+    <!-- Bias Alert Modal -->
+    <div class="bias-alert" id="biasAlert">
+        <div class="bias-alert-content">
+            <h3><i class="fas fa-exclamation-triangle"></i> Bias Detected</h3>
+            <p id="biasAlertMessage"></p>
+            <div class="bias-alert-actions">
+                <button class="btn btn-outline" id="acknowledgeBias">Acknowledge</button>
+                <button class="btn" id="reviewBias">Review & Learn</button>
             </div>
         </div>
     </div>
-    
-    <!-- Main App Content (hidden until authenticated) -->
-    <div id="appContent" style="display: none;">
+
+    <!-- Education Modal -->
+    <div class="education-modal" id="educationModal">
+        <div class="education-content">
+            <span class="close-modal" id="closeEducation">&times;</span>
+            <div id="educationContent"></div>
+        </div>
+    </div>
+
+    <!-- Main App Content -->
+    <div id="appContent">
         <div class="container">
             <header>
                 <div class="logo">
-                    <i class="fas fa-chart-line"></i>
-                    <h1>FX Trading Journal</h1>
+                    <i class="fas fa-brain"></i>
+                    <h1>TraderOS with Cognitive Bias Detection</h1>
                 </div>
                 <div class="user-info">
-                    <div class="user-avatar" id="userAvatar">U</div>
-                    <div>
-                        <div id="userName">User</div>
-                        <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                    </div>
                     <div class="desktop-add-btn">
                         <button class="btn" id="addTradeBtn">
                             <i class="fas fa-plus"></i> <span class="desktop-text">Add Trade</span>
@@ -1146,6 +870,7 @@
                                 <div class="tab active" data-filter="all">All</div>
                                 <div class="tab" data-filter="winners">Wins</div>
                                 <div class="tab" data-filter="losers">Losses</div>
+                                <div class="tab" data-filter="highBias">High Bias</div>
                             </div>
                         </div>
                         
@@ -1153,10 +878,9 @@
                             <table>
                                 <thead>
                                     <tr>
+                                        <th>Date</th>
                                         <th>Pair</th>
                                         <th>Dir</th>
-                                        <th>Entry</th>
-                                        <th>Exit</th>
                                         <th>P/L</th>
                                         <th>Risk</th>
                                         <th>Setup</th>
@@ -1185,7 +909,7 @@
                             <h2 class="card-title">Performance Analytics</h2>
                             <div>
                                 <button class="btn btn-outline" id="exportBtn">
-                                    <i class="fas fa-download"></i> <span class="desktop-text">Export PDF</span>
+                                    <i class="fas fa-download"></i> <span class="desktop-text">Export Data</span>
                                 </button>
                             </div>
                         </div>
@@ -1215,6 +939,16 @@
                     
                     <div class="card" style="margin-top: 15px;">
                         <div class="card-header">
+                            <h2 class="card-title">Bias Pattern Detection</h2>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <canvas id="biasPatternChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="margin-top: 15px;">
+                        <div class="card-header">
                             <h2 class="card-title">Recent Trade Details</h2>
                         </div>
                         
@@ -1230,7 +964,7 @@
             </div>
             
             <footer>
-                <p>FX Trading Journal v1.0 | Professional Trade Analysis</p>
+                <p>TraderOS v2.0 | Advanced Cognitive Bias Detection System</p>
             </footer>
         </div>
         
@@ -1240,40 +974,13 @@
         </button>
     </div>
     
-    <!-- PWA Install Button -->
-    <div class="pwa-install-container" id="pwaInstallContainer">
-        <button class="pwa-install-btn" id="pwaInstallBtn">
-            <i class="fas fa-download"></i>
-        </button>
-    </div>
-    
-    <!-- Install Prompt -->
-    <div class="install-prompt" id="installPrompt">
-        <div class="install-icon">
-            <i class="fas fa-download"></i>
-        </div>
-        <div class="install-text">
-            <strong>Install Trading Journal</strong>
-            <p>Add to home screen for quick access</p>
-        </div>
-        <button class="install-close" id="closePrompt">
-            <i class="fas fa-times"></i>
-        </button>
-    </div>
-    
-    <!-- Offline Indicator -->
-    <div class="offline-indicator" id="offlineIndicator">
-        <i class="fas fa-wifi-slash"></i>
-        <span>You are currently offline</span>
-    </div>
-    
     <!-- Toast notification -->
     <div class="toast" id="toast"></div>
     
     <!-- Export loading indicator -->
     <div class="export-loader" id="exportLoader">
         <div class="loader-spinner"></div>
-        <p>Generating PDF report...</p>
+        <p>Generating report...</p>
     </div>
     
     <!-- Add Trade Modal -->
@@ -1283,6 +990,11 @@
             <h2 style="margin-bottom: 15px;">Add New Trade</h2>
             
             <div class="form-grid">
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" class="form-control" id="tradeDate">
+                </div>
+                
                 <div class="form-group">
                     <label>Currency Pair</label>
                     <select class="form-control" id="currencyPair">
@@ -1308,22 +1020,22 @@
                 
                 <div class="form-group">
                     <label>Entry Price</label>
-                    <input type="number" step="0.0001" class="form-control" id="entryPrice" placeholder="1.12345">
+                    <input type="number" step="0.00001" class="form-control" id="entryPrice" placeholder="1.12345">
                 </div>
                 
                 <div class="form-group">
                     <label>Exit Price</label>
-                    <input type="number" step="0.0001" class="form-control" id="exitPrice" placeholder="1.12890">
+                    <input type="number" step="0.00001" class="form-control" id="exitPrice" placeholder="1.12890">
                 </div>
                 
                 <div class="form-group">
                     <label>Stop Loss</label>
-                    <input type="number" step="0.0001" class="form-control" id="stopLoss" placeholder="1.12000">
+                    <input type="number" step="0.00001" class="form-control" id="stopLoss" placeholder="1.12000">
                 </div>
                 
                 <div class="form-group">
                     <label>Take Profit</label>
-                    <input type="number" step="0.0001" class="form-control" id="takeProfit" placeholder="1.13000">
+                    <input type="number" step="0.00001" class="form-control" id="takeProfit" placeholder="1.13000">
                 </div>
                 
                 <div class="form-group">
@@ -1372,6 +1084,8 @@
                         <option>FOMO</option>
                         <option>Revenge Trading</option>
                         <option>Overtrading</option>
+                        <option>Overconfident</option>
+                        <option>Fearful</option>
                     </select>
                 </div>
                 
@@ -1398,45 +1112,13 @@
     </div>
 
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyByv7zwSod9JCnYqUxC3Mb7VrPKihvjOHA",
-            authDomain: "trader-os.firebaseapp.com",
-            projectId: "trader-os",
-            storageBucket: "trader-os.appspot.com",
-            messagingSenderId: "879978387606",
-            appId: "1:879978387606:web:a37e5aa8075032b6294ab7",
-            measurementId: "G-BL4PJWJJCV"
-        };
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        
         // Initialize variables
         let trades = [];
         let currentFilter = 'all';
-        let performanceChart, setupChart, biasFrequencyChart, cbsTrendChart;
-        let deferredPrompt; // For PWA installation
-        let currentUser = null;
+        let performanceChart, setupChart, biasFrequencyChart, cbsTrendChart, biasPatternChart;
         
         // DOM Elements
-        const authModal = document.getElementById('authModal');
         const appContent = document.getElementById('appContent');
-        const signInForm = document.getElementById('signinForm');
-        const signUpForm = document.getElementById('signupForm');
-        const signInBtn = document.getElementById('signInBtn');
-        const signUpBtn = document.getElementById('signUpBtn');
-        const authTabs = document.querySelectorAll('.auth-tab');
-        const loginError = document.getElementById('loginError');
-        const signupError = document.getElementById('signupError');
-        const resetPasswordLink = document.getElementById('resetPasswordLink');
-        const switchToLogin = document.getElementById('switchToLogin');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const userAvatar = document.getElementById('userAvatar');
-        const userName = document.getElementById('userName');
-        
         const addTradeBtn = document.getElementById('addTradeBtn');
         const mobileAddBtn = document.getElementById('mobileAddBtn');
         const modal = document.getElementById('addTradeModal');
@@ -1455,11 +1137,13 @@
         const exportLoader = document.getElementById('exportLoader');
         const tabs = document.querySelectorAll('.tab');
         const toast = document.getElementById('toast');
-        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
-        const pwaInstallContainer = document.getElementById('pwaInstallContainer');
-        const installPrompt = document.getElementById('installPrompt');
-        const closePrompt = document.getElementById('closePrompt');
-        const offlineIndicator = document.getElementById('offlineIndicator');
+        const biasAlert = document.getElementById('biasAlert');
+        const biasAlertMessage = document.getElementById('biasAlertMessage');
+        const acknowledgeBiasBtn = document.getElementById('acknowledgeBias');
+        const reviewBiasBtn = document.getElementById('reviewBias');
+        const educationModal = document.getElementById('educationModal');
+        const educationContent = document.getElementById('educationContent');
+        const closeEducationBtn = document.getElementById('closeEducation');
         const biasInsightsContainer = document.getElementById('biasInsightsContainer');
         
         // Show toast notification
@@ -1479,12 +1163,15 @@
                 fomo: false,
                 revenge: false,
                 lossAversion: false,
-                confirmation: false
+                confirmation: false,
+                overconfidence: false,
+                herding: false,
+                recency: false,
+                anchoring: false
             };
             
             // FOMO Bias: triggered if emotion is "FOMO" or trade opened immediately after a big move
-            // For simplicity, we'll just check emotion as we don't have price data
-            if (trade.emotion === "FOMO") {
+            if (trade.emotion === "FOMO" || trade.emotion === "Anxious") {
                 biases.fomo = true;
             }
             
@@ -1496,12 +1183,12 @@
                 const timeDiff = Math.abs(currentTradeDate - lastTradeDate) / (1000 * 60); // Difference in minutes
                 
                 // Calculate if last trade was a loss
-                const pipValue = lastTrade.pair.includes('JPY') ? 100 : 10000;
+                const pipValue = lastTrade.pair.includes('JPY') ? 0.01 : 0.0001;
                 let lastTradePL;
                 if (lastTrade.direction === 'Long') {
-                    lastTradePL = (lastTrade.exitPrice - lastTrade.entryPrice) * pipValue;
+                    lastTradePL = (lastTrade.exitPrice - lastTrade.entryPrice) / pipValue;
                 } else {
-                    lastTradePL = (lastTrade.entryPrice - lastTrade.exitPrice) * pipValue;
+                    lastTradePL = (lastTrade.entryPrice - lastTrade.exitPrice) / pipValue;
                 }
                 
                 if (lastTradePL < 0 && timeDiff < 60) { // Less than 60 minutes between trades
@@ -1511,16 +1198,16 @@
             
             // Loss Aversion Bias: triggered if user cuts winners too early or lets losers run too long
             if (trade.stopLoss && trade.takeProfit) {
-                const pipValue = trade.pair.includes('JPY') ? 100 : 10000;
+                const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
                 let tradePL;
                 if (trade.direction === 'Long') {
-                    tradePL = (trade.exitPrice - trade.entryPrice) * pipValue;
+                    tradePL = (trade.exitPrice - trade.entryPrice) / pipValue;
                 } else {
-                    tradePL = (trade.entryPrice - trade.exitPrice) * pipValue;
+                    tradePL = (trade.entryPrice - trade.exitPrice) / pipValue;
                 }
                 
-                const risk = Math.abs(trade.entryPrice - trade.stopLoss) * pipValue;
-                const reward = Math.abs(trade.takeProfit - trade.entryPrice) * pipValue;
+                const risk = Math.abs(trade.entryPrice - trade.stopLoss) / pipValue;
+                const reward = Math.abs(trade.takeProfit - trade.entryPrice) / pipValue;
                 
                 // If profitable but exited before reaching take profit (cut winners early)
                 if (tradePL > 0 && tradePL < reward * 0.7) {
@@ -1540,12 +1227,12 @@
                     // Check if last 3 same setup trades were losses
                     const lastThree = sameSetupTrades.slice(-3);
                     const allLosses = lastThree.every(t => {
-                        const pipValue = t.pair.includes('JPY') ? 100 : 10000;
+                        const pipValue = t.pair.includes('JPY') ? 0.01 : 0.0001;
                         let pl;
                         if (t.direction === 'Long') {
-                            pl = (t.exitPrice - t.entryPrice) * pipValue;
+                            pl = (t.exitPrice - t.entryPrice) / pipValue;
                         } else {
-                            pl = (t.entryPrice - t.exitPrice) * pipValue;
+                            pl = (t.entryPrice - t.exitPrice) / pipValue;
                         }
                         return pl < 0;
                     });
@@ -1556,18 +1243,68 @@
                 }
             }
             
+            // Overconfidence Bias: triggered after a series of wins with increased risk
+            if (previousTrades.length >= 3) {
+                const recentTrades = previousTrades.slice(-3);
+                const recentWins = recentTrades.filter(t => {
+                    const pipValue = t.pair.includes('JPY') ? 0.01 : 0.0001;
+                    let pl;
+                    if (t.direction === 'Long') {
+                        pl = (t.exitPrice - t.entryPrice) / pipValue;
+                    } else {
+                        pl = (t.entryPrice - t.exitPrice) / pipValue;
+                    }
+                    return pl > 0;
+                });
+                
+                if (recentWins.length >= 2 && trade.riskPercent > recentTrades.reduce((sum, t) => sum + t.riskPercent, 0) / recentTrades.length) {
+                    biases.overconfidence = true;
+                }
+            }
+            
+            // Herding Bias: triggered if trading the same direction as the majority of recent trades
+            if (previousTrades.length >= 5) {
+                const recentTrades = previousTrades.slice(-5);
+                const sameDirectionTrades = recentTrades.filter(t => t.direction === trade.direction);
+                
+                if (sameDirectionTrades.length / recentTrades.length >= 0.8) {
+                    biases.herding = true;
+                }
+            }
+            
+            // Recency Bias: triggered if trading the same setup as the last trade regardless of outcome
+            if (previousTrades.length > 0) {
+                const lastTrade = previousTrades[previousTrades.length - 1];
+                if (lastTrade.setupType === trade.setupType) {
+                    biases.recency = true;
+                }
+            }
+            
+            // Anchoring Bias: triggered if entry price is close to a round number
+            const priceDecimal = trade.entryPrice.toString().split('.')[1] || '';
+            if (priceDecimal.length >= 2) {
+                const lastTwoDigits = parseInt(priceDecimal.slice(-2));
+                if (lastTwoDigits >= 95 || lastTwoDigits <= 5) {
+                    biases.anchoring = true;
+                }
+            }
+            
             return biases;
         }
         
         // Calculate Cognitive Bias Score (0-100)
         function calculateCBS(biases) {
             let score = 0;
-            if (biases.fomo) score += 25;
-            if (biases.revenge) score += 25;
-            if (biases.lossAversion) score += 25;
-            if (biases.confirmation) score += 25;
+            if (biases.fomo) score += 15;
+            if (biases.revenge) score += 20;
+            if (biases.lossAversion) score += 20;
+            if (biases.confirmation) score += 15;
+            if (biases.overconfidence) score += 10;
+            if (biases.herding) score += 8;
+            if (biases.recency) score += 7;
+            if (biases.anchoring) score += 5;
             
-            return score;
+            return Math.min(score, 100);
         }
         
         // Get CBS class for styling
@@ -1575,6 +1312,71 @@
             if (score <= 30) return 'cbs-low';
             if (score <= 70) return 'cbs-medium';
             return 'cbs-high';
+        }
+        
+        // Show bias alert
+        function showBiasAlert(biases) {
+            const biasMessages = [];
+            
+            if (biases.fomo) biasMessages.push("FOMO (Fear Of Missing Out) detected - trading based on emotion rather than strategy.");
+            if (biases.revenge) biasMessages.push("Revenge trading detected - trying to recover losses quickly.");
+            if (biases.lossAversion) biasMessages.push("Loss aversion detected - exiting winners early or letting losers run.");
+            if (biases.confirmation) biasMessages.push("Confirmation bias detected - repeating losing strategies.");
+            if (biases.overconfidence) biasMessages.push("Overconfidence detected - increasing risk after wins.");
+            if (biases.herding) biasMessages.push("Herding bias detected - following the crowd without independent analysis.");
+            if (biases.recency) biasMessages.push("Recency bias detected - overweighting recent events.");
+            if (biases.anchoring) biasMessages.push("Anchoring bias detected - focusing on round numbers.");
+            
+            if (biasMessages.length > 0) {
+                biasAlertMessage.innerHTML = biasMessages.join('<br><br>');
+                biasAlert.style.display = 'block';
+                
+                // Set up button handlers
+                acknowledgeBiasBtn.onclick = () => {
+                    biasAlert.style.display = 'none';
+                };
+                
+                reviewBiasBtn.onclick = () => {
+                    biasAlert.style.display = 'none';
+                    showBiasEducation(biases);
+                };
+            }
+        }
+        
+        // Show bias education
+        function showBiasEducation(biases) {
+            let content = '<h2>Cognitive Bias Education</h2>';
+            
+            if (biases.fomo) {
+                content += `
+                    <h3>FOMO (Fear Of Missing Out)</h3>
+                    <p>FOMO occurs when traders enter positions due to the fear of missing out on potential profits, rather than based on their trading plan.</p>
+                    <h3>How to overcome FOMO:</h3>
+                    <ul>
+                        <li>Stick to your trading plan and strategy</li>
+                        <li>Remember that there will always be other trading opportunities</li>
+                        <li>Avoid chasing prices after big moves</li>
+                        <li>Practice patience and discipline</li>
+                    </ul>
+                `;
+            }
+            
+            if (biases.revenge) {
+                content += `
+                    <h3>Revenge Trading</h3>
+                    <p>Revenge trading happens when traders try to immediately recover losses by taking impulsive trades without proper analysis.</p>
+                    <h3>How to overcome revenge trading:</h3>
+                    <ul>
+                        <li>Take a break after a losing trade</li>
+                        <li>Review what went wrong before entering a new trade</li>
+                        <li>Stick to your risk management rules</li>
+                        <li>Accept that losses are part of trading</li>
+                    </ul>
+                `;
+            }
+            
+            educationContent.innerHTML = content;
+            educationModal.style.display = 'flex';
         }
         
         // Update bias insights based on recent trades
@@ -1614,41 +1416,63 @@
                 `;
                 biasInsightsContainer.appendChild(positiveDiv);
             }
-        }
-        
-        // Save trades to Firestore
-        function saveTrades() {
-            if (!currentUser) return;
             
-            const userRef = db.collection('users').doc(currentUser.uid);
-            userRef.set({
-                trades: trades
-            }, { merge: true })
-            .then(() => {
-                showToast('Trades saved successfully!');
-            })
-            .catch((error) => {
-                console.error("Error saving trades: ", error);
-                showToast('Error saving trades!', 'danger');
-            });
-        }
-        
-        // Load trades from Firestore
-        function loadTrades() {
-            if (!currentUser) return;
+            // Detect specific bias patterns
+            const biasCounts = {
+                fomo: 0,
+                revenge: 0,
+                lossAversion: 0,
+                confirmation: 0,
+                overconfidence: 0,
+                herding: 0,
+                recency: 0,
+                anchoring: 0
+            };
             
-            const userRef = db.collection('users').doc(currentUser.uid);
-            userRef.get().then((doc) => {
-                if (doc.exists && doc.data().trades) {
-                    trades = doc.data().trades;
-                    renderTradesTable();
-                    updateStats();
-                    updateCharts();
-                    updateBiasInsights();
+            trades.forEach(trade => {
+                for (const bias in trade.biases) {
+                    if (trade.biases[bias]) biasCounts[bias]++;
                 }
-            }).catch((error) => {
-                console.error("Error loading trades: ", error);
             });
+            
+            // Find the most common bias
+            let mostCommonBias = null;
+            let maxCount = 0;
+            
+            for (const bias in biasCounts) {
+                if (biasCounts[bias] > maxCount) {
+                    mostCommonBias = bias;
+                    maxCount = biasCounts[bias];
+                }
+            }
+            
+            if (mostCommonBias && maxCount > trades.length * 0.3) {
+                const commonBiasDiv = document.createElement('div');
+                commonBiasDiv.className = 'bias-insight bias-warning';
+                commonBiasDiv.innerHTML = `
+                    <i class="fas fa-chart-line"></i>
+                    <div>Pattern detected: ${mostCommonBias.replace(/([A-Z])/g, ' $1')} is your most common bias.</div>
+                `;
+                biasInsightsContainer.appendChild(commonBiasDiv);
+            }
+        }
+        
+        // Save trades to localStorage
+        function saveTrades() {
+            localStorage.setItem('trades', JSON.stringify(trades));
+            showToast('Trades saved successfully!');
+        }
+        
+        // Load trades from localStorage
+        function loadTrades() {
+            const savedTrades = localStorage.getItem('trades');
+            if (savedTrades) {
+                trades = JSON.parse(savedTrades);
+                renderTradesTable();
+                updateStats();
+                updateCharts();
+                updateBiasInsights();
+            }
         }
         
         // Initialize charts
@@ -1764,21 +1588,29 @@
             biasFrequencyChart = new Chart(biasFreqCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['FOMO', 'Revenge', 'Loss Aversion', 'Confirmation'],
+                    labels: ['FOMO', 'Revenge', 'Loss Aversion', 'Confirmation', 'Overconfidence', 'Herding', 'Recency', 'Anchoring'],
                     datasets: [{
                         label: 'Bias Frequency',
-                        data: [0, 0, 0, 0],
+                        data: [0, 0, 0, 0, 0, 0, 0, 0],
                         backgroundColor: [
                             'rgba(255, 99, 132, 0.7)',
                             'rgba(54, 162, 235, 0.7)',
                             'rgba(255, 206, 86, 0.7)',
-                            'rgba(75, 192, 192, 0.7)'
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(199, 199, 199, 0.7)',
+                            'rgba(83, 102, 255, 0.7)'
                         ],
                         borderColor: [
                             'rgba(255, 99, 132, 1)',
                             'rgba(54, 162, 235, 1)',
                             'rgba(255, 206, 86, 1)',
-                            'rgba(75, 192, 192, 1)'
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(199, 199, 199, 1)',
+                            'rgba(83, 102, 255, 1)'
                         ],
                         borderWidth: 1
                     }]
@@ -1806,7 +1638,9 @@
                                 display: false
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: '#94a3b8',
+                                maxRotation: 45,
+                                minRotation: 45
                             }
                         }
                     }
@@ -1859,6 +1693,51 @@
                     }
                 }
             });
+            
+            // Bias Pattern Chart
+            const biasPatternCtx = document.getElementById('biasPatternChart').getContext('2d');
+            biasPatternChart = new Chart(biasPatternCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['FOMO', 'Revenge', 'Loss Aversion', 'Confirmation', 'Overconfidence', 'Herding', 'Recency', 'Anchoring'],
+                    datasets: [{
+                        label: 'Your Bias Profile',
+                        data: [0, 0, 0, 0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            pointLabels: {
+                                color: '#94a3b8'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                backdropColor: 'transparent'
+                            }
+                        }
+                    }
+                }
+            });
         }
         
         // Update charts with real data
@@ -1875,12 +1754,12 @@
             
             sortedTrades.forEach(trade => {
                 // Calculate P/L in pips
-                const pipValue = trade.pair.includes('JPY') ? 100 : 10000;
+                const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
                 let plPips;
                 if (trade.direction === 'Long') {
-                    plPips = (trade.exitPrice - trade.entryPrice) * pipValue;
+                    plPips = (trade.exitPrice - trade.entryPrice) / pipValue;
                 } else {
-                    plPips = (trade.entryPrice - trade.exitPrice) * pipValue;
+                    plPips = (trade.entryPrice - trade.exitPrice) / pipValue;
                 }
                 
                 cumulativePips += plPips;
@@ -1908,12 +1787,12 @@
                 }
                 
                 const wins = setupTrades.filter(trade => {
-                    const pipValue = trade.pair.includes('JPY') ? 100 : 10000;
+                    const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
                     let plPips;
                     if (trade.direction === 'Long') {
-                        plPips = (trade.exitPrice - trade.entryPrice) * pipValue;
+                        plPips = (trade.exitPrice - trade.entryPrice) / pipValue;
                     } else {
-                        plPips = (trade.entryPrice - trade.exitPrice) * pipValue;
+                        plPips = (trade.entryPrice - trade.exitPrice) / pipValue;
                     }
                     return plPips > 0;
                 }).length;
@@ -1930,21 +1809,28 @@
                 fomo: 0,
                 revenge: 0,
                 lossAversion: 0,
-                confirmation: 0
+                confirmation: 0,
+                overconfidence: 0,
+                herding: 0,
+                recency: 0,
+                anchoring: 0
             };
             
             trades.forEach(trade => {
-                if (trade.biases.fomo) biasCounts.fomo++;
-                if (trade.biases.revenge) biasCounts.revenge++;
-                if (trade.biases.lossAversion) biasCounts.lossAversion++;
-                if (trade.biases.confirmation) biasCounts.confirmation++;
+                for (const bias in trade.biases) {
+                    if (trade.biases[bias]) biasCounts[bias]++;
+                }
             });
             
             biasFrequencyChart.data.datasets[0].data = [
                 biasCounts.fomo,
                 biasCounts.revenge,
                 biasCounts.lossAversion,
-                biasCounts.confirmation
+                biasCounts.confirmation,
+                biasCounts.overconfidence,
+                biasCounts.herding,
+                biasCounts.recency,
+                biasCounts.anchoring
             ];
             biasFrequencyChart.update();
             
@@ -1961,6 +1847,17 @@
             cbsTrendChart.data.labels = cbsDates;
             cbsTrendChart.data.datasets[0].data = cbsData;
             cbsTrendChart.update();
+            
+            // Update bias pattern chart
+            const biasPercentages = [];
+            const totalTrades = trades.length;
+            
+            for (const bias in biasCounts) {
+                biasPercentages.push((biasCounts[bias] / totalTrades) * 100);
+            }
+            
+            biasPatternChart.data.datasets[0].data = biasPercentages;
+            biasPatternChart.update();
         }
         
         // Update stats
@@ -1981,12 +1878,12 @@
             
             // Calculate wins and losses
             const wins = trades.filter(trade => {
-                const pipValue = trade.pair.includes('JPY') ? 100 : 10000;
+                const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
                 let plPips;
                 if (trade.direction === 'Long') {
-                    plPips = (trade.exitPrice - trade.entryPrice) * pipValue;
+                    plPips = (trade.exitPrice - trade.entryPrice) / pipValue;
                 } else {
-                    plPips = (trade.entryPrice - trade.exitPrice) * pipValue;
+                    plPips = (trade.entryPrice - trade.exitPrice) / pipValue;
                 }
                 return plPips > 0;
             }).length;
@@ -2028,26 +1925,28 @@
             
             if (currentFilter === 'winners') {
                 filteredTrades = trades.filter(trade => {
-                    const pipValue = trade.pair.includes('JPY') ? 100 : 10000;
+                    const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
                     let plPips;
                     if (trade.direction === 'Long') {
-                        plPips = (trade.exitPrice - trade.entryPrice) * pipValue;
+                        plPips = (trade.exitPrice - trade.entryPrice) / pipValue;
                     } else {
-                        plPips = (trade.entryPrice - trade.exitPrice) * pipValue;
+                        plPips = (trade.entryPrice - trade.exitPrice) / pipValue;
                     }
                     return plPips > 0;
                 });
             } else if (currentFilter === 'losers') {
                 filteredTrades = trades.filter(trade => {
-                    const pipValue = trade.pair.includes('JPY') ? 100 : 10000;
+                    const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
                     let plPips;
                     if (trade.direction === 'Long') {
-                        plPips = (trade.exitPrice - trade.entryPrice) * pipValue;
+                        plPips = (trade.exitPrice - trade.entryPrice) / pipValue;
                     } else {
-                        plPips = (trade.entryPrice - trade.exitPrice) * pipValue;
+                        plPips = (trade.entryPrice - trade.exitPrice) / pipValue;
                     }
                     return plPips <= 0;
                 });
+            } else if (currentFilter === 'highBias') {
+                filteredTrades = trades.filter(trade => trade.cbs >= 70);
             }
             
             if (filteredTrades.length === 0) {
@@ -2061,22 +1960,25 @@
                 const tr = document.createElement('tr');
                 
                 // Calculate P/L in pips
-                const pipValue = trade.pair.includes('JPY') ? 100 : 10000;
+                const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
                 let plPips;
                 if (trade.direction === 'Long') {
-                    plPips = ((trade.exitPrice - trade.entryPrice) * pipValue).toFixed(1);
+                    plPips = ((trade.exitPrice - trade.entryPrice) / pipValue).toFixed(1);
                 } else {
-                    plPips = ((trade.entryPrice - trade.exitPrice) * pipValue).toFixed(1);
+                    plPips = ((trade.entryPrice - trade.exitPrice) / pipValue).toFixed(1);
                 }
                 
                 const cbsClass = getCBSClass(trade.cbs);
                 
+                // Format date
+                const tradeDate = new Date(trade.date);
+                const formattedDate = `${tradeDate.getDate()}/${tradeDate.getMonth() + 1}/${tradeDate.getFullYear()}`;
+                
                 const mobileHtml = `
                     <td>
+                        <div><span class="responsive-label">Date:</span>${formattedDate}</div>
                         <div><span class="responsive-label">Pair:</span>${trade.pair}</div>
                         <div><span class="responsive-label">Dir:</span><span class="${trade.direction === 'Long' ? 'trade-long' : 'trade-short'}">${trade.direction === 'Long' ? 'L' : 'S'}</span></div>
-                        <div><span class="responsive-label">Entry:</span>${trade.entryPrice}</div>
-                        <div><span class="responsive-label">Exit:</span>${trade.exitPrice}</div>
                         <div><span class="responsive-label">P/L:</span><span class="${parseFloat(plPips) > 0 ? 'trade-profit' : 'trade-loss'}">${parseFloat(plPips) > 0 ? '+' : ''}${plPips}</span></div>
                         <div><span class="responsive-label">Risk:</span>${trade.riskPercent}%</div>
                         <div><span class="responsive-label">Setup:</span><span class="tag tag-${getTagClass(trade.setupType)}">${trade.setupType}</span></div>
@@ -2090,10 +1992,9 @@
                 `;
                 
                 const desktopHtml = `
+                    <td>${formattedDate}</td>
                     <td>${trade.pair}</td>
                     <td class="${trade.direction === 'Long' ? 'trade-long' : 'trade-short'}">${trade.direction === 'Long' ? 'L' : 'S'}</td>
-                    <td>${trade.entryPrice}</td>
-                    <td>${trade.exitPrice}</td>
                     <td class="${parseFloat(plPips) > 0 ? 'trade-profit' : 'trade-loss'}">${parseFloat(plPips) > 0 ? '+' : ''}${plPips}</td>
                     <td>${trade.riskPercent}%</td>
                     <td><span class="tag tag-${getTagClass(trade.setupType)}">${trade.setupType}</span></td>
@@ -2131,6 +2032,8 @@
                 case 'FOMO': return 'fas fa-grimace';
                 case 'Revenge Trading': return 'fas fa-angry';
                 case 'Overtrading': return 'fas fa-tired';
+                case 'Overconfident': return 'fas fa-grin-stars';
+                case 'Fearful': return 'fas fa-frown';
                 default: return 'fas fa-meh';
             }
         }
@@ -2141,12 +2044,12 @@
             if (!trade) return;
             
             // Calculate P/L in pips
-            const pipValue = trade.pair.includes('JPY') ? 100 : 10000;
+            const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
             let plPips;
             if (trade.direction === 'Long') {
-                plPips = ((trade.exitPrice - trade.entryPrice) * pipValue).toFixed(1);
+                plPips = ((trade.exitPrice - trade.entryPrice) / pipValue).toFixed(1);
             } else {
-                plPips = ((trade.entryPrice - trade.exitPrice) * pipValue).toFixed(1);
+                plPips = ((trade.entryPrice - trade.exitPrice) / pipValue).toFixed(1);
             }
             
             // Create bias details HTML
@@ -2155,7 +2058,13 @@
             if (trade.biases.revenge) biasDetails += '<li>Revenge Trading Bias</li>';
             if (trade.biases.lossAversion) biasDetails += '<li>Loss Aversion Bias</li>';
             if (trade.biases.confirmation) biasDetails += '<li>Confirmation Bias</li>';
-            if (!trade.biases.fomo && !trade.biases.revenge && !trade.biases.lossAversion && !trade.biases.confirmation) {
+            if (trade.biases.overconfidence) biasDetails += '<li>Overconfidence Bias</li>';
+            if (trade.biases.herding) biasDetails += '<li>Herding Bias</li>';
+            if (trade.biases.recency) biasDetails += '<li>Recency Bias</li>';
+            if (trade.biases.anchoring) biasDetails += '<li>Anchoring Bias</li>';
+            if (!trade.biases.fomo && !trade.biases.revenge && !trade.biases.lossAversion && 
+                !trade.biases.confirmation && !trade.biases.overconfidence && !trade.biases.herding && 
+                !trade.biases.recency && !trade.biases.anchoring) {
                 biasDetails += '<li>No significant biases detected</li>';
             }
             biasDetails += '</ul></div>';
@@ -2173,10 +2082,6 @@
                 </div>
                 
                 ${biasDetails}
-                
-                <div class="setup-image">
-                    <i class="fas fa-chart-candlestick"></i>
-                </div>
                 
                 <div class="form-group">
                     <label>Trade Notes</label>
@@ -2233,6 +2138,7 @@
         
         // Add new trade
         function addNewTrade() {
+            const date = document.getElementById('tradeDate').value || new Date().toISOString().split('T')[0];
             const pair = document.getElementById('currencyPair').value;
             const direction = document.getElementById('direction').value;
             const entryPrice = parseFloat(document.getElementById('entryPrice').value);
@@ -2255,6 +2161,7 @@
             
             const newTrade = {
                 id: Date.now().toString(),
+                date,
                 pair,
                 direction,
                 entryPrice,
@@ -2267,13 +2174,17 @@
                 timeframe,
                 emotion,
                 tradeNotes,
-                lessons,
-                date: new Date().toISOString().split('T')[0] // Store date for filtering
+                lessons
             };
             
             // Detect biases and calculate CBS
             newTrade.biases = detectBiases(newTrade, trades);
             newTrade.cbs = calculateCBS(newTrade.biases);
+            
+            // Show bias alert if any biases detected
+            if (newTrade.cbs > 30) {
+                showBiasAlert(newTrade.biases);
+            }
             
             trades.push(newTrade);
             saveTrades();
@@ -2284,6 +2195,7 @@
             modal.style.display = 'none';
             
             // Reset form
+            document.getElementById('tradeDate').value = '';
             document.getElementById('currencyPair').value = 'EUR/USD';
             document.getElementById('direction').value = 'Long';
             document.getElementById('entryPrice').value = '';
@@ -2301,8 +2213,93 @@
             showToast('Trade added successfully!');
         }
         
+        // Export to CSV
+        function exportToCSV() {
+            if (trades.length === 0) {
+                showToast('No trades to export!', 'danger');
+                return;
+            }
+            
+            exportLoader.style.display = 'flex';
+            
+            try {
+                // Convert trades to CSV format
+                const csvData = [];
+                
+                // Add header row
+                csvData.push(['Date', 'Pair', 'Direction', 'Entry', 'Exit', 'Stop Loss', 'Take Profit', 'Position Size', 'Risk %', 'Setup', 'Timeframe', 'Emotion', 'P/L (Pips)', 'CBS', 'FOMO', 'Revenge', 'Loss Aversion', 'Confirmation', 'Overconfidence', 'Herding', 'Recency', 'Anchoring', 'Notes', 'Lessons']);
+                
+                // Add data rows
+                trades.forEach(trade => {
+                    // Calculate P/L in pips
+                    const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
+                    let plPips;
+                    if (trade.direction === 'Long') {
+                        plPips = (trade.exitPrice - trade.entryPrice) / pipValue;
+                    } else {
+                        plPips = (trade.entryPrice - trade.exitPrice) / pipValue;
+                    }
+                    
+                    csvData.push([
+                        trade.date,
+                        trade.pair,
+                        trade.direction,
+                        trade.entryPrice,
+                        trade.exitPrice,
+                        trade.stopLoss,
+                        trade.takeProfit,
+                        trade.positionSize,
+                        trade.riskPercent,
+                        trade.setupType,
+                        trade.timeframe,
+                        trade.emotion,
+                        plPips.toFixed(1),
+                        trade.cbs,
+                        trade.biases.fomo ? 'Yes' : 'No',
+                        trade.biases.revenge ? 'Yes' : 'No',
+                        trade.biases.lossAversion ? 'Yes' : 'No',
+                        trade.biases.confirmation ? 'Yes' : 'No',
+                        trade.biases.overconfidence ? 'Yes' : 'No',
+                        trade.biases.herding ? 'Yes' : 'No',
+                        trade.biases.recency ? 'Yes' : 'No',
+                        trade.biases.anchoring ? 'Yes' : 'No',
+                        `"${trade.tradeNotes || ''}"`,
+                        `"${trade.lessons || ''}"`
+                    ]);
+                });
+                
+                // Convert to CSV string
+                const csvString = csvData.map(row => row.join(',')).join('\n');
+                
+                // Create download link
+                const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'trading-journal-export.csv');
+                link.style.visibility = 'hidden';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                exportLoader.style.display = 'none';
+                showToast('CSV exported successfully!');
+            } catch (error) {
+                console.error('Error exporting CSV:', error);
+                exportLoader.style.display = 'none';
+                showToast('Error exporting CSV!', 'danger');
+            }
+        }
+        
         // Export to PDF
         async function exportToPDF() {
+            if (trades.length === 0) {
+                showToast('No trades to export!', 'danger');
+                return;
+            }
+            
             exportLoader.style.display = 'flex';
             
             try {
@@ -2313,7 +2310,7 @@
                 // Add title
                 doc.setFontSize(20);
                 doc.setTextColor(30, 41, 59);
-                doc.text('FX Trading Journal Report', 105, 20, null, null, 'center');
+                doc.text('Trading Journal Report', 105, 20, null, null, 'center');
                 doc.setFontSize(12);
                 doc.setTextColor(100);
                 doc.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 28, null, null, 'center');
@@ -2330,62 +2327,15 @@
                 doc.text(`Avg. Risk:Reward: ${avgRREl.textContent}`, 140, 50);
                 doc.text(`Avg. CBS: ${avgCBSEl.textContent}`, 180, 50);
                 
-                // Create temporary container for charts
-                const tempContainer = document.createElement('div');
-                tempContainer.style.position = 'absolute';
-                tempContainer.style.left = '-9999px';
-                tempContainer.style.width = '600px';
-                tempContainer.style.backgroundColor = '#1e293b';
-                tempContainer.style.padding = '10px';
-                tempContainer.style.borderRadius = '10px';
+                // Add bias frequency chart
+                const biasFreqCanvas = document.getElementById('biasFrequencyChart');
+                const biasFreqImage = biasFreqCanvas.toDataURL('image/png');
+                doc.addImage(biasFreqImage, 'PNG', 10, 60, 190, 90);
                 
-                const perfCanvas = document.createElement('canvas');
-                perfCanvas.width = 600;
-                perfCanvas.height = 300;
-                tempContainer.appendChild(perfCanvas);
-                
-                const setupCanvas = document.createElement('canvas');
-                setupCanvas.width = 600;
-                setupCanvas.height = 250;
-                setupCanvas.style.marginTop = '20px';
-                tempContainer.appendChild(setupCanvas);
-                
-                document.body.appendChild(tempContainer);
-                
-                // Render charts to temporary canvas
-                const perfCtx = perfCanvas.getContext('2d');
-                const setupCtx = setupCanvas.getContext('2d');
-                
-                const tempPerfChart = new Chart(perfCtx, {
-                    type: 'line',
-                    data: JSON.parse(JSON.stringify(performanceChart.data)),
-                    options: {
-                        responsive: false,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } }
-                    }
-                });
-                
-                const tempSetupChart = new Chart(setupCtx, {
-                    type: 'bar',
-                    data: JSON.parse(JSON.stringify(setupChart.data)),
-                    options: {
-                        responsive: false,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } }
-                    }
-                });
-                
-                // Wait for charts to render
-                await new Promise(resolve => setTimeout(resolve, 800));
-                
-                // Convert to images
-                const perfImage = perfCanvas.toDataURL('image/png');
-                const setupImage = setupCanvas.toDataURL('image/png');
-                
-                // Add images to PDF
-                doc.addImage(perfImage, 'PNG', 10, 60, 190, 90);
-                doc.addImage(setupImage, 'PNG', 10, 160, 190, 70);
+                // Add CBS trend chart
+                const cbsTrendCanvas = document.getElementById('cbsTrendChart');
+                const cbsTrendImage = cbsTrendCanvas.toDataURL('image/png');
+                doc.addImage(cbsTrendImage, 'PNG', 10, 160, 190, 90);
                 
                 // Add trade history
                 doc.addPage();
@@ -2394,24 +2344,27 @@
                 
                 // Create table data
                 const tableData = [];
-                const headers = ['Pair', 'Dir', 'Entry', 'Exit', 'P/L', 'Risk', 'Setup', 'Emotion', 'CBS'];
+                const headers = ['Date', 'Pair', 'Dir', 'P/L', 'Risk', 'Setup', 'Emotion', 'CBS'];
                 
                 trades.forEach(trade => {
                     // Calculate P/L in pips
-                    const pipValue = trade.pair.includes('JPY') ? 100 : 10000;
+                    const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
                     let plPips;
                     if (trade.direction === 'Long') {
-                        plPips = ((trade.exitPrice - trade.entryPrice) * pipValue).toFixed(1);
+                        plPips = (trade.exitPrice - trade.entryPrice) / pipValue;
                     } else {
-                        plPips = ((trade.entryPrice - trade.exitPrice) * pipValue).toFixed(1);
+                        plPips = (trade.entryPrice - trade.exitPrice) / pipValue;
                     }
                     
+                    // Format date
+                    const tradeDate = new Date(trade.date);
+                    const formattedDate = `${tradeDate.getDate()}/${tradeDate.getMonth() + 1}/${tradeDate.getFullYear()}`;
+                    
                     tableData.push([
+                        formattedDate,
                         trade.pair,
                         trade.direction === 'Long' ? 'L' : 'S',
-                        trade.entryPrice,
-                        trade.exitPrice,
-                        `${parseFloat(plPips) > 0 ? '+' : ''}${plPips}`,
+                        `${plPips > 0 ? '+' : ''}${plPips.toFixed(1)}`,
                         `${trade.riskPercent}%`,
                         trade.setupType,
                         trade.emotion,
@@ -2432,8 +2385,6 @@
                 // Save and download
                 doc.save('trading-journal-report.pdf');
                 
-                // Clean up
-                document.body.removeChild(tempContainer);
                 exportLoader.style.display = 'none';
                 showToast('PDF exported successfully!');
             } catch (error) {
@@ -2443,260 +2394,12 @@
             }
         }
         
-        // PWA Installation Handling
-        function handlePWAInstall() {
-            // Listen for beforeinstallprompt event
-            window.addEventListener('beforeinstallprompt', (e) => {
-                // Prevent the mini-infobar from appearing on mobile
-                e.preventDefault();
-                // Stash the event so it can be triggered later
-                deferredPrompt = e;
-                // Show the install button
-                pwaInstallContainer.style.display = 'block';
-                
-                // Also show the install prompt after 5 seconds
-                setTimeout(() => {
-                    if (deferredPrompt) {
-                        installPrompt.classList.add('show');
-                    }
-                }, 5000);
-            });
-            
-            // Handle install button click
-            pwaInstallBtn.addEventListener('click', async () => {
-                if (deferredPrompt) {
-                    // Show the install prompt
-                    deferredPrompt.prompt();
-                    // Wait for the user to respond to the prompt
-                    const { outcome } = await deferredPrompt.userChoice;
-                    // Optionally, send analytics event with outcome of user choice
-                    console.log(`User response to the install prompt: ${outcome}`);
-                    // Hide the install button
-                    pwaInstallContainer.style.display = 'none';
-                    // Clear the deferredPrompt variable
-                    deferredPrompt = null;
-                    // Hide the prompt
-                    installPrompt.classList.remove('show');
-                }
-            });
-            
-            // Close prompt
-            closePrompt.addEventListener('click', () => {
-                installPrompt.classList.remove('show');
-            });
-            
-            // Listen for app installed event
-            window.addEventListener('appinstalled', () => {
-                // Hide the install button
-                pwaInstallContainer.style.display = 'none';
-                // Clear the deferredPrompt variable
-                deferredPrompt = null;
-                // Hide the prompt
-                installPrompt.classList.remove('show');
-                // Show success message
-                showToast('App installed successfully!');
-            });
-            
-            // Offline detection
-            window.addEventListener('offline', () => {
-                offlineIndicator.classList.add('show');
-            });
-            
-            window.addEventListener('online', () => {
-                offlineIndicator.classList.remove('show');
-            });
-            
-            // Initialize offline status
-            if (!navigator.onLine) {
-                offlineIndicator.classList.add('show');
-            }
-        }
-        
-        // Register Service Worker
-        function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    // Create service worker script as a blob
-                    const swContent = `
-                        const CACHE_NAME = 'trading-journal-v1';
-                        const urlsToCache = [
-                            './',
-                            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-                            'https://cdn.jsdelivr.net/npm/chart.js',
-                            'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-                            'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
-                        ];
-                        
-                        self.addEventListener('install', event => {
-                            event.waitUntil(
-                                caches.open(CACHE_NAME)
-                                    .then(cache => {
-                                        return cache.addAll(urlsToCache);
-                                    })
-                            );
-                        });
-                        
-                        self.addEventListener('activate', event => {
-                            event.waitUntil(
-                                caches.keys().then(cacheNames => {
-                                    return Promise.all(
-                                        cacheNames.map(cacheName => {
-                                            if (cacheName !== CACHE_NAME) {
-                                                return caches.delete(cacheName);
-                                            }
-                                        })
-                                    );
-                                })
-                            );
-                        });
-                        
-                        self.addEventListener('fetch', event => {
-                            event.respondWith(
-                                caches.match(event.request)
-                                    .then(response => {
-                                        return response || fetch(event.request);
-                                    })
-                            );
-                        });
-                    `;
-                    
-                    const blob = new Blob([swContent], { type: 'application/javascript' });
-                    const swUrl = URL.createObjectURL(blob);
-                    
-                    navigator.serviceWorker.register(swUrl)
-                        .then(registration => {
-                            console.log('Service Worker registered with scope:', registration.scope);
-                        })
-                        .catch(error => {
-                            console.error('Service Worker registration failed:', error);
-                        });
-                });
-            }
-        }
-        
-        // Authentication functions
-        function signUp() {
-            const name = document.getElementById('signupName').value;
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-            const confirmPassword = document.getElementById('signupConfirmPassword').value;
-            
-            // Validation
-            if (!name || !email || !password || !confirmPassword) {
-                signupError.textContent = 'Please fill in all fields';
-                return;
-            }
-            
-            if (password !== confirmPassword) {
-                signupError.textContent = 'Passwords do not match';
-                return;
-            }
-            
-            if (password.length < 6) {
-                signupError.textContent = 'Password should be at least 6 characters';
-                return;
-            }
-            
-            signupError.textContent = '';
-            
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    
-                    // Save user name to Firestore
-                    db.collection('users').doc(user.uid).set({
-                        name: name,
-                        email: email
-                    })
-                    .then(() => {
-                        showToast('Account created successfully!');
-                        initAppForUser(user);
-                    })
-                    .catch((error) => {
-                        console.error("Error saving user info: ", error);
-                        signupError.textContent = error.message;
-                    });
-                })
-                .catch((error) => {
-                    signupError.textContent = error.message;
-                });
-        }
-        
-        function signIn() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!email || !password) {
-                loginError.textContent = 'Please fill in all fields';
-                return;
-            }
-            
-            loginError.textContent = '';
-            
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    showToast('Signed in successfully!');
-                    initAppForUser(user);
-                })
-                .catch((error) => {
-                    loginError.textContent = error.message;
-                });
-        }
-        
-        function resetPassword() {
-            const email = document.getElementById('loginEmail').value;
-            
-            if (!email) {
-                loginError.textContent = 'Please enter your email';
-                return;
-            }
-            
-            auth.sendPasswordResetEmail(email)
-                .then(() => {
-                    showToast('Password reset email sent!');
-                })
-                .catch((error) => {
-                    loginError.textContent = error.message;
-                });
-        }
-        
-        function signOut() {
-            auth.signOut().then(() => {
-                showToast('Signed out successfully!');
-                authModal.style.display = 'flex';
-                appContent.style.display = 'none';
-                trades = [];
-                renderTradesTable();
-            }).catch((error) => {
-                console.error('Sign out error:', error);
-            });
-        }
-        
-        function initAppForUser(user) {
-            currentUser = user;
-            authModal.style.display = 'none';
-            appContent.style.display = 'block';
-            
-            // Set user info
-            db.collection('users').doc(user.uid).get().then((doc) => {
-                if (doc.exists) {
-                    const userData = doc.data();
-                    userName.textContent = userData.name || user.email;
-                    userAvatar.textContent = userData.name ? userData.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase();
-                } else {
-                    userName.textContent = user.email;
-                    userAvatar.textContent = user.email.charAt(0).toUpperCase();
-                }
-            });
-            
-            // Load user data
-            loadTrades();
-        }
-        
         // Initialize the app
         function initApp() {
             initCharts();
+            
+            // Set today's date as default
+            document.getElementById('tradeDate').value = new Date().toISOString().split('T')[0];
             
             // Modal functionality
             addTradeBtn.addEventListener('click', () => modal.style.display = 'flex');
@@ -2708,6 +2411,12 @@
             // Close modal when clicking outside
             window.addEventListener('click', (e) => {
                 if (e.target === modal) modal.style.display = 'none';
+                if (e.target === educationModal) educationModal.style.display = 'none';
+            });
+            
+            // Close education modal
+            closeEducationBtn.addEventListener('click', () => {
+                educationModal.style.display = 'none';
             });
             
             // Tab functionality
@@ -2721,53 +2430,21 @@
             });
             
             // Export functionality
-            exportBtn.addEventListener('click', exportToPDF);
-            
-            // Auth tab switching
-            authTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabName = tab.dataset.tab;
-                    authTabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    
-                    signInForm.classList.remove('active');
-                    signUpForm.classList.remove('active');
-                    
-                    if (tabName === 'signin') {
-                        signInForm.classList.add('active');
-                    } else {
-                        signUpForm.classList.add('active');
-                    }
-                });
+            exportBtn.addEventListener('click', () => {
+                // Show export options
+                const exportType = confirm('Click OK for PDF export, Cancel for CSV export');
+                if (exportType) {
+                    exportToPDF();
+                } else {
+                    exportToCSV();
+                }
             });
-            
-            // Auth buttons
-            signInBtn.addEventListener('click', signIn);
-            signUpBtn.addEventListener('click', signUp);
-            resetPasswordLink.addEventListener('click', resetPassword);
-            switchToLogin.addEventListener('click', () => {
-                authTabs[0].click();
-            });
-            logoutBtn.addEventListener('click', signOut);
-            
-            // PWA installation handling
-            handlePWAInstall();
-            
-            // Register Service Worker
-            registerServiceWorker();
             
             // Handle window resize for responsive table
             window.addEventListener('resize', renderTradesTable);
             
-            // Auth state observer
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    initAppForUser(user);
-                } else {
-                    authModal.style.display = 'flex';
-                    appContent.style.display = 'none';
-                }
-            });
+            // Load saved trades
+            loadTrades();
         }
         
         // Start the app
