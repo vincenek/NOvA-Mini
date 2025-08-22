@@ -1527,7 +1527,7 @@
             setupChart = new Chart(setupCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Breakout', 'Pullback', 'Reversal', 'News', 'Range', 'Divergence', 'Other'],
+                    labels: ['Breakout', 'Pullback', 'Reversal', 'News Trade', 'Range Trade', 'Divergence', 'Other'],
                     datasets: [{
                         label: 'Win Rate %',
                         data: [0, 0, 0, 0, 0, 0, 0],
@@ -1848,7 +1848,7 @@
             cbsTrendChart.data.datasets[0].data = cbsData;
             cbsTrendChart.update();
             
-            // Update bias pattern chart
+            // Update bias pattern chart - FIXED: Calculate percentages correctly
             const biasPercentages = [];
             const totalTrades = trades.length;
             
@@ -1856,8 +1856,11 @@
                 biasPercentages.push((biasCounts[bias] / totalTrades) * 100);
             }
             
-            biasPatternChart.data.datasets[0].data = biasPercentages;
-            biasPatternChart.update();
+            // Make sure we update the biasPatternChart with the correct data
+            if (biasPatternChart) {
+                biasPatternChart.data.datasets[0].data = biasPercentages;
+                biasPatternChart.update();
+            }
         }
         
         // Update stats
@@ -2293,7 +2296,7 @@
             }
         }
         
-        // Export to PDF
+        // Export to PDF - FIXED: Simplified PDF export without autoTable
         async function exportToPDF() {
             if (trades.length === 0) {
                 showToast('No trades to export!', 'danger');
@@ -2302,96 +2305,99 @@
             
             exportLoader.style.display = 'flex';
             
-            try {
-                // Create PDF
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('p', 'mm', 'a4');
-                
-                // Add title
-                doc.setFontSize(20);
-                doc.setTextColor(30, 41, 59);
-                doc.text('Trading Journal Report', 105, 20, null, null, 'center');
-                doc.setFontSize(12);
-                doc.setTextColor(100);
-                doc.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 28, null, null, 'center');
-                
-                // Add stats
-                doc.setFontSize(14);
-                doc.setTextColor(0);
-                doc.text('Performance Summary', 20, 40);
-                
-                doc.setFontSize(10);
-                doc.text(`Total Trades: ${trades.length}`, 20, 50);
-                doc.text(`Win Rate: ${winRateEl.textContent}`, 60, 50);
-                doc.text(`Loss Rate: ${lossRateEl.textContent}`, 100, 50);
-                doc.text(`Avg. Risk:Reward: ${avgRREl.textContent}`, 140, 50);
-                doc.text(`Avg. CBS: ${avgCBSEl.textContent}`, 180, 50);
-                
-                // Add bias frequency chart
-                const biasFreqCanvas = document.getElementById('biasFrequencyChart');
-                const biasFreqImage = biasFreqCanvas.toDataURL('image/png');
-                doc.addImage(biasFreqImage, 'PNG', 10, 60, 190, 90);
-                
-                // Add CBS trend chart
-                const cbsTrendCanvas = document.getElementById('cbsTrendChart');
-                const cbsTrendImage = cbsTrendCanvas.toDataURL('image/png');
-                doc.addImage(cbsTrendImage, 'PNG', 10, 160, 190, 90);
-                
-                // Add trade history
-                doc.addPage();
-                doc.setFontSize(16);
-                doc.text('Trade History', 105, 15, null, null, 'center');
-                
-                // Create table data
-                const tableData = [];
-                const headers = ['Date', 'Pair', 'Dir', 'P/L', 'Risk', 'Setup', 'Emotion', 'CBS'];
-                
-                trades.forEach(trade => {
-                    // Calculate P/L in pips
-                    const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
-                    let plPips;
-                    if (trade.direction === 'Long') {
-                        plPips = (trade.exitPrice - trade.entryPrice) / pipValue;
-                    } else {
-                        plPips = (trade.entryPrice - trade.exitPrice) / pipValue;
+            // Use setTimeout to allow the UI to update before generating the PDF
+            setTimeout(async () => {
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF('p', 'mm', 'a4');
+                    
+                    // Add title
+                    doc.setFontSize(20);
+                    doc.setTextColor(30, 41, 59);
+                    doc.text('Trading Journal Report', 105, 20, null, null, 'center');
+                    doc.setFontSize(12);
+                    doc.setTextColor(100);
+                    doc.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 28, null, null, 'center');
+                    
+                    // Add stats
+                    doc.setFontSize(14);
+                    doc.setTextColor(0);
+                    doc.text('Performance Summary', 20, 40);
+                    
+                    doc.setFontSize(10);
+                    doc.text(`Total Trades: ${trades.length}`, 20, 50);
+                    doc.text(`Win Rate: ${winRateEl.textContent}`, 60, 50);
+                    doc.text(`Loss Rate: ${lossRateEl.textContent}`, 100, 50);
+                    doc.text(`Avg. Risk:Reward: ${avgRREl.textContent}`, 140, 50);
+                    doc.text(`Avg. CBS: ${avgCBSEl.textContent}`, 180, 50);
+                    
+                    // Add charts as images
+                    try {
+                        // Convert charts to data URLs
+                        const biasFreqCanvas = document.getElementById('biasFrequencyChart');
+                        const biasFreqImage = await new Promise(resolve => {
+                            html2canvas(biasFreqCanvas).then(canvas => {
+                                resolve(canvas.toDataURL('image/png'));
+                            });
+                        });
+                        
+                        const cbsTrendCanvas = document.getElementById('cbsTrendChart');
+                        const cbsTrendImage = await new Promise(resolve => {
+                            html2canvas(cbsTrendCanvas).then(canvas => {
+                                resolve(canvas.toDataURL('image/png'));
+                            });
+                        });
+                        
+                        // Add images to PDF
+                        doc.addImage(biasFreqImage, 'PNG', 10, 60, 190, 90);
+                        doc.addImage(cbsTrendImage, 'PNG', 10, 160, 190, 90);
+                    } catch (error) {
+                        console.error('Error capturing charts:', error);
+                        doc.text('Charts could not be generated', 20, 70);
                     }
                     
-                    // Format date
-                    const tradeDate = new Date(trade.date);
-                    const formattedDate = `${tradeDate.getDate()}/${tradeDate.getMonth() + 1}/${tradeDate.getFullYear()}`;
+                    // Add a new page for trade history
+                    doc.addPage();
+                    doc.setFontSize(16);
+                    doc.text('Trade History', 105, 15, null, null, 'center');
                     
-                    tableData.push([
-                        formattedDate,
-                        trade.pair,
-                        trade.direction === 'Long' ? 'L' : 'S',
-                        `${plPips > 0 ? '+' : ''}${plPips.toFixed(1)}`,
-                        `${trade.riskPercent}%`,
-                        trade.setupType,
-                        trade.emotion,
-                        trade.cbs.toString()
-                    ]);
-                });
-                
-                // Add table to PDF
-                doc.autoTable({
-                    head: [headers],
-                    body: tableData,
-                    startY: 25,
-                    theme: 'grid',
-                    headStyles: { fillColor: [37, 99, 235] },
-                    styles: { fontSize: 8, cellPadding: 2 }
-                });
-                
-                // Save and download
-                doc.save('trading-journal-report.pdf');
-                
-                exportLoader.style.display = 'none';
-                showToast('PDF exported successfully!');
-            } catch (error) {
-                console.error('Error exporting PDF:', error);
-                exportLoader.style.display = 'none';
-                showToast('Error exporting PDF!', 'danger');
-            }
+                    // Add trade history as simple text
+                    let yPosition = 25;
+                    trades.forEach((trade, index) => {
+                        if (yPosition > 270) {
+                            doc.addPage();
+                            yPosition = 20;
+                        }
+                        
+                        // Calculate P/L in pips
+                        const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
+                        let plPips;
+                        if (trade.direction === 'Long') {
+                            plPips = (trade.exitPrice - trade.entryPrice) / pipValue;
+                        } else {
+                            plPips = (trade.entryPrice - trade.exitPrice) / pipValue;
+                        }
+                        
+                        // Format date
+                        const tradeDate = new Date(trade.date);
+                        const formattedDate = `${tradeDate.getDate()}/${tradeDate.getMonth() + 1}/${tradeDate.getFullYear()}`;
+                        
+                        doc.setFontSize(10);
+                        doc.text(`${index + 1}. ${formattedDate} - ${trade.pair} ${trade.direction} - P/L: ${plPips > 0 ? '+' : ''}${plPips.toFixed(1)} pips - CBS: ${trade.cbs}`, 10, yPosition);
+                        yPosition += 7;
+                    });
+                    
+                    // Save and download
+                    doc.save('trading-journal-report.pdf');
+                    
+                    exportLoader.style.display = 'none';
+                    showToast('PDF exported successfully!');
+                } catch (error) {
+                    console.error('Error exporting PDF:', error);
+                    exportLoader.style.display = 'none';
+                    showToast('Error exporting PDF!', 'danger');
+                }
+            }, 500);
         }
         
         // Initialize the app
