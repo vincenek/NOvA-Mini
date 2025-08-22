@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
@@ -340,6 +339,7 @@
         
         .form-group {
             margin-bottom: 12px;
+            position: relative;
         }
         
         .form-group label {
@@ -446,7 +446,6 @@
             object-fit: cover;
         }
         
-        /* Export loading indicator */
         .export-loader {
             display: none;
             position: fixed;
@@ -477,7 +476,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Toast notification */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -500,7 +498,6 @@
             opacity: 1;
         }
         
-        /* Floating add button for mobile */
         .floating-add-btn {
             position: fixed;
             bottom: 20px;
@@ -525,7 +522,6 @@
             transform: translateY(-3px);
         }
         
-        /* CBS Score Styles */
         .cbs-score {
             font-weight: 700;
             padding: 3px 8px;
@@ -551,7 +547,6 @@
             color: var(--danger);
         }
         
-        /* Bias Insight Banner */
         .bias-insight {
             padding: 12px 15px;
             border-radius: 8px;
@@ -584,7 +579,6 @@
             color: var(--success);
         }
         
-        /* Real-time Bias Alert */
         .bias-alert {
             position: fixed;
             top: 20px;
@@ -613,7 +607,6 @@
             margin-top: 15px;
         }
         
-        /* Education Modal */
         .education-modal {
             display: none;
             position: fixed;
@@ -662,7 +655,6 @@
             line-height: 1.5;
         }
         
-        /* Responsive adjustments */
         @media (min-width: 576px) {
             .stats-container {
                 grid-template-columns: repeat(4, 1fr);
@@ -728,7 +720,6 @@
             }
         }
         
-        /* Scrollable table for small screens */
         .table-wrapper {
             overflow-x: auto;
             margin-bottom: 10px;
@@ -736,7 +727,6 @@
             -webkit-overflow-scrolling: touch;
         }
         
-        /* Add trade form adjustments */
         .form-group input, .form-group select, .form-group textarea {
             font-size: 0.9rem;
             padding: 12px;
@@ -746,7 +736,6 @@
             min-height: 80px;
         }
         
-        /* Responsive table headers */
         .responsive-label {
             display: none;
             font-weight: bold;
@@ -798,7 +787,6 @@
     </style>
 </head>
 <body>
-    <!-- Bias Alert Modal -->
     <div class="bias-alert" id="biasAlert">
         <div class="bias-alert-content">
             <h3><i class="fas fa-exclamation-triangle"></i> Bias Detected</h3>
@@ -810,7 +798,6 @@
         </div>
     </div>
 
-    <!-- Education Modal -->
     <div class="education-modal" id="educationModal">
         <div class="education-content">
             <span class="close-modal" id="closeEducation">&times;</span>
@@ -818,7 +805,6 @@
         </div>
     </div>
 
-    <!-- Main App Content -->
     <div id="appContent">
         <div class="container">
             <header>
@@ -835,7 +821,6 @@
                 </div>
             </header>
             
-            <!-- Bias Insight Messages -->
             <div id="biasInsightsContainer"></div>
             
             <div class="stats-container">
@@ -890,7 +875,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tradesTableBody">
-                                    <!-- Trade rows will be added dynamically -->
                                 </tbody>
                             </table>
                         </div>
@@ -968,22 +952,18 @@
             </footer>
         </div>
         
-        <!-- Floating add button for mobile -->
         <button class="floating-add-btn" id="mobileAddBtn">
             <i class="fas fa-plus"></i>
         </button>
     </div>
     
-    <!-- Toast notification -->
     <div class="toast" id="toast"></div>
     
-    <!-- Export loading indicator -->
     <div class="export-loader" id="exportLoader">
         <div class="loader-spinner"></div>
         <p>Generating report...</p>
     </div>
     
-    <!-- Add Trade Modal -->
     <div class="modal" id="addTradeModal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
@@ -1170,19 +1150,18 @@
                 anchoring: false
             };
             
-            // FOMO Bias: triggered if emotion is "FOMO" or trade opened immediately after a big move
+            // FOMO Bias
             if (trade.emotion === "FOMO" || trade.emotion === "Anxious") {
                 biases.fomo = true;
             }
             
-            // Revenge Trading Bias: triggered if previous trade was a loss and this trade was placed quickly after
+            // Revenge Trading Bias
             if (previousTrades.length > 0) {
                 const lastTrade = previousTrades[previousTrades.length - 1];
                 const lastTradeDate = new Date(lastTrade.date);
                 const currentTradeDate = new Date(trade.date);
-                const timeDiff = Math.abs(currentTradeDate - lastTradeDate) / (1000 * 60); // Difference in minutes
+                const timeDiff = Math.abs(currentTradeDate - lastTradeDate) / (1000 * 60);
                 
-                // Calculate if last trade was a loss
                 const pipValue = lastTrade.pair.includes('JPY') ? 0.01 : 0.0001;
                 let lastTradePL;
                 if (lastTrade.direction === 'Long') {
@@ -1191,12 +1170,12 @@
                     lastTradePL = (lastTrade.entryPrice - lastTrade.exitPrice) / pipValue;
                 }
                 
-                if (lastTradePL < 0 && timeDiff < 60) { // Less than 60 minutes between trades
+                if (lastTradePL < 0 && timeDiff < 60) {
                     biases.revenge = true;
                 }
             }
             
-            // Loss Aversion Bias: triggered if user cuts winners too early or lets losers run too long
+            // Loss Aversion Bias
             if (trade.stopLoss && trade.takeProfit) {
                 const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
                 let tradePL;
@@ -1209,22 +1188,19 @@
                 const risk = Math.abs(trade.entryPrice - trade.stopLoss) / pipValue;
                 const reward = Math.abs(trade.takeProfit - trade.entryPrice) / pipValue;
                 
-                // If profitable but exited before reaching take profit (cut winners early)
                 if (tradePL > 0 && tradePL < reward * 0.7) {
                     biases.lossAversion = true;
                 }
                 
-                // If loss is more than planned risk (let losers run)
                 if (tradePL < 0 && Math.abs(tradePL) > risk * 1.1) {
                     biases.lossAversion = true;
                 }
             }
             
-            // Confirmation Bias: triggered if same setup is repeated after multiple losses in that setup
+            // Confirmation Bias
             if (previousTrades.length > 0) {
                 const sameSetupTrades = previousTrades.filter(t => t.setupType === trade.setupType);
                 if (sameSetupTrades.length >= 3) {
-                    // Check if last 3 same setup trades were losses
                     const lastThree = sameSetupTrades.slice(-3);
                     const allLosses = lastThree.every(t => {
                         const pipValue = t.pair.includes('JPY') ? 0.01 : 0.0001;
@@ -1243,7 +1219,7 @@
                 }
             }
             
-            // Overconfidence Bias: triggered after a series of wins with increased risk
+            // Overconfidence Bias
             if (previousTrades.length >= 3) {
                 const recentTrades = previousTrades.slice(-3);
                 const recentWins = recentTrades.filter(t => {
@@ -1262,7 +1238,7 @@
                 }
             }
             
-            // Herding Bias: triggered if trading the same direction as the majority of recent trades
+            // Herding Bias
             if (previousTrades.length >= 5) {
                 const recentTrades = previousTrades.slice(-5);
                 const sameDirectionTrades = recentTrades.filter(t => t.direction === trade.direction);
@@ -1272,7 +1248,7 @@
                 }
             }
             
-            // Recency Bias: triggered if trading the same setup as the last trade regardless of outcome
+            // Recency Bias
             if (previousTrades.length > 0) {
                 const lastTrade = previousTrades[previousTrades.length - 1];
                 if (lastTrade.setupType === trade.setupType) {
@@ -1280,7 +1256,7 @@
                 }
             }
             
-            // Anchoring Bias: triggered if entry price is close to a round number
+            // Anchoring Bias
             const priceDecimal = trade.entryPrice.toString().split('.')[1] || '';
             if (priceDecimal.length >= 2) {
                 const lastTwoDigits = parseInt(priceDecimal.slice(-2));
@@ -1331,7 +1307,6 @@
                 biasAlertMessage.innerHTML = biasMessages.join('<br><br>');
                 biasAlert.style.display = 'block';
                 
-                // Set up button handlers
                 acknowledgeBiasBtn.onclick = () => {
                     biasAlert.style.display = 'none';
                 };
@@ -1385,17 +1360,12 @@
             
             if (trades.length < 3) return;
             
-            // Get last 3 and 5 trades
             const lastThreeTrades = trades.slice(-3);
             const lastFiveTrades = trades.slice(-5);
             
-            // Calculate average CBS for last 3 trades
             const avgLastThreeCBS = lastThreeTrades.reduce((sum, trade) => sum + trade.cbs, 0) / lastThreeTrades.length;
-            
-            // Calculate average CBS for last 5 trades
             const avgLastFiveCBS = lastFiveTrades.reduce((sum, trade) => sum + trade.cbs, 0) / lastFiveTrades.length;
             
-            // Show warning if last 3 trades have high CBS
             if (avgLastThreeCBS > 70) {
                 const warningDiv = document.createElement('div');
                 warningDiv.className = 'bias-insight bias-warning';
@@ -1406,7 +1376,6 @@
                 biasInsightsContainer.appendChild(warningDiv);
             }
             
-            // Show positive message if last 5 trades have low CBS
             if (avgLastFiveCBS < 30) {
                 const positiveDiv = document.createElement('div');
                 positiveDiv.className = 'bias-insight bias-positive';
@@ -1417,7 +1386,6 @@
                 biasInsightsContainer.appendChild(positiveDiv);
             }
             
-            // Detect specific bias patterns
             const biasCounts = {
                 fomo: 0,
                 revenge: 0,
@@ -1435,7 +1403,6 @@
                 }
             });
             
-            // Find the most common bias
             let mostCommonBias = null;
             let maxCount = 0;
             
@@ -1477,6 +1444,34 @@
         
         // Initialize charts
         function initCharts() {
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#94a3b8'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#94a3b8'
+                        }
+                    }
+                }
+            };
+            
             // Performance Chart
             const perfCtx = document.getElementById('performanceChart').getContext('2d');
             performanceChart = new Chart(perfCtx, {
@@ -1493,33 +1488,7 @@
                         tension: 0.3
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: '#94a3b8'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: '#94a3b8'
-                            }
-                        }
-                    }
-                }
+                options: chartOptions
             });
             
             // Setup Success Chart
@@ -1527,7 +1496,7 @@
             setupChart = new Chart(setupCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Breakout', 'Pullback', 'Reversal', 'News Trade', 'Range Trade', 'Divergence', 'Other'],
+                    labels: ['Breakout', 'Pullback', 'Reversal', 'News', 'Range', 'Divergence', 'Other'],
                     datasets: [{
                         label: 'Win Rate %',
                         data: [0, 0, 0, 0, 0, 0, 0],
@@ -1540,43 +1509,22 @@
                             'rgba(14, 165, 233, 0.7)',
                             'rgba(236, 72, 153, 0.7)'
                         ],
-                        borderColor: [
-                            'rgba(37, 99, 235, 1)',
-                            'rgba(16, 185, 129, 1)',
-                            'rgba(245, 158, 11, 1)',
-                            'rgba(239, 68, 68, 1)',
-                            'rgba(139, 92, 246, 1)',
-                            'rgba(14, 165, 233, 1)',
-                            'rgba(236, 72, 153, 1)'
-                        ],
                         borderWidth: 1
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
+                    ...chartOptions,
                     scales: {
+                        ...chartOptions.scales,
                         y: {
+                            ...chartOptions.scales.y,
                             beginAtZero: true,
-                            max: 100,
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: '#94a3b8'
-                            }
+                            max: 100
                         },
                         x: {
+                            ...chartOptions.scales.x,
                             grid: {
                                 display: false
-                            },
-                            ticks: {
-                                color: '#94a3b8'
                             }
                         }
                     }
@@ -1602,43 +1550,19 @@
                             'rgba(199, 199, 199, 0.7)',
                             'rgba(83, 102, 255, 0.7)'
                         ],
-                        borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(153, 102, 255, 1)',
-                            'rgba(255, 159, 64, 1)',
-                            'rgba(199, 199, 199, 1)',
-                            'rgba(83, 102, 255, 1)'
-                        ],
                         borderWidth: 1
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
+                    ...chartOptions,
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: '#94a3b8'
-                            }
-                        },
+                        ...chartOptions.scales,
                         x: {
+                            ...chartOptions.scales.x,
                             grid: {
                                 display: false
                             },
                             ticks: {
-                                color: '#94a3b8',
                                 maxRotation: 45,
                                 minRotation: 45
                             }
@@ -1664,31 +1588,13 @@
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
+                    ...chartOptions,
                     scales: {
+                        ...chartOptions.scales,
                         y: {
+                            ...chartOptions.scales.y,
                             min: 0,
-                            max: 100,
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: '#94a3b8'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: '#94a3b8'
-                            }
+                            max: 100
                         }
                     }
                 }
@@ -1744,16 +1650,14 @@
         function updateCharts() {
             if (trades.length === 0) return;
             
-            // Sort trades by date
             const sortedTrades = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date));
             
-            // Calculate cumulative P/L
+            // Performance Chart
             let cumulativePips = 0;
             const cumulativeData = [];
             const dates = [];
             
             sortedTrades.forEach(trade => {
-                // Calculate P/L in pips
                 const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
                 let plPips;
                 if (trade.direction === 'Long') {
@@ -1765,17 +1669,15 @@
                 cumulativePips += plPips;
                 cumulativeData.push(cumulativePips);
                 
-                // Format date for chart
                 const date = new Date(trade.date);
                 dates.push(`${date.getDate()}/${date.getMonth() + 1}`);
             });
             
-            // Update performance chart
             performanceChart.data.labels = dates;
             performanceChart.data.datasets[0].data = cumulativeData;
             performanceChart.update();
             
-            // Update setup chart
+            // Setup Chart
             const setupTypes = ['Breakout', 'Pullback', 'Reversal', 'News Trade', 'Range Trade', 'Divergence', 'Other'];
             const setupData = [];
             
@@ -1804,7 +1706,7 @@
             setupChart.data.datasets[0].data = setupData;
             setupChart.update();
             
-            // Update bias frequency chart
+            // Bias Frequency Chart
             const biasCounts = {
                 fomo: 0,
                 revenge: 0,
@@ -1834,7 +1736,7 @@
             ];
             biasFrequencyChart.update();
             
-            // Update CBS trend chart
+            // CBS Trend Chart
             const cbsData = [];
             const cbsDates = [];
             
@@ -1848,7 +1750,7 @@
             cbsTrendChart.data.datasets[0].data = cbsData;
             cbsTrendChart.update();
             
-            // Update bias pattern chart - FIXED: Calculate percentages correctly
+            // Bias Pattern Chart
             const biasPercentages = [];
             const totalTrades = trades.length;
             
@@ -1856,11 +1758,8 @@
                 biasPercentages.push((biasCounts[bias] / totalTrades) * 100);
             }
             
-            // Make sure we update the biasPatternChart with the correct data
-            if (biasPatternChart) {
-                biasPatternChart.data.datasets[0].data = biasPercentages;
-                biasPatternChart.update();
-            }
+            biasPatternChart.data.datasets[0].data = biasPercentages;
+            biasPatternChart.update();
         }
         
         // Update stats
@@ -1879,7 +1778,6 @@
             
             emptyState.style.display = 'none';
             
-            // Calculate wins and losses
             const wins = trades.filter(trade => {
                 const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
                 let plPips;
@@ -1898,7 +1796,6 @@
             winRateEl.textContent = `${winRate}%`;
             lossRateEl.textContent = `${lossRate}%`;
             
-            // Calculate average risk:reward
             let totalRR = 0;
             let countRR = 0;
             trades.forEach(trade => {
@@ -1915,7 +1812,6 @@
             const avgRR = countRR > 0 ? (totalRR / countRR).toFixed(1) : '0.0';
             avgRREl.textContent = avgRR;
             
-            // Calculate average CBS
             const avgCBS = Math.round(trades.reduce((sum, trade) => sum + trade.cbs, 0) / totalTrades);
             avgCBSEl.textContent = avgCBS;
         }
@@ -1962,7 +1858,6 @@
             filteredTrades.forEach(trade => {
                 const tr = document.createElement('tr');
                 
-                // Calculate P/L in pips
                 const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
                 let plPips;
                 if (trade.direction === 'Long') {
@@ -1973,7 +1868,6 @@
                 
                 const cbsClass = getCBSClass(trade.cbs);
                 
-                // Format date
                 const tradeDate = new Date(trade.date);
                 const formattedDate = `${tradeDate.getDate()}/${tradeDate.getMonth() + 1}/${tradeDate.getFullYear()}`;
                 
@@ -2046,7 +1940,6 @@
             const trade = trades.find(t => t.id === id);
             if (!trade) return;
             
-            // Calculate P/L in pips
             const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
             let plPips;
             if (trade.direction === 'Long') {
@@ -2055,7 +1948,6 @@
                 plPips = ((trade.entryPrice - trade.exitPrice) / pipValue).toFixed(1);
             }
             
-            // Create bias details HTML
             let biasDetails = '<div class="form-group"><label>Detected Biases:</label><ul style="padding-left: 20px; margin-top: 5px;">';
             if (trade.biases.fomo) biasDetails += '<li>FOMO Bias</li>';
             if (trade.biases.revenge) biasDetails += '<li>Revenge Trading Bias</li>';
@@ -2103,7 +1995,6 @@
                 </div>
             `;
             
-            // Scroll to details section on mobile
             if (window.innerWidth < 768) {
                 recentTradeDetails.scrollIntoView({ behavior: 'smooth' });
             }
@@ -2128,7 +2019,6 @@
                 updateStats();
                 updateCharts();
                 updateBiasInsights();
-                // Reset trade details view if deleted trade was being viewed
                 recentTradeDetails.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-chart-line"></i>
@@ -2156,7 +2046,6 @@
             const tradeNotes = document.getElementById('tradeNotes').value;
             const lessons = document.getElementById('lessons').value;
             
-            // Basic validation
             if (!pair || !entryPrice || !exitPrice) {
                 alert('Please fill in all required fields');
                 return;
@@ -2180,11 +2069,9 @@
                 lessons
             };
             
-            // Detect biases and calculate CBS
             newTrade.biases = detectBiases(newTrade, trades);
             newTrade.cbs = calculateCBS(newTrade.biases);
             
-            // Show bias alert if any biases detected
             if (newTrade.cbs > 30) {
                 showBiasAlert(newTrade.biases);
             }
@@ -2197,7 +2084,6 @@
             updateBiasInsights();
             modal.style.display = 'none';
             
-            // Reset form
             document.getElementById('tradeDate').value = '';
             document.getElementById('currencyPair').value = 'EUR/USD';
             document.getElementById('direction').value = 'Long';
@@ -2225,78 +2111,72 @@
             
             exportLoader.style.display = 'flex';
             
-            try {
-                // Convert trades to CSV format
-                const csvData = [];
-                
-                // Add header row
-                csvData.push(['Date', 'Pair', 'Direction', 'Entry', 'Exit', 'Stop Loss', 'Take Profit', 'Position Size', 'Risk %', 'Setup', 'Timeframe', 'Emotion', 'P/L (Pips)', 'CBS', 'FOMO', 'Revenge', 'Loss Aversion', 'Confirmation', 'Overconfidence', 'Herding', 'Recency', 'Anchoring', 'Notes', 'Lessons']);
-                
-                // Add data rows
-                trades.forEach(trade => {
-                    // Calculate P/L in pips
-                    const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
-                    let plPips;
-                    if (trade.direction === 'Long') {
-                        plPips = (trade.exitPrice - trade.entryPrice) / pipValue;
-                    } else {
-                        plPips = (trade.entryPrice - trade.exitPrice) / pipValue;
-                    }
+            setTimeout(() => {
+                try {
+                    const csvData = [];
+                    csvData.push(['Date', 'Pair', 'Direction', 'Entry', 'Exit', 'Stop Loss', 'Take Profit', 'Position Size', 'Risk %', 'Setup', 'Timeframe', 'Emotion', 'P/L (Pips)', 'CBS', 'FOMO', 'Revenge', 'Loss Aversion', 'Confirmation', 'Overconfidence', 'Herding', 'Recency', 'Anchoring', 'Notes', 'Lessons']);
                     
-                    csvData.push([
-                        trade.date,
-                        trade.pair,
-                        trade.direction,
-                        trade.entryPrice,
-                        trade.exitPrice,
-                        trade.stopLoss,
-                        trade.takeProfit,
-                        trade.positionSize,
-                        trade.riskPercent,
-                        trade.setupType,
-                        trade.timeframe,
-                        trade.emotion,
-                        plPips.toFixed(1),
-                        trade.cbs,
-                        trade.biases.fomo ? 'Yes' : 'No',
-                        trade.biases.revenge ? 'Yes' : 'No',
-                        trade.biases.lossAversion ? 'Yes' : 'No',
-                        trade.biases.confirmation ? 'Yes' : 'No',
-                        trade.biases.overconfidence ? 'Yes' : 'No',
-                        trade.biases.herding ? 'Yes' : 'No',
-                        trade.biases.recency ? 'Yes' : 'No',
-                        trade.biases.anchoring ? 'Yes' : 'No',
-                        `"${trade.tradeNotes || ''}"`,
-                        `"${trade.lessons || ''}"`
-                    ]);
-                });
-                
-                // Convert to CSV string
-                const csvString = csvData.map(row => row.join(',')).join('\n');
-                
-                // Create download link
-                const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                
-                link.setAttribute('href', url);
-                link.setAttribute('download', 'trading-journal-export.csv');
-                link.style.visibility = 'hidden';
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                exportLoader.style.display = 'none';
-                showToast('CSV exported successfully!');
-            } catch (error) {
-                console.error('Error exporting CSV:', error);
-                exportLoader.style.display = 'none';
-                showToast('Error exporting CSV!', 'danger');
-            }
+                    trades.forEach(trade => {
+                        const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
+                        let plPips;
+                        if (trade.direction === 'Long') {
+                            plPips = (trade.exitPrice - trade.entryPrice) / pipValue;
+                        } else {
+                            plPips = (trade.entryPrice - trade.exitPrice) / pipValue;
+                        }
+                        
+                        csvData.push([
+                            trade.date,
+                            trade.pair,
+                            trade.direction,
+                            trade.entryPrice,
+                            trade.exitPrice,
+                            trade.stopLoss,
+                            trade.takeProfit,
+                            trade.positionSize,
+                            trade.riskPercent,
+                            trade.setupType,
+                            trade.timeframe,
+                            trade.emotion,
+                            plPips.toFixed(1),
+                            trade.cbs,
+                            trade.biases.fomo ? 'Yes' : 'No',
+                            trade.biases.revenge ? 'Yes' : 'No',
+                            trade.biases.lossAversion ? 'Yes' : 'No',
+                            trade.biases.confirmation ? 'Yes' : 'No',
+                            trade.biases.overconfidence ? 'Yes' : 'No',
+                            trade.biases.herding ? 'Yes' : 'No',
+                            trade.biases.recency ? 'Yes' : 'No',
+                            trade.biases.anchoring ? 'Yes' : 'No',
+                            `"${trade.tradeNotes || ''}"`,
+                            `"${trade.lessons || ''}"`
+                        ]);
+                    });
+                    
+                    const csvString = csvData.map(row => row.join(',')).join('\n');
+                    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    const url = URL.createObjectURL(blob);
+                    
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', 'trading-journal-export.csv');
+                    link.style.visibility = 'hidden';
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    exportLoader.style.display = 'none';
+                    showToast('CSV exported successfully!');
+                } catch (error) {
+                    console.error('Error exporting CSV:', error);
+                    exportLoader.style.display = 'none';
+                    showToast('Error exporting CSV!', 'danger');
+                }
+            }, 500);
         }
         
-        // Export to PDF - FIXED: Simplified PDF export without autoTable
+        // Export to PDF
         async function exportToPDF() {
             if (trades.length === 0) {
                 showToast('No trades to export!', 'danger');
@@ -2305,13 +2185,11 @@
             
             exportLoader.style.display = 'flex';
             
-            // Use setTimeout to allow the UI to update before generating the PDF
             setTimeout(async () => {
                 try {
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF('p', 'mm', 'a4');
                     
-                    // Add title
                     doc.setFontSize(20);
                     doc.setTextColor(30, 41, 59);
                     doc.text('Trading Journal Report', 105, 20, null, null, 'center');
@@ -2319,7 +2197,6 @@
                     doc.setTextColor(100);
                     doc.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 28, null, null, 'center');
                     
-                    // Add stats
                     doc.setFontSize(14);
                     doc.setTextColor(0);
                     doc.text('Performance Summary', 20, 40);
@@ -2331,45 +2208,30 @@
                     doc.text(`Avg. Risk:Reward: ${avgRREl.textContent}`, 140, 50);
                     doc.text(`Avg. CBS: ${avgCBSEl.textContent}`, 180, 50);
                     
-                    // Add charts as images
-                    try {
-                        // Convert charts to data URLs
-                        const biasFreqCanvas = document.getElementById('biasFrequencyChart');
-                        const biasFreqImage = await new Promise(resolve => {
-                            html2canvas(biasFreqCanvas).then(canvas => {
-                                resolve(canvas.toDataURL('image/png'));
-                            });
-                        });
-                        
-                        const cbsTrendCanvas = document.getElementById('cbsTrendChart');
-                        const cbsTrendImage = await new Promise(resolve => {
-                            html2canvas(cbsTrendCanvas).then(canvas => {
-                                resolve(canvas.toDataURL('image/png'));
-                            });
-                        });
-                        
-                        // Add images to PDF
-                        doc.addImage(biasFreqImage, 'PNG', 10, 60, 190, 90);
-                        doc.addImage(cbsTrendImage, 'PNG', 10, 160, 190, 90);
-                    } catch (error) {
-                        console.error('Error capturing charts:', error);
-                        doc.text('Charts could not be generated', 20, 70);
-                    }
+                    // Add chart images
+                    const performanceImage = performanceChart.toBase64Image();
+                    const setupImage = setupChart.toBase64Image();
+                    const biasFrequencyImage = biasFrequencyChart.toBase64Image();
+                    const cbsTrendImage = cbsTrendChart.toBase64Image();
                     
-                    // Add a new page for trade history
+                    doc.addImage(performanceImage, 'PNG', 10, 60, 190, 90);
+                    doc.addImage(setupImage, 'PNG', 10, 160, 190, 90);
+                    
+                    doc.addPage();
+                    doc.setFontSize(16);
+                    doc.text('Bias Analysis', 105, 15, null, null, 'center');
+                    
+                    doc.addImage(biasFrequencyImage, 'PNG', 10, 30, 190, 90);
+                    doc.addImage(cbsTrendImage, 'PNG', 10, 130, 190, 90);
+                    
                     doc.addPage();
                     doc.setFontSize(16);
                     doc.text('Trade History', 105, 15, null, null, 'center');
                     
-                    // Add trade history as simple text
-                    let yPosition = 25;
-                    trades.forEach((trade, index) => {
-                        if (yPosition > 270) {
-                            doc.addPage();
-                            yPosition = 20;
-                        }
-                        
-                        // Calculate P/L in pips
+                    const tableData = [];
+                    const headers = ['Date', 'Pair', 'Dir', 'P/L', 'Risk', 'Setup', 'Emotion', 'CBS'];
+                    
+                    trades.forEach(trade => {
                         const pipValue = trade.pair.includes('JPY') ? 0.01 : 0.0001;
                         let plPips;
                         if (trade.direction === 'Long') {
@@ -2378,16 +2240,30 @@
                             plPips = (trade.entryPrice - trade.exitPrice) / pipValue;
                         }
                         
-                        // Format date
                         const tradeDate = new Date(trade.date);
                         const formattedDate = `${tradeDate.getDate()}/${tradeDate.getMonth() + 1}/${tradeDate.getFullYear()}`;
                         
-                        doc.setFontSize(10);
-                        doc.text(`${index + 1}. ${formattedDate} - ${trade.pair} ${trade.direction} - P/L: ${plPips > 0 ? '+' : ''}${plPips.toFixed(1)} pips - CBS: ${trade.cbs}`, 10, yPosition);
-                        yPosition += 7;
+                        tableData.push([
+                            formattedDate,
+                            trade.pair,
+                            trade.direction === 'Long' ? 'L' : 'S',
+                            `${plPips > 0 ? '+' : ''}${plPips.toFixed(1)}`,
+                            `${trade.riskPercent}%`,
+                            trade.setupType,
+                            trade.emotion,
+                            trade.cbs.toString()
+                        ]);
                     });
                     
-                    // Save and download
+                    doc.autoTable({
+                        head: [headers],
+                        body: tableData,
+                        startY: 25,
+                        theme: 'grid',
+                        headStyles: { fillColor: [37, 99, 235] },
+                        styles: { fontSize: 8, cellPadding: 2 }
+                    });
+                    
                     doc.save('trading-journal-report.pdf');
                     
                     exportLoader.style.display = 'none';
@@ -2404,28 +2280,23 @@
         function initApp() {
             initCharts();
             
-            // Set today's date as default
             document.getElementById('tradeDate').value = new Date().toISOString().split('T')[0];
             
-            // Modal functionality
             addTradeBtn.addEventListener('click', () => modal.style.display = 'flex');
             mobileAddBtn.addEventListener('click', () => modal.style.display = 'flex');
             closeModalBtn.addEventListener('click', () => modal.style.display = 'none');
             cancelTradeBtn.addEventListener('click', () => modal.style.display = 'none');
             saveTradeBtn.addEventListener('click', addNewTrade);
             
-            // Close modal when clicking outside
             window.addEventListener('click', (e) => {
                 if (e.target === modal) modal.style.display = 'none';
                 if (e.target === educationModal) educationModal.style.display = 'none';
             });
             
-            // Close education modal
             closeEducationBtn.addEventListener('click', () => {
                 educationModal.style.display = 'none';
             });
             
-            // Tab functionality
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
                     tabs.forEach(t => t.classList.remove('active'));
@@ -2435,9 +2306,7 @@
                 });
             });
             
-            // Export functionality
             exportBtn.addEventListener('click', () => {
-                // Show export options
                 const exportType = confirm('Click OK for PDF export, Cancel for CSV export');
                 if (exportType) {
                     exportToPDF();
@@ -2446,10 +2315,8 @@
                 }
             });
             
-            // Handle window resize for responsive table
             window.addEventListener('resize', renderTradesTable);
             
-            // Load saved trades
             loadTrades();
         }
         
