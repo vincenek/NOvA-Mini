@@ -3,11 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TraderOS - Advanced Trading Journal</title>
+    <title>TrafxOS - Advanced Trading Journal</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS Support -->
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <meta name="apple-mobile-web-app-status-bar" content="#2563eb">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#2563eb">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
     <style>
         :root {
             --primary: #2563eb;
@@ -655,6 +672,281 @@
             line-height: 1.5;
         }
         
+        /* PWA Install Button */
+        .pwa-install-container {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .pwa-install-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--success);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            border: none;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+            
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+        
+        .pwa-install-btn:hover {
+            background: #0da271;
+            transform: scale(1.05);
+        }
+        
+        /* Install Prompt */
+        .install-prompt {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1000;
+            transform: translateY(150%);
+            transition: transform 0.5s ease;
+        }
+        
+        .install-prompt.show {
+            transform: translateY(0);
+        }
+        
+        .install-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .install-text {
+            flex: 1;
+        }
+        
+        .install-close {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            color: var(--gray);
+            cursor: pointer;
+        }
+        
+        /* Offline Indicator */
+        .offline-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--warning);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .offline-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Auth Modals */
+        .auth-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .auth-container {
+            background: var(--dark);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            width: 100%;
+            max-width: 400px;
+            padding: 25px;
+            position: relative;
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .auth-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .auth-header p {
+            color: var(--gray);
+        }
+        
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .auth-tab:first-child {
+            border-radius: 6px 0 0 6px;
+        }
+        
+        .auth-tab:last-child {
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .auth-tab.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .auth-form {
+            display: none;
+        }
+        
+        .auth-form.active {
+            display: block;
+        }
+        
+        .auth-form-group {
+            margin-bottom: 15px;
+        }
+        
+        .auth-form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .auth-form-control {
+            width: 100%;
+            padding: 12px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--light);
+            font-size: 1rem;
+        }
+        
+        .auth-form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .auth-error {
+            color: var(--danger);
+            text-align: center;
+            margin-top: 15px;
+            min-height: 20px;
+        }
+        
+        .auth-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--gray);
+        }
+        
+        .auth-footer a {
+            color: var(--primary);
+            cursor: pointer;
+        }
+        
+        /* User info */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .logout-btn {
+            background: transparent;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .logout-btn:hover {
+            color: var(--light);
+        }
+        
+        /* Responsive adjustments */
         @media (min-width: 576px) {
             .stats-container {
                 grid-template-columns: repeat(4, 1fr);
@@ -783,10 +1075,15 @@
             .stats-container {
                 grid-template-columns: repeat(2, 1fr);
             }
+            
+            .auth-container {
+                width: 95%;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Bias Alert -->
     <div class="bias-alert" id="biasAlert">
         <div class="bias-alert-content">
             <h3><i class="fas fa-exclamation-triangle"></i> Bias Detected</h3>
@@ -798,6 +1095,7 @@
         </div>
     </div>
 
+    <!-- Education Modal -->
     <div class="education-modal" id="educationModal">
         <div class="education-content">
             <span class="close-modal" id="closeEducation">&times;</span>
@@ -805,14 +1103,88 @@
         </div>
     </div>
 
-    <div id="appContent">
+    <!-- Auth Modals -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-container">
+            <div class="auth-header">
+                <div class="logo">
+                    <i class="fas fa-brain"></i>
+                    <h1>TrafxOS</h1>
+                </div>
+                <p>Advanced Trading Journal with Cognitive Bias Detection</p>
+            </div>
+            
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="signin">Sign In</div>
+                <div class="auth-tab" data-tab="signup">Sign Up</div>
+            </div>
+            
+            <div class="auth-form active" id="signinForm">
+                <div class="auth-form-group">
+                    <label>Email</label>
+                    <input type="email" class="auth-form-control" id="loginEmail" placeholder="your@email.com">
+                </div>
+                
+                <div class="auth-form-group">
+                    <label>Password</label>
+                    <input type="password" class="auth-form-control" id="loginPassword" placeholder="••••••••">
+                </div>
+                
+                <button class="auth-btn" id="signInBtn">Sign In</button>
+                
+                <div class="auth-error" id="loginError"></div>
+                
+                <div class="auth-footer">
+                    <p>Forgot your password? <a id="resetPasswordLink">Reset it</a></p>
+                </div>
+            </div>
+            
+            <div class="auth-form" id="signupForm">
+                <div class="auth-form-group">
+                    <label>Name</label>
+                    <input type="text" class="auth-form-control" id="signupName" placeholder="Your Name">
+                </div>
+                
+                <div class="auth-form-group">
+                    <label>Email</label>
+                    <input type="email" class="auth-form-control" id="signupEmail" placeholder="your@email.com">
+                </div>
+                
+                <div class="auth-form-group">
+                    <label>Password</label>
+                    <input type="password" class="auth-form-control" id="signupPassword" placeholder="••••••••">
+                </div>
+                
+                <div class="auth-form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" class="auth-form-control" id="signupConfirmPassword" placeholder="••••••••">
+                </div>
+                
+                <button class="auth-btn" id="signUpBtn">Create Account</button>
+                
+                <div class="auth-error" id="signupError"></div>
+                
+                <div class="auth-footer">
+                    <p>Already have an account? <a id="switchToLogin">Sign in</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main App Content -->
+    <div id="appContent" style="display: none;">
         <div class="container">
             <header>
                 <div class="logo">
                     <i class="fas fa-brain"></i>
-                    <h1>TraderOS with Cognitive Bias Detection</h1>
+                    <h1>TrafxOS - Advanced Trading Journal</h1>
                 </div>
                 <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div>
+                        <div id="userName">User</div>
+                        <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                    </div>
                     <div class="desktop-add-btn">
                         <button class="btn" id="addTradeBtn">
                             <i class="fas fa-plus"></i> <span class="desktop-text">Add Trade</span>
@@ -948,13 +1320,40 @@
             </div>
             
             <footer>
-                <p>TraderOS v2.0 | Advanced Cognitive Bias Detection System</p>
+                <p>TrafxOS v2.0 | Advanced Cognitive Bias Detection System</p>
             </footer>
         </div>
         
         <button class="floating-add-btn" id="mobileAddBtn">
             <i class="fas fa-plus"></i>
         </button>
+    </div>
+    
+    <!-- PWA Install Button -->
+    <div class="pwa-install-container" id="pwaInstallContainer">
+        <button class="pwa-install-btn" id="pwaInstallBtn">
+            <i class="fas fa-download"></i>
+        </button>
+    </div>
+    
+    <!-- Install Prompt -->
+    <div class="install-prompt" id="installPrompt">
+        <div class="install-icon">
+            <i class="fas fa-download"></i>
+        </div>
+        <div class="install-text">
+            <strong>Install TrafxOS</strong>
+            <p>Add to home screen for quick access</p>
+        </div>
+        <button class="install-close" id="closePrompt">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator">
+        <i class="fas fa-wifi-slash"></i>
+        <span>You are currently offline</span>
     </div>
     
     <div class="toast" id="toast"></div>
@@ -1092,13 +1491,45 @@
     </div>
 
     <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyByv7zwSod9JCnYqUxC3Mb7VrPKihvjOHA",
+            authDomain: "trader-os.firebaseapp.com",
+            projectId: "trader-os",
+            storageBucket: "trader-os.appspot.com",
+            messagingSenderId: "879978387606",
+            appId: "1:879978387606:web:a37e5aa8075032b6294ab7",
+            measurementId: "G-BL4PJWJJCV"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
         // Initialize variables
         let trades = [];
         let currentFilter = 'all';
         let performanceChart, setupChart, biasFrequencyChart, cbsTrendChart, biasPatternChart;
+        let deferredPrompt; // For PWA installation
+        let currentUser = null;
         
         // DOM Elements
+        const authModal = document.getElementById('authModal');
         const appContent = document.getElementById('appContent');
+        const signInForm = document.getElementById('signinForm');
+        const signUpForm = document.getElementById('signupForm');
+        const signInBtn = document.getElementById('signInBtn');
+        const signUpBtn = document.getElementById('signUpBtn');
+        const authTabs = document.querySelectorAll('.auth-tab');
+        const loginError = document.getElementById('loginError');
+        const signupError = document.getElementById('signupError');
+        const resetPasswordLink = document.getElementById('resetPasswordLink');
+        const switchToLogin = document.getElementById('switchToLogin');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
+        
         const addTradeBtn = document.getElementById('addTradeBtn');
         const mobileAddBtn = document.getElementById('mobileAddBtn');
         const modal = document.getElementById('addTradeModal');
@@ -1117,6 +1548,11 @@
         const exportLoader = document.getElementById('exportLoader');
         const tabs = document.querySelectorAll('.tab');
         const toast = document.getElementById('toast');
+        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+        const pwaInstallContainer = document.getElementById('pwaInstallContainer');
+        const installPrompt = document.getElementById('installPrompt');
+        const closePrompt = document.getElementById('closePrompt');
+        const offlineIndicator = document.getElementById('offlineIndicator');
         const biasAlert = document.getElementById('biasAlert');
         const biasAlertMessage = document.getElementById('biasAlertMessage');
         const acknowledgeBiasBtn = document.getElementById('acknowledgeBias');
@@ -1424,22 +1860,40 @@
             }
         }
         
-        // Save trades to localStorage
+        // Save trades to Firestore
         function saveTrades() {
-            localStorage.setItem('trades', JSON.stringify(trades));
-            showToast('Trades saved successfully!');
+            if (!currentUser) return;
+            
+            const userRef = db.collection('users').doc(currentUser.uid);
+            userRef.set({
+                trades: trades,
+                updatedAt: new Date()
+            }, { merge: true })
+            .then(() => {
+                showToast('Trades saved successfully!');
+            })
+            .catch((error) => {
+                console.error("Error saving trades: ", error);
+                showToast('Error saving trades!', 'danger');
+            });
         }
         
-        // Load trades from localStorage
+        // Load trades from Firestore
         function loadTrades() {
-            const savedTrades = localStorage.getItem('trades');
-            if (savedTrades) {
-                trades = JSON.parse(savedTrades);
-                renderTradesTable();
-                updateStats();
-                updateCharts();
-                updateBiasInsights();
-            }
+            if (!currentUser) return;
+            
+            const userRef = db.collection('users').doc(currentUser.uid);
+            userRef.get().then((doc) => {
+                if (doc.exists && doc.data().trades) {
+                    trades = doc.data().trades;
+                    renderTradesTable();
+                    updateStats();
+                    updateCharts();
+                    updateBiasInsights();
+                }
+            }).catch((error) => {
+                console.error("Error loading trades: ", error);
+            });
         }
         
         // Initialize charts
@@ -2276,27 +2730,283 @@
             }, 500);
         }
         
+        // PWA Installation Handling
+        function handlePWAInstall() {
+            // Listen for beforeinstallprompt event
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent the mini-infobar from appearing on mobile
+                e.preventDefault();
+                // Stash the event so it can be triggered later
+                deferredPrompt = e;
+                // Show the install button
+                pwaInstallContainer.style.display = 'block';
+                
+                // Also show the install prompt after 5 seconds
+                setTimeout(() => {
+                    if (deferredPrompt) {
+                        installPrompt.classList.add('show');
+                    }
+                }, 5000);
+            });
+            
+            // Handle install button click
+            pwaInstallBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    // Show the install prompt
+                    deferredPrompt.prompt();
+                    // Wait for the user to respond to the prompt
+                    const { outcome } = await deferredPrompt.userChoice;
+                    // Optionally, send analytics event with outcome of user choice
+                    console.log(`User response to the install prompt: ${outcome}`);
+                    // Hide the install button
+                    pwaInstallContainer.style.display = 'none';
+                    // Clear the deferredPrompt variable
+                    deferredPrompt = null;
+                    // Hide the prompt
+                    installPrompt.classList.remove('show');
+                }
+            });
+            
+            // Close prompt
+            closePrompt.addEventListener('click', () => {
+                installPrompt.classList.remove('show');
+            });
+            
+            // Listen for app installed event
+            window.addEventListener('appinstalled', () => {
+                // Hide the install button
+                pwaInstallContainer.style.display = 'none';
+                // Clear the deferredPrompt variable
+                deferredPrompt = null;
+                // Hide the prompt
+                installPrompt.classList.remove('show');
+                // Show success message
+                showToast('App installed successfully!');
+            });
+            
+            // Offline detection
+            window.addEventListener('offline', () => {
+                offlineIndicator.classList.add('show');
+            });
+            
+            window.addEventListener('online', () => {
+                offlineIndicator.classList.remove('show');
+            });
+            
+            // Initialize offline status
+            if (!navigator.onLine) {
+                offlineIndicator.classList.add('show');
+            }
+        }
+        
+        // Register Service Worker
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    // Create service worker script as a blob
+                    const swContent = `
+                        const CACHE_NAME = 'trafxos-v1';
+                        const urlsToCache = [
+                            './',
+                            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+                            'https://cdn.jsdelivr.net/npm/chart.js',
+                            'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+                            'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+                        ];
+                        
+                        self.addEventListener('install', event => {
+                            event.waitUntil(
+                                caches.open(CACHE_NAME)
+                                    .then(cache => {
+                                        return cache.addAll(urlsToCache);
+                                    })
+                            );
+                        });
+                        
+                        self.addEventListener('activate', event => {
+                            event.waitUntil(
+                                caches.keys().then(cacheNames => {
+                                    return Promise.all(
+                                        cacheNames.map(cacheName => {
+                                            if (cacheName !== CACHE_NAME) {
+                                                return caches.delete(cacheName);
+                                            }
+                                        })
+                                    );
+                                })
+                            );
+                        });
+                        
+                        self.addEventListener('fetch', event => {
+                            event.respondWith(
+                                caches.match(event.request)
+                                    .then(response => {
+                                        return response || fetch(event.request);
+                                    })
+                            );
+                        });
+                    `;
+                    
+                    const blob = new Blob([swContent], { type: 'application/javascript' });
+                    const swUrl = URL.createObjectURL(blob);
+                    
+                    navigator.serviceWorker.register(swUrl)
+                        .then(registration => {
+                            console.log('Service Worker registered with scope:', registration.scope);
+                        })
+                        .catch(error => {
+                            console.error('Service Worker registration failed:', error);
+                        });
+                });
+            }
+        }
+        
+        // Authentication functions
+        function signUp() {
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            
+            // Validation
+            if (!name || !email || !password || !confirmPassword) {
+                signupError.textContent = 'Please fill in all fields';
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                signupError.textContent = 'Passwords do not match';
+                return;
+            }
+            
+            if (password.length < 6) {
+                signupError.textContent = 'Password should be at least 6 characters';
+                return;
+            }
+            
+            signupError.textContent = '';
+            
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    
+                    // Save user name to Firestore
+                    db.collection('users').doc(user.uid).set({
+                        name: name,
+                        email: email
+                    })
+                    .then(() => {
+                        showToast('Account created successfully!');
+                        initAppForUser(user);
+                    })
+                    .catch((error) => {
+                        console.error("Error saving user info: ", error);
+                        signupError.textContent = error.message;
+                    });
+                })
+                .catch((error) => {
+                    signupError.textContent = error.message;
+                });
+        }
+        
+        function signIn() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                loginError.textContent = 'Please fill in all fields';
+                return;
+            }
+            
+            loginError.textContent = '';
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    showToast('Signed in successfully!');
+                    initAppForUser(user);
+                })
+                .catch((error) => {
+                    loginError.textContent = error.message;
+                });
+        }
+        
+        function resetPassword() {
+            const email = document.getElementById('loginEmail').value;
+            
+            if (!email) {
+                loginError.textContent = 'Please enter your email';
+                return;
+            }
+            
+            auth.sendPasswordResetEmail(email)
+                .then(() => {
+                    showToast('Password reset email sent!');
+                })
+                .catch((error) => {
+                    loginError.textContent = error.message;
+                });
+        }
+        
+        function signOut() {
+            auth.signOut().then(() => {
+                showToast('Signed out successfully!');
+                authModal.style.display = 'flex';
+                appContent.style.display = 'none';
+                trades = [];
+                renderTradesTable();
+            }).catch((error) => {
+                console.error('Sign out error:', error);
+            });
+        }
+        
+        function initAppForUser(user) {
+            currentUser = user;
+            authModal.style.display = 'none';
+            appContent.style.display = 'block';
+            
+            // Set user info
+            db.collection('users').doc(user.uid).get().then((doc) => {
+                if (doc.exists) {
+                    const userData = doc.data();
+                    userName.textContent = userData.name || user.email;
+                    userAvatar.textContent = userData.name ? userData.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase();
+                } else {
+                    userName.textContent = user.email;
+                    userAvatar.textContent = user.email.charAt(0).toUpperCase();
+                }
+            });
+            
+            // Load user data
+            loadTrades();
+        }
+        
         // Initialize the app
         function initApp() {
             initCharts();
             
+            // Set current date as default
             document.getElementById('tradeDate').value = new Date().toISOString().split('T')[0];
             
+            // Modal functionality
             addTradeBtn.addEventListener('click', () => modal.style.display = 'flex');
             mobileAddBtn.addEventListener('click', () => modal.style.display = 'flex');
             closeModalBtn.addEventListener('click', () => modal.style.display = 'none');
             cancelTradeBtn.addEventListener('click', () => modal.style.display = 'none');
             saveTradeBtn.addEventListener('click', addNewTrade);
             
+            // Close modals when clicking outside
             window.addEventListener('click', (e) => {
                 if (e.target === modal) modal.style.display = 'none';
                 if (e.target === educationModal) educationModal.style.display = 'none';
             });
             
+            // Close education modal
             closeEducationBtn.addEventListener('click', () => {
                 educationModal.style.display = 'none';
             });
             
+            // Tab functionality
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
                     tabs.forEach(t => t.classList.remove('active'));
@@ -2306,6 +3016,7 @@
                 });
             });
             
+            // Export functionality
             exportBtn.addEventListener('click', () => {
                 const exportType = confirm('Click OK for PDF export, Cancel for CSV export');
                 if (exportType) {
@@ -2315,9 +3026,51 @@
                 }
             });
             
+            // Auth tab switching
+            authTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    authTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    signInForm.classList.remove('active');
+                    signUpForm.classList.remove('active');
+                    
+                    if (tabName === 'signin') {
+                        signInForm.classList.add('active');
+                    } else {
+                        signUpForm.classList.add('active');
+                    }
+                });
+            });
+            
+            // Auth buttons
+            signInBtn.addEventListener('click', signIn);
+            signUpBtn.addEventListener('click', signUp);
+            resetPasswordLink.addEventListener('click', resetPassword);
+            switchToLogin.addEventListener('click', () => {
+                authTabs[0].click();
+            });
+            logoutBtn.addEventListener('click', signOut);
+            
+            // PWA installation handling
+            handlePWAInstall();
+            
+            // Register Service Worker
+            registerServiceWorker();
+            
+            // Handle window resize for responsive table
             window.addEventListener('resize', renderTradesTable);
             
-            loadTrades();
+            // Auth state observer
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    initAppForUser(user);
+                } else {
+                    authModal.style.display = 'flex';
+                    appContent.style.display = 'none';
+                }
+            });
         }
         
         // Start the app
