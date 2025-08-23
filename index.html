@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoomVisualizer - Virtual Interior Designer</title>
+    <title>RoomStager - Virtual Staging Assistant</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -14,7 +14,7 @@
         }
         
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #f9f7ff 0%, #e1ddff 100%);
             color: #333;
             min-height: 100vh;
             padding: 20px;
@@ -34,7 +34,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 20px 30px;
-            background: linear-gradient(90deg, #6a5acd, #ff6b6b);
+            background: linear-gradient(90deg, #6a5acd, #8a2be2);
             color: white;
         }
         
@@ -51,40 +51,6 @@
         .logo-text {
             font-size: 1.8rem;
             font-weight: 700;
-        }
-        
-        .nav-buttons {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .btn {
-            padding: 10px 20px;
-            border-radius: 30px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn-primary {
-            background: white;
-            color: #6a5acd;
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
-        }
-        
-        .btn-outline {
-            background: transparent;
-            border: 2px solid white;
-            color: white;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
         }
         
         .main-content {
@@ -124,7 +90,7 @@
             border-radius: 10px;
             padding: 12px;
             text-align: center;
-            cursor: grab;
+            cursor: pointer;
             transition: all 0.2s;
             border: 2px solid transparent;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
@@ -135,13 +101,10 @@
             transform: translateY(-2px);
         }
         
-        .tool-item img {
-            width: 100%;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 8px;
+        .tool-item-icon {
+            font-size: 2rem;
+            color: #6a5acd;
             margin-bottom: 8px;
-            background: #ddd;
         }
         
         .tool-item-name {
@@ -166,11 +129,12 @@
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
             position: relative;
             overflow: hidden;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100" fill="rgba(255,255,255,0.5)" /><path d="M0 0L100 100" stroke="rgba(106, 90, 205, 0.2)" stroke-width="2" /><path d="M100 0L0 100" stroke="rgba(106, 90, 205, 0.2)" stroke-width="2" /></svg>');
         }
         
         .furniture-item {
             position: absolute;
-            border: 2px dashed #6a5acd;
+            border: 2px solid #6a5acd;
             background: rgba(106, 90, 205, 0.1);
             cursor: move;
             display: flex;
@@ -178,17 +142,16 @@
             justify-content: center;
             border-radius: 5px;
             transition: all 0.2s;
+            user-select: none;
         }
         
         .furniture-item:hover {
             background: rgba(106, 90, 205, 0.2);
         }
         
-        .furniture-item img {
-            width: 90%;
-            height: 90%;
-            object-fit: cover;
-            border-radius: 3px;
+        .furniture-item.selected {
+            border: 2px solid #ff6b6b;
+            z-index: 10;
         }
         
         .properties-panel {
@@ -244,14 +207,14 @@
             transform: scale(1.1);
         }
         
-        .selected {
+        .selected-color {
             transform: scale(1.1);
             box-shadow: 0 0 0 3px white, 0 0 0 6px #6a5acd;
         }
         
         .action-buttons {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
             gap: 10px;
             margin-top: 30px;
         }
@@ -306,6 +269,38 @@
             font-size: 1.2rem;
         }
         
+        .dimension-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .dimension-input {
+            width: 100%;
+        }
+        
+        .room-types {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .room-type {
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px;
+            background: white;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .room-type.active {
+            border-color: #6a5acd;
+            background: rgba(106, 90, 205, 0.1);
+        }
+        
         @media (max-width: 900px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -327,17 +322,16 @@
         <header>
             <div class="logo">
                 <div class="logo-icon"><i class="fas fa-couch"></i></div>
-                <div class="logo-text">RoomVisualizer</div>
+                <div class="logo-text">RoomStager</div>
             </div>
-            <div class="nav-buttons">
-                <button class="btn btn-outline"><i class="fas fa-save"></i> Save</button>
-                <button class="btn btn-primary"><i class="fas fa-share-alt"></i> Share</button>
+            <div class="header-buttons">
+                <button class="action-btn save-btn" style="padding: 10px 20px;"><i class="fas fa-save"></i> Save Design</button>
             </div>
         </header>
         
         <div class="instructions">
             <i class="fas fa-info-circle"></i>
-            <p>Drag items to the room to visualize your space. Click on items to customize them.</p>
+            <p>Drag items to the room to stage your space. Click on items to customize them.</p>
         </div>
         
         <div class="main-content">
@@ -345,20 +339,20 @@
                 <div class="tool-category">
                     <h4 class="tool-category-title">Furniture</h4>
                     <div class="tool-items">
-                        <div class="tool-item" draggable="true" data-type="sofa">
-                            <div style="background:#ddd; height:60px; border-radius:8px; margin-bottom:8px;"></div>
+                        <div class="tool-item" data-type="sofa">
+                            <div class="tool-item-icon"><i class="fas fa-couch"></i></div>
                             <div class="tool-item-name">Sofa</div>
                         </div>
-                        <div class="tool-item" draggable="true" data-type="chair">
-                            <div style="background:#ddd; height:60px; border-radius:8px; margin-bottom:8px;"></div>
+                        <div class="tool-item" data-type="chair">
+                            <div class="tool-item-icon"><i class="fas fa-chair"></i></div>
                             <div class="tool-item-name">Chair</div>
                         </div>
-                        <div class="tool-item" draggable="true" data-type="table">
-                            <div style="background:#ddd; height:60px; border-radius:8px; margin-bottom:8px;"></div>
+                        <div class="tool-item" data-type="table">
+                            <div class="tool-item-icon"><i class="fas fa-utensils"></i></div>
                             <div class="tool-item-name">Table</div>
                         </div>
-                        <div class="tool-item" draggable="true" data-type="bed">
-                            <div style="background:#ddd; height:60px; border-radius:8px; margin-bottom:8px;"></div>
+                        <div class="tool-item" data-type="bed">
+                            <div class="tool-item-icon"><i class="fas fa-bed"></i></div>
                             <div class="tool-item-name">Bed</div>
                         </div>
                     </div>
@@ -366,34 +360,38 @@
                 <div class="tool-category">
                     <h4 class="tool-category-title">Decor</h4>
                     <div class="tool-items">
-                        <div class="tool-item" draggable="true" data-type="rug">
-                            <div style="background:#ddd; height:60px; border-radius:8px; margin-bottom:8px;"></div>
+                        <div class="tool-item" data-type="rug">
+                            <div class="tool-item-icon"><i class="fas fa-square"></i></div>
                             <div class="tool-item-name">Rug</div>
                         </div>
-                        <div class="tool-item" draggable="true" data-type="lamp">
-                            <div style="background:#ddd; height:60px; border-radius:8px; margin-bottom:8px;"></div>
+                        <div class="tool-item" data-type="lamp">
+                            <div class="tool-item-icon"><i class="fas fa-lightbulb"></i></div>
                             <div class="tool-item-name">Lamp</div>
                         </div>
-                        <div class="tool-item" draggable="true" data-type="plant">
-                            <div style="background:#ddd; height:60px; border-radius:8px; margin-bottom:8px;"></div>
+                        <div class="tool-item" data-type="plant">
+                            <div class="tool-item-icon"><i class="fas fa-leaf"></i></div>
                             <div class="tool-item-name">Plant</div>
                         </div>
-                        <div class="tool-item" draggable="true" data-type="art">
-                            <div style="background:#ddd; height:60px; border-radius:8px; margin-bottom:8px;"></div>
+                        <div class="tool-item" data-type="art">
+                            <div class="tool-item-icon"><i class="fas fa-image"></i></div>
                             <div class="tool-item-name">Art</div>
                         </div>
+                    </div>
+                </div>
+                <div class="tool-category">
+                    <h4 class="tool-category-title">Room Type</h4>
+                    <div class="room-types">
+                        <div class="room-type active">Living Room</div>
+                        <div class="room-type">Bedroom</div>
+                        <div class="room-type">Dining Room</div>
+                        <div class="room-type">Office</div>
                     </div>
                 </div>
             </div>
             
             <div class="room-canvas">
                 <div class="room-background" id="room">
-                    <div class="furniture-item" style="width: 200px; height: 100px; left: 100px; top: 150px;">
-                        <div style="background:#c3bcf2; width: 100%; height: 100%; border-radius: 5px;"></div>
-                    </div>
-                    <div class="furniture-item" style="width: 120px; height: 120px; left: 350px; top: 150px;">
-                        <div style="background:#a29bfe; width: 100%; height: 100%; border-radius: 5px;"></div>
-                    </div>
+                    <!-- Furniture will be added here dynamically -->
                 </div>
             </div>
             
@@ -401,199 +399,267 @@
                 <h4 class="properties-title">Design Properties</h4>
                 <div class="property-group">
                     <label class="property-label">Selected Item</label>
-                    <input type="text" class="property-input" value="Sofa" readonly>
+                    <input type="text" class="property-input" value="None" readonly id="selected-item-name">
                 </div>
                 <div class="property-group">
                     <label class="property-label">Color</label>
                     <div class="color-palette">
-                        <div class="color-option selected" style="background:#6a5acd;"></div>
-                        <div class="color-option" style="background:#ff6b6b;"></div>
-                        <div class="color-option" style="background:#4ecdc4;"></div>
-                        <div class="color-option" style="background:#ffbe0b;"></div>
-                        <div class="color-option" style="background:#6dce87;"></div>
-                        <div class="color-option" style="background:#a29bfe;"></div>
-                        <div class="color-option" style="background:#fd79a8;"></div>
-                        <div class="color-option" style="background:#636e72;"></div>
+                        <div class="color-option selected-color" style="background:#6a5acd;" data-color="#6a5acd"></div>
+                        <div class="color-option" style="background:#ff6b6b;" data-color="#ff6b6b"></div>
+                        <div class="color-option" style="background:#4ecdc4;" data-color="#4ecdc4"></div>
+                        <div class="color-option" style="background:#ffbe0b;" data-color="#ffbe0b"></div>
+                        <div class="color-option" style="background:#6dce87;" data-color="#6dce87"></div>
+                        <div class="color-option" style="background:#a29bfe;" data-color="#a29bfe"></div>
+                        <div class="color-option" style="background:#fd79a8;" data-color="#fd79a8"></div>
+                        <div class="color-option" style="background:#636e72;" data-color="#636e72"></div>
                     </div>
                 </div>
                 <div class="property-group">
-                    <label class="property-label">Size</label>
-                    <input type="range" class="property-input" min="80" max="120" value="100">
+                    <label class="property-label">Dimensions</label>
+                    <div class="dimension-inputs">
+                        <input type="number" class="property-input dimension-input" placeholder="Width" id="item-width">
+                        <input type="number" class="property-input dimension-input" placeholder="Height" id="item-height">
+                    </div>
                 </div>
                 <div class="property-group">
                     <label class="property-label">Rotation</label>
-                    <input type="range" class="property-input" min="0" max="360" value="0">
+                    <input type="range" class="property-input" min="0" max="360" value="0" id="item-rotation">
                 </div>
                 
                 <div class="action-buttons">
-                    <button class="action-btn save-btn"><i class="fas fa-shopping-cart"></i> Buy This Item</button>
-                    <button class="action-btn reset-btn"><i class="fas fa-trash"></i> Remove</button>
+                    <button class="action-btn save-btn" id="buy-btn"><i class="fas fa-shopping-cart"></i> Find Similar Items</button>
+                    <button class="action-btn reset-btn" id="remove-btn"><i class="fas fa-trash"></i> Remove Item</button>
+                    <button class="action-btn save-btn" id="save-design-btn"><i class="fas fa-camera"></i> Save Snapshot</button>
                 </div>
                 
                 <div class="property-group" style="margin-top: 30px;">
                     <label class="property-label">Share Your Design</label>
                     <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-primary" style="flex: 1;"><i class="fas fa-link"></i> Copy Link</button>
-                        <button class="btn btn-outline" style="flex: 1;"><i class="fas fa-download"></i> Export</button>
+                        <button class="action-btn save-btn" style="flex: 1;"><i class="fas fa-link"></i> Copy Link</button>
+                        <button class="action-btn save-btn" style="flex: 1;"><i class="fas fa-download"></i> Export</button>
                     </div>
                 </div>
             </div>
         </div>
         
         <footer>
-            <p>© 2023 RoomVisualizer | Virtual Interior Design Tool</p>
-            <p>Drag and drop furniture to visualize your room layout. Click on items to customize.</p>
+            <p>© 2023 RoomStager | Virtual Staging Assistant</p>
+            <p>Design and visualize your room with furniture. Drag, customize, and share your creations.</p>
         </footer>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Tool selection
-            const toolItems = document.querySelectorAll('.tool-item');
             const room = document.getElementById('room');
+            const toolItems = document.querySelectorAll('.tool-item');
+            const colorOptions = document.querySelectorAll('.color-option');
+            const roomTypes = document.querySelectorAll('.room-type');
             let selectedItem = null;
+            let isDragging = false;
+            let startX, startY, initialX, initialY;
             
-            // Make tool items draggable
+            // Add tool items to room
             toolItems.forEach(item => {
-                item.addEventListener('dragstart', function(e) {
-                    e.dataTransfer.setData('text/plain', this.getAttribute('data-type'));
+                item.addEventListener('click', function() {
+                    const type = this.getAttribute('data-type');
+                    addFurnitureToRoom(type);
                 });
             });
             
-            // Allow room to accept dropped items
-            room.addEventListener('dragover', function(e) {
-                e.preventDefault();
-            });
-            
-            room.addEventListener('drop', function(e) {
-                e.preventDefault();
-                const type = e.dataTransfer.getData('text/plain');
-                
-                // Create new furniture item
-                const newItem = document.createElement('div');
-                newItem.className = 'furniture-item';
-                newItem.style.width = '100px';
-                newItem.style.height = '100px';
-                newItem.style.left = (e.clientX - room.getBoundingClientRect().left - 50) + 'px';
-                newItem.style.top = (e.clientY - room.getBoundingClientRect().top - 50) + 'px';
-                
-                const innerDiv = document.createElement('div');
-                innerDiv.style.width = '100%';
-                innerDiv.style.height = '100%';
-                innerDiv.style.borderRadius = '5px';
-                
-                // Set color based on type
-                switch(type) {
-                    case 'sofa':
-                        innerDiv.style.background = '#c3bcf2';
-                        break;
-                    case 'chair':
-                        innerDiv.style.background = '#a29bfe';
-                        break;
-                    case 'table':
-                        innerDiv.style.background = '#81ecec';
-                        break;
-                    case 'bed':
-                        innerDiv.style.background = '#74b9ff';
-                        break;
-                    case 'rug':
-                        innerDiv.style.background = '#ffeaa7';
-                        break;
-                    case 'lamp':
-                        innerDiv.style.background = '#fab1a0';
-                        break;
-                    case 'plant':
-                        innerDiv.style.background = '#55efc4';
-                        break;
-                    case 'art':
-                        innerDiv.style.background = '#fd79a8';
-                        break;
-                }
-                
-                newItem.appendChild(innerDiv);
-                newItem.addEventListener('click', function() {
-                    selectItem(this);
+            // Room type selection
+            roomTypes.forEach(roomType => {
+                roomType.addEventListener('click', function() {
+                    roomTypes.forEach(rt => rt.classList.remove('active'));
+                    this.classList.add('active');
+                    resetRoom();
                 });
-                
-                room.appendChild(newItem);
-                selectItem(newItem);
             });
             
             // Color selection
-            const colorOptions = document.querySelectorAll('.color-option');
             colorOptions.forEach(color => {
                 color.addEventListener('click', function() {
-                    colorOptions.forEach(c => c.classList.remove('selected'));
-                    this.classList.add('selected');
+                    colorOptions.forEach(c => c.classList.remove('selected-color'));
+                    this.classList.add('selected-color');
                     
                     if (selectedItem) {
-                        selectedItem.querySelector('div').style.background = this.style.background;
+                        const colorValue = this.getAttribute('data-color');
+                        selectedItem.style.backgroundColor = colorValue + '33'; // Add transparency
+                        selectedItem.querySelector('.tool-item-icon').style.color = colorValue;
                     }
                 });
             });
             
-            // Function to select an item
-            function selectItem(item) {
-                // Remove previous selection
-                const allItems = document.querySelectorAll('.furniture-item');
-                allItems.forEach(i => i.style.borderColor = '#6a5acd');
+            // Dimension inputs
+            const widthInput = document.getElementById('item-width');
+            const heightInput = document.getElementById('item-height');
+            const rotationInput = document.getElementById('item-rotation');
+            
+            widthInput.addEventListener('input', updateSelectedItemDimensions);
+            heightInput.addEventListener('input', updateSelectedItemDimensions);
+            rotationInput.addEventListener('input', updateSelectedItemDimensions);
+            
+            // Action buttons
+            document.getElementById('remove-btn').addEventListener('click', removeSelectedItem);
+            document.getElementById('buy-btn').addEventListener('click', findSimilarItems);
+            document.getElementById('save-design-btn').addEventListener('click', saveDesign);
+            
+            // Function to add furniture to room
+            function addFurnitureToRoom(type) {
+                const furnitureItem = document.createElement('div');
+                furnitureItem.className = 'furniture-item';
+                furnitureItem.setAttribute('data-type', type);
                 
-                // Select new item
-                selectedItem = item;
-                selectedItem.style.borderColor = '#ff6b6b';
+                // Set initial position in the center of the room
+                const roomRect = room.getBoundingClientRect();
+                furnitureItem.style.left = '50%';
+                furnitureItem.style.top = '50%';
+                furnitureItem.style.transform = 'translate(-50%, -50%)';
                 
-                // Update properties panel
-                document.querySelector('.property-input[readonly]').value = 
-                    selectedItem.querySelector('.tool-item-name') ? 
-                    selectedItem.querySelector('.tool-item-name').textContent : 'Furniture Item';
+                // Set default size based on type
+                let width, height;
+                switch(type) {
+                    case 'sofa': width = 180; height = 80; break;
+                    case 'chair': width = 80; height = 80; break;
+                    case 'table': width = 120; height = 120; break;
+                    case 'bed': width = 180; height = 120; break;
+                    case 'rug': width = 200; height = 140; break;
+                    case 'lamp': width = 60; height = 100; break;
+                    case 'plant': width = 70; height = 100; break;
+                    case 'art': width = 100; height = 120; break;
+                }
+                
+                furnitureItem.style.width = width + 'px';
+                furnitureItem.style.height = height + 'px';
+                
+                // Add icon
+                const icon = document.createElement('div');
+                icon.className = 'tool-item-icon';
+                
+                switch(type) {
+                    case 'sofa': icon.innerHTML = '<i class="fas fa-couch"></i>'; break;
+                    case 'chair': icon.innerHTML = '<i class="fas fa-chair"></i>'; break;
+                    case 'table': icon.innerHTML = '<i class="fas fa-utensils"></i>'; break;
+                    case 'bed': icon.innerHTML = '<i class="fas fa-bed"></i>'; break;
+                    case 'rug': icon.innerHTML = '<i class="fas fa-square"></i>'; break;
+                    case 'lamp': icon.innerHTML = '<i class="fas fa-lightbulb"></i>'; break;
+                    case 'plant': icon.innerHTML = '<i class="fas fa-leaf"></i>'; break;
+                    case 'art': icon.innerHTML = '<i class="fas fa-image"></i>'; break;
+                }
+                
+                furnitureItem.appendChild(icon);
+                
+                // Add event listeners
+                furnitureItem.addEventListener('mousedown', startDragging);
+                furnitureItem.addEventListener('click', selectItem);
+                
+                room.appendChild(furnitureItem);
+                selectItem({currentTarget: furnitureItem});
             }
             
-            // Make furniture items draggable
-            document.addEventListener('mousedown', function(e) {
-                const items = document.querySelectorAll('.furniture-item');
-                items.forEach(item => {
-                    if (e.target === item || item.contains(e.target)) {
-                        selectItem(item);
-                        
-                        let offsetX = e.clientX - item.getBoundingClientRect().left;
-                        let offsetY = e.clientY - item.getBoundingClientRect().top;
-                        
-                        function moveItem(e) {
-                            item.style.left = (e.clientX - room.getBoundingClientRect().left - offsetX) + 'px';
-                            item.style.top = (e.clientY - room.getBoundingClientRect().top - offsetY) + 'px';
-                        }
-                        
-                        document.addEventListener('mousemove', moveItem);
-                        
-                        document.addEventListener('mouseup', function() {
-                            document.removeEventListener('mousemove', moveItem);
-                        }, { once: true });
-                    }
-                });
-            });
+            // Function to select an item
+            function selectItem(e) {
+                // Remove previous selection
+                const allItems = document.querySelectorAll('.furniture-item');
+                allItems.forEach(i => i.classList.remove('selected'));
+                
+                // Select new item
+                selectedItem = e.currentTarget;
+                selectedItem.classList.add('selected');
+                
+                // Update properties panel
+                document.getElementById('selected-item-name').value = selectedItem.getAttribute('data-type');
+                
+                // Update dimension inputs
+                document.getElementById('item-width').value = parseInt(selectedItem.style.width);
+                document.getElementById('item-height').value = parseInt(selectedItem.style.height);
+            }
             
-            // Size slider
-            const sizeSlider = document.querySelector('input[type="range"]');
-            sizeSlider.addEventListener('input', function() {
-                if (selectedItem) {
-                    const size = this.value;
-                    selectedItem.style.width = (size * 2) + 'px';
-                    selectedItem.style.height = size + 'px';
-                }
-            });
+            // Function to start dragging
+            function startDragging(e) {
+                isDragging = true;
+                selectedItem = e.currentTarget;
+                selectItem(e);
+                
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                initialX = parseInt(selectedItem.style.left || '50');
+                initialY = parseInt(selectedItem.style.top || '50');
+                
+                document.addEventListener('mousemove', dragItem);
+                document.addEventListener('mouseup', stopDragging);
+                
+                e.preventDefault();
+            }
             
-            // Buy button
-            document.querySelector('.save-btn').addEventListener('click', function() {
-                alert('Redirecting to partner store to purchase this item...');
-            });
+            // Function to drag item
+            function dragItem(e) {
+                if (!isDragging) return;
+                
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                
+                selectedItem.style.left = (initialX + dx) + 'px';
+                selectedItem.style.top = (initialY + dy) + 'px';
+            }
             
-            // Remove button
-            document.querySelector('.reset-btn').addEventListener('click', function() {
+            // Function to stop dragging
+            function stopDragging() {
+                isDragging = false;
+                document.removeEventListener('mousemove', dragItem);
+                document.removeEventListener('mouseup', stopDragging);
+            }
+            
+            // Function to update item dimensions
+            function updateSelectedItemDimensions() {
+                if (!selectedItem) return;
+                
+                const width = document.getElementById('item-width').value;
+                const height = document.getElementById('item-height').value;
+                const rotation = document.getElementById('item-rotation').value;
+                
+                if (width) selectedItem.style.width = width + 'px';
+                if (height) selectedItem.style.height = height + 'px';
+                selectedItem.style.transform = `rotate(${rotation}deg)`;
+            }
+            
+            // Function to remove selected item
+            function removeSelectedItem() {
                 if (selectedItem) {
                     selectedItem.remove();
                     selectedItem = null;
+                    document.getElementById('selected-item-name').value = 'None';
                 }
-            });
+            }
+            
+            // Function to find similar items (simulated)
+            function findSimilarItems() {
+                if (selectedItem) {
+                    alert(`Searching for ${selectedItem.getAttribute('data-type')} items from our partners...`);
+                } else {
+                    alert('Please select an item first');
+                }
+            }
+            
+            // Function to save design (simulated)
+            function saveDesign() {
+                alert('Design snapshot saved!');
+            }
+            
+            // Function to reset room
+            function resetRoom() {
+                const furnitureItems = document.querySelectorAll('.furniture-item');
+                furnitureItems.forEach(item => item.remove());
+                selectedItem = null;
+                document.getElementById('selected-item-name').value = 'None';
+            }
+            
+            // Add some initial furniture for demonstration
+            setTimeout(() => {
+                addFurnitureToRoom('sofa');
+                addFurnitureToRoom('table');
+                addFurnitureToRoom('chair');
+            }, 500);
         });
     </script>
 </body>
