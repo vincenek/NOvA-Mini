@@ -3,663 +3,429 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoomStager - Virtual Staging Assistant</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Living Constellations</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
-            background: linear-gradient(135deg, #f9f7ff 0%, #e1ddff 100%);
-            color: #333;
-            min-height: 100vh;
-            padding: 20px;
+            background: linear-gradient(to bottom, #0a0a2a, #1a1a40, #0a0a2a);
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
-        
+
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 30px;
-            background: linear-gradient(90deg, #6a5acd, #8a2be2);
-            color: white;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .logo-icon {
-            font-size: 2.5rem;
-        }
-        
-        .logo-text {
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-        
-        .main-content {
-            display: grid;
-            grid-template-columns: 250px 1fr 300px;
-            gap: 0;
-            height: 600px;
-        }
-        
-        .tool-panel {
-            background: #f8f9fa;
-            padding: 20px;
-            overflow-y: auto;
-            border-right: 1px solid #eee;
-        }
-        
-        .tool-category {
-            margin-bottom: 25px;
-        }
-        
-        .tool-category-title {
-            font-weight: 600;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
-            color: #6a5acd;
-        }
-        
-        .tool-items {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-        
-        .tool-item {
-            background: white;
-            border-radius: 10px;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-        }
-        
-        .tool-item:hover {
-            border-color: #6a5acd;
-            transform: translateY(-2px);
-        }
-        
-        .tool-item-icon {
-            font-size: 2rem;
-            color: #6a5acd;
-            margin-bottom: 8px;
-        }
-        
-        .tool-item-name {
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        
-        .room-canvas {
-            background: #e9ecef;
             position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 100%;
+            height: 100%;
         }
-        
-        .room-background {
-            width: 90%;
-            height: 90%;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-            position: relative;
-            overflow: hidden;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100" fill="rgba(255,255,255,0.5)" /><path d="M0 0L100 100" stroke="rgba(106, 90, 205, 0.2)" stroke-width="2" /><path d="M100 0L0 100" stroke="rgba(106, 90, 205, 0.2)" stroke-width="2" /></svg>');
-        }
-        
-        .furniture-item {
+
+        canvas {
             position: absolute;
-            border: 2px solid #6a5acd;
-            background: rgba(106, 90, 205, 0.1);
-            cursor: move;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            z-index: 10;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            color: #e1e1ff;
+        }
+
+        .instructions {
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            color: #a0a0ff;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            max-width: 200px;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(110, 140, 255, 0.5);
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
             display: flex;
-            align-items: center;
             justify-content: center;
-            border-radius: 5px;
-            transition: all 0.2s;
-            user-select: none;
-        }
-        
-        .furniture-item:hover {
-            background: rgba(106, 90, 205, 0.2);
-        }
-        
-        .furniture-item.selected {
-            border: 2px solid #ff6b6b;
+            gap: 15px;
             z-index: 10;
         }
-        
-        .properties-panel {
-            background: #f8f9fa;
-            padding: 20px;
-            overflow-y: auto;
-            border-left: 1px solid #eee;
-        }
-        
-        .properties-title {
-            font-weight: 600;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
-            color: #6a5acd;
-        }
-        
-        .property-group {
-            margin-bottom: 20px;
-        }
-        
-        .property-label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            color: #555;
-            font-weight: 500;
-        }
-        
-        .property-input {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            background: white;
-        }
-        
-        .color-palette {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-        
-        .color-option {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
+
+        button {
+            padding: 10px 20px;
+            background: rgba(40, 40, 100, 0.7);
+            color: white;
+            border: 1px solid rgba(110, 140, 255, 0.5);
+            border-radius: 20px;
             cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .color-option:hover {
-            transform: scale(1.1);
-        }
-        
-        .selected-color {
-            transform: scale(1.1);
-            box-shadow: 0 0 0 3px white, 0 0 0 6px #6a5acd;
-        }
-        
-        .action-buttons {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-            margin-top: 30px;
-        }
-        
-        .action-btn {
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
             transition: all 0.3s;
+            backdrop-filter: blur(5px);
         }
-        
-        .save-btn {
-            background: #6a5acd;
-            color: white;
+
+        button:hover {
+            background: rgba(60, 60, 140, 0.9);
+            box-shadow: 0 0 15px rgba(110, 140, 255, 0.7);
         }
-        
-        .reset-btn {
-            background: #ff6b6b;
-            color: white;
-        }
-        
-        .action-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-        }
-        
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-            border-top: 1px solid #eee;
-            font-size: 0.9rem;
-        }
-        
-        .instructions {
-            padding: 15px 30px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .instructions i {
-            color: #6a5acd;
-            font-size: 1.2rem;
-        }
-        
-        .dimension-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        
-        .dimension-input {
+
+        .background-stars {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
         }
-        
-        .room-types {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .room-type {
-            padding: 10px;
-            text-align: center;
-            border-radius: 8px;
+
+        .star {
+            position: absolute;
             background: white;
-            border: 2px solid #ddd;
-            cursor: pointer;
-            transition: all 0.2s;
+            border-radius: 50%;
+            animation: twinkle 4s infinite ease-in-out;
         }
-        
-        .room-type.active {
-            border-color: #6a5acd;
-            background: rgba(106, 90, 205, 0.1);
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
         }
-        
-        @media (max-width: 900px) {
-            .main-content {
-                grid-template-columns: 1fr;
-                height: auto;
-            }
-            
-            .tool-panel, .properties-panel {
-                display: none;
-            }
-            
-            .room-canvas {
-                height: 400px;
-            }
+
+        .dialog {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(20, 20, 50, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            z-index: 100;
+            box-shadow: 0 0 30px rgba(110, 140, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(110, 140, 255, 0.5);
+            display: none;
+        }
+
+        .dialog h2 {
+            margin-bottom: 15px;
+            color: #e1e1ff;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            background: rgba(10, 10, 30, 0.8);
+            border: 1px solid rgba(110, 140, 255, 0.5);
+            border-radius: 10px;
+            color: white;
+            padding: 10px;
+            margin-bottom: 15px;
+            resize: none;
+        }
+
+        .dialog-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <div class="logo">
-                <div class="logo-icon"><i class="fas fa-couch"></i></div>
-                <div class="logo-text">RoomStager</div>
-            </div>
-            <div class="header-buttons">
-                <button class="action-btn save-btn" style="padding: 10px 20px;"><i class="fas fa-save"></i> Save Design</button>
-            </div>
-        </header>
-        
-        <div class="instructions">
-            <i class="fas fa-info-circle"></i>
-            <p>Drag items to the room to stage your space. Click on items to customize them.</p>
+        <div class="header">
+            <h1>Living Constellations</h1>
+            <p class="instructions">Click anywhere to create a star. Add a note to remember the moment. Stars will connect to form your personal constellation.</p>
         </div>
         
-        <div class="main-content">
-            <div class="tool-panel">
-                <div class="tool-category">
-                    <h4 class="tool-category-title">Furniture</h4>
-                    <div class="tool-items">
-                        <div class="tool-item" data-type="sofa">
-                            <div class="tool-item-icon"><i class="fas fa-couch"></i></div>
-                            <div class="tool-item-name">Sofa</div>
-                        </div>
-                        <div class="tool-item" data-type="chair">
-                            <div class="tool-item-icon"><i class="fas fa-chair"></i></div>
-                            <div class="tool-item-name">Chair</div>
-                        </div>
-                        <div class="tool-item" data-type="table">
-                            <div class="tool-item-icon"><i class="fas fa-utensils"></i></div>
-                            <div class="tool-item-name">Table</div>
-                        </div>
-                        <div class="tool-item" data-type="bed">
-                            <div class="tool-item-icon"><i class="fas fa-bed"></i></div>
-                            <div class="tool-item-name">Bed</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="tool-category">
-                    <h4 class="tool-category-title">Decor</h4>
-                    <div class="tool-items">
-                        <div class="tool-item" data-type="rug">
-                            <div class="tool-item-icon"><i class="fas fa-square"></i></div>
-                            <div class="tool-item-name">Rug</div>
-                        </div>
-                        <div class="tool-item" data-type="lamp">
-                            <div class="tool-item-icon"><i class="fas fa-lightbulb"></i></div>
-                            <div class="tool-item-name">Lamp</div>
-                        </div>
-                        <div class="tool-item" data-type="plant">
-                            <div class="tool-item-icon"><i class="fas fa-leaf"></i></div>
-                            <div class="tool-item-name">Plant</div>
-                        </div>
-                        <div class="tool-item" data-type="art">
-                            <div class="tool-item-icon"><i class="fas fa-image"></i></div>
-                            <div class="tool-item-name">Art</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="tool-category">
-                    <h4 class="tool-category-title">Room Type</h4>
-                    <div class="room-types">
-                        <div class="room-type active">Living Room</div>
-                        <div class="room-type">Bedroom</div>
-                        <div class="room-type">Dining Room</div>
-                        <div class="room-type">Office</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="room-canvas">
-                <div class="room-background" id="room">
-                    <!-- Furniture will be added here dynamically -->
-                </div>
-            </div>
-            
-            <div class="properties-panel">
-                <h4 class="properties-title">Design Properties</h4>
-                <div class="property-group">
-                    <label class="property-label">Selected Item</label>
-                    <input type="text" class="property-input" value="None" readonly id="selected-item-name">
-                </div>
-                <div class="property-group">
-                    <label class="property-label">Color</label>
-                    <div class="color-palette">
-                        <div class="color-option selected-color" style="background:#6a5acd;" data-color="#6a5acd"></div>
-                        <div class="color-option" style="background:#ff6b6b;" data-color="#ff6b6b"></div>
-                        <div class="color-option" style="background:#4ecdc4;" data-color="#4ecdc4"></div>
-                        <div class="color-option" style="background:#ffbe0b;" data-color="#ffbe0b"></div>
-                        <div class="color-option" style="background:#6dce87;" data-color="#6dce87"></div>
-                        <div class="color-option" style="background:#a29bfe;" data-color="#a29bfe"></div>
-                        <div class="color-option" style="background:#fd79a8;" data-color="#fd79a8"></div>
-                        <div class="color-option" style="background:#636e72;" data-color="#636e72"></div>
-                    </div>
-                </div>
-                <div class="property-group">
-                    <label class="property-label">Dimensions</label>
-                    <div class="dimension-inputs">
-                        <input type="number" class="property-input dimension-input" placeholder="Width" id="item-width">
-                        <input type="number" class="property-input dimension-input" placeholder="Height" id="item-height">
-                    </div>
-                </div>
-                <div class="property-group">
-                    <label class="property-label">Rotation</label>
-                    <input type="range" class="property-input" min="0" max="360" value="0" id="item-rotation">
-                </div>
-                
-                <div class="action-buttons">
-                    <button class="action-btn save-btn" id="buy-btn"><i class="fas fa-shopping-cart"></i> Find Similar Items</button>
-                    <button class="action-btn reset-btn" id="remove-btn"><i class="fas fa-trash"></i> Remove Item</button>
-                    <button class="action-btn save-btn" id="save-design-btn"><i class="fas fa-camera"></i> Save Snapshot</button>
-                </div>
-                
-                <div class="property-group" style="margin-top: 30px;">
-                    <label class="property-label">Share Your Design</label>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="action-btn save-btn" style="flex: 1;"><i class="fas fa-link"></i> Copy Link</button>
-                        <button class="action-btn save-btn" style="flex: 1;"><i class="fas fa-download"></i> Export</button>
-                    </div>
-                </div>
-            </div>
+        <div class="background-stars" id="background-stars"></div>
+        <canvas id="constellationCanvas"></canvas>
+        
+        <div class="tooltip" id="starTooltip"></div>
+        
+        <div class="controls">
+            <button id="clearBtn">Clear Constellation</button>
+            <button id="toggleInstructionsBtn">Toggle Instructions</button>
         </div>
         
-        <footer>
-            <p>© 2023 RoomStager | Virtual Staging Assistant</p>
-            <p>Design and visualize your room with furniture. Drag, customize, and share your creations.</p>
-        </footer>
+        <div class="dialog" id="noteDialog">
+            <h2>What's this star about?</h2>
+            <textarea id="noteInput" placeholder="Record a memory, a thought, or a wish..."></textarea>
+            <div class="dialog-buttons">
+                <button id="cancelNoteBtn">Cancel</button>
+                <button id="saveNoteBtn">Save</button>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Main application
         document.addEventListener('DOMContentLoaded', function() {
-            const room = document.getElementById('room');
-            const toolItems = document.querySelectorAll('.tool-item');
-            const colorOptions = document.querySelectorAll('.color-option');
-            const roomTypes = document.querySelectorAll('.room-type');
-            let selectedItem = null;
-            let isDragging = false;
-            let startX, startY, initialX, initialY;
+            // Get DOM elements
+            const canvas = document.getElementById('constellationCanvas');
+            const ctx = canvas.getContext('2d');
+            const tooltip = document.getElementById('starTooltip');
+            const noteDialog = document.getElementById('noteDialog');
+            const noteInput = document.getElementById('noteInput');
+            const saveNoteBtn = document.getElementById('saveNoteBtn');
+            const cancelNoteBtn = document.getElementById('cancelNoteBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const toggleInstructionsBtn = document.getElementById('toggleInstructionsBtn');
+            const instructions = document.querySelector('.instructions');
+            const backgroundStars = document.getElementById('background-stars');
             
-            // Add tool items to room
-            toolItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    const type = this.getAttribute('data-type');
-                    addFurnitureToRoom(type);
-                });
-            });
+            // Set canvas size
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                drawConstellation();
+            }
             
-            // Room type selection
-            roomTypes.forEach(roomType => {
-                roomType.addEventListener('click', function() {
-                    roomTypes.forEach(rt => rt.classList.remove('active'));
-                    this.classList.add('active');
-                    resetRoom();
-                });
-            });
-            
-            // Color selection
-            colorOptions.forEach(color => {
-                color.addEventListener('click', function() {
-                    colorOptions.forEach(c => c.classList.remove('selected-color'));
-                    this.classList.add('selected-color');
+            // Create background stars
+            function createBackgroundStars() {
+                // Clear existing stars
+                backgroundStars.innerHTML = '';
+                
+                // Create new stars
+                const starCount = Math.floor((window.innerWidth * window.innerHeight) / 1000);
+                
+                for (let i = 0; i < starCount; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
                     
-                    if (selectedItem) {
-                        const colorValue = this.getAttribute('data-color');
-                        selectedItem.style.backgroundColor = colorValue + '33'; // Add transparency
-                        selectedItem.querySelector('.tool-item-icon').style.color = colorValue;
-                    }
-                });
+                    // Random position
+                    const left = Math.random() * 100;
+                    const top = Math.random() * 100;
+                    
+                    // Random size (0.5px to 2px)
+                    const size = Math.random() * 1.5 + 0.5;
+                    
+                    // Random delay for twinkling
+                    const delay = Math.random() * 4;
+                    
+                    star.style.left = `${left}%`;
+                    star.style.top = `${top}%`;
+                    star.style.width = `${size}px`;
+                    star.style.height = `${size}px`;
+                    star.style.animationDelay = `${delay}s`;
+                    
+                    backgroundStars.appendChild(star);
+                }
+            }
+            
+            // Initialize stars array
+            let stars = [];
+            
+            // Load stars from localStorage
+            function loadStars() {
+                const savedStars = localStorage.getItem('constellationStars');
+                if (savedStars) {
+                    stars = JSON.parse(savedStars);
+                    drawConstellation();
+                }
+            }
+            
+            // Save stars to localStorage
+            function saveStars() {
+                localStorage.setItem('constellationStars', JSON.stringify(stars));
+            }
+            
+            // Current star being added
+            let currentStar = null;
+            
+            // Draw the entire constellation
+            function drawConstellation() {
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw connecting lines
+                ctx.beginPath();
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = 'rgba(180, 200, 255, 0.4)';
+                
+                for (let i = 1; i < stars.length; i++) {
+                    ctx.moveTo(stars[i-1].x, stars[i-1].y);
+                    ctx.lineTo(stars[i].x, stars[i].y);
+                }
+                
+                ctx.stroke();
+                
+                // Draw stars
+                for (let i = 0; i < stars.length; i++) {
+                    const star = stars[i];
+                    
+                    // Draw glow
+                    const gradient = ctx.createRadialGradient(
+                        star.x, star.y, 0, 
+                        star.x, star.y, 20
+                    );
+                    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                    gradient.addColorStop(0.2, 'rgba(200, 220, 255, 0.4)');
+                    gradient.addColorStop(1, 'rgba(100, 150, 255, 0)');
+                    
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, 20, 0, Math.PI * 2);
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                    
+                    // Draw star core
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fill();
+                    
+                    // Draw highlight
+                    ctx.beginPath();
+                    ctx.arc(star.x - 1, star.y - 1, 1, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.fill();
+                }
+            }
+            
+            // Show tooltip with star note
+            function showTooltip(star, x, y) {
+                tooltip.textContent = star.note;
+                tooltip.style.left = `${x + 15}px`;
+                tooltip.style.top = `${y + 15}px`;
+                tooltip.style.opacity = 1;
+            }
+            
+            // Hide tooltip
+            function hideTooltip() {
+                tooltip.style.opacity = 0;
+            }
+            
+            // Show note dialog
+            function showNoteDialog(x, y) {
+                currentStar = { x, y, note: '' };
+                noteInput.value = '';
+                noteDialog.style.display = 'block';
+            }
+            
+            // Hide note dialog
+            function hideNoteDialog() {
+                noteDialog.style.display = 'none';
+                currentStar = null;
+            }
+            
+            // Add a new star
+            function addStar(star) {
+                stars.push(star);
+                saveStars();
+                drawConstellation();
+            }
+            
+            // Clear all stars
+            function clearStars() {
+                if (confirm('Are you sure you want to clear your constellation? This cannot be undone.')) {
+                    stars = [];
+                    saveStars();
+                    drawConstellation();
+                }
+            }
+            
+            // Event listeners
+            canvas.addEventListener('click', function(e) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                showNoteDialog(x, y);
             });
             
-            // Dimension inputs
-            const widthInput = document.getElementById('item-width');
-            const heightInput = document.getElementById('item-height');
-            const rotationInput = document.getElementById('item-rotation');
-            
-            widthInput.addEventListener('input', updateSelectedItemDimensions);
-            heightInput.addEventListener('input', updateSelectedItemDimensions);
-            rotationInput.addEventListener('input', updateSelectedItemDimensions);
-            
-            // Action buttons
-            document.getElementById('remove-btn').addEventListener('click', removeSelectedItem);
-            document.getElementById('buy-btn').addEventListener('click', findSimilarItems);
-            document.getElementById('save-design-btn').addEventListener('click', saveDesign);
-            
-            // Function to add furniture to room
-            function addFurnitureToRoom(type) {
-                const furnitureItem = document.createElement('div');
-                furnitureItem.className = 'furniture-item';
-                furnitureItem.setAttribute('data-type', type);
+            canvas.addEventListener('mousemove', function(e) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
                 
-                // Set initial position in the center of the room
-                const roomRect = room.getBoundingClientRect();
-                furnitureItem.style.left = '50%';
-                furnitureItem.style.top = '50%';
-                furnitureItem.style.transform = 'translate(-50%, -50%)';
+                // Check if hovering over a star
+                let hovering = false;
                 
-                // Set default size based on type
-                let width, height;
-                switch(type) {
-                    case 'sofa': width = 180; height = 80; break;
-                    case 'chair': width = 80; height = 80; break;
-                    case 'table': width = 120; height = 120; break;
-                    case 'bed': width = 180; height = 120; break;
-                    case 'rug': width = 200; height = 140; break;
-                    case 'lamp': width = 60; height = 100; break;
-                    case 'plant': width = 70; height = 100; break;
-                    case 'art': width = 100; height = 120; break;
+                for (let i = 0; i < stars.length; i++) {
+                    const star = stars[i];
+                    const distance = Math.sqrt(Math.pow(star.x - x, 2) + Math.pow(star.y - y, 2));
+                    
+                    if (distance < 10) {
+                        showTooltip(star, e.clientX, e.clientY);
+                        hovering = true;
+                        break;
+                    }
                 }
                 
-                furnitureItem.style.width = width + 'px';
-                furnitureItem.style.height = height + 'px';
-                
-                // Add icon
-                const icon = document.createElement('div');
-                icon.className = 'tool-item-icon';
-                
-                switch(type) {
-                    case 'sofa': icon.innerHTML = '<i class="fas fa-couch"></i>'; break;
-                    case 'chair': icon.innerHTML = '<i class="fas fa-chair"></i>'; break;
-                    case 'table': icon.innerHTML = '<i class="fas fa-utensils"></i>'; break;
-                    case 'bed': icon.innerHTML = '<i class="fas fa-bed"></i>'; break;
-                    case 'rug': icon.innerHTML = '<i class="fas fa-square"></i>'; break;
-                    case 'lamp': icon.innerHTML = '<i class="fas fa-lightbulb"></i>'; break;
-                    case 'plant': icon.innerHTML = '<i class="fas fa-leaf"></i>'; break;
-                    case 'art': icon.innerHTML = '<i class="fas fa-image"></i>'; break;
+                if (!hovering) {
+                    hideTooltip();
                 }
-                
-                furnitureItem.appendChild(icon);
-                
-                // Add event listeners
-                furnitureItem.addEventListener('mousedown', startDragging);
-                furnitureItem.addEventListener('click', selectItem);
-                
-                room.appendChild(furnitureItem);
-                selectItem({currentTarget: furnitureItem});
-            }
+            });
             
-            // Function to select an item
-            function selectItem(e) {
-                // Remove previous selection
-                const allItems = document.querySelectorAll('.furniture-item');
-                allItems.forEach(i => i.classList.remove('selected'));
-                
-                // Select new item
-                selectedItem = e.currentTarget;
-                selectedItem.classList.add('selected');
-                
-                // Update properties panel
-                document.getElementById('selected-item-name').value = selectedItem.getAttribute('data-type');
-                
-                // Update dimension inputs
-                document.getElementById('item-width').value = parseInt(selectedItem.style.width);
-                document.getElementById('item-height').value = parseInt(selectedItem.style.height);
-            }
+            canvas.addEventListener('mouseleave', hideTooltip);
             
-            // Function to start dragging
-            function startDragging(e) {
-                isDragging = true;
-                selectedItem = e.currentTarget;
-                selectItem(e);
-                
-                startX = e.clientX;
-                startY = e.clientY;
-                
-                initialX = parseInt(selectedItem.style.left || '50');
-                initialY = parseInt(selectedItem.style.top || '50');
-                
-                document.addEventListener('mousemove', dragItem);
-                document.addEventListener('mouseup', stopDragging);
-                
-                e.preventDefault();
-            }
-            
-            // Function to drag item
-            function dragItem(e) {
-                if (!isDragging) return;
-                
-                const dx = e.clientX - startX;
-                const dy = e.clientY - startY;
-                
-                selectedItem.style.left = (initialX + dx) + 'px';
-                selectedItem.style.top = (initialY + dy) + 'px';
-            }
-            
-            // Function to stop dragging
-            function stopDragging() {
-                isDragging = false;
-                document.removeEventListener('mousemove', dragItem);
-                document.removeEventListener('mouseup', stopDragging);
-            }
-            
-            // Function to update item dimensions
-            function updateSelectedItemDimensions() {
-                if (!selectedItem) return;
-                
-                const width = document.getElementById('item-width').value;
-                const height = document.getElementById('item-height').value;
-                const rotation = document.getElementById('item-rotation').value;
-                
-                if (width) selectedItem.style.width = width + 'px';
-                if (height) selectedItem.style.height = height + 'px';
-                selectedItem.style.transform = `rotate(${rotation}deg)`;
-            }
-            
-            // Function to remove selected item
-            function removeSelectedItem() {
-                if (selectedItem) {
-                    selectedItem.remove();
-                    selectedItem = null;
-                    document.getElementById('selected-item-name').value = 'None';
+            saveNoteBtn.addEventListener('click', function() {
+                if (currentStar) {
+                    currentStar.note = noteInput.value.trim() || 'A special moment...';
+                    addStar(currentStar);
+                    hideNoteDialog();
                 }
-            }
+            });
             
-            // Function to find similar items (simulated)
-            function findSimilarItems() {
-                if (selectedItem) {
-                    alert(`Searching for ${selectedItem.getAttribute('data-type')} items from our partners...`);
-                } else {
-                    alert('Please select an item first');
-                }
-            }
+            cancelNoteBtn.addEventListener('click', hideNoteDialog);
             
-            // Function to save design (simulated)
-            function saveDesign() {
-                alert('Design snapshot saved!');
-            }
+            clearBtn.addEventListener('click', clearStars);
             
-            // Function to reset room
-            function resetRoom() {
-                const furnitureItems = document.querySelectorAll('.furniture-item');
-                furnitureItems.forEach(item => item.remove());
-                selectedItem = null;
-                document.getElementById('selected-item-name').value = 'None';
-            }
+            toggleInstructionsBtn.addEventListener('click', function() {
+                instructions.style.display = instructions.style.display === 'none' ? 'block' : 'none';
+            });
             
-            // Add some initial furniture for demonstration
-            setTimeout(() => {
-                addFurnitureToRoom('sofa');
-                addFurnitureToRoom('table');
-                addFurnitureToRoom('chair');
-            }, 500);
+            window.addEventListener('resize', function() {
+                resizeCanvas();
+                createBackgroundStars();
+            });
+            
+            // Initialize
+            resizeCanvas();
+            createBackgroundStars();
+            loadStars();
+            
+            // Draw initial constellation if stars were loaded
+            drawConstellation();
         });
     </script>
 </body>
