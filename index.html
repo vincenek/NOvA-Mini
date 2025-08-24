@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Algorithm Transparency Lens</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #2563eb;
@@ -116,7 +115,7 @@
         }
 
         textarea {
-            width: 100%;
+            width: 100;
             min-height: 220px;
             padding: 20px;
             border: 2px solid var(--border);
@@ -321,17 +320,14 @@
 
         .engagement-bias {
             background: var(--engagement);
-            width: 75%;
         }
 
         .profit-bias {
             background: var(--profit);
-            width: 60%;
         }
 
         .political-bias {
             background: var(--political);
-            width: 45%;
         }
 
         .tooltip {
@@ -432,6 +428,34 @@
             cursor: pointer;
             text-decoration: underline;
         }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .analysis-detail {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+        
+        .word-count {
+            font-size: 0.9rem;
+            color: var(--secondary);
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -469,21 +493,23 @@
                 <div class="metrics">
                     <div class="metric">
                         <div class="metric-label">Manipulation Score</div>
-                        <div class="metric-value">72%</div>
+                        <div class="metric-value" id="manipulation-score">0%</div>
                     </div>
                     <div class="metric">
                         <div class="metric-label">Bias Detected</div>
-                        <div class="metric-value">High</div>
+                        <div class="metric-value" id="bias-level">None</div>
                     </div>
                     <div class="metric">
                         <div class="metric-label">Emotional Language</div>
-                        <div class="metric-value">64%</div>
+                        <div class="metric-value" id="emotional-score">0%</div>
                     </div>
                     <div class="metric">
                         <div class="metric-label">Ad Density</div>
-                        <div class="metric-value">28%</div>
+                        <div class="metric-value" id="ad-density">0%</div>
                     </div>
                 </div>
+                
+                <div class="word-count" id="word-count">Words: 0 | Characters: 0</div>
             </div>
             
             <div class="card">
@@ -506,42 +532,42 @@
                 <div class="tab-content" id="analysis-tab">
                     <div class="panel-content">
                         <h3>Text Analysis</h3>
-                        <p>This content appears to have a <strong>high manipulation score</strong> with significant engagement optimization.</p>
+                        <p id="analysis-summary">No analysis performed yet. Select a bias type to analyze your text.</p>
                         
                         <div class="stats-container">
                             <div class="stat">
-                                <div class="stat-value">87%</div>
+                                <div class="stat-value" id="emotional-impact">0%</div>
                                 <div class="stat-label">Emotional Impact</div>
                             </div>
                             <div class="stat">
-                                <div class="stat-value">23%</div>
+                                <div class="stat-value" id="ad-content">0%</div>
                                 <div class="stat-label">Ad Content</div>
                             </div>
                             <div class="stat">
-                                <div class="stat-value">64%</div>
+                                <div class="stat-value" id="persuasion-score">0%</div>
                                 <div class="stat-label">Persuasion Score</div>
                             </div>
                         </div>
                         
                         <h4>Bias Indicators</h4>
-                        <p>Engagement Bias: <span class="tooltip">75%<span class="tooltiptext">Emotional language and sensationalism</span></span></p>
+                        <p>Engagement Bias: <span class="tooltip" id="engagement-bias-value">0%<span class="tooltiptext">Emotional language and sensationalism</span></span></p>
                         <div class="bias-indicator">
-                            <div class="bias-value engagement-bias"></div>
+                            <div class="bias-value engagement-bias" id="engagement-bias-bar" style="width: 0%"></div>
                         </div>
                         
-                        <p>Profit Bias: <span class="tooltip">60%<span class="tooltiptext">Commercial language and advertising cues</span></span></p>
+                        <p>Profit Bias: <span class="tooltip" id="profit-bias-value">0%<span class="tooltiptext">Commercial language and advertising cues</span></span></p>
                         <div class="bias-indicator">
-                            <div class="bias-value profit-bias"></div>
+                            <div class="bias-value profit-bias" id="profit-bias-bar" style="width: 0%"></div>
                         </div>
                         
-                        <p>Political Bias: <span class="tooltip">45%<span class="tooltiptext">Ideological framing and partisan language</span></span></p>
+                        <p>Political Bias: <span class="tooltip" id="political-bias-value">0%<span class="tooltiptext">Ideological framing and partisan language</span></span></p>
                         <div class="bias-indicator">
-                            <div class="bias-value political-bias"></div>
+                            <div class="bias-value political-bias" id="political-bias-bar" style="width: 0%"></div>
                         </div>
                         
                         <div class="analysis-result">
                             <h4>Recommendation</h4>
-                            <p>This content shows signs of significant algorithmic manipulation. Consider seeking additional perspectives on this topic.</p>
+                            <p id="recommendation-text">Submit text for analysis to receive recommendations.</p>
                         </div>
                     </div>
                 </div>
@@ -549,27 +575,17 @@
                 <div class="tab-content" id="comparison-tab">
                     <div class="panel-content">
                         <h3>Comparison with Original</h3>
-                        <p>The algorithm has made several significant changes to the original text:</p>
+                        <p id="comparison-summary">No comparison data available yet.</p>
                         
                         <div class="highlight-box">
                             <h4>Changes Detected</h4>
-                            <ul>
-                                <li>Added emotional language to increase engagement</li>
-                                <li>Inserted commercial elements for monetization</li>
-                                <li>Amplified certain political perspectives</li>
-                                <li>Shortened sentences for better readability</li>
-                                <li>Added calls-to-action to keep users engaged</li>
+                            <ul id="changes-list">
+                                <li>No changes detected yet</li>
                             </ul>
                         </div>
                         
                         <h4>Impact Assessment</h4>
-                        <p>These changes may influence readers by:</p>
-                        <ul>
-                            <li>Increasing emotional response to content</li>
-                            <li>Creating a sense of urgency or importance</li>
-                            <li>Steering opinion in particular directions</li>
-                            <li>Encouraging more time on platform</li>
-                        </ul>
+                        <p id="impact-assessment">Submit text for analysis to see potential impacts.</p>
                     </div>
                 </div>
             </div>
@@ -581,15 +597,15 @@
             </div>
             <div class="stats-container">
                 <div class="stat">
-                    <div class="stat-value">72%</div>
+                    <div class="stat-value" id="users-affected">0%</div>
                     <div class="stat-label">Users Affected</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-value">43%</div>
+                    <div class="stat-value" id="behavior-change">0%</div>
                     <div class="stat-label">Behavior Change</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-value">68%</div>
+                    <div class="stat-value" id="revenue-impact">0%</div>
                     <div class="stat-label">Revenue Impact</div>
                 </div>
             </div>
@@ -615,6 +631,17 @@
             const tabs = document.querySelectorAll('.tab');
             const tabContents = document.querySelectorAll('.tab-content');
             
+            // Word count update
+            function updateWordCount() {
+                const text = inputTextarea.value;
+                const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+                const charCount = text.length;
+                document.getElementById('word-count').textContent = `Words: ${wordCount} | Characters: ${charCount}`;
+            }
+            
+            inputTextarea.addEventListener('input', updateWordCount);
+            updateWordCount();
+            
             // Tab functionality
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
@@ -630,69 +657,223 @@
                 });
             });
             
+            // Text analysis functions
+            function analyzeEmotionalWords(text) {
+                const emotionalWords = [
+                    'good', 'bad', 'nice', 'happy', 'sad', 'like', 'dislike', 'okay', 
+                    'interesting', 'fun', 'important', 'big', 'small', 'many', 'help', 
+                    'problem', 'change', 'people', 'great', 'terrible', 'awesome', 
+                    'horrible', 'love', 'hate', 'wonderful', 'awful', 'amazing', 
+                    'disappointing', 'exciting', 'boring'
+                ];
+                
+                let emotionalCount = 0;
+                const words = text.toLowerCase().split(/\s+/);
+                
+                words.forEach(word => {
+                    if (emotionalWords.includes(word.replace(/[^\w]/g, ''))) {
+                        emotionalCount++;
+                    }
+                });
+                
+                return {
+                    count: emotionalCount,
+                    percentage: Math.min(100, Math.round((emotionalCount / words.length) * 100))
+                };
+            }
+            
+            function detectBiases(text) {
+                // Engagement bias detection
+                const engagementPatterns = [
+                    /(!{2,})/g, // Multiple exclamation marks
+                    /([A-Z]{4,})/g, // ALL CAPS words
+                    /(?:^|\s)(#\w+)/g, // Hashtags
+                    /(?:^|\s)(@\w+)/g, // Mentions
+                    /\b(?:shocking|secret|warning|alert|breaking|urgent)\b/gi // Sensational words
+                ];
+                
+                // Profit bias detection
+                const profitPatterns = [
+                    /\b(?:buy|purchase|order|shop|deal|sale|discount|offer|limited|free|sponsored|ad|promotion)\b/gi,
+                    /\$\d+/g, // Dollar amounts
+                    /%\s*off/gi // Percentage off
+                ];
+                
+                // Political bias detection
+                const politicalPatterns = [
+                    /\b(?:left|right|liberal|conservative|democrat|republican|socialist|capitalist|woke|patriot)\b/gi,
+                    /\b(?:agenda|narrative|elite|establishment|mainstream|radical|extremist)\b/gi
+                ];
+                
+                let engagementScore = 0;
+                let profitScore = 0;
+                let politicalScore = 0;
+                
+                // Calculate scores based on pattern matches
+                engagementPatterns.forEach(pattern => {
+                    const matches = text.match(pattern);
+                    if (matches) engagementScore += matches.length * 5;
+                });
+                
+                profitPatterns.forEach(pattern => {
+                    const matches = text.match(pattern);
+                    if (matches) profitScore += matches.length * 7;
+                });
+                
+                politicalPatterns.forEach(pattern => {
+                    const matches = text.match(pattern);
+                    if (matches) politicalScore += matches.length * 6;
+                });
+                
+                // Cap scores at 100
+                return {
+                    engagement: Math.min(100, engagementScore),
+                    profit: Math.min(100, profitScore),
+                    political: Math.min(100, politicalScore)
+                };
+            }
+            
+            function updateMetrics(biases, emotionalAnalysis) {
+                // Update main metrics
+                document.getElementById('manipulation-score').textContent = 
+                    `${Math.max(biases.engagement, biases.profit, biases.political)}%`;
+                
+                const maxBias = Math.max(biases.engagement, biases.profit, biases.political);
+                document.getElementById('bias-level').textContent = 
+                    maxBias > 60 ? 'High' : maxBias > 30 ? 'Medium' : maxBias > 10 ? 'Low' : 'None';
+                
+                document.getElementById('emotional-score').textContent = `${emotionalAnalysis.percentage}%`;
+                document.getElementById('ad-density').textContent = `${Math.round(biases.profit / 1.5)}%`;
+                
+                // Update analysis tab metrics
+                document.getElementById('emotional-impact').textContent = `${emotionalAnalysis.percentage}%`;
+                document.getElementById('ad-content').textContent = `${Math.round(biases.profit / 1.5)}%`;
+                document.getElementById('persuasion-score').textContent = `${Math.round((biases.engagement + biases.profit + biases.political) / 3)}%`;
+                
+                // Update bias indicators
+                document.getElementById('engagement-bias-value').textContent = `${biases.engagement}%`;
+                document.getElementById('engagement-bias-bar').style.width = `${biases.engagement}%`;
+                
+                document.getElementById('profit-bias-value').textContent = `${biases.profit}%`;
+                document.getElementById('profit-bias-bar').style.width = `${biases.profit}%`;
+                
+                document.getElementById('political-bias-value').textContent = `${biases.political}%`;
+                document.getElementById('political-bias-bar').style.width = `${biases.political}%`;
+                
+                // Update impact metrics
+                document.getElementById('users-affected').textContent = `${Math.min(100, Math.round(biases.engagement * 0.8))}%`;
+                document.getElementById('behavior-change').textContent = `${Math.min(100, Math.round((biases.engagement + biases.political) * 0.6))}%`;
+                document.getElementById('revenue-impact').textContent = `${Math.min(100, Math.round(biases.profit * 1.2))}%`;
+                
+                // Update recommendation
+                const maxBiasType = biases.engagement > biases.profit ? 
+                    (biases.engagement > biases.political ? 'engagement' : 'political') :
+                    (biases.profit > biases.political ? 'profit' : 'political');
+                
+                let recommendation = '';
+                if (maxBias > 60) {
+                    recommendation = `This content shows strong ${maxBiasType} bias. Consider seeking alternative perspectives on this topic.`;
+                } else if (maxBias > 30) {
+                    recommendation = `This content shows moderate ${maxBiasType} bias. Be aware of potential manipulation techniques.`;
+                } else if (maxBias > 10) {
+                    recommendation = `This content shows slight ${maxBiasType} bias. Stay critical of the information presented.`;
+                } else {
+                    recommendation = 'This content appears relatively neutral. Still, maintain healthy skepticism about all information sources.';
+                }
+                
+                document.getElementById('recommendation-text').textContent = recommendation;
+                document.getElementById('analysis-summary').textContent = 
+                    `This content analysis reveals ${maxBias > 60 ? 'strong' : maxBias > 30 ? 'moderate' : 'minimal'} algorithmic manipulation.`;
+            }
+            
             // Engagement Bias transformation
             engagementBtn.addEventListener('click', function() {
                 const text = inputTextarea.value;
                 if (!text) return;
                 
-                let output = text;
+                // Show loading state
+                outputTextDiv.innerHTML = '<p><span class="loading"></span> Analyzing text for engagement bias...</p>';
                 
-                // Replace emotional words with more intense versions
-                const emotionalWords = {
-                    'good': 'AMAZING',
-                    'bad': 'TERRIBLE',
-                    'nice': 'INCREDIBLE',
-                    'happy': 'ECSTATIC',
-                    'sad': 'DEVASTATED',
-                    'like': 'ABSOLUTELY LOVE',
-                    'dislike': 'ABHOR',
-                    'okay': 'SPECTACULAR',
-                    'interesting': 'MIND-BLOWING',
-                    'fun': 'UNFORGETTABLE',
-                    'important': 'CRUCIAL',
-                    'big': 'MASSIVE',
-                    'small': 'TINY',
-                    'many': 'A TON OF',
-                    'help': 'SAVE',
-                    'problem': 'DISASTER',
-                    'change': 'REVOLUTIONIZE',
-                    'people': 'EVERYONE'
-                };
-                
-                for (const [key, value] of Object.entries(emotionalWords)) {
-                    const regex = new RegExp(`\\b${key}\\b`, 'gi');
-                    output = output.replace(regex, `<span class="manipulative">${value}</span>`);
-                }
-                
-                // Add random emojis
-                const emojis = ['🔥', '😱', '💥', '🤯', '❤️', '👀', '🚨', '✨', '👍', '👎', '😍', '⚡'];
-                const words = output.split(' ');
-                let emojiCount = 0;
-                
-                for (let i = 0; i < words.length; i++) {
-                    // Add emoji after every 5-8 words
-                    if (Math.random() < 0.12 && emojiCount < 8) {
-                        const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-                        words[i] = words[i] + ` <span class="manipulative">${randomEmoji}</span>`;
-                        emojiCount++;
+                // Simulate processing time
+                setTimeout(() => {
+                    let output = text;
+                    
+                    // Replace emotional words with more intense versions
+                    const emotionalWords = {
+                        'good': 'AMAZING',
+                        'bad': 'TERRIBLE',
+                        'nice': 'INCREDIBLE',
+                        'happy': 'ECSTATIC',
+                        'sad': 'DEVASTATED',
+                        'like': 'ABSOLUTELY LOVE',
+                        'dislike': 'ABHOR',
+                        'okay': 'SPECTACULAR',
+                        'interesting': 'MIND-BLOWING',
+                        'fun': 'UNFORGETTABLE',
+                        'important': 'CRUCIAL',
+                        'big': 'MASSIVE',
+                        'small': 'TINY',
+                        'many': 'A TON OF',
+                        'help': 'SAVE',
+                        'problem': 'DISASTER',
+                        'change': 'REVOLUTIONIZE',
+                        'people': 'EVERYONE'
+                    };
+                    
+                    for (const [key, value] of Object.entries(emotionalWords)) {
+                        const regex = new RegExp(`\\b${key}\\b`, 'gi');
+                        output = output.replace(regex, `<span class="manipulative">${value}</span>`);
                     }
-                }
-                
-                output = words.join(' ');
-                
-                // Add a sensational headline
-                output = `<h3 style="color: var(--engagement); margin-bottom: 15px;">YOU WON'T BELIEVE How Algorithms Are Manipulating You! 😱</h3>` + output;
-                
-                // Add a call to action
-                output += `<p style="margin-top: 20px; font-weight: bold;" class="manipulative">SHARE this if you think everyone needs to know about this! 👆</p>`;
-                
-                outputTextDiv.innerHTML = output;
-                
-                // Switch to output tab
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                tabs[0].classList.add('active');
-                tabContents[0].classList.add('active');
+                    
+                    // Add random emojis
+                    const emojis = ['🔥', '😱', '💥', '🤯', '❤️', '👀', '🚨', '✨', '👍', '👎', '😍', '⚡'];
+                    const words = output.split(' ');
+                    let emojiCount = 0;
+                    
+                    for (let i = 0; i < words.length; i++) {
+                        // Add emoji after every 5-8 words
+                        if (Math.random() < 0.12 && emojiCount < 8) {
+                            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                            words[i] = words[i] + ` <span class="manipulative">${randomEmoji}</span>`;
+                            emojiCount++;
+                        }
+                    }
+                    
+                    output = words.join(' ');
+                    
+                    // Add a sensational headline
+                    output = `<h3 style="color: var(--engagement); margin-bottom: 15px;">YOU WON'T BELIEVE How Algorithms Are Manipulating You! 😱</h3>` + output;
+                    
+                    // Add a call to action
+                    output += `<p style="margin-top: 20px; font-weight: bold;" class="manipulative">SHARE this if you think everyone needs to know about this! 👆</p>`;
+                    
+                    outputTextDiv.innerHTML = output;
+                    
+                    // Analyze the text
+                    const emotionalAnalysis = analyzeEmotionalWords(text);
+                    const biases = detectBiases(output);
+                    updateMetrics(biases, emotionalAnalysis);
+                    
+                    // Update comparison tab
+                    document.getElementById('comparison-summary').textContent = 
+                        "The algorithm has enhanced emotional language and added engagement hooks to increase user interaction.";
+                    
+                    document.getElementById('changes-list').innerHTML = `
+                        <li>Amplified emotional language with more intense words</li>
+                        <li>Added emojis to increase emotional response</li>
+                        <li>Included a sensational headline to grab attention</li>
+                        <li>Added a call-to-action to encourage sharing</li>
+                    `;
+                    
+                    document.getElementById('impact-assessment').textContent = 
+                        "These changes are designed to trigger emotional responses, increase time spent on platform, and encourage sharing - all key engagement metrics that drive advertising revenue.";
+                    
+                    // Switch to output tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    tabs[0].classList.add('active');
+                    tabContents[0].classList.add('active');
+                }, 800);
             });
             
             // Profit Bias transformation
@@ -700,50 +881,75 @@
                 const text = inputTextarea.value;
                 if (!text) return;
                 
-                const words = text.split(' ');
-                const adPhrases = [
-                    '<span class="ad-highlight">- Sponsored by BetterTech</span>',
-                    '<span class="ad-highlight">Buy Now!</span>',
-                    '<span class="ad-highlight">Limited Offer!</span>',
-                    '<span class="ad-highlight">Sale ends soon!</span>',
-                    '<span class="ad-highlight">Click here to learn more!</span>',
-                    '<span class="ad-highlight">Discount code: SAVE20</span>',
-                    '<span class="ad-highlight">FREE shipping on orders over $50!</span>',
-                    '<span class="ad-highlight">Recommended just for YOU!</span>'
-                ];
+                // Show loading state
+                outputTextDiv.innerHTML = '<p><span class="loading"></span> Analyzing text for profit bias...</p>';
                 
-                let outputWords = [];
-                let adCount = 0;
-                
-                for (let i = 0; i < words.length; i++) {
-                    outputWords.push(words[i]);
+                // Simulate processing time
+                setTimeout(() => {
+                    const words = text.split(' ');
+                    const adPhrases = [
+                        '<span class="ad-highlight">- Sponsored by BetterTech</span>',
+                        '<span class="ad-highlight">Buy Now!</span>',
+                        '<span class="ad-highlight">Limited Offer!</span>',
+                        '<span class="ad-highlight">Sale ends soon!</span>',
+                        '<span class="ad-highlight">Click here to learn more!</span>',
+                        '<span class="ad-highlight">Discount code: SAVE20</span>',
+                        '<span class="ad-highlight">FREE shipping on orders over $50!</span>',
+                        '<span class="ad-highlight">Recommended just for YOU!</span>'
+                    ];
                     
-                    // Add ad phrase after every 8-12 words, but no more than 5 ads
-                    if (i % Math.floor(Math.random() * 5 + 8) === 0 && adCount < 5) {
-                        const randomAd = adPhrases[Math.floor(Math.random() * adPhrases.length)];
-                        outputWords.push(randomAd);
-                        adCount++;
+                    let outputWords = [];
+                    let adCount = 0;
+                    
+                    for (let i = 0; i < words.length; i++) {
+                        outputWords.push(words[i]);
+                        
+                        // Add ad phrase after every 8-12 words, but no more than 5 ads
+                        if (i % Math.floor(Math.random() * 5 + 8) === 0 && adCount < 5) {
+                            const randomAd = adPhrases[Math.floor(Math.random() * adPhrases.length)];
+                            outputWords.push(randomAd);
+                            adCount++;
+                        }
                     }
-                }
-                
-                let output = outputWords.join(' ');
-                
-                // Add a sponsored message at the beginning
-                output = `<p class="ad-highlight">This content is sponsored by SocialMediaPro - The #1 Tool for Content Creators!</p>` + output;
-                
-                // Add a product recommendation at the end
-                output += `<div style="margin-top: 20px; padding: 15px; background: var(--lighter); border-radius: 10px; border-left: 4px solid var(--profit);">
-                    <h4>Recommended for You</h4>
-                    <p>Try <span class="ad-highlight">AdFree Experience</span> - browse without annoying ads for just $4.99/month!</p>
-                </div>`;
-                
-                outputTextDiv.innerHTML = output;
-                
-                // Switch to output tab
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                tabs[0].classList.add('active');
-                tabContents[0].classList.add('active');
+                    
+                    let output = outputWords.join(' ');
+                    
+                    // Add a sponsored message at the beginning
+                    output = `<p class="ad-highlight">This content is sponsored by SocialMediaPro - The #1 Tool for Content Creators!</p>` + output;
+                    
+                    // Add a product recommendation at the end
+                    output += `<div style="margin-top: 20px; padding: 15px; background: var(--lighter); border-radius: 10px; border-left: 4px solid var(--profit);">
+                        <h4>Recommended for You</h4>
+                        <p>Try <span class="ad-highlight">AdFree Experience</span> - browse without annoying ads for just $4.99/month!</p>
+                    </div>`;
+                    
+                    outputTextDiv.innerHTML = output;
+                    
+                    // Analyze the text
+                    const emotionalAnalysis = analyzeEmotionalWords(text);
+                    const biases = detectBiases(output);
+                    updateMetrics(biases, emotionalAnalysis);
+                    
+                    // Update comparison tab
+                    document.getElementById('comparison-summary').textContent = 
+                        "The algorithm has inserted advertising content and promotional messages to monetize user attention.";
+                    
+                    document.getElementById('changes-list').innerHTML = `
+                        <li>Added sponsored content disclosures</li>
+                        <li>Inserted promotional messages at strategic intervals</li>
+                        <li>Included targeted product recommendations</li>
+                        <li>Added urgency cues like "Limited Offer"</li>
+                    `;
+                    
+                    document.getElementById('impact-assessment').textContent = 
+                        "These changes are designed to convert user attention into revenue through sponsored content, affiliate marketing, and targeted advertising.";
+                    
+                    // Switch to output tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    tabs[0].classList.add('active');
+                    tabContents[0].classList.add('active');
+                }, 800);
             });
             
             // Political Bias transformation
@@ -751,79 +957,105 @@
                 const text = inputTextarea.value;
                 if (!text) return;
                 
-                let output = text;
+                // Show loading state
+                outputTextDiv.innerHTML = '<p><span class="loading"></span> Analyzing text for political bias...</p>';
                 
-                // Replace neutral terms with politically charged ones
-                const leftReplacements = {
-                    'people': 'the public',
-                    'taxes': 'fair share contributions',
-                    'business': 'corporate interests',
-                    'government': 'public institutions',
-                    'freedom': 'social justice',
-                    'rights': 'human rights',
-                    'economy': 'working class economy',
-                    'society': 'inclusive society',
-                    'individual': 'community',
-                    'company': 'multinational corporation'
-                };
-                
-                const rightReplacements = {
-                    'people': 'hardworking citizens',
-                    'taxes': 'government overreach',
-                    'business': 'job creators',
-                    'government': 'bureaucracy',
-                    'freedom': 'liberty',
-                    'rights': 'constitutional rights',
-                    'economy': 'free market economy',
-                    'society': 'traditional values',
-                    'individual': 'patriot',
-                    'company': 'American business'
-                };
-                
-                // Choose a random political leaning for this transformation
-                const isLeftLeaning = Math.random() > 0.5;
-                const replacements = isLeftLeaning ? leftReplacements : rightReplacements;
-                
-                for (const [key, value] of Object.entries(replacements)) {
-                    const regex = new RegExp(`\\b${key}\\b`, 'gi');
-                    output = output.replace(regex, `<span class="political">${value}</span>`);
-                }
-                
-                // Add slanting adjectives
-                const leftAdjectives = ['progressive', 'inclusive', 'diverse', 'equitable', 'socialist', 'woke', 'radical'];
-                const rightAdjectives = ['patriotic', 'traditional', 'conservative', 'free-market', 'nationalist', 'family-values', 'liberty-loving'];
-                
-                const adjectives = isLeftLeaning ? leftAdjectives : rightAdjectives;
-                const words = output.split(' ');
-                
-                for (let i = 0; i < words.length; i++) {
-                    // Add a political adjective before some nouns
-                    if (Math.random() < 0.1) {
-                        const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-                        words[i] = `<span class="political">${randomAdjective}</span> ` + words[i];
+                // Simulate processing time
+                setTimeout(() => {
+                    let output = text;
+                    
+                    // Replace neutral terms with politically charged ones
+                    const leftReplacements = {
+                        'people': 'the public',
+                        'taxes': 'fair share contributions',
+                        'business': 'corporate interests',
+                        'government': 'public institutions',
+                        'freedom': 'social justice',
+                        'rights': 'human rights',
+                        'economy': 'working class economy',
+                        'society': 'inclusive society',
+                        'individual': 'community',
+                        'company': 'multinational corporation'
+                    };
+                    
+                    const rightReplacements = {
+                        'people': 'hardworking citizens',
+                        'taxes': 'government overreach',
+                        'business': 'job creators',
+                        'government': 'bureaucracy',
+                        'freedom': 'liberty',
+                        'rights': 'constitutional rights',
+                        'economy': 'free market economy',
+                        'society': 'traditional values',
+                        'individual': 'patriot',
+                        'company': 'American business'
+                    };
+                    
+                    // Choose a random political leaning for this transformation
+                    const isLeftLeaning = Math.random() > 0.5;
+                    const replacements = isLeftLeaning ? leftReplacements : rightReplacements;
+                    
+                    for (const [key, value] of Object.entries(replacements)) {
+                        const regex = new RegExp(`\\b${key}\\b`, 'gi');
+                        output = output.replace(regex, `<span class="political">${value}</span>`);
                     }
-                }
-                
-                output = words.join(' ');
-                
-                // Add a biased framing
-                const leftFraming = `<blockquote style="border-left: 4px solid var(--political); padding-left: 15px; font-style: italic;">
-                    Experts agree that these changes will benefit working families.
-                </blockquote>`;
-                
-                const rightFraming = `<blockquote style="border-left: 4px solid var(--political); padding-left: 15px; font-style: italic;">
-                    Studies show that these policies will strengthen our economy.
-                </blockquote>`;
-                
-                output = output + (isLeftLeaning ? leftFraming : rightFraming);
-                
-                outputTextDiv.innerHTML = output;
-                
-                // Switch to output tab
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                tabs[0].classList.add('active');
-                tabContents[0].classList.add('active');
+                    
+                    // Add slanting adjectives
+                    const leftAdjectives = ['progressive', 'inclusive', 'diverse', 'equitable', 'socialist', 'woke', 'radical'];
+                    const rightAdjectives = ['patriotic', 'traditional', 'conservative', 'free-market', 'nationalist', 'family-values', 'liberty-loving'];
+                    
+                    const adjectives = isLeftLeaning ? leftAdjectives : rightAdjectives;
+                    const words = output.split(' ');
+                    
+                    for (let i = 0; i < words.length; i++) {
+                        // Add a political adjective before some nouns
+                        if (Math.random() < 0.1) {
+                            const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+                            words[i] = `<span class="political">${randomAdjective}</span> ` + words[i];
+                        }
+                    }
+                    
+                    output = words.join(' ');
+                    
+                    // Add a biased framing
+                    const leftFraming = `<blockquote style="border-left: 4px solid var(--political); padding-left: 15px; font-style: italic;">
+                        Experts agree that these changes will benefit working families.
+                    </blockquote>`;
+                    
+                    const rightFraming = `<blockquote style="border-left: 4px solid var(--political); padding-left: 15px; font-style: italic;">
+                        Studies show that these policies will strengthen our economy.
+                    </blockquote>`;
+                    
+                    output = output + (isLeftLeaning ? leftFraming : rightFraming);
+                    
+                    outputTextDiv.innerHTML = output;
+                    
+                    // Analyze the text
+                    const emotionalAnalysis = analyzeEmotionalWords(text);
+                    const biases = detectBiases(output);
+                    updateMetrics(biases, emotionalAnalysis);
+                    
+                    // Update comparison tab
+                    const biasDirection = isLeftLeaning ? "left-leaning" : "right-leaning";
+                    document.getElementById('comparison-summary').textContent = 
+                        `The algorithm has applied ${biasDirection} political framing to influence perception.`;
+                    
+                    document.getElementById('changes-list').innerHTML = `
+                        <li>Replaced neutral terms with politically charged alternatives</li>
+                        <li>Added ideological adjectives to shape perception</li>
+                        <li>Included a biased "expert" quote for authority</li>
+                        <li>Framed issues using ${biasDirection} terminology</li>
+                    `;
+                    
+                    document.getElementById('impact-assessment').textContent = 
+                        "These changes are designed to reinforce existing beliefs, create division, and keep users engaged through outrage or confirmation bias.";
+                    
+                    // Switch to output tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    tabs[0].classList.add('active');
+                    tabContents[0].classList.add('active');
+                }, 800);
             });
             
             // Neutral Output transformation
@@ -831,31 +1063,55 @@
                 const text = inputTextarea.value;
                 if (!text) return;
                 
-                let output = text;
+                // Show loading state
+                outputTextDiv.innerHTML = '<p><span class="loading"></span> Analyzing text for neutrality...</p>';
                 
-                // Highlight neutral/balanced words
-                const neutralWords = [
-                    'fair', 'neutral', 'equal', 'balanced', 'objective',
-                    'unbiased', 'moderate', 'reasonable', 'pragmatic', 'empirical',
-                    'evidence-based', 'factual', ' impartial', 'rational'
-                ];
-                
-                for (const word of neutralWords) {
-                    const regex = new RegExp(`\\b${word}\\b`, 'gi');
-                    output = output.replace(regex, `<span class="neutral">${word}</span>`);
-                }
-                
-                outputTextDiv.innerHTML = output;
-                
-                // Switch to output tab
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                tabs[0].classList.add('active');
-                tabContents[0].classList.add('active');
+                // Simulate processing time
+                setTimeout(() => {
+                    let output = text;
+                    
+                    // Highlight neutral/balanced words
+                    const neutralWords = [
+                        'fair', 'neutral', 'equal', 'balanced', 'objective',
+                        'unbiased', 'moderate', 'reasonable', 'pragmatic', 'empirical',
+                        'evidence-based', 'factual', 'impartial', 'rational'
+                    ];
+                    
+                    for (const word of neutralWords) {
+                        const regex = new RegExp(`\\b${word}\\b`, 'gi');
+                        output = output.replace(regex, `<span class="neutral">${word}</span>`);
+                    }
+                    
+                    outputTextDiv.innerHTML = output;
+                    
+                    // Analyze the text
+                    const emotionalAnalysis = analyzeEmotionalWords(text);
+                    const biases = detectBiases(text); // Use original text for neutral analysis
+                    updateMetrics(biases, emotionalAnalysis);
+                    
+                    // Update comparison tab
+                    document.getElementById('comparison-summary').textContent = 
+                        "This analysis highlights language that promotes balanced, objective discourse.";
+                    
+                    document.getElementById('changes-list').innerHTML = `
+                        <li>Highlighted neutral and objective language</li>
+                        <li>Identified balanced terminology</li>
+                        <li>Emphasized evidence-based phrasing</li>
+                    `;
+                    
+                    document.getElementById('impact-assessment').textContent = 
+                        "Neutral language promotes understanding and reduces polarization, but may be less engaging for algorithmic distribution.";
+                    
+                    // Switch to output tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    tabs[0].classList.add('active');
+                    tabContents[0].classList.add('active');
+                }, 800);
             });
             
             // Initialize with example text
-            engagementBtn.click();
+            setTimeout(() => engagementBtn.click(), 500);
         });
     </script>
 </body>
