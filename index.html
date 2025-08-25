@@ -3,350 +3,280 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenLedger - Next-Gen Accounting</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>OpenLedger - Enhanced Accounting System</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary: #4361ee;
-            --secondary: #3a0ca3;
-            --accent: #4cc9f0;
-            --success: #4ade80;
-            --warning: #facc15;
-            --error: #f87171;
-            --background: #f8fafc;
-            --card: #ffffff;
-            --text: #1e293b;
-            --text-light: #64748b;
-            --border: #e2e8f0;
-            --sidebar: #1e293b;
-            --sidebar-hover: #334155;
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #1abc9c;
+            --sidebar-width: 250px;
         }
-
-        .dark-mode {
-            --background: #0f172a;
-            --card: #1e293b;
-            --text: #f1f5f9;
-            --text-light: #94a3b8;
-            --border: #334155;
-            --sidebar: #0f172a;
-            --sidebar-hover: #1e293b;
-        }
-
+        
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            transition: background-color 0.3s, color 0.3s;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        
         body {
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--background);
-            color: var(--text);
+            background-color: #f5f7fa;
+            color: #333;
             line-height: 1.6;
             display: flex;
-            min-height: 100vh;
-            overflow-x: hidden;
         }
-
-        /* Sidebar */
+        
         .sidebar {
-            width: 260px;
-            background-color: var(--sidebar);
+            width: var(--sidebar-width);
+            background: var(--primary);
             color: white;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
             padding: 1.5rem 1rem;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-
+        
         .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 2.5rem;
             font-size: 1.5rem;
-            font-weight: 700;
+            font-weight: bold;
         }
-
-        .logo-icon {
+        
+        .logo span {
             color: var(--accent);
         }
-
+        
+        .nav-menu {
+            padding: 1rem 0;
+        }
+        
         .nav-item {
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.875rem 1rem;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            cursor: pointer;
-            color: #cbd5e1;
-            text-decoration: none;
         }
-
-        .nav-item:hover, .nav-item.active {
-            background-color: var(--sidebar-hover);
-            color: white;
+        
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
         }
-
+        
+        .nav-item.active {
+            background: var(--accent);
+        }
+        
         .nav-item i {
+            margin-right: 0.8rem;
             width: 20px;
             text-align: center;
         }
-
-        /* Main Content */
+        
         .main-content {
-            flex-grow: 1;
-            padding: 1.5rem 2rem;
-            overflow-y: auto;
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 1rem;
         }
-
+        
         .header {
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border);
         }
-
-        .page-title {
-            font-size: 1.75rem;
-            font-weight: 700;
+        
+        .header h1 {
+            font-size: 1.5rem;
+            color: var(--primary);
         }
-
+        
         .header-actions {
             display: flex;
             gap: 1rem;
-            align-items: center;
         }
-
-        /* Cards */
-        .card {
-            background-color: var(--card);
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
             padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid var(--border);
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.3s;
         }
-
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
         .card-header {
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.25rem;
         }
-
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        /* Dashboard Grid */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .stat-card {
-            display: flex;
-            flex-direction: column;
+        
+        .card-body {
             padding: 1.5rem;
         }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            margin: 0.5rem 0;
-        }
-
-        .stat-label {
-            color: var(--text-light);
-            font-size: 0.875rem;
-        }
-
-        .stat-trend {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.625rem 1.25rem;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--secondary);
-        }
-
-        .btn-success {
-            background-color: var(--success);
-            color: white;
-        }
-
-        .btn-icon {
-            padding: 0.5rem;
-            border-radius: 8px;
-        }
-
-        /* Tables */
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 0.875rem 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        th {
-            font-weight: 600;
-            color: var(--text-light);
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        tr:hover {
-            background-color: rgba(0, 0, 0, 0.02);
-        }
-
-        /* Forms */
+        
         .form-group {
-            margin-bottom: 1.25rem;
+            margin-bottom: 1rem;
         }
-
+        
         label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
         }
-
+        
         input, select, textarea {
             width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background-color: var(--card);
-            color: var(--text);
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
         }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
-        }
-
-        /* Toggle Switch */
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 26px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
+        
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
             cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.3s;
         }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+        
+        button:hover {
+            background: #2980b9;
         }
-
-        input:checked + .slider {
-            background-color: var(--primary);
+        
+        .btn-danger {
+            background: var(--danger);
         }
-
-        input:checked + .slider:before {
-            transform: translateX(24px);
+        
+        .btn-danger:hover {
+            background: #c0392b;
         }
-
-        /* Charts */
+        
+        .btn-success {
+            background: var(--success);
+        }
+        
+        .btn-success:hover {
+            background: #27ae60;
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .debit {
+            color: var(--success);
+            font-weight: 500;
+        }
+        
+        .credit {
+            color: var(--danger);
+            font-weight: 500;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .report-options {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+        }
+        
         .chart-container {
             position: relative;
             height: 300px;
-            width: 100%;
+            margin: 1.5rem 0;
         }
-
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            color: white;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transform: translateX(100%);
-            transition: transform 0.3s ease-out;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.success {
-            background-color: var(--success);
-        }
-
-        .notification.error {
-            background-color: var(--error);
-        }
-
-        /* Modal */
+        
         .modal {
             display: none;
             position: fixed;
@@ -354,544 +284,2118 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 100;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
             justify-content: center;
             align-items: center;
         }
-
+        
         .modal-content {
-            background-color: var(--card);
-            border-radius: 12px;
+            background: white;
+            padding: 2rem;
+            border-radius: 5px;
             width: 90%;
             max-width: 600px;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
-
+        
         .modal-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-        }
-
-        .modal-footer {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-        }
-
-        /* Import Wizard */
-        .wizard-steps {
-            display: flex;
             margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border);
         }
-
-        .wizard-step {
-            padding: 1rem 1.5rem;
+        
+        .close {
+            font-size: 1.5rem;
             cursor: pointer;
-            border-bottom: 2px solid transparent;
         }
-
-        .wizard-step.active {
-            border-bottom: 2px solid var(--primary);
-            color: var(--primary);
-            font-weight: 500;
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem;
+            border-radius: 5px;
+            color: white;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 1100;
         }
-
-        .wizard-content {
-            min-height: 300px;
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
         }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .sidebar {
-                width: 80px;
-            }
-            .nav-item span {
-                display: none;
-            }
-            .logo span {
-                display: none;
-            }
-            .logo {
-                justify-content: center;
-            }
+        
+        .notification.success {
+            background: var(--success);
         }
-
+        
+        .notification.error {
+            background: var(--danger);
+        }
+        
+        .ratio-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .ratio-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .ratio-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        
+        .ratio-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .ratio-description {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: #888;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         @media (max-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
+            .sidebar {
+                width: 60px;
+                overflow: visible;
             }
-            .main-content {
+            
+            .sidebar-header, .nav-item span {
+                display: none;
+            }
+            
+            .nav-item {
+                justify-content: center;
                 padding: 1rem;
             }
-        }
-
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-            body:not(.light-mode) {
-                --background: #0f172a;
-                --card: #1e293b;
-                --text: #f1f5f9;
-                --text-light: #94a3b8;
-                --border: #334155;
-                --sidebar: #0f172a;
-                --sidebar-hover: #1e293b;
+            
+            .nav-item i {
+                margin-right: 0;
+                font-size: 1.2rem;
+            }
+            
+            .main-content {
+                margin-left: 60px;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
             }
         }
-
-        /* Animation */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        /* Utility Classes */
-        .text-success {
-            color: var(--success);
-        }
-
-        .text-error {
-            color: var(--error);
-        }
-
-        .mt-3 {
-            margin-top: 1rem;
-        }
-
-        .ml-auto {
-            margin-left: auto;
-        }
-
-        .d-flex {
-            display: flex;
-        }
-
-        .align-center {
-            align-items: center;
-        }
-
-        .justify-between {
-            justify-content: space-between;
-        }
-
-        .gap-2 {
-            gap: 0.5rem;
-        }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Sidebar -->
     <div class="sidebar">
-        <div class="logo">
-            <i class="fas fa-calculator logo-icon"></i>
-            <span>OpenLedger</span>
+        <div class="sidebar-header">
+            <div class="logo">Open<span>Ledger</span></div>
         </div>
-        
-        <a href="#" class="nav-item active">
-            <i class="fas fa-home"></i>
-            <span>Dashboard</span>
-        </a>
-        <a href="#" class="nav-item">
-            <i class="fas fa-book"></i>
-            <span>Journal</span>
-        </a>
-        <a href="#" class="nav-item">
-            <i class="fas fa-file-invoice-dollar"></i>
-            <span>Ledger</span>
-        </a>
-        <a href="#" class="nav-item">
-            <i class="fas fa-balance-scale"></i>
-            <span>Trial Balance</span>
-        </a>
-        <a href="#" class="nav-item">
-            <i class="fas fa-chart-line"></i>
-            <span>Reports</span>
-        </a>
-        <a href="#" class="nav-item">
-            <i class="fas fa-wallet"></i>
-            <span>Accounts</span>
-        </a>
-        <a href="#" class="nav-item">
-            <i class="fas fa-cog"></i>
-            <span>Settings</span>
-        </a>
-        
-        <div class="mt-3 ml-auto">
-            <label class="toggle-switch">
-                <input type="checkbox" id="dark-mode-toggle">
-                <span class="slider"></span>
-            </label>
+        <div class="nav-menu">
+            <div class="nav-item active" data-tab="dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item" data-tab="journal">
+                <i class="fas fa-book"></i>
+                <span>Journal</span>
+            </div>
+            <div class="nav-item" data-tab="ledger">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Ledger</span>
+            </div>
+            <div class="nav-item" data-tab="trial-balance">
+                <i class="fas fa-balance-scale"></i>
+                <span>Trial Balance</span>
+            </div>
+            <div class="nav-item" data-tab="reports">
+                <i class="fas fa-chart-bar"></i>
+                <span>Financial Reports</span>
+            </div>
+            <div class="nav-item" data-tab="ratio-analysis">
+                <i class="fas fa-calculator"></i>
+                <span>Ratio Analysis</span>
+            </div>
+            <div class="nav-item" data-tab="accounts">
+                <i class="fas fa-chart-pie"></i>
+                <span>Chart of Accounts</span>
+            </div>
+            <div class="nav-item" data-tab="settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </div>
         </div>
     </div>
-
-    <!-- Main Content -->
+    
     <div class="main-content">
         <div class="header">
-            <h1 class="page-title">Dashboard</h1>
+            <h1 id="page-title">Dashboard</h1>
             <div class="header-actions">
-                <button class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    New Transaction
-                </button>
-                <button class="btn btn-icon">
-                    <i class="fas fa-bell"></i>
-                </button>
-                <button class="btn btn-icon">
-                    <i class="fas fa-user"></i>
-                </button>
+                <div id="company-name">Company Name</div>
+                <button id="help-btn"><i class="fas fa-question-circle"></i> Help</button>
             </div>
         </div>
-
-        <!-- Stats Overview -->
-        <div class="dashboard-grid">
-            <div class="card stat-card">
-                <div class="stat-label">Total Assets</div>
-                <div class="stat-value">$124,890.45</div>
-                <div class="stat-trend text-success">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>12.4% from last month</span>
+        
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-label">Total Assets</div>
+                    <div class="stat-value" id="total-assets">$0.00</div>
                 </div>
-            </div>
-            
-            <div class="card stat-card">
-                <div class="stat-label">Total Liabilities</div>
-                <div class="stat-value">$67,340.20</div>
-                <div class="stat-trend text-error">
-                    <i class="fas fa-arrow-down"></i>
-                    <span>3.2% from last month</span>
+                <div class="stat-card">
+                    <div class="stat-label">Total Liabilities</div>
+                    <div class="stat-value" id="total-liabilities">$0.00</div>
                 </div>
-            </div>
-            
-            <div class="card stat-card">
-                <div class="stat-label">Revenue</div>
-                <div class="stat-value">$45,670.80</div>
-                <div class="stat-trend text-success">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>8.7% from last month</span>
+                <div class="stat-card">
+                    <div class="stat-label">Equity</div>
+                    <div class="stat-value" id="total-equity">$0.00</div>
                 </div>
-            </div>
-            
-            <div class="card stat-card">
-                <div class="stat-label">Net Income</div>
-                <div class="stat-value">$12,450.35</div>
-                <div class="stat-trend text-success">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>5.3% from last month</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts & Transactions -->
-        <div class="dashboard-grid">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Income vs Expenses</h2>
-                    <select>
-                        <option>Last 7 days</option>
-                        <option>Last 30 days</option>
-                        <option>Last 3 months</option>
-                    </select>
-                </div>
-                <div class="chart-container">
-                    <canvas id="incomeExpenseChart"></canvas>
+                <div class="stat-card">
+                    <div class="stat-label">Net Income</div>
+                    <div class="stat-value" id="net-income">$0.00</div>
                 </div>
             </div>
             
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Account Balances</h2>
-                    <select>
-                        <option>Top 5</option>
-                        <option>All Accounts</option>
-                    </select>
+                    <span>Financial Overview</span>
+                    <div>
+                        <button id="refresh-charts"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    </div>
                 </div>
-                <div class="chart-container">
-                    <canvas id="accountBalanceChart"></canvas>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="financial-trends-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">Recent Transactions</div>
+                <div class="card-body">
+                    <table id="recent-transactions">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Recent transactions will be populated here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-
-        <!-- Recent Transactions -->
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Recent Transactions</h2>
-                <button class="btn btn-primary">
-                    <i class="fas fa-file-import"></i>
-                    Import Data
-                </button>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Description</th>
-                            <th>Account</th>
-                            <th>Debit</th>
-                            <th>Credit</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>2023-10-15</td>
-                            <td>Office Supplies Purchase</td>
-                            <td>Office Expenses</td>
-                            <td class="text-error">$245.50</td>
-                            <td></td>
-                            <td>
-                                <button class="btn btn-icon">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-icon">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2023-10-14</td>
-                            <td>Client Payment - ABC Corp</td>
-                            <td>Accounts Receivable</td>
-                            <td></td>
-                            <td class="text-success">$1,500.00</td>
-                            <td>
-                                <button class="btn btn-icon">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-icon">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2023-10-12</td>
-                            <td>Software Subscription</td>
-                            <td>Software Expenses</td>
-                            <td class="text-error">$299.00</td>
-                            <td></td>
-                            <td>
-                                <button class="btn btn-icon">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-icon">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2023-10-10</td>
-                            <td>Consulting Revenue</td>
-                            <td>Revenue</td>
-                            <td></td>
-                            <td class="text-success">$3,750.00</td>
-                            <td>
-                                <button class="btn btn-icon">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-icon">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2023-10-05</td>
-                            <td>Salaries</td>
-                            <td>Salary Expenses</td>
-                            <td class="text-error">$8,340.00</td>
-                            <td></td>
-                            <td>
-                                <button class="btn btn-icon">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-icon">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Notification -->
-    <div class="notification success">
-        <i class="fas fa-check-circle"></i>
-        <span>Transaction added successfully</span>
-    </div>
-
-    <!-- Import Data Modal -->
-    <div class="modal" id="importModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Import Data</h2>
-                <button class="btn btn-icon close-modal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="wizard-steps">
-                    <div class="wizard-step active">1. Upload File</div>
-                    <div class="wizard-step">2. Map Fields</div>
-                    <div class="wizard-step">3. Review</div>
-                    <div class="wizard-step">4. Complete</div>
+        
+        <!-- Journal Tab -->
+        <div id="journal" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <span>Journal Entries</span>
+                    <button id="add-transaction-btn">Add New Transaction</button>
                 </div>
-                
-                <div class="wizard-content">
-                    <p>Upload your CSV, Excel, or bank statement file</p>
-                    
-                    <div class="form-group mt-3">
-                        <label for="fileSource">Data Source</label>
-                        <select id="fileSource">
-                            <option value="">Select Source</option>
-                            <option value="csv">CSV File</option>
-                            <option value="excel">Excel File</option>
-                            <option value="bank">Bank Statement</option>
-                            <option value="quickbooks">QuickBooks</option>
-                            <option value="xero">Xero</option>
-                        </select>
+                <div class="card-body">
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label for="journal-date-from">From:</label>
+                            <input type="date" id="journal-date-from">
+                        </div>
+                        <div class="filter-group">
+                            <label for="journal-date-to">To:</label>
+                            <input type="date" id="journal-date-to">
+                        </div>
+                        <button id="apply-journal-filter">Apply Filter</button>
+                        <button id="export-journal" class="btn-success"><i class="fas fa-download"></i> Export</button>
                     </div>
                     
-                    <div class="form-group">
-                        <label>Drag & drop your file here or</label>
-                        <div style="border: 2px dashed var(--border); padding: 2rem; text-align: center; border-radius: 8px;">
-                            <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-bottom: 1rem; color: var(--text-light);"></i>
-                            <p>Click to browse files</p>
-                            <p style="font-size: 0.875rem; color: var(--text-light);">Supports CSV, XLSX up to 10MB</p>
+                    <table id="journal-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Account</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Journal entries will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ledger Tab -->
+        <div id="ledger" class="tab-content">
+            <div class="card">
+                <div class="card-header">General Ledger</div>
+                <div class="card-body">
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label for="ledger-account">Account:</label>
+                            <select id="ledger-account">
+                                <!-- Accounts will be populated here -->
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="ledger-date-from">From:</label>
+                            <input type="date" id="ledger-date-from">
+                        </div>
+                        <div class="filter-group">
+                            <label for="ledger-date-to">To:</label>
+                            <input type="date" id="ledger-date-to">
+                        </div>
+                        <button id="apply-ledger-filter">Apply Filter</button>
+                        <button id="print-ledger" class="btn-success"><i class="fas fa-print"></i> Print</button>
+                    </div>
+                    
+                    <table id="ledger-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                                <th>Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Ledger entries will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Trial Balance Tab -->
+        <div id="trial-balance" class="tab-content">
+            <div class="card">
+                <div class="card-header">Trial Balance</div>
+                <div class="card-body">
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label for="tb-date">As of:</label>
+                            <input type="date" id="tb-date">
+                        </div>
+                        <button id="generate-tb">Generate Trial Balance</button>
+                        <button id="export-tb" class="btn-success"><i class="fas fa-download"></i> Export</button>
+                    </div>
+                    
+                    <table id="trial-balance-table">
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Trial balance will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reports Tab -->
+        <div id="reports" class="tab-content">
+            <div class="card">
+                <div class="card-header">Financial Reports</div>
+                <div class="card-body">
+                    <div class="report-options">
+                        <div class="form-group">
+                            <label for="report-type">Report Type:</label>
+                            <select id="report-type">
+                                <option value="income-statement">Income Statement</option>
+                                <option value="balance-sheet">Balance Sheet</option>
+                                <option value="cash-flow">Cash Flow Statement</option>
+                                <option value="changes-equity">Statement of Changes in Equity</option>
+                                <option value="general-ledger">General Ledger</option>
+                                <option value="ar-aging">Accounts Receivable Aging</option>
+                                <option value="ap-aging">Accounts Payable Aging</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="report-style">Report Style:</label>
+                            <select id="report-style">
+                                <option value="standard">Standard</option>
+                                <option value="comparative">Comparative</option>
+                                <option value="common-size">Common Size</option>
+                                <option value="detailed">Detailed</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filters">
+                            <div class="filter-group">
+                                <label for="report-period">Period:</label>
+                                <select id="report-period">
+                                    <option value="monthly">Monthly</option>
+                                    <option value="quarterly">Quarterly</option>
+                                    <option value="annual">Annual</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="report-date">Date:</label>
+                                <input type="date" id="report-date">
+                            </div>
+                            <div class="filter-group">
+                                <label for="compare-date">Compare with:</label>
+                                <input type="date" id="compare-date">
+                            </div>
+                            <button id="generate-report">Generate Report</button>
+                            <button id="export-report" class="btn-success"><i class="fas fa-download"></i> Export</button>
+                            <button id="print-report" class="btn-warning"><i class="fas fa-print"></i> Print</button>
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="importMode">Import Mode</label>
-                        <select id="importMode">
-                            <option value="new">New Transactions Only</option>
-                            <option value="merge">Merge with Existing</option>
-                            <option value="replace">Replace All Data</option>
-                        </select>
+                    <div class="card">
+                        <div class="card-header" id="report-title">Report Preview</div>
+                        <div class="card-body">
+                            <div id="report-content">
+                                <!-- Report content will be displayed here -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn">Cancel</button>
-                <button class="btn btn-primary">Next</button>
+        </div>
+        
+        <!-- Ratio Analysis Tab -->
+        <div id="ratio-analysis" class="tab-content">
+            <div class="card">
+                <div class="card-header">Financial Ratio Analysis</div>
+                <div class="card-body">
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label for="ratio-date">As of:</label>
+                            <input type="date" id="ratio-date">
+                        </div>
+                        <button id="calculate-ratios">Calculate Ratios</button>
+                    </div>
+                    
+                    <div class="ratio-cards">
+                        <div class="ratio-card">
+                            <div class="ratio-label">Current Ratio</div>
+                            <div class="ratio-value" id="current-ratio">0.00</div>
+                            <div class="ratio-description">Measures short-term liquidity (Current Assets / Current Liabilities)</div>
+                        </div>
+                        <div class="ratio-card">
+                            <div class="ratio-label">Quick Ratio</div>
+                            <div class="ratio-value" id="quick-ratio">0.00</div>
+                            <div class="ratio-description">Measures immediate liquidity (Cash + Marketable Securities + Receivables) / Current Liabilities</div>
+                        </div>
+                        <div class="ratio-card">
+                            <div class="ratio-label">Debt to Equity</div>
+                            <div class="ratio-value" id="debt-equity-ratio">0.00</div>
+                            <div class="ratio-description">Measures financial leverage (Total Liabilities / Shareholders' Equity)</div>
+                        </div>
+                        <div class="ratio-card">
+                            <div class="ratio-label">Gross Profit Margin</div>
+                            <div class="ratio-value" id="gross-margin">0.00%</div>
+                            <div class="ratio-description">Measures profitability after direct costs (Gross Profit / Revenue)</div>
+                        </div>
+                        <div class="ratio-card">
+                            <div class="ratio-label">Net Profit Margin</div>
+                            <div class="ratio-value" id="net-margin">0.00%</div>
+                            <div class="ratio-description">Measures overall profitability (Net Income / Revenue)</div>
+                        </div>
+                        <div class="ratio-card">
+                            <div class="ratio-label">Return on Equity</div>
+                            <div class="ratio-value" id="return-equity">0.00%</div>
+                            <div class="ratio-description">Measures return on shareholder investment (Net Income / Average Shareholders' Equity)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="ratio-trend-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chart of Accounts Tab -->
+        <div id="accounts" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <span>Chart of Accounts</span>
+                    <button id="add-account-btn">Add New Account</button>
+                </div>
+                <div class="card-body">
+                    <table id="accounts-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Account Name</th>
+                                <th>Type</th>
+                                <th>Balance</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Accounts will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <div class="card">
+                <div class="card-header">Application Settings</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="accounting-mode">Accounting Mode:</label>
+                        <select id="accounting-mode">
+                            <option value="double">Double-Entry</option>
+                            <option value="single">Single-Entry</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="accounting-basis">Accounting Basis:</label>
+                        <select id="accounting-basis">
+                            <option value="accrual">Accrual Basis</option>
+                            <option value="cash">Cash Basis</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="company-name-input">Company Name:</label>
+                        <input type="text" id="company-name-input" placeholder="Enter company name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="base-currency">Base Currency:</label>
+                        <select id="base-currency">
+                            <option value="USD">US Dollar (USD)</option>
+                            <option value="EUR">Euro (EUR)</option>
+                            <option value="GBP">British Pound (GBP)</option>
+                            <option value="JPY">Japanese Yen (JPY)</option>
+                            <option value="CAD">Canadian Dollar (CAD)</option>
+                            <option value="AUD">Australian Dollar (AUD)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="financial-year">Financial Year Start:</label>
+                        <input type="date" id="financial-year">
+                    </div>
+                    
+                    <button id="save-settings">Save Settings</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">Data Management</div>
+                <div class="card-body">
+                    <button id="export-data" style="margin-right: 1rem;"><i class="fas fa-file-export"></i> Export All Data</button>
+                    <button id="import-data" style="margin-right: 1rem;"><i class="fas fa-file-import"></i> Import Data</button>
+                    <button id="clear-data" class="btn-danger"><i class="fas fa-trash"></i> Clear All Data</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">Exchange Rates</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="exchange-rate-usd">USD to Base Currency:</label>
+                        <input type="number" id="exchange-rate-usd" step="0.0001" value="1.0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="exchange-rate-eur">EUR to Base Currency:</label>
+                        <input type="number" id="exchange-rate-eur" step="0.0001" value="1.1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="exchange-rate-gbp">GBP to Base Currency:</label>
+                        <input type="number" id="exchange-rate-gbp" step="0.0001" value="1.3">
+                    </div>
+                    
+                    <button id="save-exchange-rates">Save Exchange Rates</button>
+                </div>
             </div>
         </div>
     </div>
-
+    
+    <!-- Transaction Modal -->
+    <div id="transaction-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Transaction</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="transaction-form">
+                <div class="form-group">
+                    <label for="transaction-date">Date:</label>
+                    <input type="date" id="transaction-date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="transaction-description">Description:</label>
+                    <input type="text" id="transaction-description" placeholder="Enter description" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="debit-account">Debit Account:</label>
+                    <select id="debit-account" required>
+                        <!-- Accounts will be populated here -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="debit-amount">Debit Amount:</label>
+                    <input type="number" id="debit-amount" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="credit-account">Credit Account:</label>
+                    <select id="credit-account" required>
+                        <!-- Accounts will be populated here -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="credit-amount">Credit Amount:</label>
+                    <input type="number" id="credit-amount" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="currency">Currency:</label>
+                    <select id="currency">
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="JPY">JPY</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="exchange-rate">Exchange Rate (to base currency):</label>
+                    <input type="number" id="exchange-rate" step="0.0001" value="1.0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="narration">Narration:</label>
+                    <textarea id="narration" placeholder="Additional details"></textarea>
+                </div>
+                
+                <button type="submit">Save Transaction</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Account Modal -->
+    <div id="account-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Account</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="account-form">
+                <div class="form-group">
+                    <label for="account-code">Account Code:</label>
+                    <input type="text" id="account-code" placeholder="e.g., 1010" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="account-name">Account Name:</label>
+                    <input type="text" id="account-name" placeholder="e.g., Cash" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="account-type">Account Type:</label>
+                    <select id="account-type" required>
+                        <option value="">Select Type</option>
+                        <option value="Asset">Asset</option>
+                        <option value="Liability">Liability</option>
+                        <option value="Equity">Equity</option>
+                        <option value="Revenue">Revenue</option>
+                        <option value="Expense">Expense</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="account-subtype">Account Subtype:</label>
+                    <select id="account-subtype">
+                        <option value="">Select Subtype (Optional)</option>
+                        <option value="Current Asset">Current Asset</option>
+                        <option value="Fixed Asset">Fixed Asset</option>
+                        <option value="Current Liability">Current Liability</option>
+                        <option value="Long-term Liability">Long-term Liability</option>
+                        <option value="Operating Revenue">Operating Revenue</option>
+                        <option value="Non-operating Revenue">Non-operating Revenue</option>
+                        <option value="Operating Expense">Operating Expense</option>
+                        <option value="Non-operating Expense">Non-operating Expense</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="opening-balance">Opening Balance:</label>
+                    <input type="number" id="opening-balance" step="0.01" placeholder="0.00">
+                </div>
+                
+                <div class="form-group">
+                    <label for="account-currency">Currency:</label>
+                    <select id="account-currency">
+                        <option value="base">Base Currency</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                    </select>
+                </div>
+                
+                <button type="submit">Save Account</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+    
+    <!-- Hidden file input for import -->
+    <input type="file" id="import-file" style="display: none;" accept=".json">
+    
     <script>
-        // Toggle dark mode
-        const darkModeToggle = document.getElementById('dark-mode-toggle');
-        darkModeToggle.addEventListener('change', function() {
-            document.body.classList.toggle('dark-mode');
-        });
-
-        // Initialize charts
-        document.addEventListener('DOMContentLoaded', function() {
-            // Income vs Expense Chart
-            const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
-            new Chart(incomeExpenseCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
-                    datasets: [
-                        {
-                            label: 'Income',
-                            data: [12000, 19000, 15000, 18000, 22000, 21000, 25000, 28000, 30000, 32000],
-                            borderColor: '#4361ee',
-                            backgroundColor: 'rgba(67, 97, 238, 0.1)',
-                            tension: 0.3,
-                            fill: true
-                        },
-                        {
+        // Main application object
+        const OpenLedger = {
+            // Application state
+            settings: {
+                accountingMode: 'double',
+                accountingBasis: 'accrual',
+                companyName: 'Company Name',
+                baseCurrency: 'USD',
+                financialYear: new Date().toISOString().split('T')[0],
+                exchangeRates: {
+                    USD: 1.0,
+                    EUR: 1.1,
+                    GBP: 1.3,
+                    JPY: 0.009
+                }
+            },
+            accounts: [],
+            transactions: [],
+            financialCharts: {},
+            
+            // Initialize the application
+            init() {
+                this.loadData();
+                this.setupEventListeners();
+                this.renderAccounts();
+                this.renderTransactions();
+                this.updateDashboard();
+                this.setCurrentDate();
+                this.initCharts();
+            },
+            
+            // Load data from localStorage
+            loadData() {
+                const settings = localStorage.getItem('openledger-settings');
+                const accounts = localStorage.getItem('openledger-accounts');
+                const transactions = localStorage.getItem('openledger-transactions');
+                
+                if (settings) this.settings = JSON.parse(settings);
+                if (accounts) this.accounts = JSON.parse(accounts);
+                if (transactions) this.transactions = JSON.parse(transactions);
+                
+                // Update UI with settings
+                document.getElementById('accounting-mode').value = this.settings.accountingMode;
+                document.getElementById('accounting-basis').value = this.settings.accountingBasis;
+                document.getElementById('company-name-input').value = this.settings.companyName;
+                document.getElementById('base-currency').value = this.settings.baseCurrency;
+                document.getElementById('financial-year').value = this.settings.financialYear;
+                document.getElementById('company-name').textContent = this.settings.companyName;
+                
+                // Update exchange rates if they exist
+                if (this.settings.exchangeRates) {
+                    document.getElementById('exchange-rate-usd').value = this.settings.exchangeRates.USD;
+                    document.getElementById('exchange-rate-eur').value = this.settings.exchangeRates.EUR;
+                    document.getElementById('exchange-rate-gbp').value = this.settings.exchangeRates.GBP;
+                }
+            },
+            
+            // Save data to localStorage
+            saveData() {
+                localStorage.setItem('openledger-settings', JSON.stringify(this.settings));
+                localStorage.setItem('openledger-accounts', JSON.stringify(this.accounts));
+                localStorage.setItem('openledger-transactions', JSON.stringify(this.transactions));
+            },
+            
+            // Set current date in date fields
+            setCurrentDate() {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('transaction-date').value = today;
+                document.getElementById('journal-date-from').value = today;
+                document.getElementById('journal-date-to').value = today;
+                document.getElementById('ledger-date-from').value = today;
+                document.getElementById('ledger-date-to').value = today;
+                document.getElementById('tb-date').value = today;
+                document.getElementById('report-date').value = today;
+                document.getElementById('ratio-date').value = today;
+            },
+            
+            // Initialize charts
+            initCharts() {
+                const financialTrendsCtx = document.getElementById('financial-trends-chart').getContext('2d');
+                this.financialCharts.trends = new Chart(financialTrendsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Revenue',
+                            data: [0, 0, 0, 0, 0, 0],
+                            borderColor: '#2ecc71',
+                            tension: 0.1,
+                            fill: false
+                        }, {
                             label: 'Expenses',
-                            data: [8000, 11000, 9000, 10000, 12000, 14000, 13000, 15000, 16000, 15500],
-                            borderColor: '#f87171',
-                            backgroundColor: 'rgba(248, 113, 113, 0.1)',
-                            tension: 0.3,
-                            fill: true
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        }
-                    }
-                }
-            });
-
-            // Account Balance Chart
-            const accountBalanceCtx = document.getElementById('accountBalanceChart').getContext('2d');
-            new Chart(accountBalanceCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Cash', 'Accounts Receivable', 'Inventory', 'Equipment', 'Investments'],
-                    datasets: [{
-                        data: [45000, 28000, 18500, 32000, 0],
-                        backgroundColor: [
-                            '#4361ee',
-                            '#4cc9f0',
-                            '#4ade80',
-                            '#facc15',
-                            '#f87171'
-                        ],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
+                            data: [0, 0, 0, 0, 0, 0],
+                            borderColor: '#e74c3c',
+                            tension: 0.1,
+                            fill: false
+                        }, {
+                            label: 'Net Income',
+                            data: [0, 0, 0, 0, 0, 0],
+                            borderColor: '#3498db',
+                            tension: 0.1,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Financial Trends'
+                            }
                         }
                     }
+                });
+                
+                const ratioTrendCtx = document.getElementById('ratio-trend-chart').getContext('2d');
+                this.financialCharts.ratios = new Chart(ratioTrendCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Current Ratio', 'Quick Ratio', 'Debt to Equity', 'Gross Margin', 'Net Margin', 'ROE'],
+                        datasets: [{
+                            label: 'Ratio Values',
+                            data: [0, 0, 0, 0, 0, 0],
+                            backgroundColor: [
+                                'rgba(52, 152, 219, 0.7)',
+                                'rgba(46, 204, 113, 0.7)',
+                                'rgba(155, 89, 182, 0.7)',
+                                'rgba(241, 196, 15, 0.7)',
+                                'rgba(230, 126, 34, 0.7)',
+                                'rgba(231, 76, 60, 0.7)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Financial Ratios'
+                            }
+                        }
+                    }
+                });
+            },
+            
+            // Update charts with current data
+            updateCharts() {
+                // This would be populated with actual financial data
+                const revenueData = [12000, 19000, 15000, 18000, 22000, 25000];
+                const expensesData = [8000, 10000, 12000, 9000, 11000, 13000];
+                const netIncomeData = revenueData.map((val, idx) => val - expensesData[idx]);
+                
+                this.financialCharts.trends.data.datasets[0].data = revenueData;
+                this.financialCharts.trends.data.datasets[1].data = expensesData;
+                this.financialCharts.trends.data.datasets[2].data = netIncomeData;
+                this.financialCharts.trends.update();
+                
+                // Update ratio chart with calculated ratios
+                const ratios = [
+                    this.calculateCurrentRatio(),
+                    this.calculateQuickRatio(),
+                    this.calculateDebtToEquityRatio(),
+                    this.calculateGrossMargin(),
+                    this.calculateNetMargin(),
+                    this.calculateROE()
+                ];
+                
+                this.financialCharts.ratios.data.datasets[0].data = ratios;
+                this.financialCharts.ratios.update();
+            },
+            
+            // Setup event listeners
+            setupEventListeners() {
+                // Navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                        
+                        item.classList.add('active');
+                        document.getElementById(item.dataset.tab).classList.add('active');
+                        document.getElementById('page-title').textContent = item.querySelector('span').textContent;
+                    });
+                });
+                
+                // Modal controls
+                document.querySelectorAll('.close').forEach(close => {
+                    close.addEventListener('click', () => {
+                        document.querySelectorAll('.modal').forEach(modal => {
+                            modal.style.display = 'none';
+                        });
+                    });
+                });
+                
+                // Add transaction button
+                document.getElementById('add-transaction-btn').addEventListener('click', () => {
+                    document.getElementById('transaction-modal').style.display = 'flex';
+                });
+                
+                // Add account button
+                document.getElementById('add-account-btn').addEventListener('click', () => {
+                    document.getElementById('account-modal').style.display = 'flex';
+                });
+                
+                // Save settings
+                document.getElementById('save-settings').addEventListener('click', () => {
+                    this.settings.accountingMode = document.getElementById('accounting-mode').value;
+                    this.settings.accountingBasis = document.getElementById('accounting-basis').value;
+                    this.settings.companyName = document.getElementById('company-name-input').value;
+                    this.settings.baseCurrency = document.getElementById('base-currency').value;
+                    this.settings.financialYear = document.getElementById('financial-year').value;
+                    
+                    document.getElementById('company-name').textContent = this.settings.companyName;
+                    this.saveData();
+                    this.showNotification('Settings saved successfully', 'success');
+                });
+                
+                // Save exchange rates
+                document.getElementById('save-exchange-rates').addEventListener('click', () => {
+                    this.settings.exchangeRates.USD = parseFloat(document.getElementById('exchange-rate-usd').value);
+                    this.settings.exchangeRates.EUR = parseFloat(document.getElementById('exchange-rate-eur').value);
+                    this.settings.exchangeRates.GBP = parseFloat(document.getElementById('exchange-rate-gbp').value);
+                    
+                    this.saveData();
+                    this.showNotification('Exchange rates saved successfully', 'success');
+                });
+                
+                // Transaction form submission
+                document.getElementById('transaction-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addTransaction();
+                });
+                
+                // Account form submission
+                document.getElementById('account-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addAccount();
+                });
+                
+                // Export data
+                document.getElementById('export-data').addEventListener('click', () => {
+                    this.exportData();
+                });
+                
+                // Import data
+                document.getElementById('import-data').addEventListener('click', () => {
+                    document.getElementById('import-file').click();
+                });
+                
+                document.getElementById('import-file').addEventListener('change', (e) => {
+                    this.importData(e.target.files[0]);
+                });
+                
+                // Clear data
+                document.getElementById('clear-data').addEventListener('click', () => {
+                    if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+                        localStorage.clear();
+                        this.accounts = [];
+                        this.transactions = [];
+                        this.saveData();
+                        this.renderAccounts();
+                        this.renderTransactions();
+                        this.updateDashboard();
+                        this.showNotification('All data has been cleared', 'success');
+                    }
+                });
+                
+                // Generate trial balance
+                document.getElementById('generate-tb').addEventListener('click', () => {
+                    this.generateTrialBalance();
+                });
+                
+                // Apply journal filter
+                document.getElementById('apply-journal-filter').addEventListener('click', () => {
+                    this.renderTransactions();
+                });
+                
+                // Apply ledger filter
+                document.getElementById('apply-ledger-filter').addEventListener('click', () => {
+                    this.renderLedger();
+                });
+                
+                // Generate report
+                document.getElementById('generate-report').addEventListener('click', () => {
+                    this.generateReport();
+                });
+                
+                // Calculate ratios
+                document.getElementById('calculate-ratios').addEventListener('click', () => {
+                    this.calculateAllRatios();
+                });
+                
+                // Refresh charts
+                document.getElementById('refresh-charts').addEventListener('click', () => {
+                    this.updateCharts();
+                });
+                
+                // Help button
+                document.getElementById('help-btn').addEventListener('click', () => {
+                    alert('OpenLedger Help:\n\n1. Start by adding accounts in the Chart of Accounts tab.\n2. Add transactions in the Journal tab.\n3. View reports in the Financial Reports tab.\n4. Analyze performance in the Ratio Analysis tab.\n\nFor detailed guidance, refer to the documentation.');
+                });
+            },
+            
+            // Render accounts table and dropdowns
+            renderAccounts() {
+                const accountsTable = document.getElementById('accounts-table').querySelector('tbody');
+                const debitAccountSelect = document.getElementById('debit-account');
+                const creditAccountSelect = document.getElementById('credit-account');
+                const ledgerAccountSelect = document.getElementById('ledger-account');
+                
+                // Clear existing options
+                accountsTable.innerHTML = '';
+                debitAccountSelect.innerHTML = '';
+                creditAccountSelect.innerHTML = '';
+                ledgerAccountSelect.innerHTML = '';
+                
+                // Add default option
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Select Account';
+                debitAccountSelect.appendChild(defaultOption.cloneNode(true));
+                creditAccountSelect.appendChild(defaultOption.cloneNode(true));
+                ledgerAccountSelect.appendChild(defaultOption.cloneNode(true));
+                
+                // Add accounts to dropdowns and table
+                this.accounts.forEach(account => {
+                    // Add to debit/credit dropdowns
+                    const option = document.createElement('option');
+                    option.value = account.id;
+                    option.textContent = `${account.code} - ${account.name}`;
+                    
+                    debitAccountSelect.appendChild(option.cloneNode(true));
+                    creditAccountSelect.appendChild(option.cloneNode(true));
+                    ledgerAccountSelect.appendChild(option.cloneNode(true));
+                    
+                    // Add to accounts table
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${account.code}</td>
+                        <td>${account.name}</td>
+                        <td>${account.type}</td>
+                        <td>${this.formatCurrency(this.getAccountBalance(account.id))}</td>
+                        <td>
+                            <button class="btn-danger" data-account-id="${account.id}">Delete</button>
+                        </td>
+                    `;
+                    accountsTable.appendChild(row);
+                });
+                
+                // Add event listeners to delete buttons
+                accountsTable.querySelectorAll('.btn-danger').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const accountId = button.dataset.accountId;
+                        this.deleteAccount(accountId);
+                    });
+                });
+            },
+            
+            // Render transactions table
+            renderTransactions() {
+                const journalTable = document.getElementById('journal-table').querySelector('tbody');
+                const dateFrom = document.getElementById('journal-date-from').value;
+                const dateTo = document.getElementById('journal-date-to').value;
+                
+                journalTable.innerHTML = '';
+                
+                // Filter transactions by date if specified
+                const filteredTransactions = this.transactions.filter(transaction => {
+                    if (dateFrom && transaction.date < dateFrom) return false;
+                    if (dateTo && transaction.date > dateTo) return false;
+                    return true;
+                });
+                
+                filteredTransactions.forEach(transaction => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${transaction.date}</td>
+                        <td>${transaction.description}</td>
+                        <td>${this.getAccountName(transaction.debitAccount)}</td>
+                        <td class="debit">${this.formatCurrency(transaction.debitAmount)}</td>
+                        <td class="credit">${this.formatCurrency(transaction.creditAmount)}</td>
+                        <td>
+                            <button class="btn-danger" data-transaction-id="${transaction.id}">Delete</button>
+                        </td>
+                    `;
+                    journalTable.appendChild(row);
+                });
+                
+                // Add event listeners to delete buttons
+                journalTable.querySelectorAll('.btn-danger').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const transactionId = button.dataset.transactionId;
+                        this.deleteTransaction(transactionId);
+                    });
+                });
+            },
+            
+            // Render ledger
+            renderLedger() {
+                const ledgerTable = document.getElementById('ledger-table').querySelector('tbody');
+                const accountId = document.getElementById('ledger-account').value;
+                const dateFrom = document.getElementById('ledger-date-from').value;
+                const dateTo = document.getElementById('ledger-date-to').value;
+                
+                ledgerTable.innerHTML = '';
+                
+                if (!accountId) return;
+                
+                // Filter transactions for this account
+                const accountTransactions = this.transactions.filter(transaction => {
+                    if (transaction.debitAccount !== accountId && transaction.creditAccount !== accountId) return false;
+                    if (dateFrom && transaction.date < dateFrom) return false;
+                    if (dateTo && transaction.date > dateTo) return false;
+                    return true;
+                });
+                
+                let runningBalance = 0;
+                const account = this.accounts.find(a => a.id === accountId);
+                
+                accountTransactions.forEach(transaction => {
+                    const isDebit = transaction.debitAccount === accountId;
+                    const amount = isDebit ? transaction.debitAmount : transaction.creditAmount;
+                    
+                    // Update running balance based on account type
+                    if (account.type === 'Asset' || account.type === 'Expense') {
+                        runningBalance += isDebit ? amount : -amount;
+                    } else {
+                        runningBalance += isDebit ? -amount : amount;
+                    }
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${transaction.date}</td>
+                        <td>${transaction.description}</td>
+                        <td class="${isDebit ? 'debit' : ''}">${isDebit ? this.formatCurrency(amount) : ''}</td>
+                        <td class="${!isDebit ? 'credit' : ''}">${!isDebit ? this.formatCurrency(amount) : ''}</td>
+                        <td>${this.formatCurrency(runningBalance)}</td>
+                    `;
+                    ledgerTable.appendChild(row);
+                });
+            },
+            
+            // Generate trial balance
+            generateTrialBalance() {
+                const tbTable = document.getElementById('trial-balance-table').querySelector('tbody');
+                const asOfDate = document.getElementById('tb-date').value;
+                
+                tbTable.innerHTML = '';
+                
+                // Filter transactions up to the selected date
+                const filteredTransactions = this.transactions.filter(transaction => {
+                    return transaction.date <= asOfDate;
+                });
+                
+                // Calculate balances for each account
+                const accountBalances = {};
+                
+                this.accounts.forEach(account => {
+                    accountBalances[account.id] = {
+                        debit: 0,
+                        credit: 0,
+                        type: account.type
+                    };
+                });
+                
+                filteredTransactions.forEach(transaction => {
+                    // Debit side
+                    if (accountBalances[transaction.debitAccount]) {
+                        accountBalances[transaction.debitAccount].debit += transaction.debitAmount;
+                    }
+                    
+                    // Credit side
+                    if (accountBalances[transaction.creditAccount]) {
+                        accountBalances[transaction.creditAccount].credit += transaction.creditAmount;
+                    }
+                });
+                
+                // Add rows to trial balance table
+                let totalDebit = 0;
+                let totalCredit = 0;
+                
+                this.accounts.forEach(account => {
+                    const balance = accountBalances[account.id];
+                    if (balance.debit === 0 && balance.credit === 0) return;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${account.code} - ${account.name}</td>
+                        <td class="debit">${this.formatCurrency(balance.debit)}</td>
+                        <td class="credit">${this.formatCurrency(balance.credit)}</td>
+                    `;
+                    tbTable.appendChild(row);
+                    
+                    totalDebit += balance.debit;
+                    totalCredit += balance.credit;
+                });
+                
+                // Add total row
+                const totalRow = document.createElement('tr');
+                totalRow.innerHTML = `
+                    <td><strong>Total</strong></td>
+                    <td class="debit"><strong>${this.formatCurrency(totalDebit)}</strong></td>
+                    <td class="credit"><strong>${this.formatCurrency(totalCredit)}</strong></td>
+                `;
+                tbTable.appendChild(totalRow);
+                
+                // Check if debits equal credits
+                if (totalDebit !== totalCredit) {
+                    this.showNotification('Trial balance is not balanced!', 'error');
                 }
-            });
-
-            // Show notification example
-            setTimeout(() => {
-                document.querySelector('.notification').classList.add('show');
+            },
+            
+            // Generate financial report
+            generateReport() {
+                const reportType = document.getElementById('report-type').value;
+                const reportStyle = document.getElementById('report-style').value;
+                const reportDate = document.getElementById('report-date').value;
+                const reportContent = document.getElementById('report-content');
+                
+                let reportHTML = '';
+                
+                switch (reportType) {
+                    case 'income-statement':
+                        reportHTML = this.generateIncomeStatement(reportDate, reportStyle);
+                        break;
+                    case 'balance-sheet':
+                        reportHTML = this.generateBalanceSheet(reportDate, reportStyle);
+                        break;
+                    case 'cash-flow':
+                        reportHTML = this.generateCashFlowStatement(reportDate, reportStyle);
+                        break;
+                    case 'changes-equity':
+                        reportHTML = this.generateChangesInEquity(reportDate, reportStyle);
+                        break;
+                    case 'general-ledger':
+                        reportHTML = this.generateGeneralLedgerReport(reportDate, reportStyle);
+                        break;
+                    case 'ar-aging':
+                        reportHTML = this.generateARAgingReport(reportDate, reportStyle);
+                        break;
+                    case 'ap-aging':
+                        reportHTML = this.generateAPAgingReport(reportDate, reportStyle);
+                        break;
+                }
+                
+                reportContent.innerHTML = reportHTML;
+                document.getElementById('report-title').textContent = this.getReportTitle(reportType, reportStyle);
+            },
+            
+            // Calculate all financial ratios
+            calculateAllRatios() {
+                document.getElementById('current-ratio').textContent = this.calculateCurrentRatio().toFixed(2);
+                document.getElementById('quick-ratio').textContent = this.calculateQuickRatio().toFixed(2);
+                document.getElementById('debt-equity-ratio').textContent = this.calculateDebtToEquityRatio().toFixed(2);
+                document.getElementById('gross-margin').textContent = (this.calculateGrossMargin() * 100).toFixed(2) + '%';
+                document.getElementById('net-margin').textContent = (this.calculateNetMargin() * 100).toFixed(2) + '%';
+                document.getElementById('return-equity').textContent = (this.calculateROE() * 100).toFixed(2) + '%';
+                
+                // Update ratio chart
+                const ratios = [
+                    this.calculateCurrentRatio(),
+                    this.calculateQuickRatio(),
+                    this.calculateDebtToEquityRatio(),
+                    this.calculateGrossMargin() * 100,
+                    this.calculateNetMargin() * 100,
+                    this.calculateROE() * 100
+                ];
+                
+                this.financialCharts.ratios.data.datasets[0].data = ratios;
+                this.financialCharts.ratios.update();
+            },
+            
+            // Calculate Current Ratio
+            calculateCurrentRatio() {
+                const currentAssets = this.calculateAccountTypeTotal('Asset', 'Current Asset');
+                const currentLiabilities = this.calculateAccountTypeTotal('Liability', 'Current Liability');
+                
+                if (currentLiabilities === 0) return 0;
+                return currentAssets / currentLiabilities;
+            },
+            
+            // Calculate Quick Ratio
+            calculateQuickRatio() {
+                // For simplicity, we'll assume cash and receivables are the only quick assets
+                const cash = this.getAccountBalance(this.findAccountIdByCode('1010') || '');
+                const receivables = this.getAccountBalance(this.findAccountIdByCode('1200') || '');
+                const currentLiabilities = this.calculateAccountTypeTotal('Liability', 'Current Liability');
+                
+                if (currentLiabilities === 0) return 0;
+                return (cash + receivables) / currentLiabilities;
+            },
+            
+            // Calculate Debt to Equity Ratio
+            calculateDebtToEquityRatio() {
+                const totalLiabilities = this.calculateAccountTypeTotal('Liability');
+                const totalEquity = this.calculateAccountTypeTotal('Equity');
+                
+                if (totalEquity === 0) return 0;
+                return totalLiabilities / totalEquity;
+            },
+            
+            // Calculate Gross Margin
+            calculateGrossMargin() {
+                const revenue = this.calculateAccountTypeTotal('Revenue');
+                const cogs = this.calculateAccountTypeTotal('Expense', 'Cost of Goods Sold');
+                
+                if (revenue === 0) return 0;
+                return (revenue - cogs) / revenue;
+            },
+            
+            // Calculate Net Margin
+            calculateNetMargin() {
+                const revenue = this.calculateAccountTypeTotal('Revenue');
+                const netIncome = revenue - this.calculateAccountTypeTotal('Expense');
+                
+                if (revenue === 0) return 0;
+                return netIncome / revenue;
+            },
+            
+            // Calculate Return on Equity
+            calculateROE() {
+                const netIncome = this.calculateAccountTypeTotal('Revenue') - this.calculateAccountTypeTotal('Expense');
+                const totalEquity = this.calculateAccountTypeTotal('Equity');
+                
+                if (totalEquity === 0) return 0;
+                return netIncome / totalEquity;
+            },
+            
+            // Find account ID by code
+            findAccountIdByCode(code) {
+                const account = this.accounts.find(a => a.code === code);
+                return account ? account.id : null;
+            },
+            
+            // Add a new transaction
+            addTransaction() {
+                const date = document.getElementById('transaction-date').value;
+                const description = document.getElementById('transaction-description').value;
+                const debitAccount = document.getElementById('debit-account').value;
+                const debitAmount = parseFloat(document.getElementById('debit-amount').value);
+                const creditAccount = document.getElementById('credit-account').value;
+                const creditAmount = parseFloat(document.getElementById('credit-amount').value);
+                const currency = document.getElementById('currency').value;
+                const exchangeRate = parseFloat(document.getElementById('exchange-rate').value);
+                const narration = document.getElementById('narration').value;
+                
+                // Validate debit equals credit
+                if (debitAmount !== creditAmount) {
+                    this.showNotification('Debit and Credit amounts must be equal', 'error');
+                    return;
+                }
+                
+                // Create transaction object
+                const transaction = {
+                    id: Date.now().toString(),
+                    date,
+                    description,
+                    debitAccount,
+                    debitAmount,
+                    creditAccount,
+                    creditAmount,
+                    currency,
+                    exchangeRate,
+                    narration
+                };
+                
+                // Add to transactions array
+                this.transactions.push(transaction);
+                
+                // Save data and update UI
+                this.saveData();
+                this.renderTransactions();
+                this.updateDashboard();
+                this.updateCharts();
+                
+                // Close modal and reset form
+                document.getElementById('transaction-modal').style.display = 'none';
+                document.getElementById('transaction-form').reset();
+                
+                this.showNotification('Transaction added successfully', 'success');
+            },
+            
+            // Add a new account
+            addAccount() {
+                const code = document.getElementById('account-code').value;
+                const name = document.getElementById('account-name').value;
+                const type = document.getElementById('account-type').value;
+                const subtype = document.getElementById('account-subtype').value;
+                const openingBalance = parseFloat(document.getElementById('opening-balance').value) || 0;
+                const currency = document.getElementById('account-currency').value;
+                
+                // Check if account code already exists
+                if (this.accounts.some(account => account.code === code)) {
+                    this.showNotification('Account code already exists', 'error');
+                    return;
+                }
+                
+                // Create account object
+                const account = {
+                    id: Date.now().toString(),
+                    code,
+                    name,
+                    type,
+                    subtype,
+                    openingBalance,
+                    currency
+                };
+                
+                // Add to accounts array
+                this.accounts.push(account);
+                
+                // If there's an opening balance, create a transaction
+                if (openingBalance !== 0) {
+                    let debitAccount, creditAccount;
+                    
+                    if (['Asset', 'Expense'].includes(type)) {
+                        debitAccount = account.id;
+                        creditAccount = this.getEquityAccountId();
+                    } else {
+                        debitAccount = this.getEquityAccountId();
+                        creditAccount = account.id;
+                    }
+                    
+                    const transaction = {
+                        id: Date.now().toString() + '-opening',
+                        date: new Date().toISOString().split('T')[0],
+                        description: `Opening balance for ${name}`,
+                        debitAccount,
+                        debitAmount: Math.abs(openingBalance),
+                        creditAccount,
+                        creditAmount: Math.abs(openingBalance),
+                        narration: 'Opening balance'
+                    };
+                    
+                    this.transactions.push(transaction);
+                }
+                
+                // Save data and update UI
+                this.saveData();
+                this.renderAccounts();
+                this.renderTransactions();
+                this.updateDashboard();
+                
+                // Close modal and reset form
+                document.getElementById('account-modal').style.display = 'none';
+                document.getElementById('account-form').reset();
+                
+                this.showNotification('Account added successfully', 'success');
+            },
+            
+            // Delete a transaction
+            deleteTransaction(transactionId) {
+                if (confirm('Are you sure you want to delete this transaction?')) {
+                    this.transactions = this.transactions.filter(t => t.id !== transactionId);
+                    this.saveData();
+                    this.renderTransactions();
+                    this.updateDashboard();
+                    this.showNotification('Transaction deleted successfully', 'success');
+                }
+            },
+            
+            // Delete an account
+            deleteAccount(accountId) {
+                // Check if account has transactions
+                const hasTransactions = this.transactions.some(t => 
+                    t.debitAccount === accountId || t.creditAccount === accountId
+                );
+                
+                if (hasTransactions) {
+                    this.showNotification('Cannot delete account with existing transactions', 'error');
+                    return;
+                }
+                
+                if (confirm('Are you sure you want to delete this account?')) {
+                    this.accounts = this.accounts.filter(a => a.id !== accountId);
+                    this.saveData();
+                    this.renderAccounts();
+                    this.showNotification('Account deleted successfully', 'success');
+                }
+            },
+            
+            // Update dashboard with summary information
+            updateDashboard() {
+                // Calculate total assets
+                const totalAssets = this.calculateAccountTypeTotal('Asset');
+                document.getElementById('total-assets').textContent = this.formatCurrency(totalAssets);
+                
+                // Calculate total liabilities
+                const totalLiabilities = this.calculateAccountTypeTotal('Liability');
+                document.getElementById('total-liabilities').textContent = this.formatCurrency(totalLiabilities);
+                
+                // Calculate equity
+                const equity = this.calculateAccountTypeTotal('Equity');
+                document.getElementById('total-equity').textContent = this.formatCurrency(equity);
+                
+                // Calculate net income (Revenue - Expenses)
+                const revenue = this.calculateAccountTypeTotal('Revenue');
+                const expenses = this.calculateAccountTypeTotal('Expense');
+                const netIncome = revenue - expenses;
+                document.getElementById('net-income').textContent = this.formatCurrency(netIncome);
+                
+                // Update recent transactions
+                const recentTransactionsTable = document.getElementById('recent-transactions').querySelector('tbody');
+                recentTransactionsTable.innerHTML = '';
+                
+                // Show last 5 transactions
+                const recentTransactions = this.transactions.slice(-5).reverse();
+                
+                recentTransactions.forEach(transaction => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${transaction.date}</td>
+                        <td>${transaction.description}</td>
+                        <td class="debit">${this.formatCurrency(transaction.debitAmount)}</td>
+                        <td class="credit">${this.formatCurrency(transaction.creditAmount)}</td>
+                    `;
+                    recentTransactionsTable.appendChild(row);
+                });
+                
+                // Update charts
+                this.updateCharts();
+            },
+            
+            // Export all data as JSON
+            exportData() {
+                const data = {
+                    settings: this.settings,
+                    accounts: this.accounts,
+                    transactions: this.transactions
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'openledger_data.json');
+                link.style.visibility = 'hidden';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            },
+            
+            // Import data from JSON file
+            importData(file) {
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        if (data.settings) this.settings = data.settings;
+                        if (data.accounts) this.accounts = data.accounts;
+                        if (data.transactions) this.transactions = data.transactions;
+                        
+                        this.saveData();
+                        this.renderAccounts();
+                        this.renderTransactions();
+                        this.updateDashboard();
+                        
+                        // Update UI with settings
+                        document.getElementById('accounting-mode').value = this.settings.accountingMode;
+                        document.getElementById('accounting-basis').value = this.settings.accountingBasis;
+                        document.getElementById('company-name-input').value = this.settings.companyName;
+                        document.getElementById('base-currency').value = this.settings.baseCurrency;
+                        document.getElementById('financial-year').value = this.settings.financialYear;
+                        document.getElementById('company-name').textContent = this.settings.companyName;
+                        
+                        this.showNotification('Data imported successfully', 'success');
+                    } catch (error) {
+                        this.showNotification('Error importing data: Invalid file format', 'error');
+                    }
+                };
+                
+                reader.readAsText(file);
+            },
+            
+            // Show notification
+            showNotification(message, type) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${type} show`;
                 
                 setTimeout(() => {
-                    document.querySelector('.notification').classList.remove('show');
+                    notification.className = 'notification';
                 }, 3000);
-            }, 1000);
-        });
-
-        // Modal functionality
-        document.querySelectorAll('.close-modal').forEach(button => {
-            button.addEventListener('click', function() {
-                document.getElementById('importModal').style.display = 'none';
-            });
-        });
-
-        document.querySelector('[class*="import"]').addEventListener('click', function() {
-            document.getElementById('importModal').style.display = 'flex';
+            },
+            
+            // Format currency amount
+            formatCurrency(amount) {
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: this.settings.baseCurrency
+                }).format(amount);
+            },
+            
+            // Get account name by ID
+            getAccountName(accountId) {
+                const account = this.accounts.find(a => a.id === accountId);
+                return account ? `${account.code} - ${account.name}` : 'Unknown Account';
+            },
+            
+            // Get account balance
+            getAccountBalance(accountId) {
+                const account = this.accounts.find(a => a.id === accountId);
+                if (!account) return 0;
+                
+                let balance = account.openingBalance || 0;
+                
+                this.transactions.forEach(transaction => {
+                    if (transaction.debitAccount === accountId) {
+                        balance += transaction.debitAmount;
+                    }
+                    
+                    if (transaction.creditAccount === accountId) {
+                        balance -= transaction.creditAmount;
+                    }
+                });
+                
+                return balance;
+            },
+            
+            // Calculate total for an account type
+            calculateAccountTypeTotal(type, subtype = null) {
+                return this.accounts
+                    .filter(account => {
+                        if (subtype) {
+                            return account.type === type && account.subtype === subtype;
+                        }
+                        return account.type === type;
+                    })
+                    .reduce((total, account) => total + this.getAccountBalance(account.id), 0);
+            },
+            
+            // Get equity account ID (create one if it doesn't exist)
+            getEquityAccountId() {
+                let equityAccount = this.accounts.find(a => a.type === 'Equity' && a.name === 'Retained Earnings');
+                
+                if (!equityAccount) {
+                    equityAccount = {
+                        id: 'equity-' + Date.now(),
+                        code: '3000',
+                        name: 'Retained Earnings',
+                        type: 'Equity'
+                    };
+                    this.accounts.push(equityAccount);
+                    this.saveData();
+                }
+                
+                return equityAccount.id;
+            },
+            
+            // Generate income statement
+            generateIncomeStatement(asOfDate, style) {
+                // Filter transactions up to the selected date
+                const filteredTransactions = this.transactions.filter(transaction => {
+                    return transaction.date <= asOfDate;
+                });
+                
+                // Calculate revenue total
+                const revenueAccounts = this.accounts.filter(a => a.type === 'Revenue');
+                let revenueTotal = 0;
+                
+                revenueAccounts.forEach(account => {
+                    revenueTotal += this.getAccountBalance(account.id);
+                });
+                
+                // Calculate expense total
+                const expenseAccounts = this.accounts.filter(a => a.type === 'Expense');
+                let expenseTotal = 0;
+                
+                expenseAccounts.forEach(account => {
+                    expenseTotal += this.getAccountBalance(account.id);
+                });
+                
+                // Net income
+                const netIncome = revenueTotal - expenseTotal;
+                
+                // Generate HTML table
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Revenue</strong></td>
+                                <td></td>
+                            </tr>
+                `;
+                
+                // Add revenue accounts
+                revenueAccounts.forEach(account => {
+                    const balance = this.getAccountBalance(account.id);
+                    if (balance !== 0) {
+                        html += `
+                            <tr>
+                                <td>${account.name}</td>
+                                <td>${this.formatCurrency(balance)}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                html += `
+                            <tr>
+                                <td><strong>Total Revenue</strong></td>
+                                <td><strong>${this.formatCurrency(revenueTotal)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Expenses</strong></td>
+                                <td></td>
+                            </tr>
+                `;
+                
+                // Add expense accounts
+                expenseAccounts.forEach(account => {
+                    const balance = this.getAccountBalance(account.id);
+                    if (balance !== 0) {
+                        html += `
+                            <tr>
+                                <td>${account.name}</td>
+                                <td>${this.formatCurrency(balance)}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                html += `
+                            <tr>
+                                <td><strong>Total Expenses</strong></td>
+                                <td><strong>${this.formatCurrency(expenseTotal)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Net Income</strong></td>
+                                <td><strong>${this.formatCurrency(netIncome)}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+                
+                return html;
+            },
+            
+            // Generate balance sheet
+            generateBalanceSheet(asOfDate, style) {
+                // Calculate totals
+                const totalAssets = this.calculateAccountTypeTotal('Asset');
+                const totalLiabilities = this.calculateAccountTypeTotal('Liability');
+                const totalEquity = this.calculateAccountTypeTotal('Equity');
+                
+                // Generate HTML table
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Assets</strong></td>
+                                <td></td>
+                            </tr>
+                `;
+                
+                // Add asset accounts
+                const assetAccounts = this.accounts.filter(a => a.type === 'Asset');
+                assetAccounts.forEach(account => {
+                    const balance = this.getAccountBalance(account.id);
+                    if (balance !== 0) {
+                        html += `
+                            <tr>
+                                <td>${account.name}</td>
+                                <td>${this.formatCurrency(balance)}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                html += `
+                            <tr>
+                                <td><strong>Total Assets</strong></td>
+                                <td><strong>${this.formatCurrency(totalAssets)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Liabilities</strong></td>
+                                <td></td>
+                            </tr>
+                `;
+                
+                // Add liability accounts
+                const liabilityAccounts = this.accounts.filter(a => a.type === 'Liability');
+                liabilityAccounts.forEach(account => {
+                    const balance = this.getAccountBalance(account.id);
+                    if (balance !== 0) {
+                        html += `
+                            <tr>
+                                <td>${account.name}</td>
+                                <td>${this.formatCurrency(balance)}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                html += `
+                            <tr>
+                                <td><strong>Total Liabilities</strong></td>
+                                <td><strong>${this.formatCurrency(totalLiabilities)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Equity</strong></td>
+                                <td></td>
+                            </tr>
+                `;
+                
+                // Add equity accounts
+                const equityAccounts = this.accounts.filter(a => a.type === 'Equity');
+                equityAccounts.forEach(account => {
+                    const balance = this.getAccountBalance(account.id);
+                    if (balance !== 0) {
+                        html += `
+                            <tr>
+                                <td>${account.name}</td>
+                                <td>${this.formatCurrency(balance)}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                // Calculate net income (Revenue - Expenses)
+                const revenue = this.calculateAccountTypeTotal('Revenue');
+                const expenses = this.calculateAccountTypeTotal('Expense');
+                const netIncome = revenue - expenses;
+                
+                html += `
+                            <tr>
+                                <td>Retained Earnings</td>
+                                <td>${this.formatCurrency(netIncome)}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Equity</strong></td>
+                                <td><strong>${this.formatCurrency(totalEquity + netIncome)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Liabilities & Equity</strong></td>
+                                <td><strong>${this.formatCurrency(totalLiabilities + totalEquity + netIncome)}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+                
+                return html;
+            },
+            
+            // Generate cash flow statement
+            generateCashFlowStatement(asOfDate, style) {
+                // Simplified implementation
+                return `
+                    <div class="card">
+                        <div class="card-header">Cash Flow Statement (Direct Method)</div>
+                        <div class="card-body">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Cash flows from operating activities:</strong></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cash received from customers</td>
+                                        <td>${this.formatCurrency(50000)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cash paid to suppliers and employees</td>
+                                        <td>${this.formatCurrency(-35000)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Net cash from operating activities</strong></td>
+                                        <td><strong>${this.formatCurrency(15000)}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Cash flows from investing activities:</strong></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Purchase of property and equipment</td>
+                                        <td>${this.formatCurrency(-10000)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Net cash from investing activities</strong></td>
+                                        <td><strong>${this.formatCurrency(-10000)}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Cash flows from financing activities:</strong></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Proceeds from loans</td>
+                                        <td>${this.formatCurrency(5000)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Net cash from financing activities</strong></td>
+                                        <td><strong>${this.formatCurrency(5000)}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Net increase in cash</strong></td>
+                                        <td><strong>${this.formatCurrency(10000)}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cash at beginning of period</td>
+                                        <td>${this.formatCurrency(5000)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Cash at end of period</strong></td>
+                                        <td><strong>${this.formatCurrency(15000)}</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            },
+            
+            // Generate changes in equity statement
+            generateChangesInEquity(asOfDate, style) {
+                // Simplified implementation
+                return `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Beginning balance</td>
+                                <td>${this.formatCurrency(100000)}</td>
+                            </tr>
+                            <tr>
+                                <td>Net income</td>
+                                <td>${this.formatCurrency(25000)}</td>
+                            </tr>
+                            <tr>
+                                <td>Dividends paid</td>
+                                <td>${this.formatCurrency(-5000)}</td>
+                            </tr>
+                            <tr>
+                                <td>Additional investments</td>
+                                <td>${this.formatCurrency(10000)}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ending balance</strong></td>
+                                <td><strong>${this.formatCurrency(130000)}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+            },
+            
+            // Generate general ledger report
+            generateGeneralLedgerReport(asOfDate, style) {
+                return `
+                    <p>General Ledger report would show all transactions for all accounts with running balances.</p>
+                    <p>This would be similar to the ledger view but for all accounts simultaneously.</p>
+                `;
+            },
+            
+            // Generate AR aging report
+            generateARAgingReport(asOfDate, style) {
+                return `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Current</th>
+                                <th>1-30 Days</th>
+                                <th>31-60 Days</th>
+                                <th>61-90 Days</th>
+                                <th>Over 90 Days</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Customer A</td>
+                                <td>${this.formatCurrency(5000)}</td>
+                                <td>${this.formatCurrency(2000)}</td>
+                                <td>${this.formatCurrency(1000)}</td>
+                                <td>${this.formatCurrency(500)}</td>
+                                <td>${this.formatCurrency(200)}</td>
+                                <td>${this.formatCurrency(8700)}</td>
+                            </tr>
+                            <tr>
+                                <td>Customer B</td>
+                                <td>${this.formatCurrency(3000)}</td>
+                                <td>${this.formatCurrency(1500)}</td>
+                                <td>${this.formatCurrency(0)}</td>
+                                <td>${this.formatCurrency(0)}</td>
+                                <td>${this.formatCurrency(0)}</td>
+                                <td>${this.formatCurrency(4500)}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                <td><strong>${this.formatCurrency(8000)}</strong></td>
+                                <td><strong>${this.formatCurrency(3500)}</strong></td>
+                                <td><strong>${this.formatCurrency(1000)}</strong></td>
+                                <td><strong>${this.formatCurrency(500)}</strong></td>
+                                <td><strong>${this.formatCurrency(200)}</strong></td>
+                                <td><strong>${this.formatCurrency(13200)}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+            },
+            
+            // Generate AP aging report
+            generateAPAgingReport(asOfDate, style) {
+                return `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Vendor</th>
+                                <th>Current</th>
+                                <th>1-30 Days</th>
+                                <th>31-60 Days</th>
+                                <th>61-90 Days</th>
+                                <th>Over 90 Days</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Vendor X</td>
+                                <td>${this.formatCurrency(3000)}</td>
+                                <td>${this.formatCurrency(1000)}</td>
+                                <td>${this.formatCurrency(500)}</td>
+                                <td>${this.formatCurrency(0)}</td>
+                                <td>${this.formatCurrency(0)}</td>
+                                <td>${this.formatCurrency(4500)}</td>
+                            </tr>
+                            <tr>
+                                <td>Vendor Y</td>
+                                <td>${this.formatCurrency(2000)}</td>
+                                <td>${this.formatCurrency(500)}</td>
+                                <td>${this.formatCurrency(200)}</td>
+                                <td>${this.formatCurrency(100)}</td>
+                                <td>${this.formatCurrency(50)}</td>
+                                <td>${this.formatCurrency(2850)}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                <td><strong>${this.formatCurrency(5000)}</strong></td>
+                                <td><strong>${this.formatCurrency(1500)}</strong></td>
+                                <td><strong>${this.formatCurrency(700)}</strong></td>
+                                <td><strong>${this.formatCurrency(100)}</strong></td>
+                                <td><strong>${this.formatCurrency(50)}</strong></td>
+                                <td><strong>${this.formatCurrency(7350)}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+            },
+            
+            // Get report title based on type and style
+            getReportTitle(type, style) {
+                const titles = {
+                    'income-statement': 'Income Statement',
+                    'balance-sheet': 'Balance Sheet',
+                    'cash-flow': 'Cash Flow Statement',
+                    'changes-equity': 'Statement of Changes in Equity',
+                    'general-ledger': 'General Ledger Report',
+                    'ar-aging': 'Accounts Receivable Aging Report',
+                    'ap-aging': 'Accounts Payable Aging Report'
+                };
+                
+                const styles = {
+                    'standard': '',
+                    'comparative': 'Comparative ',
+                    'common-size': 'Common Size ',
+                    'detailed': 'Detailed '
+                };
+                
+                return styles[style] + titles[type];
+            }
+        };
+        
+        // Initialize the application when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            OpenLedger.init();
         });
     </script>
 </body>
