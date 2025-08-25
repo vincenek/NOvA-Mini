@@ -3,8 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reality Filter – Advanced Manipulation Detection</title>
+    <title>OpenLedger - Universal Accounting Engine</title>
     <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #1abc9c;
+        }
+        
         * {
             box-sizing: border-box;
             margin: 0;
@@ -13,779 +25,1707 @@
         }
         
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            background-color: #f5f7fa;
             color: #333;
             line-height: 1.6;
-            padding: 20px;
-            min-height: 100vh;
         }
         
         .container {
-            max-width: 1400px;
+            width: 100%;
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 0 15px;
         }
         
         header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 25px;
-            background: linear-gradient(135deg, #2c3e50, #1a2530);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            border-radius: 10px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        
-        .dashboard {
+        .header-content {
             display: flex;
-            gap: 20px;
-            margin-bottom: 25px;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .metric {
-            flex: 1;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .metric h3 {
-            font-size: 1rem;
-            color: #7f8c8d;
-            margin-bottom: 8px;
-        }
-        
-        .metric-value {
+        .logo {
             font-size: 1.8rem;
             font-weight: bold;
-            color: #2c3e50;
         }
         
-        .input-section {
+        .logo span {
+            color: var(--accent);
+        }
+        
+        .nav-tabs {
             display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin-bottom: 30px;
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-bottom: 2px solid var(--accent);
+            overflow-x: auto;
         }
         
-        textarea {
+        .tab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .tab:hover {
+            background: #f8f9fa;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--accent);
+            color: var(--accent);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 2rem;
+            background: white;
+            border-radius: 0 0 5px 5px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            min-height: 500px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
             width: 100%;
-            min-height: 150px;
-            padding: 20px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            resize: vertical;
-            transition: border-color 0.3s;
-        }
-        
-        textarea:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-        
-        .button-container {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
         }
         
         button {
-            background: #3498db;
+            background: var(--accent);
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: 600;
-            transition: all 0.3s;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.3s;
         }
         
         button:hover {
             background: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
         
-        button:active {
-            transform: translateY(0);
+        .btn-danger {
+            background: var(--danger);
         }
         
-        #clearButton {
-            background: #e74c3c;
-        }
-        
-        #clearButton:hover {
+        .btn-danger:hover {
             background: #c0392b;
         }
         
-        #analyzeButton {
-            background: #9b59b6;
+        .btn-success {
+            background: var(--success);
         }
         
-        #analyzeButton:hover {
-            background: #8e44ad;
+        .btn-success:hover {
+            background: #27ae60;
         }
         
-        .panels {
-            display: flex;
-            gap: 25px;
-            margin-bottom: 30px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
         }
         
-        @media (max-width: 992px) {
-            .panels {
-                flex-direction: column;
-            }
-            
-            .dashboard {
-                flex-direction: column;
-            }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
         }
         
-        .panel {
-            flex: 1;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .panel-header {
-            background: #2c3e50;
-            color: white;
-            padding: 18px 25px;
+        th {
+            background: #f8f9fa;
             font-weight: 600;
-            font-size: 1.3rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         
-        .counter {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 3px 10px;
-            border-radius: 20px;
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .debit {
+            color: var(--success);
+            font-weight: 500;
+        }
+        
+        .credit {
+            color: var(--danger);
+            font-weight: 500;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            color: #666;
             font-size: 0.9rem;
         }
         
-        .panel-content {
-            padding: 25px;
-            flex: 1;
-            overflow-y: auto;
-            min-height: 350px;
-            max-height: 500px;
-            line-height: 1.8;
-            font-size: 1.1rem;
-        }
-        
-        .replaced-urgency {
-            color: #e74c3c;
-            font-weight: bold;
-            border-bottom: 2px dotted #e74c3c;
-            background-color: rgba(231, 76, 60, 0.1);
-            padding: 0 2px;
-            border-radius: 3px;
-        }
-        
-        .replaced-emotional {
-            color: #f39c12;
-            font-weight: bold;
-            border-bottom: 2px dotted #f39c12;
-            background-color: rgba(243, 156, 18, 0.1);
-            padding: 0 2px;
-            border-radius: 3px;
-        }
-        
-        .replaced-personalization {
-            color: #3498db;
-            font-weight: bold;
-            border-bottom: 2px dotted #3498db;
-            background-color: rgba(52, 152, 219, 0.1);
-            padding: 0 2px;
-            border-radius: 3px;
-        }
-        
-        .replaced-authority {
-            color: #27ae60;
-            font-weight: bold;
-            border-bottom: 2px dotted #27ae60;
-            background-color: rgba(39, 174, 96, 0.1);
-            padding: 0 2px;
-            border-radius: 3px;
-        }
-        
-        .replaced-social {
-            color: #8e44ad;
-            font-weight: bold;
-            border-bottom: 2px dotted #8e44ad;
-            background-color: rgba(142, 68, 173, 0.1);
-            padding: 0 2px;
-            border-radius: 3px;
-        }
-        
-        .legend {
+        .filters {
             display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
             flex-wrap: wrap;
         }
         
-        .legend-item {
+        .filter-group {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            background: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            gap: 0.5rem;
         }
         
-        .color-box {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-        }
-        
-        .urgency-color {
-            background-color: #e74c3c;
-        }
-        
-        .emotional-color {
-            background-color: #f39c12;
-        }
-        
-        .personalization-color {
-            background-color: #3498db;
-        }
-        
-        .authority-color {
-            background-color: #27ae60;
-        }
-        
-        .social-color {
-            background-color: #8e44ad;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 20px;
-            margin-top: 20px;
-            color: #7f8c8d;
-            font-size: 0.95rem;
-            border-top: 1px solid #ddd;
-        }
-        
-        .placeholder {
-            color: #95a5a6;
-            font-style: italic;
-            text-align: center;
-            margin-top: 40px;
-        }
-        
-        .example-text {
-            font-size: 0.9rem;
-            color: #7f8c8d;
-            margin-top: 10px;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-        
-        .analysis-section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            margin-bottom: 30px;
-        }
-        
-        .analysis-section h2 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        .technique-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-        }
-        
-        .technique-item {
+        .report-options {
             background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #3498db;
-        }
-        
-        .technique-name {
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 5px;
-        }
-        
-        .technique-desc {
-            font-size: 0.9rem;
-            color: #7f8c8d;
-        }
-        
-        .manipulation-score {
-            height: 10px;
-            background: #ecf0f1;
+            padding: 1rem;
             border-radius: 5px;
-            margin-top: 10px;
-            overflow: hidden;
+            margin-bottom: 1.5rem;
         }
         
-        .score-fill {
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100%;
-            border-radius: 5px;
-            background: linear-gradient(90deg, #2ecc71, #f1c40f, #e74c3c);
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
         }
         
-        .stats-container {
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 5px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
             display: flex;
             justify-content: space-between;
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: #7f8c8d;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem;
+            border-radius: 5px;
+            color: white;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 1100;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .notification.success {
+            background: var(--success);
+        }
+        
+        .notification.error {
+            background: var(--danger);
+        }
+        
+        @media (max-width: 768px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .tab {
+                padding: 0.75rem 1rem;
+            }
         }
     </style>
 </head>
 <body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Open<span>Ledger</span></div>
+                <div id="company-name">Company Name</div>
+            </div>
+        </div>
+    </header>
+    
     <div class="container">
-        <header>
-            <h1>Reality Filter – Advanced Manipulation Detection</h1>
-            <p class="subtitle">Uncover hidden persuasion techniques in media, advertising, and content</p>
-        </header>
-        
-        <div class="dashboard">
-            <div class="metric">
-                <h3>MANIPULATION SCORE</h3>
-                <div class="metric-value" id="manipulationScore">0%</div>
-            </div>
-            <div class="metric">
-                <h3>DETECTED TECHNIQUES</h3>
-                <div class="metric-value" id="techniquesCount">0</div>
-            </div>
-            <div class="metric">
-                <h3>RED FLAGS</h3>
-                <div class="metric-value" id="redFlagsCount">0</div>
-            </div>
+        <div class="nav-tabs">
+            <div class="tab active" data-tab="dashboard">Dashboard</div>
+            <div class="tab" data-tab="journal">Journal</div>
+            <div class="tab" data-tab="ledger">Ledger</div>
+            <div class="tab" data-tab="trial-balance">Trial Balance</div>
+            <div class="tab" data-tab="reports">Reports</div>
+            <div class="tab" data-tab="accounts">Chart of Accounts</div>
+            <div class="tab" data-tab="settings">Settings</div>
         </div>
         
-        <div class="manipulation-score">
-            <div class="score-fill" id="scoreFill" style="width: 0%"></div>
-        </div>
-        <div class="stats-container">
-            <span>Low</span>
-            <span>Medium</span>
-            <span>High</span>
-        </div>
-        
-        <div class="legend">
-            <div class="legend-item">
-                <div class="color-box urgency-color"></div>
-                <span>Urgency/Scarcity</span>
-            </div>
-            <div class="legend-item">
-                <div class="color-box emotional-color"></div>
-                <span>Emotional Appeal</span>
-            </div>
-            <div class="legend-item">
-                <div class="color-box personalization-color"></div>
-                <span>Personalization</span>
-            </div>
-            <div class="legend-item">
-                <div class="color-box authority-color"></div>
-                <span>False Authority</span>
-            </div>
-            <div class="legend-item">
-                <div class="color-box social-color"></div>
-                <span>Social Proof</span>
-            </div>
-        </div>
-        
-        <section class="input-section">
-            <textarea id="inputText" placeholder="Paste text to analyze (ads, headlines, articles, marketing copy)..."></textarea>
-            <div class="example-text" id="exampleText">Click here to load example text</div>
-            <div class="button-container">
-                <button id="filterButton">Filter Text</button>
-                <button id="analyzeButton">Deep Analysis</button>
-                <button id="clearButton">Clear Text</button>
-            </div>
-        </section>
-        
-        <div class="panels">
-            <div class="panel">
-                <div class="panel-header">
-                    <span>Original Text</span>
-                    <span class="counter">Words: <span id="originalWordCount">0</span></span>
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <h2>Financial Overview</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-label">Total Assets</div>
+                    <div class="stat-value" id="total-assets">$0.00</div>
                 </div>
-                <div id="originalText" class="panel-content">
-                    <p class="placeholder">Original text will appear here</p>
+                <div class="stat-card">
+                    <div class="stat-label">Total Liabilities</div>
+                    <div class="stat-value" id="total-liabilities">$0.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Equity</div>
+                    <div class="stat-value" id="total-equity">$0.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Net Income</div>
+                    <div class="stat-value" id="net-income">$0.00</div>
                 </div>
             </div>
             
-            <div class="panel">
-                <div class="panel-header">
-                    <span>Reality Filtered Text</span>
-                    <span class="counter">Changes: <span id="changesCount">0</span></span>
-                </div>
-                <div id="filteredText" class="panel-content">
-                    <p class="placeholder">Filtered text will appear here</p>
+            <div class="card">
+                <div class="card-header">Recent Transactions</div>
+                <div class="card-body">
+                    <table id="recent-transactions">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Recent transactions will be populated here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
         
-        <div class="analysis-section" id="analysisSection" style="display: none;">
-            <h2>Detected Persuasion Techniques</h2>
-            <div class="technique-list" id="techniqueList">
-                <!-- Techniques will be inserted here -->
+        <!-- Journal Tab -->
+        <div id="journal" class="tab-content">
+            <h2>Journal Entries</h2>
+            <button id="add-transaction-btn" style="margin-bottom: 1.5rem;">Add New Transaction</button>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="journal-date-from">From:</label>
+                    <input type="date" id="journal-date-from">
+                </div>
+                <div class="filter-group">
+                    <label for="journal-date-to">To:</label>
+                    <input type="date" id="journal-date-to">
+                </div>
+                <button id="apply-journal-filter">Apply Filter</button>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <table id="journal-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Account</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Journal entries will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         
-        <footer>
-            RF v2.0 – Advanced Algorithmic Detox Engine | Based on Cialdini's Principles of Persuasion
-        </footer>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputText = document.getElementById('inputText');
-            const filterButton = document.getElementById('filterButton');
-            const analyzeButton = document.getElementById('analyzeButton');
-            const clearButton = document.getElementById('clearButton');
-            const exampleText = document.getElementById('exampleText');
-            const originalText = document.getElementById('originalText');
-            const filteredText = document.getElementById('filteredText');
-            const originalWordCount = document.getElementById('originalWordCount');
-            const changesCount = document.getElementById('changesCount');
-            const manipulationScore = document.getElementById('manipulationScore');
-            const techniquesCount = document.getElementById('techniquesCount');
-            const redFlagsCount = document.getElementById('redFlagsCount');
-            const scoreFill = document.getElementById('scoreFill');
-            const analysisSection = document.getElementById('analysisSection');
-            const techniqueList = document.getElementById('techniqueList');
+        <!-- Ledger Tab -->
+        <div id="ledger" class="tab-content">
+            <h2>General Ledger</h2>
             
-            // Example text for demonstration
-            const exampleContent = `For a LIMITED TIME only, we're offering an EXCLUSIVE opportunity to unlock FINANCIAL FREEDOM with our AI-powered investment platform. This ONCE-IN-A-LIFETIME offer is PERSONALIZED FOR YOU and represents a REAL BREAKTHROUGH in trading technology. 
-
-Don't miss this MUST-HAVE tool that's TAILORED to your needs. ACT NOW before this SPECIAL OFFER disappears! This RISK-FREE opportunity reveals HIDDEN SECRETS that could create MIRACLE results in your portfolio.
-
-Experts agree that this is the SMARTEST INVESTMENT you'll make this year. Join thousands of SUCCESSFUL INVESTORS who have already seen incredible returns. But hurry - this offer won't last long!
-
-Our proprietary algorithm, developed by TOP FINANCIAL EXPERTS, guarantees outstanding results. You'll be amazed at how quickly you can achieve WEALTH AND PROSPERITY.`;
-
-            // Comprehensive dictionary of manipulative words with replacements, tooltips, and types
-            const manipulationDictionary = [
-                // Urgency/Scarcity
-                { manipulative: "limited time", neutral: "available", tooltip: "Creates false urgency to pressure quick decisions", type: "urgency", score: 8 },
-                { manipulative: "exclusive", neutral: "standard", tooltip: "Suggests special access when often available to many", type: "urgency", score: 7 },
-                { manipulative: "once-in-a-lifetime", neutral: "ordinary", tooltip: "Exaggerates rarity to increase perceived value", type: "urgency", score: 9 },
-                { manipulative: "act now", neutral: "proceed", tooltip: "Creates unnecessary urgency to bypass careful consideration", type: "urgency", score: 8 },
-                { manipulative: "hurry", neutral: "proceed", tooltip: "Pressures quick action without proper consideration", type: "urgency", score: 7 },
-                { manipulative: "before it's gone", neutral: "available while supplies last", tooltip: "Uses artificial scarcity to drive action", type: "urgency", score: 8 },
-                { manipulative: "only a few left", neutral: "available", tooltip: "Exaggerates scarcity to create urgency", type: "urgency", score: 7 },
-                
-                // Emotional triggers
-                { manipulative: "financial freedom", neutral: "money opportunity", tooltip: "Appeals to emotions about wealth without realistic promises", type: "emotional", score: 9 },
-                { manipulative: "unlock", neutral: "access", tooltip: "Implies hidden benefits that are typically standard", type: "emotional", score: 6 },
-                { manipulative: "must-have", neutral: "optional", tooltip: "Creates social pressure to acquire something unnecessary", type: "emotional", score: 7 },
-                { manipulative: "breakthrough", neutral: "development", tooltip: "Overstates incremental progress as revolutionary", type: "emotional", score: 8 },
-                { manipulative: "miracle", neutral: "product", tooltip: "Uses exaggerated claims that can't be substantiated", type: "emotional", score: 9 },
-                { manipulative: "amazing", neutral: "notable", tooltip: "Uses exaggerated language to generate excitement", type: "emotional", score: 6 },
-                { manipulative: "incredible", neutral: "notable", tooltip: "Employs hyperbole to enhance perceived value", type: "emotional", score: 6 },
-                { manipulative: "life-changing", neutral: "potentially beneficial", tooltip: "Overstates potential benefits to create desire", type: "emotional", score: 8 },
-                
-                // Personalization
-                { manipulative: "personalized for you", neutral: "generic", tooltip: "Suggests custom tailoring when often it's mass-produced", type: "personalization", score: 7 },
-                { manipulative: "tailored", neutral: "general", tooltip: "Implies custom fitting when typically it's one-size-fits-all", type: "personalization", score: 7 },
-                { manipulative: "just for you", neutral: "for customers", tooltip: "Creates false sense of individual attention", type: "personalization", score: 6 },
-                { manipulative: "designed for your", neutral: "designed for", tooltip: "Suggests customization that may not exist", type: "personalization", score: 6 },
-                
-                // Authority
-                { manipulative: "experts agree", neutral: "some suggest", tooltip: "Appeals to authority without specific evidence", type: "authority", score: 8 },
-                { manipulative: "scientists say", neutral: "research suggests", tooltip: "Vague reference to scientific authority", type: "authority", score: 7 },
-                { manipulative: "doctors recommend", neutral: "some doctors recommend", tooltip: "Overstates professional endorsement", type: "authority", score: 8 },
-                { manipulative: "top financial experts", neutral: "financial professionals", tooltip: "Uses vague authority claims to build credibility", type: "authority", score: 7 },
-                
-                // Social proof
-                { manipulative: "join thousands", neutral: "join others", tooltip: "Uses social proof to validate the offering", type: "social", score: 6 },
-                { manipulative: "most popular", neutral: "commonly used", tooltip: "Appeals to popularity rather than merit", type: "social", score: 6 },
-                { manipulative: "everyone is talking about", neutral: "some people are discussing", tooltip: "Exaggerates social consensus", type: "social", score: 7 },
-                
-                // Other techniques
-                { manipulative: "risk-free", neutral: "with terms", tooltip: "Hides actual conditions and potential costs", type: "emotional", score: 8 },
-                { manipulative: "hidden secret", neutral: "information", tooltip: "Implies exclusive knowledge that is typically widely known", type: "emotional", score: 7 },
-                { manipulative: "special offer", neutral: "offer", tooltip: "Makes a standard promotion seem unique and limited", type: "urgency", score: 6 },
-                { manipulative: "AI-powered", neutral: "uses AI", tooltip: "Exaggerates technological sophistication for marketing appeal", type: "authority", score: 6 },
-                { manipulative: "guarantee", neutral: "assurance", tooltip: "Overpromises results without sufficient evidence", type: "emotional", score: 7 },
-                { manipulative: "proprietary", neutral: "custom", tooltip: "Suggests unique advantage that may be exaggerated", type: "authority", score: 6 },
-            ];
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="ledger-account">Account:</label>
+                    <select id="ledger-account">
+                        <!-- Accounts will be populated here -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="ledger-date-from">From:</label>
+                    <input type="date" id="ledger-date-from">
+                </div>
+                <div class="filter-group">
+                    <label for="ledger-date-to">To:</label>
+                    <input type="date" id="ledger-date-to">
+                </div>
+                <button id="apply-ledger-filter">Apply Filter</button>
+            </div>
             
-            // Persuasion techniques database
-            const persuasionTechniques = [
-                {
-                    name: "Artificial Urgency",
-                    description: "Creating a false sense of time pressure to force quick decisions",
-                    examples: "Limited time, Act now, Hurry, Ending soon",
-                    category: "urgency"
-                },
-                {
-                    name: "Scarcity Appeal",
-                    description: "Suggesting limited availability to increase perceived value",
-                    examples: "Only a few left, While supplies last, Exclusive offer",
-                    category: "urgency"
-                },
-                {
-                    name: "Emotional Triggering",
-                    description: "Appealing to strong emotions rather than rational consideration",
-                    examples: "Life-changing, Miracle, Amazing, Incredible",
-                    category: "emotional"
-                },
-                {
-                    name: "False Personalization",
-                    description: "Creating the illusion of custom tailoring for the individual",
-                    examples: "Just for you, Personalized, Tailored to your needs",
-                    category: "personalization"
-                },
-                {
-                    name: "Appeal to Authority",
-                    description: "Using vague or false authority figures to build credibility",
-                    examples: "Experts agree, Scientists say, Doctors recommend",
-                    category: "authority"
-                },
-                {
-                    name: "Social Proof",
-                    description: "Suggesting widespread adoption to encourage conformity",
-                    examples: "Join thousands, Most popular, Everyone is using",
-                    category: "social"
-                },
-                {
-                    name: "Exaggerated Claims",
-                    description: "Making promises that cannot be substantiated or are unrealistic",
-                    examples: "Financial freedom, Breakthrough, Miracle results",
-                    category: "emotional"
-                }
-            ];
+            <div class="card">
+                <div class="card-body">
+                    <table id="ledger-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                                <th>Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Ledger entries will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Trial Balance Tab -->
+        <div id="trial-balance" class="tab-content">
+            <h2>Trial Balance</h2>
             
-            // Function to escape HTML to prevent XSS
-            function escapeHtml(unsafe) {
-                return unsafe
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#039;");
-            }
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="tb-date">As of:</label>
+                    <input type="date" id="tb-date">
+                </div>
+                <button id="generate-tb">Generate Trial Balance</button>
+            </div>
             
-            // Function to process text and replace manipulative phrases
-            function processText(text, deepAnalysis = false) {
-                let processedText = escapeHtml(text);
-                let changeCounter = 0;
-                let totalScore = 0;
-                let detectedTechniques = new Set();
+            <div class="card">
+                <div class="card-body">
+                    <table id="trial-balance-table">
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Trial balance will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reports Tab -->
+        <div id="reports" class="tab-content">
+            <h2>Financial Reports</h2>
+            
+            <div class="report-options">
+                <div class="form-group">
+                    <label for="report-type">Report Type:</label>
+                    <select id="report-type">
+                        <option value="income-statement">Income Statement</option>
+                        <option value="balance-sheet">Balance Sheet</option>
+                        <option value="cash-flow">Cash Flow Statement</option>
+                        <option value="changes-equity">Statement of Changes in Equity</option>
+                    </select>
+                </div>
                 
-                // Replace manipulative phrases with highlighted spans
-                manipulationDictionary.forEach(item => {
-                    const regex = new RegExp(`\\b${item.manipulative}\\b`, 'gi');
-                    const matches = processedText.match(regex);
-                    if (matches) {
-                        changeCounter += matches.length;
-                        totalScore += item.score * matches.length;
-                        detectedTechniques.add(item.type);
-                        
-                        // For deep analysis, we want to track all techniques
-                        if (deepAnalysis) {
-                            processedText = processedText.replace(regex, 
-                                `<span class="replaced-${item.type}" title="${item.tooltip} (Score: ${item.score})">${item.neutral}</span>`
-                            );
-                        } else {
-                            processedText = processedText.replace(regex, 
-                                `<span class="replaced-${item.type}" title="${item.tooltip}">${item.neutral}</span>`
-                            );
-                        }
-                    }
-                });
+                <div class="form-group">
+                    <label for="report-style">Report Style:</label>
+                    <select id="report-style">
+                        <option value="standard">Standard</option>
+                        <option value="comparative">Comparative</option>
+                        <option value="common-size">Common Size</option>
+                    </select>
+                </div>
                 
-                changesCount.textContent = changeCounter;
-                
-                // Calculate manipulation score (0-100)
-                const wordCount = countWords(text);
-                let scorePercent = 0;
-                
-                if (wordCount > 0) {
-                    // Base score on density of manipulation phrases
-                    const density = changeCounter / wordCount;
-                    scorePercent = Math.min(100, Math.round(density * 1000));
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="report-period">Period:</label>
+                        <select id="report-period">
+                            <option value="monthly">Monthly</option>
+                            <option value="quarterly">Quarterly</option>
+                            <option value="annual">Annual</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="report-date">Date:</label>
+                        <input type="date" id="report-date">
+                    </div>
+                    <button id="generate-report">Generate Report</button>
+                    <button id="export-report">Export as CSV</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header" id="report-title">Report Preview</div>
+                <div class="card-body">
+                    <div id="report-content">
+                        <!-- Report content will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chart of Accounts Tab -->
+        <div id="accounts" class="tab-content">
+            <h2>Chart of Accounts</h2>
+            <button id="add-account-btn" style="margin-bottom: 1.5rem;">Add New Account</button>
+            
+            <div class="card">
+                <div class="card-body">
+                    <table id="accounts-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Account Name</th>
+                                <th>Type</th>
+                                <th>Balance</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Accounts will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <h2>Application Settings</h2>
+            
+            <div class="card">
+                <div class="card-header">Accounting Configuration</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="accounting-mode">Accounting Mode:</label>
+                        <select id="accounting-mode">
+                            <option value="double">Double-Entry</option>
+                            <option value="single">Single-Entry</option>
+                        </select>
+                    </div>
                     
-                    // Adjust based on severity of techniques
-                    const severityAdjustment = Math.min(50, totalScore * 2);
-                    scorePercent = Math.min(100, scorePercent + severityAdjustment);
-                }
-                
-                manipulationScore.textContent = `${scorePercent}%`;
-                scoreFill.style.width = `${scorePercent}%`;
-                
-                // Update technique counts
-                techniquesCount.textContent = detectedTechniques.size;
-                redFlagsCount.textContent = changeCounter;
-                
-                return {
-                    text: processedText,
-                    techniques: detectedTechniques,
-                    score: scorePercent,
-                    changes: changeCounter
-                };
-            }
+                    <div class="form-group">
+                        <label for="accounting-basis">Accounting Basis:</label>
+                        <select id="accounting-basis">
+                            <option value="accrual">Accrual Basis</option>
+                            <option value="cash">Cash Basis</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="company-name-input">Company Name:</label>
+                        <input type="text" id="company-name-input" placeholder="Enter company name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="base-currency">Base Currency:</label>
+                        <select id="base-currency">
+                            <option value="USD">US Dollar (USD)</option>
+                            <option value="EUR">Euro (EUR)</option>
+                            <option value="GBP">British Pound (GBP)</option>
+                            <option value="JPY">Japanese Yen (JPY)</option>
+                        </select>
+                    </div>
+                    
+                    <button id="save-settings">Save Settings</button>
+                </div>
+            </div>
             
-            // Function to count words
-            function countWords(text) {
-                return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
-            }
-            
-            // Function to display analysis results
-            function displayAnalysis(techniques, score) {
-                analysisSection.style.display = 'block';
-                techniqueList.innerHTML = '';
+            <div class="card">
+                <div class="card-header">Data Management</div>
+                <div class="card-body">
+                    <button id="export-data" style="margin-right: 1rem;">Export All Data</button>
+                    <button id="import-data" style="margin-right: 1rem;">Import Data</button>
+                    <button id="clear-data" class="btn-danger">Clear All Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Transaction Modal -->
+    <div id="transaction-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Transaction</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="transaction-form">
+                <div class="form-group">
+                    <label for="transaction-date">Date:</label>
+                    <input type="date" id="transaction-date" required>
+                </div>
                 
-                // Show relevant techniques
-                persuasionTechniques.forEach(tech => {
-                    if (techniques.has(tech.category)) {
-                        const techElement = document.createElement('div');
-                        techElement.className = 'technique-item';
-                        techElement.innerHTML = `
-                            <div class="technique-name">${tech.name}</div>
-                            <div class="technique-desc">${tech.description}</div>
-                            <div class="technique-desc"><strong>Examples:</strong> ${tech.examples}</div>
-                        `;
-                        techniqueList.appendChild(techElement);
+                <div class="form-group">
+                    <label for="transaction-description">Description:</label>
+                    <input type="text" id="transaction-description" placeholder="Enter description" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="debit-account">Debit Account:</label>
+                    <select id="debit-account" required>
+                        <!-- Accounts will be populated here -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="debit-amount">Debit Amount:</label>
+                    <input type="number" id="debit-amount" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="credit-account">Credit Account:</label>
+                    <select id="credit-account" required>
+                        <!-- Accounts will be populated here -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="credit-amount">Credit Amount:</label>
+                    <input type="number" id="credit-amount" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="narration">Narration:</label>
+                    <textarea id="narration" placeholder="Additional details"></textarea>
+                </div>
+                
+                <button type="submit">Save Transaction</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Account Modal -->
+    <div id="account-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Account</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="account-form">
+                <div class="form-group">
+                    <label for="account-code">Account Code:</label>
+                    <input type="text" id="account-code" placeholder="e.g., 1010" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="account-name">Account Name:</label>
+                    <input type="text" id="account-name" placeholder="e.g., Cash" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="account-type">Account Type:</label>
+                    <select id="account-type" required>
+                        <option value="">Select Type</option>
+                        <option value="Asset">Asset</option>
+                        <option value="Liability">Liability</option>
+                        <option value="Equity">Equity</option>
+                        <option value="Revenue">Revenue</option>
+                        <option value="Expense">Expense</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="account-subtype">Account Subtype:</label>
+                    <select id="account-subtype">
+                        <option value="">Select Subtype (Optional)</option>
+                        <option value="Current Asset">Current Asset</option>
+                        <option value="Fixed Asset">Fixed Asset</option>
+                        <option value="Current Liability">Current Liability</option>
+                        <option value="Long-term Liability">Long-term Liability</option>
+                        <option value="Operating Revenue">Operating Revenue</option>
+                        <option value="Non-operating Revenue">Non-operating Revenue</option>
+                        <option value="Operating Expense">Operating Expense</option>
+                        <option value="Non-operating Expense">Non-operating Expense</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="opening-balance">Opening Balance:</label>
+                    <input type="number" id="opening-balance" step="0.01" placeholder="0.00">
+                </div>
+                
+                <button type="submit">Save Account</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+    
+    <!-- Hidden file input for import -->
+    <input type="file" id="import-file" style="display: none;" accept=".json">
+    
+    <script>
+        // Main application object
+        const OpenLedger = {
+            // Application state
+            settings: {
+                accountingMode: 'double',
+                accountingBasis: 'accrual',
+                companyName: 'Company Name',
+                baseCurrency: 'USD'
+            },
+            accounts: [],
+            transactions: [],
+            
+            // Initialize the application
+            init() {
+                this.loadData();
+                this.setupEventListeners();
+                this.renderAccounts();
+                this.renderTransactions();
+                this.updateDashboard();
+                this.setCurrentDate();
+            },
+            
+            // Load data from localStorage
+            loadData() {
+                const settings = localStorage.getItem('openledger-settings');
+                const accounts = localStorage.getItem('openledger-accounts');
+                const transactions = localStorage.getItem('openledger-transactions');
+                
+                if (settings) this.settings = JSON.parse(settings);
+                if (accounts) this.accounts = JSON.parse(accounts);
+                if (transactions) this.transactions = JSON.parse(transactions);
+                
+                // Update UI with settings
+                document.getElementById('accounting-mode').value = this.settings.accountingMode;
+                document.getElementById('accounting-basis').value = this.settings.accountingBasis;
+                document.getElementById('company-name-input').value = this.settings.companyName;
+                document.getElementById('base-currency').value = this.settings.baseCurrency;
+                document.getElementById('company-name').textContent = this.settings.companyName;
+            },
+            
+            // Save data to localStorage
+            saveData() {
+                localStorage.setItem('openledger-settings', JSON.stringify(this.settings));
+                localStorage.setItem('openledger-accounts', JSON.stringify(this.accounts));
+                localStorage.setItem('openledger-transactions', JSON.stringify(this.transactions));
+            },
+            
+            // Set current date in date fields
+            setCurrentDate() {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('transaction-date').value = today;
+                document.getElementById('journal-date-from').value = today;
+                document.getElementById('journal-date-to').value = today;
+                document.getElementById('ledger-date-from').value = today;
+                document.getElementById('ledger-date-to').value = today;
+                document.getElementById('tb-date').value = today;
+                document.getElementById('report-date').value = today;
+            },
+            
+            // Setup event listeners
+            setupEventListeners() {
+                // Tab navigation
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                        
+                        tab.classList.add('active');
+                        document.getElementById(tab.dataset.tab).classList.add('active');
+                    });
+                });
+                
+                // Modal controls
+                document.querySelectorAll('.close').forEach(close => {
+                    close.addEventListener('click', () => {
+                        document.querySelectorAll('.modal').forEach(modal => {
+                            modal.style.display = 'none';
+                        });
+                    });
+                });
+                
+                // Add transaction button
+                document.getElementById('add-transaction-btn').addEventListener('click', () => {
+                    document.getElementById('transaction-modal').style.display = 'flex';
+                });
+                
+                // Add account button
+                document.getElementById('add-account-btn').addEventListener('click', () => {
+                    document.getElementById('account-modal').style.display = 'flex';
+                });
+                
+                // Save settings
+                document.getElementById('save-settings').addEventListener('click', () => {
+                    this.settings.accountingMode = document.getElementById('accounting-mode').value;
+                    this.settings.accountingBasis = document.getElementById('accounting-basis').value;
+                    this.settings.companyName = document.getElementById('company-name-input').value;
+                    this.settings.baseCurrency = document.getElementById('base-currency').value;
+                    
+                    document.getElementById('company-name').textContent = this.settings.companyName;
+                    this.saveData();
+                    this.showNotification('Settings saved successfully', 'success');
+                });
+                
+                // Transaction form submission
+                document.getElementById('transaction-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addTransaction();
+                });
+                
+                // Account form submission
+                document.getElementById('account-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addAccount();
+                });
+                
+                // Export data
+                document.getElementById('export-data').addEventListener('click', () => {
+                    this.exportData();
+                });
+                
+                // Import data
+                document.getElementById('import-data').addEventListener('click', () => {
+                    document.getElementById('import-file').click();
+                });
+                
+                document.getElementById('import-file').addEventListener('change', (e) => {
+                    this.importData(e.target.files[0]);
+                });
+                
+                // Clear data
+                document.getElementById('clear-data').addEventListener('click', () => {
+                    if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+                        localStorage.clear();
+                        this.accounts = [];
+                        this.transactions = [];
+                        this.saveData();
+                        this.renderAccounts();
+                        this.renderTransactions();
+                        this.updateDashboard();
+                        this.showNotification('All data has been cleared', 'success');
                     }
                 });
                 
-                // Add advice based on score
-                const adviceElement = document.createElement('div');
-                adviceElement.className = 'technique-item';
-                adviceElement.style.gridColumn = '1 / -1';
+                // Generate trial balance
+                document.getElementById('generate-tb').addEventListener('click', () => {
+                    this.generateTrialBalance();
+                });
                 
-                let adviceText = '';
-                if (score < 30) {
-                    adviceText = 'This text appears to have low manipulation content. Still, be aware of subtle persuasion techniques.';
-                } else if (score < 70) {
-                    adviceText = 'This text contains significant manipulation attempts. Be cautious and evaluate claims critically.';
-                } else {
-                    adviceText = 'This text contains high levels of manipulation. Be very skeptical of the claims being made.';
+                // Apply journal filter
+                document.getElementById('apply-journal-filter').addEventListener('click', () => {
+                    this.renderTransactions();
+                });
+                
+                // Apply ledger filter
+                document.getElementById('apply-ledger-filter').addEventListener('click', () => {
+                    this.renderLedger();
+                });
+                
+                // Generate report
+                document.getElementById('generate-report').addEventListener('click', () => {
+                    this.generateReport();
+                });
+                
+                // Export report
+                document.getElementById('export-report').addEventListener('click', () => {
+                    this.exportReport();
+                });
+            },
+            
+            // Render accounts table and dropdowns
+            renderAccounts() {
+                const accountsTable = document.getElementById('accounts-table').querySelector('tbody');
+                const debitAccountSelect = document.getElementById('debit-account');
+                const creditAccountSelect = document.getElementById('credit-account');
+                const ledgerAccountSelect = document.getElementById('ledger-account');
+                
+                // Clear existing options
+                accountsTable.innerHTML = '';
+                debitAccountSelect.innerHTML = '';
+                creditAccountSelect.innerHTML = '';
+                ledgerAccountSelect.innerHTML = '';
+                
+                // Add default option
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Select Account';
+                debitAccountSelect.appendChild(defaultOption.cloneNode(true));
+                creditAccountSelect.appendChild(defaultOption.cloneNode(true));
+                ledgerAccountSelect.appendChild(defaultOption.cloneNode(true));
+                
+                // Add accounts to dropdowns and table
+                this.accounts.forEach(account => {
+                    // Add to debit/credit dropdowns
+                    const option = document.createElement('option');
+                    option.value = account.id;
+                    option.textContent = `${account.code} - ${account.name}`;
+                    
+                    debitAccountSelect.appendChild(option.cloneNode(true));
+                    creditAccountSelect.appendChild(option.cloneNode(true));
+                    ledgerAccountSelect.appendChild(option.cloneNode(true));
+                    
+                    // Add to accounts table
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${account.code}</td>
+                        <td>${account.name}</td>
+                        <td>${account.type}</td>
+                        <td>${this.formatCurrency(this.getAccountBalance(account.id))}</td>
+                        <td>
+                            <button class="btn-danger" data-account-id="${account.id}">Delete</button>
+                        </td>
+                    `;
+                    accountsTable.appendChild(row);
+                });
+                
+                // Add event listeners to delete buttons
+                accountsTable.querySelectorAll('.btn-danger').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const accountId = button.dataset.accountId;
+                        this.deleteAccount(accountId);
+                    });
+                });
+            },
+            
+            // Render transactions table
+            renderTransactions() {
+                const journalTable = document.getElementById('journal-table').querySelector('tbody');
+                const dateFrom = document.getElementById('journal-date-from').value;
+                const dateTo = document.getElementById('journal-date-to').value;
+                
+                journalTable.innerHTML = '';
+                
+                // Filter transactions by date if specified
+                const filteredTransactions = this.transactions.filter(transaction => {
+                    if (dateFrom && transaction.date < dateFrom) return false;
+                    if (dateTo && transaction.date > dateTo) return false;
+                    return true;
+                });
+                
+                filteredTransactions.forEach(transaction => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${transaction.date}</td>
+                        <td>${transaction.description}</td>
+                        <td>${this.getAccountName(transaction.debitAccount)}</td>
+                        <td class="debit">${this.formatCurrency(transaction.debitAmount)}</td>
+                        <td class="credit">${this.formatCurrency(transaction.creditAmount)}</td>
+                        <td>
+                            <button class="btn-danger" data-transaction-id="${transaction.id}">Delete</button>
+                        </td>
+                    `;
+                    journalTable.appendChild(row);
+                });
+                
+                // Add event listeners to delete buttons
+                journalTable.querySelectorAll('.btn-danger').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const transactionId = button.dataset.transactionId;
+                        this.deleteTransaction(transactionId);
+                    });
+                });
+            },
+            
+            // Render ledger
+            renderLedger() {
+                const ledgerTable = document.getElementById('ledger-table').querySelector('tbody');
+                const accountId = document.getElementById('ledger-account').value;
+                const dateFrom = document.getElementById('ledger-date-from').value;
+                const dateTo = document.getElementById('ledger-date-to').value;
+                
+                ledgerTable.innerHTML = '';
+                
+                if (!accountId) return;
+                
+                // Filter transactions for this account
+                const accountTransactions = this.transactions.filter(transaction => {
+                    if (transaction.debitAccount !== accountId && transaction.creditAccount !== accountId) return false;
+                    if (dateFrom && transaction.date < dateFrom) return false;
+                    if (dateTo && transaction.date > dateTo) return false;
+                    return true;
+                });
+                
+                let runningBalance = 0;
+                const account = this.accounts.find(a => a.id === accountId);
+                
+                accountTransactions.forEach(transaction => {
+                    const isDebit = transaction.debitAccount === accountId;
+                    const amount = isDebit ? transaction.debitAmount : transaction.creditAmount;
+                    
+                    // Update running balance based on account type
+                    if (account.type === 'Asset' || account.type === 'Expense') {
+                        runningBalance += isDebit ? amount : -amount;
+                    } else {
+                        runningBalance += isDebit ? -amount : amount;
+                    }
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${transaction.date}</td>
+                        <td>${transaction.description}</td>
+                        <td class="${isDebit ? 'debit' : ''}">${isDebit ? this.formatCurrency(amount) : ''}</td>
+                        <td class="${!isDebit ? 'credit' : ''}">${!isDebit ? this.formatCurrency(amount) : ''}</td>
+                        <td>${this.formatCurrency(runningBalance)}</td>
+                    `;
+                    ledgerTable.appendChild(row);
+                });
+            },
+            
+            // Generate trial balance
+            generateTrialBalance() {
+                const tbTable = document.getElementById('trial-balance-table').querySelector('tbody');
+                const asOfDate = document.getElementById('tb-date').value;
+                
+                tbTable.innerHTML = '';
+                
+                // Filter transactions up to the selected date
+                const filteredTransactions = this.transactions.filter(transaction => {
+                    return transaction.date <= asOfDate;
+                });
+                
+                // Calculate balances for each account
+                const accountBalances = {};
+                
+                this.accounts.forEach(account => {
+                    accountBalances[account.id] = {
+                        debit: 0,
+                        credit: 0,
+                        type: account.type
+                    };
+                });
+                
+                filteredTransactions.forEach(transaction => {
+                    // Debit side
+                    if (accountBalances[transaction.debitAccount]) {
+                        accountBalances[transaction.debitAccount].debit += transaction.debitAmount;
+                    }
+                    
+                    // Credit side
+                    if (accountBalances[transaction.creditAccount]) {
+                        accountBalances[transaction.creditAccount].credit += transaction.creditAmount;
+                    }
+                });
+                
+                // Add rows to trial balance table
+                let totalDebit = 0;
+                let totalCredit = 0;
+                
+                this.accounts.forEach(account => {
+                    const balance = accountBalances[account.id];
+                    if (balance.debit === 0 && balance.credit === 0) return;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${account.code} - ${account.name}</td>
+                        <td class="debit">${this.formatCurrency(balance.debit)}</td>
+                        <td class="credit">${this.formatCurrency(balance.credit)}</td>
+                    `;
+                    tbTable.appendChild(row);
+                    
+                    totalDebit += balance.debit;
+                    totalCredit += balance.credit;
+                });
+                
+                // Add total row
+                const totalRow = document.createElement('tr');
+                totalRow.innerHTML = `
+                    <td><strong>Total</strong></td>
+                    <td class="debit"><strong>${this.formatCurrency(totalDebit)}</strong></td>
+                    <td class="credit"><strong>${this.formatCurrency(totalCredit)}</strong></td>
+                `;
+                tbTable.appendChild(totalRow);
+                
+                // Check if debits equal credits
+                if (totalDebit !== totalCredit) {
+                    this.showNotification('Trial balance is not balanced!', 'error');
+                }
+            },
+            
+            // Generate financial report
+            generateReport() {
+                const reportType = document.getElementById('report-type').value;
+                const reportStyle = document.getElementById('report-style').value;
+                const reportDate = document.getElementById('report-date').value;
+                const reportContent = document.getElementById('report-content');
+                
+                let reportHTML = '';
+                
+                switch (reportType) {
+                    case 'income-statement':
+                        reportHTML = this.generateIncomeStatement(reportDate, reportStyle);
+                        break;
+                    case 'balance-sheet':
+                        reportHTML = this.generateBalanceSheet(reportDate, reportStyle);
+                        break;
+                    case 'cash-flow':
+                        reportHTML = this.generateCashFlowStatement(reportDate, reportStyle);
+                        break;
+                    case 'changes-equity':
+                        reportHTML = this.generateChangesInEquity(reportDate, reportStyle);
+                        break;
                 }
                 
-                adviceElement.innerHTML = `
-                    <div class="technique-name">Analysis Result</div>
-                    <div class="technique-desc">${adviceText}</div>
+                reportContent.innerHTML = reportHTML;
+                document.getElementById('report-title').textContent = this.getReportTitle(reportType, reportStyle);
+            },
+            
+            // Export report as CSV
+            exportReport() {
+                const reportContent = document.getElementById('report-content');
+                const reportTitle = document.getElementById('report-title').textContent;
+                
+                // Simple implementation - would need to be expanded for proper CSV export
+                let csvContent = reportTitle + '\n\n';
+                
+                const tables = reportContent.querySelectorAll('table');
+                tables.forEach(table => {
+                    for (let i = 0; i < table.rows.length; i++) {
+                        const row = table.rows[i];
+                        let rowText = '';
+                        for (let j = 0; j < row.cells.length; j++) {
+                            rowText += '"' + row.cells[j].textContent.replace(/"/g, '""') + '",';
+                        }
+                        csvContent += rowText + '\n';
+                    }
+                    csvContent += '\n';
+                });
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                
+                link.setAttribute('href', url);
+                link.setAttribute('download', `${reportTitle.replace(/\s+/g, '_')}.csv`);
+                link.style.visibility = 'hidden';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            },
+            
+            // Add a new transaction
+            addTransaction() {
+                const date = document.getElementById('transaction-date').value;
+                const description = document.getElementById('transaction-description').value;
+                const debitAccount = document.getElementById('debit-account').value;
+                const debitAmount = parseFloat(document.getElementById('debit-amount').value);
+                const creditAccount = document.getElementById('credit-account').value;
+                const creditAmount = parseFloat(document.getElementById('credit-amount').value);
+                const narration = document.getElementById('narration').value;
+                
+                // Validate debit equals credit
+                if (debitAmount !== creditAmount) {
+                    this.showNotification('Debit and Credit amounts must be equal', 'error');
+                    return;
+                }
+                
+                // Create transaction object
+                const transaction = {
+                    id: Date.now().toString(),
+                    date,
+                    description,
+                    debitAccount,
+                    debitAmount,
+                    creditAccount,
+                    creditAmount,
+                    narration
+                };
+                
+                // Add to transactions array
+                this.transactions.push(transaction);
+                
+                // Save data and update UI
+                this.saveData();
+                this.renderTransactions();
+                this.updateDashboard();
+                
+                // Close modal and reset form
+                document.getElementById('transaction-modal').style.display = 'none';
+                document.getElementById('transaction-form').reset();
+                
+                this.showNotification('Transaction added successfully', 'success');
+            },
+            
+            // Add a new account
+            addAccount() {
+                const code = document.getElementById('account-code').value;
+                const name = document.getElementById('account-name').value;
+                const type = document.getElementById('account-type').value;
+                const subtype = document.getElementById('account-subtype').value;
+                const openingBalance = parseFloat(document.getElementById('opening-balance').value) || 0;
+                
+                // Check if account code already exists
+                if (this.accounts.some(account => account.code === code)) {
+                    this.showNotification('Account code already exists', 'error');
+                    return;
+                }
+                
+                // Create account object
+                const account = {
+                    id: Date.now().toString(),
+                    code,
+                    name,
+                    type,
+                    subtype,
+                    openingBalance
+                };
+                
+                // Add to accounts array
+                this.accounts.push(account);
+                
+                // If there's an opening balance, create a transaction
+                if (openingBalance !== 0) {
+                    let debitAccount, creditAccount;
+                    
+                    if (['Asset', 'Expense'].includes(type)) {
+                        debitAccount = account.id;
+                        creditAccount = this.getEquityAccountId();
+                    } else {
+                        debitAccount = this.getEquityAccountId();
+                        creditAccount = account.id;
+                    }
+                    
+                    const transaction = {
+                        id: Date.now().toString() + '-opening',
+                        date: new Date().toISOString().split('T')[0],
+                        description: `Opening balance for ${name}`,
+                        debitAccount,
+                        debitAmount: Math.abs(openingBalance),
+                        creditAccount,
+                        creditAmount: Math.abs(openingBalance),
+                        narration: 'Opening balance'
+                    };
+                    
+                    this.transactions.push(transaction);
+                }
+                
+                // Save data and update UI
+                this.saveData();
+                this.renderAccounts();
+                this.renderTransactions();
+                this.updateDashboard();
+                
+                // Close modal and reset form
+                document.getElementById('account-modal').style.display = 'none';
+                document.getElementById('account-form').reset();
+                
+                this.showNotification('Account added successfully', 'success');
+            },
+            
+            // Delete a transaction
+            deleteTransaction(transactionId) {
+                if (confirm('Are you sure you want to delete this transaction?')) {
+                    this.transactions = this.transactions.filter(t => t.id !== transactionId);
+                    this.saveData();
+                    this.renderTransactions();
+                    this.updateDashboard();
+                    this.showNotification('Transaction deleted successfully', 'success');
+                }
+            },
+            
+            // Delete an account
+            deleteAccount(accountId) {
+                // Check if account has transactions
+                const hasTransactions = this.transactions.some(t => 
+                    t.debitAccount === accountId || t.creditAccount === accountId
+                );
+                
+                if (hasTransactions) {
+                    this.showNotification('Cannot delete account with existing transactions', 'error');
+                    return;
+                }
+                
+                if (confirm('Are you sure you want to delete this account?')) {
+                    this.accounts = this.accounts.filter(a => a.id !== accountId);
+                    this.saveData();
+                    this.renderAccounts();
+                    this.showNotification('Account deleted successfully', 'success');
+                }
+            },
+            
+            // Update dashboard with summary information
+            updateDashboard() {
+                // Calculate total assets
+                const totalAssets = this.calculateAccountTypeTotal('Asset');
+                document.getElementById('total-assets').textContent = this.formatCurrency(totalAssets);
+                
+                // Calculate total liabilities
+                const totalLiabilities = this.calculateAccountTypeTotal('Liability');
+                document.getElementById('total-liabilities').textContent = this.formatCurrency(totalLiabilities);
+                
+                // Calculate equity
+                const equity = this.calculateAccountTypeTotal('Equity');
+                document.getElementById('total-equity').textContent = this.formatCurrency(equity);
+                
+                // Calculate net income (Revenue - Expenses)
+                const revenue = this.calculateAccountTypeTotal('Revenue');
+                const expenses = this.calculateAccountTypeTotal('Expense');
+                const netIncome = revenue - expenses;
+                document.getElementById('net-income').textContent = this.formatCurrency(netIncome);
+                
+                // Update recent transactions
+                const recentTransactionsTable = document.getElementById('recent-transactions').querySelector('tbody');
+                recentTransactionsTable.innerHTML = '';
+                
+                // Show last 5 transactions
+                const recentTransactions = this.transactions.slice(-5).reverse();
+                
+                recentTransactions.forEach(transaction => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${transaction.date}</td>
+                        <td>${transaction.description}</td>
+                        <td class="debit">${this.formatCurrency(transaction.debitAmount)}</td>
+                        <td class="credit">${this.formatCurrency(transaction.creditAmount)}</td>
+                    `;
+                    recentTransactionsTable.appendChild(row);
+                });
+            },
+            
+            // Export all data as JSON
+            exportData() {
+                const data = {
+                    settings: this.settings,
+                    accounts: this.accounts,
+                    transactions: this.transactions
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'openledger_data.json');
+                link.style.visibility = 'hidden';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            },
+            
+            // Import data from JSON file
+            importData(file) {
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        if (data.settings) this.settings = data.settings;
+                        if (data.accounts) this.accounts = data.accounts;
+                        if (data.transactions) this.transactions = data.transactions;
+                        
+                        this.saveData();
+                        this.renderAccounts();
+                        this.renderTransactions();
+                        this.updateDashboard();
+                        
+                        // Update UI with settings
+                        document.getElementById('accounting-mode').value = this.settings.accountingMode;
+                        document.getElementById('accounting-basis').value = this.settings.accountingBasis;
+                        document.getElementById('company-name-input').value = this.settings.companyName;
+                        document.getElementById('base-currency').value = this.settings.baseCurrency;
+                        document.getElementById('company-name').textContent = this.settings.companyName;
+                        
+                        this.showNotification('Data imported successfully', 'success');
+                    } catch (error) {
+                        this.showNotification('Error importing data: Invalid file format', 'error');
+                    }
+                };
+                
+                reader.readAsText(file);
+            },
+            
+            // Show notification
+            showNotification(message, type) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${type} show`;
+                
+                setTimeout(() => {
+                    notification.className = 'notification';
+                }, 3000);
+            },
+            
+            // Format currency amount
+            formatCurrency(amount) {
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: this.settings.baseCurrency
+                }).format(amount);
+            },
+            
+            // Get account name by ID
+            getAccountName(accountId) {
+                const account = this.accounts.find(a => a.id === accountId);
+                return account ? `${account.code} - ${account.name}` : 'Unknown Account';
+            },
+            
+            // Get account balance
+            getAccountBalance(accountId) {
+                const account = this.accounts.find(a => a.id === accountId);
+                if (!account) return 0;
+                
+                let balance = account.openingBalance || 0;
+                
+                this.transactions.forEach(transaction => {
+                    if (transaction.debitAccount === accountId) {
+                        balance += transaction.debitAmount;
+                    }
+                    
+                    if (transaction.creditAccount === accountId) {
+                        balance -= transaction.creditAmount;
+                    }
+                });
+                
+                return balance;
+            },
+            
+            // Calculate total for an account type
+            calculateAccountTypeTotal(type) {
+                return this.accounts
+                    .filter(account => account.type === type)
+                    .reduce((total, account) => total + this.getAccountBalance(account.id), 0);
+            },
+            
+            // Get equity account ID (create one if it doesn't exist)
+            getEquityAccountId() {
+                let equityAccount = this.accounts.find(a => a.type === 'Equity' && a.name === 'Retained Earnings');
+                
+                if (!equityAccount) {
+                    equityAccount = {
+                        id: 'equity-' + Date.now(),
+                        code: '3000',
+                        name: 'Retained Earnings',
+                        type: 'Equity'
+                    };
+                    this.accounts.push(equityAccount);
+                    this.saveData();
+                }
+                
+                return equityAccount.id;
+            },
+            
+            // Generate income statement
+            generateIncomeStatement(asOfDate, style) {
+                // Filter transactions up to the selected date
+                const filteredTransactions = this.transactions.filter(transaction => {
+                    return transaction.date <= asOfDate;
+                });
+                
+                // Calculate revenue total
+                const revenueAccounts = this.accounts.filter(a => a.type === 'Revenue');
+                let revenueTotal = 0;
+                
+                revenueAccounts.forEach(account => {
+                    revenueTotal += this.getAccountBalance(account.id);
+                });
+                
+                // Calculate expense total
+                const expenseAccounts = this.accounts.filter(a => a.type === 'Expense');
+                let expenseTotal = 0;
+                
+                expenseAccounts.forEach(account => {
+                    expenseTotal += this.getAccountBalance(account.id);
+                });
+                
+                // Net income
+                const netIncome = revenueTotal - expenseTotal;
+                
+                // Generate HTML table
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Revenue</strong></td>
+                                <td></td>
+                            </tr>
                 `;
                 
-                techniqueList.appendChild(adviceElement);
+                // Add revenue accounts
+                revenueAccounts.forEach(account => {
+                    const balance = this.getAccountBalance(account.id);
+                    if (balance !== 0) {
+                        html += `
+                            <tr>
+                                <td>${account.name}</td>
+                                <td>${this.formatCurrency(balance)}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                html += `
+                            <tr>
+                                <td><strong>Total Revenue</strong></td>
+                                <td><strong>${this.formatCurrency(revenueTotal)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Expenses</strong></td>
+                                <td></td>
+                            </tr>
+                `;
+                
+                // Add expense accounts
+                expenseAccounts.forEach(account => {
+                    const balance = this.getAccountBalance(account.id);
+                    if (balance !== 0) {
+                        html += `
+                            <tr>
+                                <td>${account.name}</td>
+                                <td>${this.formatCurrency(balance)}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                html += `
+                            <tr>
+                                <td><strong>Total Expenses</strong></td>
+                                <td><strong>${this.formatCurrency(expenseTotal)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Net Income</strong></td>
+                                <td><strong>${this.formatCurrency(netIncome)}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+                
+                return html;
+            },
+            
+            // Generate balance sheet
+            generateBalanceSheet(asOfDate, style) {
+                // Calculate totals
+                const totalAssets = this.calculateAccountTypeTotal('Asset');
+                const totalLiabilities = this.calculateAccountTypeTotal('Liability');
+                const totalEquity = this.calculateAccountTypeTotal('Equity');
+                
+                // Generate HTML table
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Assets</strong></td>
+                                <td></td>
+                            </tr>
+                `;
+                
+                // Add asset accounts
+                const assetAccounts = this.accounts.filter(a => a.type === 'Asset');
+                assetAccounts.forEach(account => {
+                    const balance = this.getAccountBalance(account.id);
+                    if (balance !== 0) {
+                        html += `
+                            <tr>
+                                <td>${account.name}</td>
+                                <td>${this.formatCurrency(balance)}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                html += `
+                            <tr>
+                                <td><strong>Total Assets</strong></td>
+                                <td><strong>${this.formatCurrency(totalAssets)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Liabilities</strong></td>
+                                <td></td>
+                            </tr>
+                `;
+                
+                // Add liability accounts
+                const liabilityAccounts = this.accounts.filter(a => a.type === 'Liability');
+                liabilityAccounts.forEach(account => {
+                    const balance = this.getAccountBalance(account.id);
+                    if (balance !== 0) {
+                        html += `
+                            <tr>
+                                <td>${account.name}</td>
+                                <td>${this.formatCurrency(balance)}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                html += `
+                            <tr>
+                                <td><strong>Total Liabilities</strong></td>
+                                <td><strong>${this.formatCurrency(totalLiabilities)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Equity</strong></td>
+                                <td></td>
+                            </tr>
+                `;
+                
+                // Add equity accounts
+                const equityAccounts = this.accounts.filter(a => a.type === 'Equity');
+                equityAccounts.forEach(account => {
+                    const balance = this.getAccountBalance(account.id);
+                    if (balance !== 0) {
+                        html += `
+                            <tr>
+                                <td>${account.name}</td>
+                                <td>${this.formatCurrency(balance)}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                // Calculate net income (Revenue - Expenses)
+                const revenue = this.calculateAccountTypeTotal('Revenue');
+                const expenses = this.calculateAccountTypeTotal('Expense');
+                const netIncome = revenue - expenses;
+                
+                html += `
+                            <tr>
+                                <td>Retained Earnings</td>
+                                <td>${this.formatCurrency(netIncome)}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Equity</strong></td>
+                                <td><strong>${this.formatCurrency(totalEquity + netIncome)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Liabilities & Equity</strong></td>
+                                <td><strong>${this.formatCurrency(totalLiabilities + totalEquity + netIncome)}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+                
+                return html;
+            },
+            
+            // Generate cash flow statement
+            generateCashFlowStatement(asOfDate, style) {
+                // Simplified implementation
+                return `
+                    <p>Cash Flow Statement implementation would go here.</p>
+                    <p>This would include operating, investing, and financing activities.</p>
+                `;
+            },
+            
+            // Generate changes in equity statement
+            generateChangesInEquity(asOfDate, style) {
+                // Simplified implementation
+                return `
+                    <p>Statement of Changes in Equity implementation would go here.</p>
+                    <p>This would show changes in equity accounts over time.</p>
+                `;
+            },
+            
+            // Get report title based on type and style
+            getReportTitle(type, style) {
+                const titles = {
+                    'income-statement': 'Income Statement',
+                    'balance-sheet': 'Balance Sheet',
+                    'cash-flow': 'Cash Flow Statement',
+                    'changes-equity': 'Statement of Changes in Equity'
+                };
+                
+                const styles = {
+                    'standard': '',
+                    'comparative': 'Comparative ',
+                    'common-size': 'Common Size '
+                };
+                
+                return styles[style] + titles[type];
             }
-            
-            // Event listener for the filter button
-            filterButton.addEventListener('click', function() {
-                const text = inputText.value.trim();
-                
-                if (text === '') {
-                    originalText.innerHTML = '<p class="placeholder">No text to filter</p>';
-                    filteredText.innerHTML = '<p class="placeholder">No text to filter</p>';
-                    originalWordCount.textContent = '0';
-                    changesCount.textContent = '0';
-                    manipulationScore.textContent = '0%';
-                    scoreFill.style.width = '0%';
-                    techniquesCount.textContent = '0';
-                    redFlagsCount.textContent = '0';
-                    analysisSection.style.display = 'none';
-                    return;
-                }
-                
-                // Display original text (with basic HTML escaping)
-                originalText.innerHTML = `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>`;
-                originalWordCount.textContent = countWords(text);
-                
-                // Process and display filtered text
-                const result = processText(text);
-                filteredText.innerHTML = `<p>${result.text.replace(/\n/g, '<br>')}</p>`;
-                
-                // Hide analysis section for simple filter
-                analysisSection.style.display = 'none';
-            });
-            
-            // Event listener for the analyze button
-            analyzeButton.addEventListener('click', function() {
-                const text = inputText.value.trim();
-                
-                if (text === '') {
-                    originalText.innerHTML = '<p class="placeholder">No text to analyze</p>';
-                    filteredText.innerHTML = '<p class="placeholder">No text to analyze</p>';
-                    originalWordCount.textContent = '0';
-                    changesCount.textContent = '0';
-                    manipulationScore.textContent = '0%';
-                    scoreFill.style.width = '0%';
-                    techniquesCount.textContent = '0';
-                    redFlagsCount.textContent = '0';
-                    analysisSection.style.display = 'none';
-                    return;
-                }
-                
-                // Display original text (with basic HTML escaping)
-                originalText.innerHTML = `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>`;
-                originalWordCount.textContent = countWords(text);
-                
-                // Process and display filtered text with deep analysis
-                const result = processText(text, true);
-                filteredText.innerHTML = `<p>${result.text.replace(/\n/g, '<br>')}</p>`;
-                
-                // Display analysis results
-                displayAnalysis(result.techniques, result.score);
-            });
-            
-            // Event listener for the clear button
-            clearButton.addEventListener('click', function() {
-                inputText.value = '';
-                originalText.innerHTML = '<p class="placeholder">Original text will appear here</p>';
-                filteredText.innerHTML = '<p class="placeholder">Filtered text will appear here</p>';
-                originalWordCount.textContent = '0';
-                changesCount.textContent = '0';
-                manipulationScore.textContent = '0%';
-                scoreFill.style.width = '0%';
-                techniquesCount.textContent = '0';
-                redFlagsCount.textContent = '0';
-                analysisSection.style.display = 'none';
-            });
-            
-            // Event listener for the example text
-            exampleText.addEventListener('click', function() {
-                inputText.value = exampleContent;
-                analyzeButton.click();
-            });
+        };
+        
+        // Initialize the application when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            OpenLedger.init();
         });
     </script>
 </body>
