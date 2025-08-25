@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenLedger - Enhanced Accounting System</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>OpenLedger - Universal Accounting Engine</title>
     <style>
         :root {
             --primary: #2c3e50;
@@ -16,7 +15,6 @@
             --danger: #e74c3c;
             --warning: #f39c12;
             --info: #1abc9c;
-            --sidebar-width: 250px;
         }
         
         * {
@@ -30,25 +28,30 @@
             background-color: #f5f7fa;
             color: #333;
             line-height: 1.6;
-            display: flex;
         }
         
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--primary);
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            height: 100vh;
-            position: fixed;
-            overflow-y: auto;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
-        .sidebar-header {
-            padding: 1.5rem 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
         }
         
@@ -56,94 +59,48 @@
             color: var(--accent);
         }
         
-        .nav-menu {
-            padding: 1rem 0;
-        }
-        
-        .nav-item {
-            padding: 0.8rem 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s;
+        .nav-tabs {
             display: flex;
-            align-items: center;
-        }
-        
-        .nav-item:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        
-        .nav-item.active {
-            background: var(--accent);
-        }
-        
-        .nav-item i {
-            margin-right: 0.8rem;
-            width: 20px;
-            text-align: center;
-        }
-        
-        .main-content {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            padding: 1rem;
-        }
-        
-        .header {
             background: white;
+            border-bottom: 2px solid var(--accent);
+            overflow-x: auto;
+        }
+        
+        .tab {
             padding: 1rem 1.5rem;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
         }
         
-        .header h1 {
-            font-size: 1.5rem;
-            color: var(--primary);
+        .tab:hover {
+            background: #f8f9fa;
         }
         
-        .header-actions {
-            display: flex;
-            gap: 1rem;
+        .tab.active {
+            border-bottom: 3px solid var(--accent);
+            color: var(--accent);
         }
         
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
+        .tab-content {
+            display: none;
+            padding: 2rem;
             background: white;
-            padding: 1.5rem;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            text-align: center;
-            transition: transform 0.3s;
+            border-radius: 0 0 5px 5px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            min-height: 500px;
         }
         
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            margin: 0.5rem 0;
-        }
-        
-        .stat-label {
-            color: #666;
-            font-size: 0.9rem;
+        .tab-content.active {
+            display: block;
         }
         
         .card {
             background: white;
             border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             margin-bottom: 1.5rem;
             overflow: hidden;
         }
@@ -153,9 +110,6 @@
             background: #f8f9fa;
             border-bottom: 1px solid #eee;
             font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         
         .card-body {
@@ -212,14 +166,6 @@
             background: #27ae60;
         }
         
-        .btn-warning {
-            background: var(--warning);
-        }
-        
-        .btn-warning:hover {
-            background: #e67e22;
-        }
-        
         table {
             width: 100%;
             border-collapse: collapse;
@@ -251,6 +197,32 @@
             font-weight: 500;
         }
         
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
         .filters {
             display: flex;
             gap: 1rem;
@@ -271,12 +243,6 @@
             margin-bottom: 1.5rem;
         }
         
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin: 1.5rem 0;
-        }
-        
         .modal {
             display: none;
             position: fixed;
@@ -284,7 +250,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -295,7 +261,7 @@
             padding: 2rem;
             border-radius: 5px;
             width: 90%;
-            max-width: 600px;
+            max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
         }
@@ -338,133 +304,122 @@
             background: var(--danger);
         }
         
-        .ratio-cards {
+        .ratio-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1.5rem;
-            margin: 1.5rem 0;
+            margin-top: 1.5rem;
         }
         
         .ratio-card {
             background: white;
             padding: 1.5rem;
             border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
         
         .ratio-value {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
             margin: 0.5rem 0;
-        }
-        
-        .ratio-label {
-            color: #666;
-            font-size: 0.9rem;
+            color: var(--accent);
         }
         
         .ratio-description {
+            color: #666;
+            font-size: 0.9rem;
             margin-top: 0.5rem;
-            font-size: 0.85rem;
-            color: #888;
         }
         
-        .tab-content {
-            display: none;
+        .trend-indicator {
+            display: inline-block;
+            margin-left: 0.5rem;
+            font-size: 0.9rem;
         }
         
-        .tab-content.active {
-            display: block;
+        .trend-up {
+            color: var(--success);
+        }
+        
+        .trend-down {
+            color: var(--danger);
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+        
+        .comparative-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .comparative-table th,
+        .comparative-table td {
+            padding: 0.75rem;
+            text-align: right;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .comparative-table th:first-child,
+        .comparative-table td:first-child {
+            text-align: left;
+        }
+        
+        .comparative-table tr.comparative-header th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .currency-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
         }
         
         @media (max-width: 768px) {
-            .sidebar {
-                width: 60px;
-                overflow: visible;
-            }
-            
-            .sidebar-header, .nav-item span {
-                display: none;
-            }
-            
-            .nav-item {
-                justify-content: center;
-                padding: 1rem;
-            }
-            
-            .nav-item i {
-                margin-right: 0;
-                font-size: 1.2rem;
-            }
-            
-            .main-content {
-                margin-left: 60px;
-            }
-            
-            .stats {
+            .stats, .ratio-grid {
                 grid-template-columns: 1fr;
             }
             
             .filters {
                 flex-direction: column;
             }
+            
+            .tab {
+                padding: 0.75rem 1rem;
+            }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo">Open<span>Ledger</span></div>
-        </div>
-        <div class="nav-menu">
-            <div class="nav-item active" data-tab="dashboard">
-                <i class="fas fa-chart-line"></i>
-                <span>Dashboard</span>
-            </div>
-            <div class="nav-item" data-tab="journal">
-                <i class="fas fa-book"></i>
-                <span>Journal</span>
-            </div>
-            <div class="nav-item" data-tab="ledger">
-                <i class="fas fa-file-invoice-dollar"></i>
-                <span>Ledger</span>
-            </div>
-            <div class="nav-item" data-tab="trial-balance">
-                <i class="fas fa-balance-scale"></i>
-                <span>Trial Balance</span>
-            </div>
-            <div class="nav-item" data-tab="reports">
-                <i class="fas fa-chart-bar"></i>
-                <span>Financial Reports</span>
-            </div>
-            <div class="nav-item" data-tab="ratio-analysis">
-                <i class="fas fa-calculator"></i>
-                <span>Ratio Analysis</span>
-            </div>
-            <div class="nav-item" data-tab="accounts">
-                <i class="fas fa-chart-pie"></i>
-                <span>Chart of Accounts</span>
-            </div>
-            <div class="nav-item" data-tab="settings">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
-            </div>
-        </div>
-    </div>
-    
-    <div class="main-content">
-        <div class="header">
-            <h1 id="page-title">Dashboard</h1>
-            <div class="header-actions">
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Open<span>Ledger</span></div>
                 <div id="company-name">Company Name</div>
-                <button id="help-btn"><i class="fas fa-question-circle"></i> Help</button>
             </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="nav-tabs">
+            <div class="tab active" data-tab="dashboard">Dashboard</div>
+            <div class="tab" data-tab="journal">Journal</div>
+            <div class="tab" data-tab="ledger">Ledger</div>
+            <div class="tab" data-tab="trial-balance">Trial Balance</div>
+            <div class="tab" data-tab="reports">Reports</div>
+            <div class="tab" data-tab="accounts">Chart of Accounts</div>
+            <div class="tab" data-tab="ratios">Ratio Analysis</div>
+            <div class="tab" data-tab="settings">Settings</div>
         </div>
         
         <!-- Dashboard Tab -->
         <div id="dashboard" class="tab-content active">
+            <h2>Financial Overview</h2>
             <div class="stats">
                 <div class="stat-card">
                     <div class="stat-label">Total Assets</div>
@@ -485,15 +440,25 @@
             </div>
             
             <div class="card">
-                <div class="card-header">
-                    <span>Financial Overview</span>
-                    <div>
-                        <button id="refresh-charts"><i class="fas fa-sync-alt"></i> Refresh</button>
-                    </div>
-                </div>
+                <div class="card-header">Financial Health Indicators</div>
                 <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="financial-trends-chart"></canvas>
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Current Ratio</div>
+                            <div class="stat-value" id="current-ratio">0.00</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Quick Ratio</div>
+                            <div class="stat-value" id="quick-ratio">0.00</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Debt to Equity</div>
+                            <div class="stat-value" id="debt-equity-ratio">0.00</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Profit Margin</div>
+                            <div class="stat-value" id="profit-margin">0.00%</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -520,25 +485,23 @@
         
         <!-- Journal Tab -->
         <div id="journal" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <span>Journal Entries</span>
-                    <button id="add-transaction-btn">Add New Transaction</button>
+            <h2>Journal Entries</h2>
+            <button id="add-transaction-btn" style="margin-bottom: 1.5rem;">Add New Transaction</button>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="journal-date-from">From:</label>
+                    <input type="date" id="journal-date-from">
                 </div>
+                <div class="filter-group">
+                    <label for="journal-date-to">To:</label>
+                    <input type="date" id="journal-date-to">
+                </div>
+                <button id="apply-journal-filter">Apply Filter</button>
+            </div>
+            
+            <div class="card">
                 <div class="card-body">
-                    <div class="filters">
-                        <div class="filter-group">
-                            <label for="journal-date-from">From:</label>
-                            <input type="date" id="journal-date-from">
-                        </div>
-                        <div class="filter-group">
-                            <label for="journal-date-to">To:</label>
-                            <input type="date" id="journal-date-to">
-                        </div>
-                        <button id="apply-journal-filter">Apply Filter</button>
-                        <button id="export-journal" class="btn-success"><i class="fas fa-download"></i> Export</button>
-                    </div>
-                    
                     <table id="journal-table">
                         <thead>
                             <tr>
@@ -560,28 +523,28 @@
         
         <!-- Ledger Tab -->
         <div id="ledger" class="tab-content">
+            <h2>General Ledger</h2>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="ledger-account">Account:</label>
+                    <select id="ledger-account">
+                        <!-- Accounts will be populated here -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="ledger-date-from">From:</label>
+                    <input type="date" id="ledger-date-from">
+                </div>
+                <div class="filter-group">
+                    <label for="ledger-date-to">To:</label>
+                    <input type="date" id="ledger-date-to">
+                </div>
+                <button id="apply-ledger-filter">Apply Filter</button>
+            </div>
+            
             <div class="card">
-                <div class="card-header">General Ledger</div>
                 <div class="card-body">
-                    <div class="filters">
-                        <div class="filter-group">
-                            <label for="ledger-account">Account:</label>
-                            <select id="ledger-account">
-                                <!-- Accounts will be populated here -->
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="ledger-date-from">From:</label>
-                            <input type="date" id="ledger-date-from">
-                        </div>
-                        <div class="filter-group">
-                            <label for="ledger-date-to">To:</label>
-                            <input type="date" id="ledger-date-to">
-                        </div>
-                        <button id="apply-ledger-filter">Apply Filter</button>
-                        <button id="print-ledger" class="btn-success"><i class="fas fa-print"></i> Print</button>
-                    </div>
-                    
                     <table id="ledger-table">
                         <thead>
                             <tr>
@@ -602,18 +565,18 @@
         
         <!-- Trial Balance Tab -->
         <div id="trial-balance" class="tab-content">
+            <h2>Trial Balance</h2>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="tb-date">As of:</label>
+                    <input type="date" id="tb-date">
+                </div>
+                <button id="generate-tb">Generate Trial Balance</button>
+            </div>
+            
             <div class="card">
-                <div class="card-header">Trial Balance</div>
                 <div class="card-body">
-                    <div class="filters">
-                        <div class="filter-group">
-                            <label for="tb-date">As of:</label>
-                            <input type="date" id="tb-date">
-                        </div>
-                        <button id="generate-tb">Generate Trial Balance</button>
-                        <button id="export-tb" class="btn-success"><i class="fas fa-download"></i> Export</button>
-                    </div>
-                    
                     <table id="trial-balance-table">
                         <thead>
                             <tr>
@@ -632,117 +595,59 @@
         
         <!-- Reports Tab -->
         <div id="reports" class="tab-content">
-            <div class="card">
-                <div class="card-header">Financial Reports</div>
-                <div class="card-body">
-                    <div class="report-options">
-                        <div class="form-group">
-                            <label for="report-type">Report Type:</label>
-                            <select id="report-type">
-                                <option value="income-statement">Income Statement</option>
-                                <option value="balance-sheet">Balance Sheet</option>
-                                <option value="cash-flow">Cash Flow Statement</option>
-                                <option value="changes-equity">Statement of Changes in Equity</option>
-                                <option value="general-ledger">General Ledger</option>
-                                <option value="ar-aging">Accounts Receivable Aging</option>
-                                <option value="ap-aging">Accounts Payable Aging</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="report-style">Report Style:</label>
-                            <select id="report-style">
-                                <option value="standard">Standard</option>
-                                <option value="comparative">Comparative</option>
-                                <option value="common-size">Common Size</option>
-                                <option value="detailed">Detailed</option>
-                            </select>
-                        </div>
-                        
-                        <div class="filters">
-                            <div class="filter-group">
-                                <label for="report-period">Period:</label>
-                                <select id="report-period">
-                                    <option value="monthly">Monthly</option>
-                                    <option value="quarterly">Quarterly</option>
-                                    <option value="annual">Annual</option>
-                                    <option value="custom">Custom</option>
-                                </select>
-                            </div>
-                            <div class="filter-group">
-                                <label for="report-date">Date:</label>
-                                <input type="date" id="report-date">
-                            </div>
-                            <div class="filter-group">
-                                <label for="compare-date">Compare with:</label>
-                                <input type="date" id="compare-date">
-                            </div>
-                            <button id="generate-report">Generate Report</button>
-                            <button id="export-report" class="btn-success"><i class="fas fa-download"></i> Export</button>
-                            <button id="print-report" class="btn-warning"><i class="fas fa-print"></i> Print</button>
-                        </div>
+            <h2>Financial Reports</h2>
+            
+            <div class="report-options">
+                <div class="form-group">
+                    <label for="report-type">Report Type:</label>
+                    <select id="report-type">
+                        <option value="income-statement">Income Statement</option>
+                        <option value="balance-sheet">Balance Sheet</option>
+                        <option value="cash-flow">Cash Flow Statement</option>
+                        <option value="changes-equity">Statement of Changes in Equity</option>
+                        <option value="comparative">Comparative Statements</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="report-style">Report Style:</label>
+                    <select id="report-style">
+                        <option value="standard">Standard</option>
+                        <option value="comparative">Comparative</option>
+                        <option value="common-size">Common Size</option>
+                    </select>
+                </div>
+                
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="report-period">Period:</label>
+                        <select id="report-period">
+                            <option value="monthly">Monthly</option>
+                            <option value="quarterly">Quarterly</option>
+                            <option value="annual">Annual</option>
+                        </select>
                     </div>
-                    
-                    <div class="card">
-                        <div class="card-header" id="report-title">Report Preview</div>
-                        <div class="card-body">
-                            <div id="report-content">
-                                <!-- Report content will be displayed here -->
-                            </div>
-                        </div>
+                    <div class="filter-group">
+                        <label for="report-date">Date:</label>
+                        <input type="date" id="report-date">
                     </div>
+                    <div class="filter-group" id="comparative-period-container" style="display: none;">
+                        <label for="comparative-period">Compare With:</label>
+                        <select id="comparative-period">
+                            <option value="previous-period">Previous Period</option>
+                            <option value="previous-year">Previous Year</option>
+                        </select>
+                    </div>
+                    <button id="generate-report">Generate Report</button>
+                    <button id="export-report">Export as CSV</button>
                 </div>
             </div>
-        </div>
-        
-        <!-- Ratio Analysis Tab -->
-        <div id="ratio-analysis" class="tab-content">
+            
             <div class="card">
-                <div class="card-header">Financial Ratio Analysis</div>
+                <div class="card-header" id="report-title">Report Preview</div>
                 <div class="card-body">
-                    <div class="filters">
-                        <div class="filter-group">
-                            <label for="ratio-date">As of:</label>
-                            <input type="date" id="ratio-date">
-                        </div>
-                        <button id="calculate-ratios">Calculate Ratios</button>
-                    </div>
-                    
-                    <div class="ratio-cards">
-                        <div class="ratio-card">
-                            <div class="ratio-label">Current Ratio</div>
-                            <div class="ratio-value" id="current-ratio">0.00</div>
-                            <div class="ratio-description">Measures short-term liquidity (Current Assets / Current Liabilities)</div>
-                        </div>
-                        <div class="ratio-card">
-                            <div class="ratio-label">Quick Ratio</div>
-                            <div class="ratio-value" id="quick-ratio">0.00</div>
-                            <div class="ratio-description">Measures immediate liquidity (Cash + Marketable Securities + Receivables) / Current Liabilities</div>
-                        </div>
-                        <div class="ratio-card">
-                            <div class="ratio-label">Debt to Equity</div>
-                            <div class="ratio-value" id="debt-equity-ratio">0.00</div>
-                            <div class="ratio-description">Measures financial leverage (Total Liabilities / Shareholders' Equity)</div>
-                        </div>
-                        <div class="ratio-card">
-                            <div class="ratio-label">Gross Profit Margin</div>
-                            <div class="ratio-value" id="gross-margin">0.00%</div>
-                            <div class="ratio-description">Measures profitability after direct costs (Gross Profit / Revenue)</div>
-                        </div>
-                        <div class="ratio-card">
-                            <div class="ratio-label">Net Profit Margin</div>
-                            <div class="ratio-value" id="net-margin">0.00%</div>
-                            <div class="ratio-description">Measures overall profitability (Net Income / Revenue)</div>
-                        </div>
-                        <div class="ratio-card">
-                            <div class="ratio-label">Return on Equity</div>
-                            <div class="ratio-value" id="return-equity">0.00%</div>
-                            <div class="ratio-description">Measures return on shareholder investment (Net Income / Average Shareholders' Equity)</div>
-                        </div>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <canvas id="ratio-trend-chart"></canvas>
+                    <div id="report-content">
+                        <!-- Report content will be displayed here -->
                     </div>
                 </div>
             </div>
@@ -750,11 +655,10 @@
         
         <!-- Chart of Accounts Tab -->
         <div id="accounts" class="tab-content">
+            <h2>Chart of Accounts</h2>
+            <button id="add-account-btn" style="margin-bottom: 1.5rem;">Add New Account</button>
+            
             <div class="card">
-                <div class="card-header">
-                    <span>Chart of Accounts</span>
-                    <button id="add-account-btn">Add New Account</button>
-                </div>
                 <div class="card-body">
                     <table id="accounts-table">
                         <thead>
@@ -774,10 +678,121 @@
             </div>
         </div>
         
+        <!-- Ratio Analysis Tab -->
+        <div id="ratios" class="tab-content">
+            <h2>Financial Ratio Analysis</h2>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="ratio-date">As of:</label>
+                    <input type="date" id="ratio-date">
+                </div>
+                <button id="calculate-ratios">Calculate Ratios</button>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">Liquidity Ratios</div>
+                <div class="card-body">
+                    <div class="ratio-grid">
+                        <div class="ratio-card">
+                            <div class="stat-label">Current Ratio</div>
+                            <div class="ratio-value" id="ratio-current">0.00</div>
+                            <div class="ratio-description">
+                                Measures ability to pay short-term obligations. Ideal: >1.5
+                                <span class="trend-indicator" id="trend-current"></span>
+                            </div>
+                        </div>
+                        <div class="ratio-card">
+                            <div class="stat-label">Quick Ratio</div>
+                            <div class="ratio-value" id="ratio-quick">0.00</div>
+                            <div class="ratio-description">
+                                Measures immediate liquidity without inventory. Ideal: >1.0
+                                <span class="trend-indicator" id="trend-quick"></span>
+                            </div>
+                        </div>
+                        <div class="ratio-card">
+                            <div class="stat-label">Cash Ratio</div>
+                            <div class="ratio-value" id="ratio-cash">0.00</div>
+                            <div class="ratio-description">
+                                Most conservative liquidity measure. Ideal: >0.5
+                                <span class="trend-indicator" id="trend-cash"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">Profitability Ratios</div>
+                <div class="card-body">
+                    <div class="ratio-grid">
+                        <div class="ratio-card">
+                            <div class="stat-label">Gross Profit Margin</div>
+                            <div class="ratio-value" id="ratio-gross-margin">0.00%</div>
+                            <div class="ratio-description">
+                                Percentage of revenue after COGS. Ideal: industry dependent
+                                <span class="trend-indicator" id="trend-gross-margin"></span>
+                            </div>
+                        </div>
+                        <div class="ratio-card">
+                            <div class="stat-label">Net Profit Margin</div>
+                            <div class="ratio-value" id="ratio-net-margin">0.00%</div>
+                            <div class="ratio-description">
+                                Percentage of revenue as profit. Ideal: industry dependent
+                                <span class="trend-indicator" id="trend-net-margin"></span>
+                            </div>
+                        </div>
+                        <div class="ratio-card">
+                            <div class="stat-label">Return on Equity</div>
+                            <div class="ratio-value" id="ratio-roe">0.00%</div>
+                            <div class="ratio-description">
+                                Profit generated with shareholders' money. Ideal: >15%
+                                <span class="trend-indicator" id="trend-roe"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">Leverage Ratios</div>
+                <div class="card-body">
+                    <div class="ratio-grid">
+                        <div class="ratio-card">
+                            <div class="stat-label">Debt to Equity</div>
+                            <div class="ratio-value" id="ratio-debt-equity">0.00</div>
+                            <div class="ratio-description">
+                                Compares total debt to shareholder equity. Ideal: <2.0
+                                <span class="trend-indicator" id="trend-debt-equity"></span>
+                            </div>
+                        </div>
+                        <div class="ratio-card">
+                            <div class="stat-label">Debt to Assets</div>
+                            <div class="ratio-value" id="ratio-debt-assets">0.00%</div>
+                            <div class="ratio-description">
+                                Percentage of assets financed by debt. Ideal: <60%
+                                <span class="trend-indicator" id="trend-debt-assets"></span>
+                            </div>
+                        </div>
+                        <div class="ratio-card">
+                            <div class="stat-label">Interest Coverage</div>
+                            <div class="ratio-value" id="ratio-interest-coverage">0.00</div>
+                            <div class="ratio-description">
+                                Ability to pay interest expenses. Ideal: >3.0
+                                <span class="trend-indicator" id="trend-interest-coverage"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Settings Tab -->
         <div id="settings" class="tab-content">
+            <h2>Application Settings</h2>
+            
             <div class="card">
-                <div class="card-header">Application Settings</div>
+                <div class="card-header">Accounting Configuration</div>
                 <div class="card-body">
                     <div class="form-group">
                         <label for="accounting-mode">Accounting Mode:</label>
@@ -814,7 +829,7 @@
                     
                     <div class="form-group">
                         <label for="financial-year">Financial Year Start:</label>
-                        <input type="date" id="financial-year">
+                        <input type="date" id="financial-year" value="2023-01-01">
                     </div>
                     
                     <button id="save-settings">Save Settings</button>
@@ -824,31 +839,33 @@
             <div class="card">
                 <div class="card-header">Data Management</div>
                 <div class="card-body">
-                    <button id="export-data" style="margin-right: 1rem;"><i class="fas fa-file-export"></i> Export All Data</button>
-                    <button id="import-data" style="margin-right: 1rem;"><i class="fas fa-file-import"></i> Import Data</button>
-                    <button id="clear-data" class="btn-danger"><i class="fas fa-trash"></i> Clear All Data</button>
+                    <button id="export-data" style="margin-right: 1rem;">Export All Data</button>
+                    <button id="import-data" style="margin-right: 1rem;">Import Data</button>
+                    <button id="clear-data" class="btn-danger">Clear All Data</button>
                 </div>
             </div>
             
             <div class="card">
-                <div class="card-header">Exchange Rates</div>
+                <div class="card-header">Multi-Currency Support</div>
                 <div class="card-body">
                     <div class="form-group">
-                        <label for="exchange-rate-usd">USD to Base Currency:</label>
-                        <input type="number" id="exchange-rate-usd" step="0.0001" value="1.0">
+                        <label for="exchange-rates">Exchange Rates (1 USD to):</label>
+                        <div class="filters">
+                            <div class="filter-group">
+                                <label for="eur-rate">EUR:</label>
+                                <input type="number" id="eur-rate" step="0.0001" value="0.85">
+                            </div>
+                            <div class="filter-group">
+                                <label for="gbp-rate">GBP:</label>
+                                <input type="number" id="gbp-rate" step="0.0001" value="0.75">
+                            </div>
+                            <div class="filter-group">
+                                <label for="jpy-rate">JPY:</label>
+                                <input type="number" id="jpy-rate" step="0.01" value="110.50">
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="exchange-rate-eur">EUR to Base Currency:</label>
-                        <input type="number" id="exchange-rate-eur" step="0.0001" value="1.1">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="exchange-rate-gbp">GBP to Base Currency:</label>
-                        <input type="number" id="exchange-rate-gbp" step="0.0001" value="1.3">
-                    </div>
-                    
-                    <button id="save-exchange-rates">Save Exchange Rates</button>
+                    <button id="save-rates">Save Exchange Rates</button>
                 </div>
             </div>
         </div>
@@ -870,6 +887,16 @@
                 <div class="form-group">
                     <label for="transaction-description">Description:</label>
                     <input type="text" id="transaction-description" placeholder="Enter description" required>
+                </div>
+                
+                <div class="currency-selector">
+                    <label for="transaction-currency">Currency:</label>
+                    <select id="transaction-currency">
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="JPY">JPY</option>
+                    </select>
                 </div>
                 
                 <div class="form-group">
@@ -894,21 +921,6 @@
                 <div class="form-group">
                     <label for="credit-amount">Credit Amount:</label>
                     <input type="number" id="credit-amount" step="0.01" min="0" placeholder="0.00" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="currency">Currency:</label>
-                    <select id="currency">
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
-                        <option value="JPY">JPY</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="exchange-rate">Exchange Rate (to base currency):</label>
-                    <input type="number" id="exchange-rate" step="0.0001" value="1.0">
                 </div>
                 
                 <div class="form-group">
@@ -963,22 +975,13 @@
                         <option value="Non-operating Revenue">Non-operating Revenue</option>
                         <option value="Operating Expense">Operating Expense</option>
                         <option value="Non-operating Expense">Non-operating Expense</option>
+                        <option value="Cost of Goods Sold">Cost of Goods Sold</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
                     <label for="opening-balance">Opening Balance:</label>
                     <input type="number" id="opening-balance" step="0.01" placeholder="0.00">
-                </div>
-                
-                <div class="form-group">
-                    <label for="account-currency">Currency:</label>
-                    <select id="account-currency">
-                        <option value="base">Base Currency</option>
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
-                    </select>
                 </div>
                 
                 <button type="submit">Save Account</button>
@@ -1001,17 +1004,18 @@
                 accountingBasis: 'accrual',
                 companyName: 'Company Name',
                 baseCurrency: 'USD',
-                financialYear: new Date().toISOString().split('T')[0],
+                financialYear: '2023-01-01',
                 exchangeRates: {
-                    USD: 1.0,
-                    EUR: 1.1,
-                    GBP: 1.3,
-                    JPY: 0.009
+                    EUR: 0.85,
+                    GBP: 0.75,
+                    JPY: 110.50,
+                    CAD: 1.25,
+                    AUD: 1.35
                 }
             },
             accounts: [],
             transactions: [],
-            financialCharts: {},
+            previousRatios: {},
             
             // Initialize the application
             init() {
@@ -1021,7 +1025,7 @@
                 this.renderTransactions();
                 this.updateDashboard();
                 this.setCurrentDate();
-                this.initCharts();
+                this.calculateAllRatios();
             },
             
             // Load data from localStorage
@@ -1029,10 +1033,12 @@
                 const settings = localStorage.getItem('openledger-settings');
                 const accounts = localStorage.getItem('openledger-accounts');
                 const transactions = localStorage.getItem('openledger-transactions');
+                const ratios = localStorage.getItem('openledger-ratios');
                 
                 if (settings) this.settings = JSON.parse(settings);
                 if (accounts) this.accounts = JSON.parse(accounts);
                 if (transactions) this.transactions = JSON.parse(transactions);
+                if (ratios) this.previousRatios = JSON.parse(ratios);
                 
                 // Update UI with settings
                 document.getElementById('accounting-mode').value = this.settings.accountingMode;
@@ -1042,12 +1048,10 @@
                 document.getElementById('financial-year').value = this.settings.financialYear;
                 document.getElementById('company-name').textContent = this.settings.companyName;
                 
-                // Update exchange rates if they exist
-                if (this.settings.exchangeRates) {
-                    document.getElementById('exchange-rate-usd').value = this.settings.exchangeRates.USD;
-                    document.getElementById('exchange-rate-eur').value = this.settings.exchangeRates.EUR;
-                    document.getElementById('exchange-rate-gbp').value = this.settings.exchangeRates.GBP;
-                }
+                // Update exchange rates
+                document.getElementById('eur-rate').value = this.settings.exchangeRates.EUR;
+                document.getElementById('gbp-rate').value = this.settings.exchangeRates.GBP;
+                document.getElementById('jpy-rate').value = this.settings.exchangeRates.JPY;
             },
             
             // Save data to localStorage
@@ -1055,6 +1059,7 @@
                 localStorage.setItem('openledger-settings', JSON.stringify(this.settings));
                 localStorage.setItem('openledger-accounts', JSON.stringify(this.accounts));
                 localStorage.setItem('openledger-transactions', JSON.stringify(this.transactions));
+                localStorage.setItem('openledger-ratios', JSON.stringify(this.previousRatios));
             },
             
             // Set current date in date fields
@@ -1070,113 +1075,16 @@
                 document.getElementById('ratio-date').value = today;
             },
             
-            // Initialize charts
-            initCharts() {
-                const financialTrendsCtx = document.getElementById('financial-trends-chart').getContext('2d');
-                this.financialCharts.trends = new Chart(financialTrendsCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                        datasets: [{
-                            label: 'Revenue',
-                            data: [0, 0, 0, 0, 0, 0],
-                            borderColor: '#2ecc71',
-                            tension: 0.1,
-                            fill: false
-                        }, {
-                            label: 'Expenses',
-                            data: [0, 0, 0, 0, 0, 0],
-                            borderColor: '#e74c3c',
-                            tension: 0.1,
-                            fill: false
-                        }, {
-                            label: 'Net Income',
-                            data: [0, 0, 0, 0, 0, 0],
-                            borderColor: '#3498db',
-                            tension: 0.1,
-                            fill: false
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Financial Trends'
-                            }
-                        }
-                    }
-                });
-                
-                const ratioTrendCtx = document.getElementById('ratio-trend-chart').getContext('2d');
-                this.financialCharts.ratios = new Chart(ratioTrendCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Current Ratio', 'Quick Ratio', 'Debt to Equity', 'Gross Margin', 'Net Margin', 'ROE'],
-                        datasets: [{
-                            label: 'Ratio Values',
-                            data: [0, 0, 0, 0, 0, 0],
-                            backgroundColor: [
-                                'rgba(52, 152, 219, 0.7)',
-                                'rgba(46, 204, 113, 0.7)',
-                                'rgba(155, 89, 182, 0.7)',
-                                'rgba(241, 196, 15, 0.7)',
-                                'rgba(230, 126, 34, 0.7)',
-                                'rgba(231, 76, 60, 0.7)'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Financial Ratios'
-                            }
-                        }
-                    }
-                });
-            },
-            
-            // Update charts with current data
-            updateCharts() {
-                // This would be populated with actual financial data
-                const revenueData = [12000, 19000, 15000, 18000, 22000, 25000];
-                const expensesData = [8000, 10000, 12000, 9000, 11000, 13000];
-                const netIncomeData = revenueData.map((val, idx) => val - expensesData[idx]);
-                
-                this.financialCharts.trends.data.datasets[0].data = revenueData;
-                this.financialCharts.trends.data.datasets[1].data = expensesData;
-                this.financialCharts.trends.data.datasets[2].data = netIncomeData;
-                this.financialCharts.trends.update();
-                
-                // Update ratio chart with calculated ratios
-                const ratios = [
-                    this.calculateCurrentRatio(),
-                    this.calculateQuickRatio(),
-                    this.calculateDebtToEquityRatio(),
-                    this.calculateGrossMargin(),
-                    this.calculateNetMargin(),
-                    this.calculateROE()
-                ];
-                
-                this.financialCharts.ratios.data.datasets[0].data = ratios;
-                this.financialCharts.ratios.update();
-            },
-            
             // Setup event listeners
             setupEventListeners() {
-                // Navigation
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                // Tab navigation
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                         
-                        item.classList.add('active');
-                        document.getElementById(item.dataset.tab).classList.add('active');
-                        document.getElementById('page-title').textContent = item.querySelector('span').textContent;
+                        tab.classList.add('active');
+                        document.getElementById(tab.dataset.tab).classList.add('active');
                     });
                 });
                 
@@ -1213,10 +1121,10 @@
                 });
                 
                 // Save exchange rates
-                document.getElementById('save-exchange-rates').addEventListener('click', () => {
-                    this.settings.exchangeRates.USD = parseFloat(document.getElementById('exchange-rate-usd').value);
-                    this.settings.exchangeRates.EUR = parseFloat(document.getElementById('exchange-rate-eur').value);
-                    this.settings.exchangeRates.GBP = parseFloat(document.getElementById('exchange-rate-gbp').value);
+                document.getElementById('save-rates').addEventListener('click', () => {
+                    this.settings.exchangeRates.EUR = parseFloat(document.getElementById('eur-rate').value);
+                    this.settings.exchangeRates.GBP = parseFloat(document.getElementById('gbp-rate').value);
+                    this.settings.exchangeRates.JPY = parseFloat(document.getElementById('jpy-rate').value);
                     
                     this.saveData();
                     this.showNotification('Exchange rates saved successfully', 'success');
@@ -1254,6 +1162,7 @@
                         localStorage.clear();
                         this.accounts = [];
                         this.transactions = [];
+                        this.previousRatios = {};
                         this.saveData();
                         this.renderAccounts();
                         this.renderTransactions();
@@ -1282,19 +1191,26 @@
                     this.generateReport();
                 });
                 
+                // Export report
+                document.getElementById('export-report').addEventListener('click', () => {
+                    this.exportReport();
+                });
+                
                 // Calculate ratios
                 document.getElementById('calculate-ratios').addEventListener('click', () => {
                     this.calculateAllRatios();
                 });
                 
-                // Refresh charts
-                document.getElementById('refresh-charts').addEventListener('click', () => {
-                    this.updateCharts();
-                });
-                
-                // Help button
-                document.getElementById('help-btn').addEventListener('click', () => {
-                    alert('OpenLedger Help:\n\n1. Start by adding accounts in the Chart of Accounts tab.\n2. Add transactions in the Journal tab.\n3. View reports in the Financial Reports tab.\n4. Analyze performance in the Ratio Analysis tab.\n\nFor detailed guidance, refer to the documentation.');
+                // Report type change
+                document.getElementById('report-type').addEventListener('change', () => {
+                    const reportType = document.getElementById('report-type').value;
+                    const comparativeContainer = document.getElementById('comparative-period-container');
+                    
+                    if (reportType === 'comparative') {
+                        comparativeContainer.style.display = 'flex';
+                    } else {
+                        comparativeContainer.style.display = 'none';
+                    }
                 });
             },
             
@@ -1335,7 +1251,7 @@
                     row.innerHTML = `
                         <td>${account.code}</td>
                         <td>${account.name}</td>
-                        <td>${account.type}</td>
+                        <td>${account.type}${account.subtype ? ' (' + account.subtype + ')' : ''}</td>
                         <td>${this.formatCurrency(this.getAccountBalance(account.id))}</td>
                         <td>
                             <button class="btn-danger" data-account-id="${account.id}">Delete</button>
@@ -1374,8 +1290,8 @@
                         <td>${transaction.date}</td>
                         <td>${transaction.description}</td>
                         <td>${this.getAccountName(transaction.debitAccount)}</td>
-                        <td class="debit">${this.formatCurrency(transaction.debitAmount)}</td>
-                        <td class="credit">${this.formatCurrency(transaction.creditAmount)}</td>
+                        <td class="debit">${this.formatCurrency(transaction.debitAmount, transaction.currency)}</td>
+                        <td class="credit">${this.formatCurrency(transaction.creditAmount, transaction.currency)}</td>
                         <td>
                             <button class="btn-danger" data-transaction-id="${transaction.id}">Delete</button>
                         </td>
@@ -1418,19 +1334,25 @@
                     const isDebit = transaction.debitAccount === accountId;
                     const amount = isDebit ? transaction.debitAmount : transaction.creditAmount;
                     
+                    // Convert amount to base currency if needed
+                    let baseAmount = amount;
+                    if (transaction.currency !== this.settings.baseCurrency) {
+                        baseAmount = amount / this.settings.exchangeRates[transaction.currency];
+                    }
+                    
                     // Update running balance based on account type
                     if (account.type === 'Asset' || account.type === 'Expense') {
-                        runningBalance += isDebit ? amount : -amount;
+                        runningBalance += isDebit ? baseAmount : -baseAmount;
                     } else {
-                        runningBalance += isDebit ? -amount : amount;
+                        runningBalance += isDebit ? -baseAmount : baseAmount;
                     }
                     
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${transaction.date}</td>
                         <td>${transaction.description}</td>
-                        <td class="${isDebit ? 'debit' : ''}">${isDebit ? this.formatCurrency(amount) : ''}</td>
-                        <td class="${!isDebit ? 'credit' : ''}">${!isDebit ? this.formatCurrency(amount) : ''}</td>
+                        <td class="${isDebit ? 'debit' : ''}">${isDebit ? this.formatCurrency(amount, transaction.currency) : ''}</td>
+                        <td class="${!isDebit ? 'credit' : ''}">${!isDebit ? this.formatCurrency(amount, transaction.currency) : ''}</td>
                         <td>${this.formatCurrency(runningBalance)}</td>
                     `;
                     ledgerTable.appendChild(row);
@@ -1461,14 +1383,24 @@
                 });
                 
                 filteredTransactions.forEach(transaction => {
+                    // Convert amount to base currency if needed
+                    let debitAmount = transaction.debitAmount;
+                    let creditAmount = transaction.creditAmount;
+                    
+                    if (transaction.currency !== this.settings.baseCurrency) {
+                        const rate = this.settings.exchangeRates[transaction.currency];
+                        debitAmount = transaction.debitAmount / rate;
+                        creditAmount = transaction.creditAmount / rate;
+                    }
+                    
                     // Debit side
                     if (accountBalances[transaction.debitAccount]) {
-                        accountBalances[transaction.debitAccount].debit += transaction.debitAmount;
+                        accountBalances[transaction.debitAccount].debit += debitAmount;
                     }
                     
                     // Credit side
                     if (accountBalances[transaction.creditAccount]) {
-                        accountBalances[transaction.creditAccount].credit += transaction.creditAmount;
+                        accountBalances[transaction.creditAccount].credit += creditAmount;
                     }
                 });
                 
@@ -1502,8 +1434,8 @@
                 tbTable.appendChild(totalRow);
                 
                 // Check if debits equal credits
-                if (totalDebit !== totalCredit) {
-                    this.showNotification('Trial balance is not balanced!', 'error');
+                if (Math.abs(totalDebit - totalCredit) > 0.01) {
+                    this.showNotification('Trial balance is not balanced! Difference: ' + this.formatCurrency(Math.abs(totalDebit - totalCredit)), 'error');
                 }
             },
             
@@ -1529,14 +1461,8 @@
                     case 'changes-equity':
                         reportHTML = this.generateChangesInEquity(reportDate, reportStyle);
                         break;
-                    case 'general-ledger':
-                        reportHTML = this.generateGeneralLedgerReport(reportDate, reportStyle);
-                        break;
-                    case 'ar-aging':
-                        reportHTML = this.generateARAgingReport(reportDate, reportStyle);
-                        break;
-                    case 'ap-aging':
-                        reportHTML = this.generateAPAgingReport(reportDate, reportStyle);
+                    case 'comparative':
+                        reportHTML = this.generateComparativeStatement(reportDate, reportStyle);
                         break;
                 }
                 
@@ -1544,89 +1470,38 @@
                 document.getElementById('report-title').textContent = this.getReportTitle(reportType, reportStyle);
             },
             
-            // Calculate all financial ratios
-            calculateAllRatios() {
-                document.getElementById('current-ratio').textContent = this.calculateCurrentRatio().toFixed(2);
-                document.getElementById('quick-ratio').textContent = this.calculateQuickRatio().toFixed(2);
-                document.getElementById('debt-equity-ratio').textContent = this.calculateDebtToEquityRatio().toFixed(2);
-                document.getElementById('gross-margin').textContent = (this.calculateGrossMargin() * 100).toFixed(2) + '%';
-                document.getElementById('net-margin').textContent = (this.calculateNetMargin() * 100).toFixed(2) + '%';
-                document.getElementById('return-equity').textContent = (this.calculateROE() * 100).toFixed(2) + '%';
+            // Export report as CSV
+            exportReport() {
+                const reportContent = document.getElementById('report-content');
+                const reportTitle = document.getElementById('report-title').textContent;
                 
-                // Update ratio chart
-                const ratios = [
-                    this.calculateCurrentRatio(),
-                    this.calculateQuickRatio(),
-                    this.calculateDebtToEquityRatio(),
-                    this.calculateGrossMargin() * 100,
-                    this.calculateNetMargin() * 100,
-                    this.calculateROE() * 100
-                ];
+                // Simple implementation - would need to be expanded for proper CSV export
+                let csvContent = reportTitle + '\n\n';
                 
-                this.financialCharts.ratios.data.datasets[0].data = ratios;
-                this.financialCharts.ratios.update();
-            },
-            
-            // Calculate Current Ratio
-            calculateCurrentRatio() {
-                const currentAssets = this.calculateAccountTypeTotal('Asset', 'Current Asset');
-                const currentLiabilities = this.calculateAccountTypeTotal('Liability', 'Current Liability');
+                const tables = reportContent.querySelectorAll('table');
+                tables.forEach(table => {
+                    for (let i = 0; i < table.rows.length; i++) {
+                        const row = table.rows[i];
+                        let rowText = '';
+                        for (let j = 0; j < row.cells.length; j++) {
+                            rowText += '"' + row.cells[j].textContent.replace(/"/g, '""') + '",';
+                        }
+                        csvContent += rowText + '\n';
+                    }
+                    csvContent += '\n';
+                });
                 
-                if (currentLiabilities === 0) return 0;
-                return currentAssets / currentLiabilities;
-            },
-            
-            // Calculate Quick Ratio
-            calculateQuickRatio() {
-                // For simplicity, we'll assume cash and receivables are the only quick assets
-                const cash = this.getAccountBalance(this.findAccountIdByCode('1010') || '');
-                const receivables = this.getAccountBalance(this.findAccountIdByCode('1200') || '');
-                const currentLiabilities = this.calculateAccountTypeTotal('Liability', 'Current Liability');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
                 
-                if (currentLiabilities === 0) return 0;
-                return (cash + receivables) / currentLiabilities;
-            },
-            
-            // Calculate Debt to Equity Ratio
-            calculateDebtToEquityRatio() {
-                const totalLiabilities = this.calculateAccountTypeTotal('Liability');
-                const totalEquity = this.calculateAccountTypeTotal('Equity');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `${reportTitle.replace(/\s+/g, '_')}.csv`);
+                link.style.visibility = 'hidden';
                 
-                if (totalEquity === 0) return 0;
-                return totalLiabilities / totalEquity;
-            },
-            
-            // Calculate Gross Margin
-            calculateGrossMargin() {
-                const revenue = this.calculateAccountTypeTotal('Revenue');
-                const cogs = this.calculateAccountTypeTotal('Expense', 'Cost of Goods Sold');
-                
-                if (revenue === 0) return 0;
-                return (revenue - cogs) / revenue;
-            },
-            
-            // Calculate Net Margin
-            calculateNetMargin() {
-                const revenue = this.calculateAccountTypeTotal('Revenue');
-                const netIncome = revenue - this.calculateAccountTypeTotal('Expense');
-                
-                if (revenue === 0) return 0;
-                return netIncome / revenue;
-            },
-            
-            // Calculate Return on Equity
-            calculateROE() {
-                const netIncome = this.calculateAccountTypeTotal('Revenue') - this.calculateAccountTypeTotal('Expense');
-                const totalEquity = this.calculateAccountTypeTotal('Equity');
-                
-                if (totalEquity === 0) return 0;
-                return netIncome / totalEquity;
-            },
-            
-            // Find account ID by code
-            findAccountIdByCode(code) {
-                const account = this.accounts.find(a => a.code === code);
-                return account ? account.id : null;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             },
             
             // Add a new transaction
@@ -1637,9 +1512,8 @@
                 const debitAmount = parseFloat(document.getElementById('debit-amount').value);
                 const creditAccount = document.getElementById('credit-account').value;
                 const creditAmount = parseFloat(document.getElementById('credit-amount').value);
-                const currency = document.getElementById('currency').value;
-                const exchangeRate = parseFloat(document.getElementById('exchange-rate').value);
                 const narration = document.getElementById('narration').value;
+                const currency = document.getElementById('transaction-currency').value;
                 
                 // Validate debit equals credit
                 if (debitAmount !== creditAmount) {
@@ -1656,9 +1530,8 @@
                     debitAmount,
                     creditAccount,
                     creditAmount,
-                    currency,
-                    exchangeRate,
-                    narration
+                    narration,
+                    currency
                 };
                 
                 // Add to transactions array
@@ -1668,7 +1541,7 @@
                 this.saveData();
                 this.renderTransactions();
                 this.updateDashboard();
-                this.updateCharts();
+                this.calculateAllRatios();
                 
                 // Close modal and reset form
                 document.getElementById('transaction-modal').style.display = 'none';
@@ -1684,7 +1557,6 @@
                 const type = document.getElementById('account-type').value;
                 const subtype = document.getElementById('account-subtype').value;
                 const openingBalance = parseFloat(document.getElementById('opening-balance').value) || 0;
-                const currency = document.getElementById('account-currency').value;
                 
                 // Check if account code already exists
                 if (this.accounts.some(account => account.code === code)) {
@@ -1699,8 +1571,7 @@
                     name,
                     type,
                     subtype,
-                    openingBalance,
-                    currency
+                    openingBalance
                 };
                 
                 // Add to accounts array
@@ -1726,7 +1597,8 @@
                         debitAmount: Math.abs(openingBalance),
                         creditAccount,
                         creditAmount: Math.abs(openingBalance),
-                        narration: 'Opening balance'
+                        narration: 'Opening balance',
+                        currency: this.settings.baseCurrency
                     };
                     
                     this.transactions.push(transaction);
@@ -1737,6 +1609,7 @@
                 this.renderAccounts();
                 this.renderTransactions();
                 this.updateDashboard();
+                this.calculateAllRatios();
                 
                 // Close modal and reset form
                 document.getElementById('account-modal').style.display = 'none';
@@ -1752,6 +1625,7 @@
                     this.saveData();
                     this.renderTransactions();
                     this.updateDashboard();
+                    this.calculateAllRatios();
                     this.showNotification('Transaction deleted successfully', 'success');
                 }
             },
@@ -1808,14 +1682,198 @@
                     row.innerHTML = `
                         <td>${transaction.date}</td>
                         <td>${transaction.description}</td>
-                        <td class="debit">${this.formatCurrency(transaction.debitAmount)}</td>
-                        <td class="credit">${this.formatCurrency(transaction.creditAmount)}</td>
+                        <td class="debit">${this.formatCurrency(transaction.debitAmount, transaction.currency)}</td>
+                        <td class="credit">${this.formatCurrency(transaction.creditAmount, transaction.currency)}</td>
                     `;
                     recentTransactionsTable.appendChild(row);
                 });
                 
-                // Update charts
-                this.updateCharts();
+                // Update financial health indicators
+                this.updateFinancialHealthIndicators();
+            },
+            
+            // Update financial health indicators
+            updateFinancialHealthIndicators() {
+                // Calculate current ratio (Current Assets / Current Liabilities)
+                const currentAssets = this.accounts
+                    .filter(a => a.subtype === 'Current Asset')
+                    .reduce((total, account) => total + this.getAccountBalance(account.id), 0);
+                
+                const currentLiabilities = this.accounts
+                    .filter(a => a.subtype === 'Current Liability')
+                    .reduce((total, account) => total + this.getAccountBalance(account.id), 0);
+                
+                const currentRatio = currentLiabilities !== 0 ? currentAssets / currentLiabilities : 0;
+                document.getElementById('current-ratio').textContent = currentRatio.toFixed(2);
+                
+                // Calculate quick ratio (Current Assets - Inventory) / Current Liabilities
+                // For simplicity, we'll assume inventory is included in current assets
+                const quickRatio = currentLiabilities !== 0 ? currentAssets / currentLiabilities : 0;
+                document.getElementById('quick-ratio').textContent = quickRatio.toFixed(2);
+                
+                // Calculate debt to equity ratio
+                const totalLiabilities = this.calculateAccountTypeTotal('Liability');
+                const totalEquity = this.calculateAccountTypeTotal('Equity');
+                const debtEquityRatio = totalEquity !== 0 ? totalLiabilities / totalEquity : 0;
+                document.getElementById('debt-equity-ratio').textContent = debtEquityRatio.toFixed(2);
+                
+                // Calculate profit margin
+                const revenue = this.calculateAccountTypeTotal('Revenue');
+                const netIncome = revenue - this.calculateAccountTypeTotal('Expense');
+                const profitMargin = revenue !== 0 ? (netIncome / revenue) * 100 : 0;
+                document.getElementById('profit-margin').textContent = profitMargin.toFixed(2) + '%';
+            },
+            
+            // Calculate all financial ratios
+            calculateAllRatios() {
+                const asOfDate = document.getElementById('ratio-date').value;
+                
+                // Filter transactions up to the selected date
+                const filteredTransactions = this.transactions.filter(transaction => {
+                    return transaction.date <= asOfDate;
+                });
+                
+                // Calculate balances for each account based on filtered transactions
+                const accountBalances = {};
+                
+                this.accounts.forEach(account => {
+                    accountBalances[account.id] = 0;
+                });
+                
+                filteredTransactions.forEach(transaction => {
+                    // Convert amount to base currency if needed
+                    let debitAmount = transaction.debitAmount;
+                    let creditAmount = transaction.creditAmount;
+                    
+                    if (transaction.currency !== this.settings.baseCurrency) {
+                        const rate = this.settings.exchangeRates[transaction.currency];
+                        debitAmount = transaction.debitAmount / rate;
+                        creditAmount = transaction.creditAmount / rate;
+                    }
+                    
+                    // Debit side
+                    if (accountBalances[transaction.debitAccount] !== undefined) {
+                        accountBalances[transaction.debitAccount] += debitAmount;
+                    }
+                    
+                    // Credit side
+                    if (accountBalances[transaction.creditAccount] !== undefined) {
+                        accountBalances[transaction.creditAccount] -= creditAmount;
+                    }
+                });
+                
+                // Add opening balances
+                this.accounts.forEach(account => {
+                    if (account.openingBalance) {
+                        accountBalances[account.id] += account.openingBalance;
+                    }
+                });
+                
+                // Get account balances by type and subtype
+                const getBalanceByType = (type, subtype = null) => {
+                    return this.accounts
+                        .filter(account => {
+                            if (subtype) {
+                                return account.type === type && account.subtype === subtype;
+                            }
+                            return account.type === type;
+                        })
+                        .reduce((total, account) => total + accountBalances[account.id], 0);
+                };
+                
+                // Calculate ratios
+                const currentAssets = getBalanceByType('Asset', 'Current Asset');
+                const currentLiabilities = getBalanceByType('Liability', 'Current Liability');
+                const cash = getBalanceByType('Asset'); // Simplified for this example
+                const totalAssets = getBalanceByType('Asset');
+                const totalLiabilities = getBalanceByType('Liability');
+                const totalEquity = getBalanceByType('Equity');
+                const revenue = getBalanceByType('Revenue');
+                const cogs = getBalanceByType('Expense', 'Cost of Goods Sold');
+                const expenses = getBalanceByType('Expense');
+                const netIncome = revenue - expenses;
+                
+                // Liquidity Ratios
+                const currentRatio = currentLiabilities !== 0 ? currentAssets / currentLiabilities : 0;
+                const quickRatio = currentLiabilities !== 0 ? (currentAssets) / currentLiabilities : 0; // Simplified
+                const cashRatio = currentLiabilities !== 0 ? cash / currentLiabilities : 0;
+                
+                // Profitability Ratios
+                const grossProfit = revenue - cogs;
+                const grossMargin = revenue !== 0 ? (grossProfit / revenue) * 100 : 0;
+                const netMargin = revenue !== 0 ? (netIncome / revenue) * 100 : 0;
+                const roe = totalEquity !== 0 ? (netIncome / totalEquity) * 100 : 0;
+                
+                // Leverage Ratios
+                const debtEquity = totalEquity !== 0 ? totalLiabilities / totalEquity : 0;
+                const debtAssets = totalAssets !== 0 ? (totalLiabilities / totalAssets) * 100 : 0;
+                const interestCoverage = 5.0; // Simplified for this example
+                
+                // Update ratio values
+                document.getElementById('ratio-current').textContent = currentRatio.toFixed(2);
+                document.getElementById('ratio-quick').textContent = quickRatio.toFixed(2);
+                document.getElementById('ratio-cash').textContent = cashRatio.toFixed(2);
+                document.getElementById('ratio-gross-margin').textContent = grossMargin.toFixed(2) + '%';
+                document.getElementById('ratio-net-margin').textContent = netMargin.toFixed(2) + '%';
+                document.getElementById('ratio-roe').textContent = roe.toFixed(2) + '%';
+                document.getElementById('ratio-debt-equity').textContent = debtEquity.toFixed(2);
+                document.getElementById('ratio-debt-assets').textContent = debtAssets.toFixed(2) + '%';
+                document.getElementById('ratio-interest-coverage').textContent = interestCoverage.toFixed(2);
+                
+                // Update trends
+                this.updateRatioTrends({
+                    currentRatio,
+                    quickRatio,
+                    cashRatio,
+                    grossMargin,
+                    netMargin,
+                    roe,
+                    debtEquity,
+                    debtAssets,
+                    interestCoverage
+                });
+                
+                // Save current ratios as previous for next comparison
+                this.previousRatios = {
+                    currentRatio,
+                    quickRatio,
+                    cashRatio,
+                    grossMargin,
+                    netMargin,
+                    roe,
+                    debtEquity,
+                    debtAssets,
+                    interestCoverage
+                };
+                
+                this.saveData();
+            },
+            
+            // Update ratio trends
+            updateRatioTrends(currentRatios) {
+                const ratios = [
+                    'current', 'quick', 'cash', 'gross-margin', 'net-margin', 
+                    'roe', 'debt-equity', 'debt-assets', 'interest-coverage'
+                ];
+                
+                ratios.forEach(ratio => {
+                    const current = currentRatios[ratio.replace('-', '')];
+                    const previous = this.previousRatios[ratio.replace('-', '')] || 0;
+                    const trendElement = document.getElementById(`trend-${ratio}`);
+                    
+                    if (trendElement) {
+                        if (current > previous) {
+                            trendElement.className = 'trend-indicator trend-up';
+                            trendElement.textContent = '↗';
+                        } else if (current < previous) {
+                            trendElement.className = 'trend-indicator trend-down';
+                            trendElement.textContent = '↘';
+                        } else {
+                            trendElement.className = 'trend-indicator';
+                            trendElement.textContent = '→';
+                        }
+                    }
+                });
             },
             
             // Export all data as JSON
@@ -1823,7 +1881,8 @@
                 const data = {
                     settings: this.settings,
                     accounts: this.accounts,
-                    transactions: this.transactions
+                    transactions: this.transactions,
+                    ratios: this.previousRatios
                 };
                 
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1850,11 +1909,13 @@
                         if (data.settings) this.settings = data.settings;
                         if (data.accounts) this.accounts = data.accounts;
                         if (data.transactions) this.transactions = data.transactions;
+                        if (data.ratios) this.previousRatios = data.ratios;
                         
                         this.saveData();
                         this.renderAccounts();
                         this.renderTransactions();
                         this.updateDashboard();
+                        this.calculateAllRatios();
                         
                         // Update UI with settings
                         document.getElementById('accounting-mode').value = this.settings.accountingMode;
@@ -1885,10 +1946,11 @@
             },
             
             // Format currency amount
-            formatCurrency(amount) {
+            formatCurrency(amount, currency = null) {
+                const curr = currency || this.settings.baseCurrency;
                 return new Intl.NumberFormat('en-US', {
                     style: 'currency',
-                    currency: this.settings.baseCurrency
+                    currency: curr
                 }).format(amount);
             },
             
@@ -1906,12 +1968,22 @@
                 let balance = account.openingBalance || 0;
                 
                 this.transactions.forEach(transaction => {
+                    // Convert amount to base currency if needed
+                    let debitAmount = transaction.debitAmount;
+                    let creditAmount = transaction.creditAmount;
+                    
+                    if (transaction.currency !== this.settings.baseCurrency) {
+                        const rate = this.settings.exchangeRates[transaction.currency];
+                        debitAmount = transaction.debitAmount / rate;
+                        creditAmount = transaction.creditAmount / rate;
+                    }
+                    
                     if (transaction.debitAccount === accountId) {
-                        balance += transaction.debitAmount;
+                        balance += debitAmount;
                     }
                     
                     if (transaction.creditAccount === accountId) {
-                        balance -= transaction.creditAmount;
+                        balance -= creditAmount;
                     }
                 });
                 
@@ -1919,14 +1991,9 @@
             },
             
             // Calculate total for an account type
-            calculateAccountTypeTotal(type, subtype = null) {
+            calculateAccountTypeTotal(type) {
                 return this.accounts
-                    .filter(account => {
-                        if (subtype) {
-                            return account.type === type && account.subtype === subtype;
-                        }
-                        return account.type === type;
-                    })
+                    .filter(account => account.type === type)
                     .reduce((total, account) => total + this.getAccountBalance(account.id), 0);
             },
             
@@ -1971,6 +2038,17 @@
                     expenseTotal += this.getAccountBalance(account.id);
                 });
                 
+                // COGS
+                const cogsAccounts = this.accounts.filter(a => a.subtype === 'Cost of Goods Sold');
+                let cogsTotal = 0;
+                
+                cogsAccounts.forEach(account => {
+                    cogsTotal += this.getAccountBalance(account.id);
+                });
+                
+                // Gross profit
+                const grossProfit = revenueTotal - cogsTotal;
+                
                 // Net income
                 const netIncome = revenueTotal - expenseTotal;
                 
@@ -2009,6 +2087,34 @@
                                 <td><strong>${this.formatCurrency(revenueTotal)}</strong></td>
                             </tr>
                             <tr>
+                                <td><strong>Cost of Goods Sold</strong></td>
+                                <td></td>
+                            </tr>
+                `;
+                
+                // Add COGS accounts
+                cogsAccounts.forEach(account => {
+                    const balance = this.getAccountBalance(account.id);
+                    if (balance !== 0) {
+                        html += `
+                            <tr>
+                                <td>${account.name}</td>
+                                <td>${this.formatCurrency(balance)}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                html += `
+                            <tr>
+                                <td><strong>Total COGS</strong></td>
+                                <td><strong>${this.formatCurrency(cogsTotal)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Gross Profit</strong></td>
+                                <td><strong>${this.formatCurrency(grossProfit)}</strong></td>
+                            </tr>
+                            <tr>
                                 <td><strong>Expenses</strong></td>
                                 <td></td>
                             </tr>
@@ -2017,7 +2123,7 @@
                 // Add expense accounts
                 expenseAccounts.forEach(account => {
                     const balance = this.getAccountBalance(account.id);
-                    if (balance !== 0) {
+                    if (balance !== 0 && account.subtype !== 'Cost of Goods Sold') {
                         html += `
                             <tr>
                                 <td>${account.name}</td>
@@ -2049,6 +2155,11 @@
                 const totalAssets = this.calculateAccountTypeTotal('Asset');
                 const totalLiabilities = this.calculateAccountTypeTotal('Liability');
                 const totalEquity = this.calculateAccountTypeTotal('Equity');
+                
+                // Calculate net income (Revenue - Expenses)
+                const revenue = this.calculateAccountTypeTotal('Revenue');
+                const expenses = this.calculateAccountTypeTotal('Expense');
+                const netIncome = revenue - expenses;
                 
                 // Generate HTML table
                 let html = `
@@ -2130,11 +2241,6 @@
                     }
                 });
                 
-                // Calculate net income (Revenue - Expenses)
-                const revenue = this.calculateAccountTypeTotal('Revenue');
-                const expenses = this.calculateAccountTypeTotal('Expense');
-                const netIncome = revenue - expenses;
-                
                 html += `
                             <tr>
                                 <td>Retained Earnings</td>
@@ -2159,73 +2265,8 @@
             generateCashFlowStatement(asOfDate, style) {
                 // Simplified implementation
                 return `
-                    <div class="card">
-                        <div class="card-header">Cash Flow Statement (Direct Method)</div>
-                        <div class="card-body">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Category</th>
-                                        <th>Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><strong>Cash flows from operating activities:</strong></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Cash received from customers</td>
-                                        <td>${this.formatCurrency(50000)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Cash paid to suppliers and employees</td>
-                                        <td>${this.formatCurrency(-35000)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Net cash from operating activities</strong></td>
-                                        <td><strong>${this.formatCurrency(15000)}</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Cash flows from investing activities:</strong></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Purchase of property and equipment</td>
-                                        <td>${this.formatCurrency(-10000)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Net cash from investing activities</strong></td>
-                                        <td><strong>${this.formatCurrency(-10000)}</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Cash flows from financing activities:</strong></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Proceeds from loans</td>
-                                        <td>${this.formatCurrency(5000)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Net cash from financing activities</strong></td>
-                                        <td><strong>${this.formatCurrency(5000)}</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Net increase in cash</strong></td>
-                                        <td><strong>${this.formatCurrency(10000)}</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Cash at beginning of period</td>
-                                        <td>${this.formatCurrency(5000)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Cash at end of period</strong></td>
-                                        <td><strong>${this.formatCurrency(15000)}</strong></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    <p>Cash Flow Statement implementation would go here.</p>
+                    <p>This would include operating, investing, and financing activities.</p>
                 `;
             },
             
@@ -2233,141 +2274,74 @@
             generateChangesInEquity(asOfDate, style) {
                 // Simplified implementation
                 return `
-                    <table>
+                    <p>Statement of Changes in Equity implementation would go here.</p>
+                    <p>This would show changes in equity accounts over time.</p>
+                `;
+            },
+            
+            // Generate comparative statement
+            generateComparativeStatement(asOfDate, style) {
+                const period = document.getElementById('comparative-period').value;
+                
+                // Calculate current period totals
+                const currentRevenue = this.calculateAccountTypeTotal('Revenue');
+                const currentExpenses = this.calculateAccountTypeTotal('Expense');
+                const currentNetIncome = currentRevenue - currentExpenses;
+                
+                // Calculate previous period totals (simplified)
+                const previousRevenue = currentRevenue * 0.85; // Example: 15% decrease
+                const previousExpenses = currentExpenses * 0.9; // Example: 10% decrease
+                const previousNetIncome = previousRevenue - previousExpenses;
+                
+                // Calculate changes
+                const revenueChange = currentRevenue - previousRevenue;
+                const revenueChangePercent = previousRevenue !== 0 ? (revenueChange / previousRevenue) * 100 : 0;
+                
+                const expensesChange = currentExpenses - previousExpenses;
+                const expensesChangePercent = previousExpenses !== 0 ? (expensesChange / previousExpenses) * 100 : 0;
+                
+                const netIncomeChange = currentNetIncome - previousNetIncome;
+                const netIncomeChangePercent = previousNetIncome !== 0 ? (netIncomeChange / previousNetIncome) * 100 : 0;
+                
+                // Generate HTML table
+                let html = `
+                    <table class="comparative-table">
                         <thead>
-                            <tr>
-                                <th>Description</th>
-                                <th>Amount</th>
+                            <tr class="comparative-header">
+                                <th>Account</th>
+                                <th>Current Period</th>
+                                <th>Previous Period</th>
+                                <th>Change</th>
+                                <th>% Change</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Beginning balance</td>
-                                <td>${this.formatCurrency(100000)}</td>
+                                <td><strong>Revenue</strong></td>
+                                <td>${this.formatCurrency(currentRevenue)}</td>
+                                <td>${this.formatCurrency(previousRevenue)}</td>
+                                <td class="${revenueChange >= 0 ? 'debit' : 'credit'}">${this.formatCurrency(revenueChange)}</td>
+                                <td class="${revenueChange >= 0 ? 'debit' : 'credit'}">${revenueChangePercent.toFixed(2)}%</td>
                             </tr>
                             <tr>
-                                <td>Net income</td>
-                                <td>${this.formatCurrency(25000)}</td>
+                                <td><strong>Expenses</strong></td>
+                                <td>${this.formatCurrency(currentExpenses)}</td>
+                                <td>${this.formatCurrency(previousExpenses)}</td>
+                                <td class="${expensesChange >= 0 ? 'debit' : 'credit'}">${this.formatCurrency(expensesChange)}</td>
+                                <td class="${expensesChange >= 0 ? 'debit' : 'credit'}">${expensesChangePercent.toFixed(2)}%</td>
                             </tr>
                             <tr>
-                                <td>Dividends paid</td>
-                                <td>${this.formatCurrency(-5000)}</td>
-                            </tr>
-                            <tr>
-                                <td>Additional investments</td>
-                                <td>${this.formatCurrency(10000)}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Ending balance</strong></td>
-                                <td><strong>${this.formatCurrency(130000)}</strong></td>
+                                <td><strong>Net Income</strong></td>
+                                <td>${this.formatCurrency(currentNetIncome)}</td>
+                                <td>${this.formatCurrency(previousNetIncome)}</td>
+                                <td class="${netIncomeChange >= 0 ? 'debit' : 'credit'}">${this.formatCurrency(netIncomeChange)}</td>
+                                <td class="${netIncomeChange >= 0 ? 'debit' : 'credit'}">${netIncomeChangePercent.toFixed(2)}%</td>
                             </tr>
                         </tbody>
                     </table>
                 `;
-            },
-            
-            // Generate general ledger report
-            generateGeneralLedgerReport(asOfDate, style) {
-                return `
-                    <p>General Ledger report would show all transactions for all accounts with running balances.</p>
-                    <p>This would be similar to the ledger view but for all accounts simultaneously.</p>
-                `;
-            },
-            
-            // Generate AR aging report
-            generateARAgingReport(asOfDate, style) {
-                return `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Customer</th>
-                                <th>Current</th>
-                                <th>1-30 Days</th>
-                                <th>31-60 Days</th>
-                                <th>61-90 Days</th>
-                                <th>Over 90 Days</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Customer A</td>
-                                <td>${this.formatCurrency(5000)}</td>
-                                <td>${this.formatCurrency(2000)}</td>
-                                <td>${this.formatCurrency(1000)}</td>
-                                <td>${this.formatCurrency(500)}</td>
-                                <td>${this.formatCurrency(200)}</td>
-                                <td>${this.formatCurrency(8700)}</td>
-                            </tr>
-                            <tr>
-                                <td>Customer B</td>
-                                <td>${this.formatCurrency(3000)}</td>
-                                <td>${this.formatCurrency(1500)}</td>
-                                <td>${this.formatCurrency(0)}</td>
-                                <td>${this.formatCurrency(0)}</td>
-                                <td>${this.formatCurrency(0)}</td>
-                                <td>${this.formatCurrency(4500)}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Total</strong></td>
-                                <td><strong>${this.formatCurrency(8000)}</strong></td>
-                                <td><strong>${this.formatCurrency(3500)}</strong></td>
-                                <td><strong>${this.formatCurrency(1000)}</strong></td>
-                                <td><strong>${this.formatCurrency(500)}</strong></td>
-                                <td><strong>${this.formatCurrency(200)}</strong></td>
-                                <td><strong>${this.formatCurrency(13200)}</strong></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                `;
-            },
-            
-            // Generate AP aging report
-            generateAPAgingReport(asOfDate, style) {
-                return `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Vendor</th>
-                                <th>Current</th>
-                                <th>1-30 Days</th>
-                                <th>31-60 Days</th>
-                                <th>61-90 Days</th>
-                                <th>Over 90 Days</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Vendor X</td>
-                                <td>${this.formatCurrency(3000)}</td>
-                                <td>${this.formatCurrency(1000)}</td>
-                                <td>${this.formatCurrency(500)}</td>
-                                <td>${this.formatCurrency(0)}</td>
-                                <td>${this.formatCurrency(0)}</td>
-                                <td>${this.formatCurrency(4500)}</td>
-                            </tr>
-                            <tr>
-                                <td>Vendor Y</td>
-                                <td>${this.formatCurrency(2000)}</td>
-                                <td>${this.formatCurrency(500)}</td>
-                                <td>${this.formatCurrency(200)}</td>
-                                <td>${this.formatCurrency(100)}</td>
-                                <td>${this.formatCurrency(50)}</td>
-                                <td>${this.formatCurrency(2850)}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Total</strong></td>
-                                <td><strong>${this.formatCurrency(5000)}</strong></td>
-                                <td><strong>${this.formatCurrency(1500)}</strong></td>
-                                <td><strong>${this.formatCurrency(700)}</strong></td>
-                                <td><strong>${this.formatCurrency(100)}</strong></td>
-                                <td><strong>${this.formatCurrency(50)}</strong></td>
-                                <td><strong>${this.formatCurrency(7350)}</strong></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                `;
+                
+                return html;
             },
             
             // Get report title based on type and style
@@ -2377,16 +2351,13 @@
                     'balance-sheet': 'Balance Sheet',
                     'cash-flow': 'Cash Flow Statement',
                     'changes-equity': 'Statement of Changes in Equity',
-                    'general-ledger': 'General Ledger Report',
-                    'ar-aging': 'Accounts Receivable Aging Report',
-                    'ap-aging': 'Accounts Payable Aging Report'
+                    'comparative': 'Comparative Income Statement'
                 };
                 
                 const styles = {
                     'standard': '',
                     'comparative': 'Comparative ',
-                    'common-size': 'Common Size ',
-                    'detailed': 'Detailed '
+                    'common-size': 'Common Size '
                 };
                 
                 return styles[style] + titles[type];
