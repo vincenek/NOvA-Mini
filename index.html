@@ -3,246 +3,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenLedger - Universal Accounting Engine</title>
+    <title>OpenLedger - Next-Gen Accounting</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary: #2c3e50;
-            --secondary: #34495e;
-            --accent: #3498db;
-            --light: #ecf0f1;
-            --dark: #2c3e50;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --info: #1abc9c;
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #4cc9f0;
+            --success: #4ade80;
+            --warning: #facc15;
+            --error: #f87171;
+            --background: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --sidebar: #1e293b;
+            --sidebar-hover: #334155;
         }
-        
+
+        .dark-mode {
+            --background: #0f172a;
+            --card: #1e293b;
+            --text: #f1f5f9;
+            --text-light: #94a3b8;
+            --border: #334155;
+            --sidebar: #0f172a;
+            --sidebar-hover: #1e293b;
+        }
+
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
         }
-        
+
         body {
-            background-color: #f5f7fa;
-            color: #333;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
             line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
-        
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        
-        header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar);
             color: white;
-            padding: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
         }
-        
-        .header-content {
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .logo-icon {
+            color: var(--accent);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            color: #cbd5e1;
+            text-decoration: none;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: var(--sidebar-hover);
+            color: white;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            padding: 1.5rem 2rem;
+            overflow-y: auto;
+        }
+
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
         }
-        
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
         }
-        
-        .logo span {
-            color: var(--accent);
-        }
-        
-        .nav-tabs {
+
+        .header-actions {
             display: flex;
-            background: white;
-            border-bottom: 2px solid var(--accent);
-            overflow-x: auto;
+            gap: 1rem;
+            align-items: center;
         }
-        
-        .tab {
-            padding: 1rem 1.5rem;
-            cursor: pointer;
-            font-weight: 500;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-        
-        .tab:hover {
-            background: #f8f9fa;
-        }
-        
-        .tab.active {
-            border-bottom: 3px solid var(--accent);
-            color: var(--accent);
-        }
-        
-        .tab-content {
-            display: none;
-            padding: 2rem;
-            background: white;
-            border-radius: 0 0 5px 5px;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-            min-height: 500px;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
+
+        /* Cards */
         .card {
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            background-color: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
             margin-bottom: 1.5rem;
-            overflow: hidden;
+            border: 1px solid var(--border);
         }
-        
+
         .card-header {
-            padding: 1rem 1.5rem;
-            background: #f8f9fa;
-            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
             font-weight: 600;
         }
-        
-        .card-body {
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            display: flex;
+            flex-direction: column;
             padding: 1.5rem;
         }
-        
-        .form-group {
-            margin-bottom: 1rem;
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
         }
-        
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
         label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
         }
-        
+
         input, select, textarea {
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--card);
+            color: var(--text);
         }
-        
-        button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 4px;
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: background 0.3s;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
         }
-        
-        button:hover {
-            background: #2980b9;
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
         }
-        
-        .btn-danger {
-            background: var(--danger);
+
+        input:checked + .slider {
+            background-color: var(--primary);
         }
-        
-        .btn-danger:hover {
-            background: #c0392b;
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
         }
-        
-        .btn-success {
-            background: var(--success);
-        }
-        
-        .btn-success:hover {
-            background: #27ae60;
-        }
-        
-        table {
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
             width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
         }
-        
-        th, td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        
-        th {
-            background: #f8f9fa;
-            font-weight: 600;
-        }
-        
-        tr:hover {
-            background: #f8f9fa;
-        }
-        
-        .debit {
-            color: var(--success);
-            font-weight: 500;
-        }
-        
-        .credit {
-            color: var(--danger);
-            font-weight: 500;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            margin: 0.5rem 0;
-        }
-        
-        .stat-label {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .filters {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .filter-group {
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
         }
-        
-        .report-options {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 5px;
-            margin-bottom: 1.5rem;
+
+        .notification.show {
+            transform: translateX(0);
         }
-        
+
+        .notification.success {
+            background-color: var(--success);
+        }
+
+        .notification.error {
+            background-color: var(--error);
+        }
+
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -250,1482 +354,544 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
             justify-content: center;
             align-items: center;
         }
-        
+
         .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 5px;
+            background-color: var(--card);
+            border-radius: 12px;
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
             max-height: 90vh;
             overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
-        
+
         .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
         }
-        
-        .close {
+
+        .modal-title {
             font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        /* Import Wizard */
+        .wizard-steps {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .wizard-step {
+            padding: 1rem 1.5rem;
             cursor: pointer;
+            border-bottom: 2px solid transparent;
         }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem;
-            border-radius: 5px;
-            color: white;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: all 0.3s;
-            z-index: 1100;
+
+        .wizard-step.active {
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+            font-weight: 500;
         }
-        
-        .notification.show {
-            opacity: 1;
-            transform: translateY(0);
+
+        .wizard-content {
+            min-height: 300px;
         }
-        
-        .notification.success {
-            background: var(--success);
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 80px;
+            }
+            .nav-item span {
+                display: none;
+            }
+            .logo span {
+                display: none;
+            }
+            .logo {
+                justify-content: center;
+            }
         }
-        
-        .notification.error {
-            background: var(--danger);
-        }
-        
+
         @media (max-width: 768px) {
-            .stats {
+            .dashboard-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .filters {
-                flex-direction: column;
+            .main-content {
+                padding: 1rem;
             }
-            
-            .tab {
-                padding: 0.75rem 1rem;
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body:not(.light-mode) {
+                --background: #0f172a;
+                --card: #1e293b;
+                --text: #f1f5f9;
+                --text-light: #94a3b8;
+                --border: #334155;
+                --sidebar: #0f172a;
+                --sidebar-hover: #1e293b;
             }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        /* Utility Classes */
+        .text-success {
+            color: var(--success);
+        }
+
+        .text-error {
+            color: var(--error);
+        }
+
+        .mt-3 {
+            margin-top: 1rem;
+        }
+
+        .ml-auto {
+            margin-left: auto;
+        }
+
+        .d-flex {
+            display: flex;
+        }
+
+        .align-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">Open<span>Ledger</span></div>
-                <div id="company-name">Company Name</div>
-            </div>
-        </div>
-    </header>
-    
-    <div class="container">
-        <div class="nav-tabs">
-            <div class="tab active" data-tab="dashboard">Dashboard</div>
-            <div class="tab" data-tab="journal">Journal</div>
-            <div class="tab" data-tab="ledger">Ledger</div>
-            <div class="tab" data-tab="trial-balance">Trial Balance</div>
-            <div class="tab" data-tab="reports">Reports</div>
-            <div class="tab" data-tab="accounts">Chart of Accounts</div>
-            <div class="tab" data-tab="settings">Settings</div>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fas fa-calculator logo-icon"></i>
+            <span>OpenLedger</span>
         </div>
         
-        <!-- Dashboard Tab -->
-        <div id="dashboard" class="tab-content active">
-            <h2>Financial Overview</h2>
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-label">Total Assets</div>
-                    <div class="stat-value" id="total-assets">$0.00</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Total Liabilities</div>
-                    <div class="stat-value" id="total-liabilities">$0.00</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Equity</div>
-                    <div class="stat-value" id="total-equity">$0.00</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Net Income</div>
-                    <div class="stat-value" id="net-income">$0.00</div>
+        <a href="#" class="nav-item active">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-book"></i>
+            <span>Journal</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-file-invoice-dollar"></i>
+            <span>Ledger</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-balance-scale"></i>
+            <span>Trial Balance</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-chart-line"></i>
+            <span>Reports</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-wallet"></i>
+            <span>Accounts</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </a>
+        
+        <div class="mt-3 ml-auto">
+            <label class="toggle-switch">
+                <input type="checkbox" id="dark-mode-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1 class="page-title">Dashboard</h1>
+            <div class="header-actions">
+                <button class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    New Transaction
+                </button>
+                <button class="btn btn-icon">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <button class="btn btn-icon">
+                    <i class="fas fa-user"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="dashboard-grid">
+            <div class="card stat-card">
+                <div class="stat-label">Total Assets</div>
+                <div class="stat-value">$124,890.45</div>
+                <div class="stat-trend text-success">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>12.4% from last month</span>
                 </div>
             </div>
             
+            <div class="card stat-card">
+                <div class="stat-label">Total Liabilities</div>
+                <div class="stat-value">$67,340.20</div>
+                <div class="stat-trend text-error">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>3.2% from last month</span>
+                </div>
+            </div>
+            
+            <div class="card stat-card">
+                <div class="stat-label">Revenue</div>
+                <div class="stat-value">$45,670.80</div>
+                <div class="stat-trend text-success">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>8.7% from last month</span>
+                </div>
+            </div>
+            
+            <div class="card stat-card">
+                <div class="stat-label">Net Income</div>
+                <div class="stat-value">$12,450.35</div>
+                <div class="stat-trend text-success">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>5.3% from last month</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts & Transactions -->
+        <div class="dashboard-grid">
             <div class="card">
-                <div class="card-header">Recent Transactions</div>
-                <div class="card-body">
-                    <table id="recent-transactions">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Description</th>
-                                <th>Debit</th>
-                                <th>Credit</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Recent transactions will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Journal Tab -->
-        <div id="journal" class="tab-content">
-            <h2>Journal Entries</h2>
-            <button id="add-transaction-btn" style="margin-bottom: 1.5rem;">Add New Transaction</button>
-            
-            <div class="filters">
-                <div class="filter-group">
-                    <label for="journal-date-from">From:</label>
-                    <input type="date" id="journal-date-from">
-                </div>
-                <div class="filter-group">
-                    <label for="journal-date-to">To:</label>
-                    <input type="date" id="journal-date-to">
-                </div>
-                <button id="apply-journal-filter">Apply Filter</button>
-            </div>
-            
-            <div class="card">
-                <div class="card-body">
-                    <table id="journal-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Description</th>
-                                <th>Account</th>
-                                <th>Debit</th>
-                                <th>Credit</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Journal entries will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Ledger Tab -->
-        <div id="ledger" class="tab-content">
-            <h2>General Ledger</h2>
-            
-            <div class="filters">
-                <div class="filter-group">
-                    <label for="ledger-account">Account:</label>
-                    <select id="ledger-account">
-                        <!-- Accounts will be populated here -->
+                <div class="card-header">
+                    <h2 class="card-title">Income vs Expenses</h2>
+                    <select>
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                        <option>Last 3 months</option>
                     </select>
                 </div>
-                <div class="filter-group">
-                    <label for="ledger-date-from">From:</label>
-                    <input type="date" id="ledger-date-from">
+                <div class="chart-container">
+                    <canvas id="incomeExpenseChart"></canvas>
                 </div>
-                <div class="filter-group">
-                    <label for="ledger-date-to">To:</label>
-                    <input type="date" id="ledger-date-to">
-                </div>
-                <button id="apply-ledger-filter">Apply Filter</button>
             </div>
             
             <div class="card">
-                <div class="card-body">
-                    <table id="ledger-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Description</th>
-                                <th>Debit</th>
-                                <th>Credit</th>
-                                <th>Balance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Ledger entries will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Trial Balance Tab -->
-        <div id="trial-balance" class="tab-content">
-            <h2>Trial Balance</h2>
-            
-            <div class="filters">
-                <div class="filter-group">
-                    <label for="tb-date">As of:</label>
-                    <input type="date" id="tb-date">
-                </div>
-                <button id="generate-tb">Generate Trial Balance</button>
-            </div>
-            
-            <div class="card">
-                <div class="card-body">
-                    <table id="trial-balance-table">
-                        <thead>
-                            <tr>
-                                <th>Account</th>
-                                <th>Debit</th>
-                                <th>Credit</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Trial balance will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Reports Tab -->
-        <div id="reports" class="tab-content">
-            <h2>Financial Reports</h2>
-            
-            <div class="report-options">
-                <div class="form-group">
-                    <label for="report-type">Report Type:</label>
-                    <select id="report-type">
-                        <option value="income-statement">Income Statement</option>
-                        <option value="balance-sheet">Balance Sheet</option>
-                        <option value="cash-flow">Cash Flow Statement</option>
-                        <option value="changes-equity">Statement of Changes in Equity</option>
+                <div class="card-header">
+                    <h2 class="card-title">Account Balances</h2>
+                    <select>
+                        <option>Top 5</option>
+                        <option>All Accounts</option>
                     </select>
                 </div>
-                
-                <div class="form-group">
-                    <label for="report-style">Report Style:</label>
-                    <select id="report-style">
-                        <option value="standard">Standard</option>
-                        <option value="comparative">Comparative</option>
-                        <option value="common-size">Common Size</option>
-                    </select>
-                </div>
-                
-                <div class="filters">
-                    <div class="filter-group">
-                        <label for="report-period">Period:</label>
-                        <select id="report-period">
-                            <option value="monthly">Monthly</option>
-                            <option value="quarterly">Quarterly</option>
-                            <option value="annual">Annual</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="report-date">Date:</label>
-                        <input type="date" id="report-date">
-                    </div>
-                    <button id="generate-report">Generate Report</button>
-                    <button id="export-report">Export as CSV</button>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header" id="report-title">Report Preview</div>
-                <div class="card-body">
-                    <div id="report-content">
-                        <!-- Report content will be displayed here -->
-                    </div>
+                <div class="chart-container">
+                    <canvas id="accountBalanceChart"></canvas>
                 </div>
             </div>
         </div>
-        
-        <!-- Chart of Accounts Tab -->
-        <div id="accounts" class="tab-content">
-            <h2>Chart of Accounts</h2>
-            <button id="add-account-btn" style="margin-bottom: 1.5rem;">Add New Account</button>
-            
-            <div class="card">
-                <div class="card-body">
-                    <table id="accounts-table">
-                        <thead>
-                            <tr>
-                                <th>Code</th>
-                                <th>Account Name</th>
-                                <th>Type</th>
-                                <th>Balance</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Accounts will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
+
+        <!-- Recent Transactions -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Recent Transactions</h2>
+                <button class="btn btn-primary">
+                    <i class="fas fa-file-import"></i>
+                    Import Data
+                </button>
             </div>
-        </div>
-        
-        <!-- Settings Tab -->
-        <div id="settings" class="tab-content">
-            <h2>Application Settings</h2>
-            
-            <div class="card">
-                <div class="card-header">Accounting Configuration</div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <label for="accounting-mode">Accounting Mode:</label>
-                        <select id="accounting-mode">
-                            <option value="double">Double-Entry</option>
-                            <option value="single">Single-Entry</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="accounting-basis">Accounting Basis:</label>
-                        <select id="accounting-basis">
-                            <option value="accrual">Accrual Basis</option>
-                            <option value="cash">Cash Basis</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="company-name-input">Company Name:</label>
-                        <input type="text" id="company-name-input" placeholder="Enter company name">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="base-currency">Base Currency:</label>
-                        <select id="base-currency">
-                            <option value="USD">US Dollar (USD)</option>
-                            <option value="EUR">Euro (EUR)</option>
-                            <option value="GBP">British Pound (GBP)</option>
-                            <option value="JPY">Japanese Yen (JPY)</option>
-                        </select>
-                    </div>
-                    
-                    <button id="save-settings">Save Settings</button>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">Data Management</div>
-                <div class="card-body">
-                    <button id="export-data" style="margin-right: 1rem;">Export All Data</button>
-                    <button id="import-data" style="margin-right: 1rem;">Import Data</button>
-                    <button id="clear-data" class="btn-danger">Clear All Data</button>
-                </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Account</th>
+                            <th>Debit</th>
+                            <th>Credit</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2023-10-15</td>
+                            <td>Office Supplies Purchase</td>
+                            <td>Office Expenses</td>
+                            <td class="text-error">$245.50</td>
+                            <td></td>
+                            <td>
+                                <button class="btn btn-icon">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-icon">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2023-10-14</td>
+                            <td>Client Payment - ABC Corp</td>
+                            <td>Accounts Receivable</td>
+                            <td></td>
+                            <td class="text-success">$1,500.00</td>
+                            <td>
+                                <button class="btn btn-icon">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-icon">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2023-10-12</td>
+                            <td>Software Subscription</td>
+                            <td>Software Expenses</td>
+                            <td class="text-error">$299.00</td>
+                            <td></td>
+                            <td>
+                                <button class="btn btn-icon">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-icon">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2023-10-10</td>
+                            <td>Consulting Revenue</td>
+                            <td>Revenue</td>
+                            <td></td>
+                            <td class="text-success">$3,750.00</td>
+                            <td>
+                                <button class="btn btn-icon">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-icon">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2023-10-05</td>
+                            <td>Salaries</td>
+                            <td>Salary Expenses</td>
+                            <td class="text-error">$8,340.00</td>
+                            <td></td>
+                            <td>
+                                <button class="btn btn-icon">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-icon">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-    
-    <!-- Transaction Modal -->
-    <div id="transaction-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Add New Transaction</h3>
-                <span class="close">&times;</span>
-            </div>
-            <form id="transaction-form">
-                <div class="form-group">
-                    <label for="transaction-date">Date:</label>
-                    <input type="date" id="transaction-date" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="transaction-description">Description:</label>
-                    <input type="text" id="transaction-description" placeholder="Enter description" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="debit-account">Debit Account:</label>
-                    <select id="debit-account" required>
-                        <!-- Accounts will be populated here -->
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="debit-amount">Debit Amount:</label>
-                    <input type="number" id="debit-amount" step="0.01" min="0" placeholder="0.00" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="credit-account">Credit Account:</label>
-                    <select id="credit-account" required>
-                        <!-- Accounts will be populated here -->
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="credit-amount">Credit Amount:</label>
-                    <input type="number" id="credit-amount" step="0.01" min="0" placeholder="0.00" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="narration">Narration:</label>
-                    <textarea id="narration" placeholder="Additional details"></textarea>
-                </div>
-                
-                <button type="submit">Save Transaction</button>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Account Modal -->
-    <div id="account-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Add New Account</h3>
-                <span class="close">&times;</span>
-            </div>
-            <form id="account-form">
-                <div class="form-group">
-                    <label for="account-code">Account Code:</label>
-                    <input type="text" id="account-code" placeholder="e.g., 1010" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="account-name">Account Name:</label>
-                    <input type="text" id="account-name" placeholder="e.g., Cash" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="account-type">Account Type:</label>
-                    <select id="account-type" required>
-                        <option value="">Select Type</option>
-                        <option value="Asset">Asset</option>
-                        <option value="Liability">Liability</option>
-                        <option value="Equity">Equity</option>
-                        <option value="Revenue">Revenue</option>
-                        <option value="Expense">Expense</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="account-subtype">Account Subtype:</label>
-                    <select id="account-subtype">
-                        <option value="">Select Subtype (Optional)</option>
-                        <option value="Current Asset">Current Asset</option>
-                        <option value="Fixed Asset">Fixed Asset</option>
-                        <option value="Current Liability">Current Liability</option>
-                        <option value="Long-term Liability">Long-term Liability</option>
-                        <option value="Operating Revenue">Operating Revenue</option>
-                        <option value="Non-operating Revenue">Non-operating Revenue</option>
-                        <option value="Operating Expense">Operating Expense</option>
-                        <option value="Non-operating Expense">Non-operating Expense</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="opening-balance">Opening Balance:</label>
-                    <input type="number" id="opening-balance" step="0.01" placeholder="0.00">
-                </div>
-                
-                <button type="submit">Save Account</button>
-            </form>
-        </div>
-    </div>
-    
+
     <!-- Notification -->
-    <div id="notification" class="notification"></div>
-    
-    <!-- Hidden file input for import -->
-    <input type="file" id="import-file" style="display: none;" accept=".json">
-    
+    <div class="notification success">
+        <i class="fas fa-check-circle"></i>
+        <span>Transaction added successfully</span>
+    </div>
+
+    <!-- Import Data Modal -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Import Data</h2>
+                <button class="btn btn-icon close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="wizard-steps">
+                    <div class="wizard-step active">1. Upload File</div>
+                    <div class="wizard-step">2. Map Fields</div>
+                    <div class="wizard-step">3. Review</div>
+                    <div class="wizard-step">4. Complete</div>
+                </div>
+                
+                <div class="wizard-content">
+                    <p>Upload your CSV, Excel, or bank statement file</p>
+                    
+                    <div class="form-group mt-3">
+                        <label for="fileSource">Data Source</label>
+                        <select id="fileSource">
+                            <option value="">Select Source</option>
+                            <option value="csv">CSV File</option>
+                            <option value="excel">Excel File</option>
+                            <option value="bank">Bank Statement</option>
+                            <option value="quickbooks">QuickBooks</option>
+                            <option value="xero">Xero</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Drag & drop your file here or</label>
+                        <div style="border: 2px dashed var(--border); padding: 2rem; text-align: center; border-radius: 8px;">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-bottom: 1rem; color: var(--text-light);"></i>
+                            <p>Click to browse files</p>
+                            <p style="font-size: 0.875rem; color: var(--text-light);">Supports CSV, XLSX up to 10MB</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="importMode">Import Mode</label>
+                        <select id="importMode">
+                            <option value="new">New Transactions Only</option>
+                            <option value="merge">Merge with Existing</option>
+                            <option value="replace">Replace All Data</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn">Cancel</button>
+                <button class="btn btn-primary">Next</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Main application object
-        const OpenLedger = {
-            // Application state
-            settings: {
-                accountingMode: 'double',
-                accountingBasis: 'accrual',
-                companyName: 'Company Name',
-                baseCurrency: 'USD'
-            },
-            accounts: [],
-            transactions: [],
-            
-            // Initialize the application
-            init() {
-                this.loadData();
-                this.setupEventListeners();
-                this.renderAccounts();
-                this.renderTransactions();
-                this.updateDashboard();
-                this.setCurrentDate();
-            },
-            
-            // Load data from localStorage
-            loadData() {
-                const settings = localStorage.getItem('openledger-settings');
-                const accounts = localStorage.getItem('openledger-accounts');
-                const transactions = localStorage.getItem('openledger-transactions');
-                
-                if (settings) this.settings = JSON.parse(settings);
-                if (accounts) this.accounts = JSON.parse(accounts);
-                if (transactions) this.transactions = JSON.parse(transactions);
-                
-                // Update UI with settings
-                document.getElementById('accounting-mode').value = this.settings.accountingMode;
-                document.getElementById('accounting-basis').value = this.settings.accountingBasis;
-                document.getElementById('company-name-input').value = this.settings.companyName;
-                document.getElementById('base-currency').value = this.settings.baseCurrency;
-                document.getElementById('company-name').textContent = this.settings.companyName;
-            },
-            
-            // Save data to localStorage
-            saveData() {
-                localStorage.setItem('openledger-settings', JSON.stringify(this.settings));
-                localStorage.setItem('openledger-accounts', JSON.stringify(this.accounts));
-                localStorage.setItem('openledger-transactions', JSON.stringify(this.transactions));
-            },
-            
-            // Set current date in date fields
-            setCurrentDate() {
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('transaction-date').value = today;
-                document.getElementById('journal-date-from').value = today;
-                document.getElementById('journal-date-to').value = today;
-                document.getElementById('ledger-date-from').value = today;
-                document.getElementById('ledger-date-to').value = today;
-                document.getElementById('tb-date').value = today;
-                document.getElementById('report-date').value = today;
-            },
-            
-            // Setup event listeners
-            setupEventListeners() {
-                // Tab navigation
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.addEventListener('click', () => {
-                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                        
-                        tab.classList.add('active');
-                        document.getElementById(tab.dataset.tab).classList.add('active');
-                    });
-                });
-                
-                // Modal controls
-                document.querySelectorAll('.close').forEach(close => {
-                    close.addEventListener('click', () => {
-                        document.querySelectorAll('.modal').forEach(modal => {
-                            modal.style.display = 'none';
-                        });
-                    });
-                });
-                
-                // Add transaction button
-                document.getElementById('add-transaction-btn').addEventListener('click', () => {
-                    document.getElementById('transaction-modal').style.display = 'flex';
-                });
-                
-                // Add account button
-                document.getElementById('add-account-btn').addEventListener('click', () => {
-                    document.getElementById('account-modal').style.display = 'flex';
-                });
-                
-                // Save settings
-                document.getElementById('save-settings').addEventListener('click', () => {
-                    this.settings.accountingMode = document.getElementById('accounting-mode').value;
-                    this.settings.accountingBasis = document.getElementById('accounting-basis').value;
-                    this.settings.companyName = document.getElementById('company-name-input').value;
-                    this.settings.baseCurrency = document.getElementById('base-currency').value;
-                    
-                    document.getElementById('company-name').textContent = this.settings.companyName;
-                    this.saveData();
-                    this.showNotification('Settings saved successfully', 'success');
-                });
-                
-                // Transaction form submission
-                document.getElementById('transaction-form').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.addTransaction();
-                });
-                
-                // Account form submission
-                document.getElementById('account-form').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.addAccount();
-                });
-                
-                // Export data
-                document.getElementById('export-data').addEventListener('click', () => {
-                    this.exportData();
-                });
-                
-                // Import data
-                document.getElementById('import-data').addEventListener('click', () => {
-                    document.getElementById('import-file').click();
-                });
-                
-                document.getElementById('import-file').addEventListener('change', (e) => {
-                    this.importData(e.target.files[0]);
-                });
-                
-                // Clear data
-                document.getElementById('clear-data').addEventListener('click', () => {
-                    if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
-                        localStorage.clear();
-                        this.accounts = [];
-                        this.transactions = [];
-                        this.saveData();
-                        this.renderAccounts();
-                        this.renderTransactions();
-                        this.updateDashboard();
-                        this.showNotification('All data has been cleared', 'success');
-                    }
-                });
-                
-                // Generate trial balance
-                document.getElementById('generate-tb').addEventListener('click', () => {
-                    this.generateTrialBalance();
-                });
-                
-                // Apply journal filter
-                document.getElementById('apply-journal-filter').addEventListener('click', () => {
-                    this.renderTransactions();
-                });
-                
-                // Apply ledger filter
-                document.getElementById('apply-ledger-filter').addEventListener('click', () => {
-                    this.renderLedger();
-                });
-                
-                // Generate report
-                document.getElementById('generate-report').addEventListener('click', () => {
-                    this.generateReport();
-                });
-                
-                // Export report
-                document.getElementById('export-report').addEventListener('click', () => {
-                    this.exportReport();
-                });
-            },
-            
-            // Render accounts table and dropdowns
-            renderAccounts() {
-                const accountsTable = document.getElementById('accounts-table').querySelector('tbody');
-                const debitAccountSelect = document.getElementById('debit-account');
-                const creditAccountSelect = document.getElementById('credit-account');
-                const ledgerAccountSelect = document.getElementById('ledger-account');
-                
-                // Clear existing options
-                accountsTable.innerHTML = '';
-                debitAccountSelect.innerHTML = '';
-                creditAccountSelect.innerHTML = '';
-                ledgerAccountSelect.innerHTML = '';
-                
-                // Add default option
-                const defaultOption = document.createElement('option');
-                defaultOption.value = '';
-                defaultOption.textContent = 'Select Account';
-                debitAccountSelect.appendChild(defaultOption.cloneNode(true));
-                creditAccountSelect.appendChild(defaultOption.cloneNode(true));
-                ledgerAccountSelect.appendChild(defaultOption.cloneNode(true));
-                
-                // Add accounts to dropdowns and table
-                this.accounts.forEach(account => {
-                    // Add to debit/credit dropdowns
-                    const option = document.createElement('option');
-                    option.value = account.id;
-                    option.textContent = `${account.code} - ${account.name}`;
-                    
-                    debitAccountSelect.appendChild(option.cloneNode(true));
-                    creditAccountSelect.appendChild(option.cloneNode(true));
-                    ledgerAccountSelect.appendChild(option.cloneNode(true));
-                    
-                    // Add to accounts table
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${account.code}</td>
-                        <td>${account.name}</td>
-                        <td>${account.type}</td>
-                        <td>${this.formatCurrency(this.getAccountBalance(account.id))}</td>
-                        <td>
-                            <button class="btn-danger" data-account-id="${account.id}">Delete</button>
-                        </td>
-                    `;
-                    accountsTable.appendChild(row);
-                });
-                
-                // Add event listeners to delete buttons
-                accountsTable.querySelectorAll('.btn-danger').forEach(button => {
-                    button.addEventListener('click', () => {
-                        const accountId = button.dataset.accountId;
-                        this.deleteAccount(accountId);
-                    });
-                });
-            },
-            
-            // Render transactions table
-            renderTransactions() {
-                const journalTable = document.getElementById('journal-table').querySelector('tbody');
-                const dateFrom = document.getElementById('journal-date-from').value;
-                const dateTo = document.getElementById('journal-date-to').value;
-                
-                journalTable.innerHTML = '';
-                
-                // Filter transactions by date if specified
-                const filteredTransactions = this.transactions.filter(transaction => {
-                    if (dateFrom && transaction.date < dateFrom) return false;
-                    if (dateTo && transaction.date > dateTo) return false;
-                    return true;
-                });
-                
-                filteredTransactions.forEach(transaction => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${transaction.date}</td>
-                        <td>${transaction.description}</td>
-                        <td>${this.getAccountName(transaction.debitAccount)}</td>
-                        <td class="debit">${this.formatCurrency(transaction.debitAmount)}</td>
-                        <td class="credit">${this.formatCurrency(transaction.creditAmount)}</td>
-                        <td>
-                            <button class="btn-danger" data-transaction-id="${transaction.id}">Delete</button>
-                        </td>
-                    `;
-                    journalTable.appendChild(row);
-                });
-                
-                // Add event listeners to delete buttons
-                journalTable.querySelectorAll('.btn-danger').forEach(button => {
-                    button.addEventListener('click', () => {
-                        const transactionId = button.dataset.transactionId;
-                        this.deleteTransaction(transactionId);
-                    });
-                });
-            },
-            
-            // Render ledger
-            renderLedger() {
-                const ledgerTable = document.getElementById('ledger-table').querySelector('tbody');
-                const accountId = document.getElementById('ledger-account').value;
-                const dateFrom = document.getElementById('ledger-date-from').value;
-                const dateTo = document.getElementById('ledger-date-to').value;
-                
-                ledgerTable.innerHTML = '';
-                
-                if (!accountId) return;
-                
-                // Filter transactions for this account
-                const accountTransactions = this.transactions.filter(transaction => {
-                    if (transaction.debitAccount !== accountId && transaction.creditAccount !== accountId) return false;
-                    if (dateFrom && transaction.date < dateFrom) return false;
-                    if (dateTo && transaction.date > dateTo) return false;
-                    return true;
-                });
-                
-                let runningBalance = 0;
-                const account = this.accounts.find(a => a.id === accountId);
-                
-                accountTransactions.forEach(transaction => {
-                    const isDebit = transaction.debitAccount === accountId;
-                    const amount = isDebit ? transaction.debitAmount : transaction.creditAmount;
-                    
-                    // Update running balance based on account type
-                    if (account.type === 'Asset' || account.type === 'Expense') {
-                        runningBalance += isDebit ? amount : -amount;
-                    } else {
-                        runningBalance += isDebit ? -amount : amount;
-                    }
-                    
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${transaction.date}</td>
-                        <td>${transaction.description}</td>
-                        <td class="${isDebit ? 'debit' : ''}">${isDebit ? this.formatCurrency(amount) : ''}</td>
-                        <td class="${!isDebit ? 'credit' : ''}">${!isDebit ? this.formatCurrency(amount) : ''}</td>
-                        <td>${this.formatCurrency(runningBalance)}</td>
-                    `;
-                    ledgerTable.appendChild(row);
-                });
-            },
-            
-            // Generate trial balance
-            generateTrialBalance() {
-                const tbTable = document.getElementById('trial-balance-table').querySelector('tbody');
-                const asOfDate = document.getElementById('tb-date').value;
-                
-                tbTable.innerHTML = '';
-                
-                // Filter transactions up to the selected date
-                const filteredTransactions = this.transactions.filter(transaction => {
-                    return transaction.date <= asOfDate;
-                });
-                
-                // Calculate balances for each account
-                const accountBalances = {};
-                
-                this.accounts.forEach(account => {
-                    accountBalances[account.id] = {
-                        debit: 0,
-                        credit: 0,
-                        type: account.type
-                    };
-                });
-                
-                filteredTransactions.forEach(transaction => {
-                    // Debit side
-                    if (accountBalances[transaction.debitAccount]) {
-                        accountBalances[transaction.debitAccount].debit += transaction.debitAmount;
-                    }
-                    
-                    // Credit side
-                    if (accountBalances[transaction.creditAccount]) {
-                        accountBalances[transaction.creditAccount].credit += transaction.creditAmount;
-                    }
-                });
-                
-                // Add rows to trial balance table
-                let totalDebit = 0;
-                let totalCredit = 0;
-                
-                this.accounts.forEach(account => {
-                    const balance = accountBalances[account.id];
-                    if (balance.debit === 0 && balance.credit === 0) return;
-                    
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${account.code} - ${account.name}</td>
-                        <td class="debit">${this.formatCurrency(balance.debit)}</td>
-                        <td class="credit">${this.formatCurrency(balance.credit)}</td>
-                    `;
-                    tbTable.appendChild(row);
-                    
-                    totalDebit += balance.debit;
-                    totalCredit += balance.credit;
-                });
-                
-                // Add total row
-                const totalRow = document.createElement('tr');
-                totalRow.innerHTML = `
-                    <td><strong>Total</strong></td>
-                    <td class="debit"><strong>${this.formatCurrency(totalDebit)}</strong></td>
-                    <td class="credit"><strong>${this.formatCurrency(totalCredit)}</strong></td>
-                `;
-                tbTable.appendChild(totalRow);
-                
-                // Check if debits equal credits
-                if (totalDebit !== totalCredit) {
-                    this.showNotification('Trial balance is not balanced!', 'error');
-                }
-            },
-            
-            // Generate financial report
-            generateReport() {
-                const reportType = document.getElementById('report-type').value;
-                const reportStyle = document.getElementById('report-style').value;
-                const reportDate = document.getElementById('report-date').value;
-                const reportContent = document.getElementById('report-content');
-                
-                let reportHTML = '';
-                
-                switch (reportType) {
-                    case 'income-statement':
-                        reportHTML = this.generateIncomeStatement(reportDate, reportStyle);
-                        break;
-                    case 'balance-sheet':
-                        reportHTML = this.generateBalanceSheet(reportDate, reportStyle);
-                        break;
-                    case 'cash-flow':
-                        reportHTML = this.generateCashFlowStatement(reportDate, reportStyle);
-                        break;
-                    case 'changes-equity':
-                        reportHTML = this.generateChangesInEquity(reportDate, reportStyle);
-                        break;
-                }
-                
-                reportContent.innerHTML = reportHTML;
-                document.getElementById('report-title').textContent = this.getReportTitle(reportType, reportStyle);
-            },
-            
-            // Export report as CSV
-            exportReport() {
-                const reportContent = document.getElementById('report-content');
-                const reportTitle = document.getElementById('report-title').textContent;
-                
-                // Simple implementation - would need to be expanded for proper CSV export
-                let csvContent = reportTitle + '\n\n';
-                
-                const tables = reportContent.querySelectorAll('table');
-                tables.forEach(table => {
-                    for (let i = 0; i < table.rows.length; i++) {
-                        const row = table.rows[i];
-                        let rowText = '';
-                        for (let j = 0; j < row.cells.length; j++) {
-                            rowText += '"' + row.cells[j].textContent.replace(/"/g, '""') + '",';
+        // Toggle dark mode
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        darkModeToggle.addEventListener('change', function() {
+            document.body.classList.toggle('dark-mode');
+        });
+
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Income vs Expense Chart
+            const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
+            new Chart(incomeExpenseCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+                    datasets: [
+                        {
+                            label: 'Income',
+                            data: [12000, 19000, 15000, 18000, 22000, 21000, 25000, 28000, 30000, 32000],
+                            borderColor: '#4361ee',
+                            backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Expenses',
+                            data: [8000, 11000, 9000, 10000, 12000, 14000, 13000, 15000, 16000, 15500],
+                            borderColor: '#f87171',
+                            backgroundColor: 'rgba(248, 113, 113, 0.1)',
+                            tension: 0.3,
+                            fill: true
                         }
-                        csvContent += rowText + '\n';
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
                     }
-                    csvContent += '\n';
-                });
-                
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                
-                link.setAttribute('href', url);
-                link.setAttribute('download', `${reportTitle.replace(/\s+/g, '_')}.csv`);
-                link.style.visibility = 'hidden';
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            },
-            
-            // Add a new transaction
-            addTransaction() {
-                const date = document.getElementById('transaction-date').value;
-                const description = document.getElementById('transaction-description').value;
-                const debitAccount = document.getElementById('debit-account').value;
-                const debitAmount = parseFloat(document.getElementById('debit-amount').value);
-                const creditAccount = document.getElementById('credit-account').value;
-                const creditAmount = parseFloat(document.getElementById('credit-amount').value);
-                const narration = document.getElementById('narration').value;
-                
-                // Validate debit equals credit
-                if (debitAmount !== creditAmount) {
-                    this.showNotification('Debit and Credit amounts must be equal', 'error');
-                    return;
                 }
-                
-                // Create transaction object
-                const transaction = {
-                    id: Date.now().toString(),
-                    date,
-                    description,
-                    debitAccount,
-                    debitAmount,
-                    creditAccount,
-                    creditAmount,
-                    narration
-                };
-                
-                // Add to transactions array
-                this.transactions.push(transaction);
-                
-                // Save data and update UI
-                this.saveData();
-                this.renderTransactions();
-                this.updateDashboard();
-                
-                // Close modal and reset form
-                document.getElementById('transaction-modal').style.display = 'none';
-                document.getElementById('transaction-form').reset();
-                
-                this.showNotification('Transaction added successfully', 'success');
-            },
-            
-            // Add a new account
-            addAccount() {
-                const code = document.getElementById('account-code').value;
-                const name = document.getElementById('account-name').value;
-                const type = document.getElementById('account-type').value;
-                const subtype = document.getElementById('account-subtype').value;
-                const openingBalance = parseFloat(document.getElementById('opening-balance').value) || 0;
-                
-                // Check if account code already exists
-                if (this.accounts.some(account => account.code === code)) {
-                    this.showNotification('Account code already exists', 'error');
-                    return;
-                }
-                
-                // Create account object
-                const account = {
-                    id: Date.now().toString(),
-                    code,
-                    name,
-                    type,
-                    subtype,
-                    openingBalance
-                };
-                
-                // Add to accounts array
-                this.accounts.push(account);
-                
-                // If there's an opening balance, create a transaction
-                if (openingBalance !== 0) {
-                    let debitAccount, creditAccount;
-                    
-                    if (['Asset', 'Expense'].includes(type)) {
-                        debitAccount = account.id;
-                        creditAccount = this.getEquityAccountId();
-                    } else {
-                        debitAccount = this.getEquityAccountId();
-                        creditAccount = account.id;
+            });
+
+            // Account Balance Chart
+            const accountBalanceCtx = document.getElementById('accountBalanceChart').getContext('2d');
+            new Chart(accountBalanceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cash', 'Accounts Receivable', 'Inventory', 'Equipment', 'Investments'],
+                    datasets: [{
+                        data: [45000, 28000, 18500, 32000, 0],
+                        backgroundColor: [
+                            '#4361ee',
+                            '#4cc9f0',
+                            '#4ade80',
+                            '#facc15',
+                            '#f87171'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
                     }
-                    
-                    const transaction = {
-                        id: Date.now().toString() + '-opening',
-                        date: new Date().toISOString().split('T')[0],
-                        description: `Opening balance for ${name}`,
-                        debitAccount,
-                        debitAmount: Math.abs(openingBalance),
-                        creditAccount,
-                        creditAmount: Math.abs(openingBalance),
-                        narration: 'Opening balance'
-                    };
-                    
-                    this.transactions.push(transaction);
                 }
-                
-                // Save data and update UI
-                this.saveData();
-                this.renderAccounts();
-                this.renderTransactions();
-                this.updateDashboard();
-                
-                // Close modal and reset form
-                document.getElementById('account-modal').style.display = 'none';
-                document.getElementById('account-form').reset();
-                
-                this.showNotification('Account added successfully', 'success');
-            },
-            
-            // Delete a transaction
-            deleteTransaction(transactionId) {
-                if (confirm('Are you sure you want to delete this transaction?')) {
-                    this.transactions = this.transactions.filter(t => t.id !== transactionId);
-                    this.saveData();
-                    this.renderTransactions();
-                    this.updateDashboard();
-                    this.showNotification('Transaction deleted successfully', 'success');
-                }
-            },
-            
-            // Delete an account
-            deleteAccount(accountId) {
-                // Check if account has transactions
-                const hasTransactions = this.transactions.some(t => 
-                    t.debitAccount === accountId || t.creditAccount === accountId
-                );
-                
-                if (hasTransactions) {
-                    this.showNotification('Cannot delete account with existing transactions', 'error');
-                    return;
-                }
-                
-                if (confirm('Are you sure you want to delete this account?')) {
-                    this.accounts = this.accounts.filter(a => a.id !== accountId);
-                    this.saveData();
-                    this.renderAccounts();
-                    this.showNotification('Account deleted successfully', 'success');
-                }
-            },
-            
-            // Update dashboard with summary information
-            updateDashboard() {
-                // Calculate total assets
-                const totalAssets = this.calculateAccountTypeTotal('Asset');
-                document.getElementById('total-assets').textContent = this.formatCurrency(totalAssets);
-                
-                // Calculate total liabilities
-                const totalLiabilities = this.calculateAccountTypeTotal('Liability');
-                document.getElementById('total-liabilities').textContent = this.formatCurrency(totalLiabilities);
-                
-                // Calculate equity
-                const equity = this.calculateAccountTypeTotal('Equity');
-                document.getElementById('total-equity').textContent = this.formatCurrency(equity);
-                
-                // Calculate net income (Revenue - Expenses)
-                const revenue = this.calculateAccountTypeTotal('Revenue');
-                const expenses = this.calculateAccountTypeTotal('Expense');
-                const netIncome = revenue - expenses;
-                document.getElementById('net-income').textContent = this.formatCurrency(netIncome);
-                
-                // Update recent transactions
-                const recentTransactionsTable = document.getElementById('recent-transactions').querySelector('tbody');
-                recentTransactionsTable.innerHTML = '';
-                
-                // Show last 5 transactions
-                const recentTransactions = this.transactions.slice(-5).reverse();
-                
-                recentTransactions.forEach(transaction => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${transaction.date}</td>
-                        <td>${transaction.description}</td>
-                        <td class="debit">${this.formatCurrency(transaction.debitAmount)}</td>
-                        <td class="credit">${this.formatCurrency(transaction.creditAmount)}</td>
-                    `;
-                    recentTransactionsTable.appendChild(row);
-                });
-            },
-            
-            // Export all data as JSON
-            exportData() {
-                const data = {
-                    settings: this.settings,
-                    accounts: this.accounts,
-                    transactions: this.transactions
-                };
-                
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                
-                link.setAttribute('href', url);
-                link.setAttribute('download', 'openledger_data.json');
-                link.style.visibility = 'hidden';
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            },
-            
-            // Import data from JSON file
-            importData(file) {
-                const reader = new FileReader();
-                
-                reader.onload = (e) => {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        
-                        if (data.settings) this.settings = data.settings;
-                        if (data.accounts) this.accounts = data.accounts;
-                        if (data.transactions) this.transactions = data.transactions;
-                        
-                        this.saveData();
-                        this.renderAccounts();
-                        this.renderTransactions();
-                        this.updateDashboard();
-                        
-                        // Update UI with settings
-                        document.getElementById('accounting-mode').value = this.settings.accountingMode;
-                        document.getElementById('accounting-basis').value = this.settings.accountingBasis;
-                        document.getElementById('company-name-input').value = this.settings.companyName;
-                        document.getElementById('base-currency').value = this.settings.baseCurrency;
-                        document.getElementById('company-name').textContent = this.settings.companyName;
-                        
-                        this.showNotification('Data imported successfully', 'success');
-                    } catch (error) {
-                        this.showNotification('Error importing data: Invalid file format', 'error');
-                    }
-                };
-                
-                reader.readAsText(file);
-            },
-            
-            // Show notification
-            showNotification(message, type) {
-                const notification = document.getElementById('notification');
-                notification.textContent = message;
-                notification.className = `notification ${type} show`;
+            });
+
+            // Show notification example
+            setTimeout(() => {
+                document.querySelector('.notification').classList.add('show');
                 
                 setTimeout(() => {
-                    notification.className = 'notification';
+                    document.querySelector('.notification').classList.remove('show');
                 }, 3000);
-            },
-            
-            // Format currency amount
-            formatCurrency(amount) {
-                return new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: this.settings.baseCurrency
-                }).format(amount);
-            },
-            
-            // Get account name by ID
-            getAccountName(accountId) {
-                const account = this.accounts.find(a => a.id === accountId);
-                return account ? `${account.code} - ${account.name}` : 'Unknown Account';
-            },
-            
-            // Get account balance
-            getAccountBalance(accountId) {
-                const account = this.accounts.find(a => a.id === accountId);
-                if (!account) return 0;
-                
-                let balance = account.openingBalance || 0;
-                
-                this.transactions.forEach(transaction => {
-                    if (transaction.debitAccount === accountId) {
-                        balance += transaction.debitAmount;
-                    }
-                    
-                    if (transaction.creditAccount === accountId) {
-                        balance -= transaction.creditAmount;
-                    }
-                });
-                
-                return balance;
-            },
-            
-            // Calculate total for an account type
-            calculateAccountTypeTotal(type) {
-                return this.accounts
-                    .filter(account => account.type === type)
-                    .reduce((total, account) => total + this.getAccountBalance(account.id), 0);
-            },
-            
-            // Get equity account ID (create one if it doesn't exist)
-            getEquityAccountId() {
-                let equityAccount = this.accounts.find(a => a.type === 'Equity' && a.name === 'Retained Earnings');
-                
-                if (!equityAccount) {
-                    equityAccount = {
-                        id: 'equity-' + Date.now(),
-                        code: '3000',
-                        name: 'Retained Earnings',
-                        type: 'Equity'
-                    };
-                    this.accounts.push(equityAccount);
-                    this.saveData();
-                }
-                
-                return equityAccount.id;
-            },
-            
-            // Generate income statement
-            generateIncomeStatement(asOfDate, style) {
-                // Filter transactions up to the selected date
-                const filteredTransactions = this.transactions.filter(transaction => {
-                    return transaction.date <= asOfDate;
-                });
-                
-                // Calculate revenue total
-                const revenueAccounts = this.accounts.filter(a => a.type === 'Revenue');
-                let revenueTotal = 0;
-                
-                revenueAccounts.forEach(account => {
-                    revenueTotal += this.getAccountBalance(account.id);
-                });
-                
-                // Calculate expense total
-                const expenseAccounts = this.accounts.filter(a => a.type === 'Expense');
-                let expenseTotal = 0;
-                
-                expenseAccounts.forEach(account => {
-                    expenseTotal += this.getAccountBalance(account.id);
-                });
-                
-                // Net income
-                const netIncome = revenueTotal - expenseTotal;
-                
-                // Generate HTML table
-                let html = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Account</th>
-                                <th>Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Revenue</strong></td>
-                                <td></td>
-                            </tr>
-                `;
-                
-                // Add revenue accounts
-                revenueAccounts.forEach(account => {
-                    const balance = this.getAccountBalance(account.id);
-                    if (balance !== 0) {
-                        html += `
-                            <tr>
-                                <td>${account.name}</td>
-                                <td>${this.formatCurrency(balance)}</td>
-                            </tr>
-                        `;
-                    }
-                });
-                
-                html += `
-                            <tr>
-                                <td><strong>Total Revenue</strong></td>
-                                <td><strong>${this.formatCurrency(revenueTotal)}</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Expenses</strong></td>
-                                <td></td>
-                            </tr>
-                `;
-                
-                // Add expense accounts
-                expenseAccounts.forEach(account => {
-                    const balance = this.getAccountBalance(account.id);
-                    if (balance !== 0) {
-                        html += `
-                            <tr>
-                                <td>${account.name}</td>
-                                <td>${this.formatCurrency(balance)}</td>
-                            </tr>
-                        `;
-                    }
-                });
-                
-                html += `
-                            <tr>
-                                <td><strong>Total Expenses</strong></td>
-                                <td><strong>${this.formatCurrency(expenseTotal)}</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Net Income</strong></td>
-                                <td><strong>${this.formatCurrency(netIncome)}</strong></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                `;
-                
-                return html;
-            },
-            
-            // Generate balance sheet
-            generateBalanceSheet(asOfDate, style) {
-                // Calculate totals
-                const totalAssets = this.calculateAccountTypeTotal('Asset');
-                const totalLiabilities = this.calculateAccountTypeTotal('Liability');
-                const totalEquity = this.calculateAccountTypeTotal('Equity');
-                
-                // Generate HTML table
-                let html = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Account</th>
-                                <th>Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Assets</strong></td>
-                                <td></td>
-                            </tr>
-                `;
-                
-                // Add asset accounts
-                const assetAccounts = this.accounts.filter(a => a.type === 'Asset');
-                assetAccounts.forEach(account => {
-                    const balance = this.getAccountBalance(account.id);
-                    if (balance !== 0) {
-                        html += `
-                            <tr>
-                                <td>${account.name}</td>
-                                <td>${this.formatCurrency(balance)}</td>
-                            </tr>
-                        `;
-                    }
-                });
-                
-                html += `
-                            <tr>
-                                <td><strong>Total Assets</strong></td>
-                                <td><strong>${this.formatCurrency(totalAssets)}</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Liabilities</strong></td>
-                                <td></td>
-                            </tr>
-                `;
-                
-                // Add liability accounts
-                const liabilityAccounts = this.accounts.filter(a => a.type === 'Liability');
-                liabilityAccounts.forEach(account => {
-                    const balance = this.getAccountBalance(account.id);
-                    if (balance !== 0) {
-                        html += `
-                            <tr>
-                                <td>${account.name}</td>
-                                <td>${this.formatCurrency(balance)}</td>
-                            </tr>
-                        `;
-                    }
-                });
-                
-                html += `
-                            <tr>
-                                <td><strong>Total Liabilities</strong></td>
-                                <td><strong>${this.formatCurrency(totalLiabilities)}</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Equity</strong></td>
-                                <td></td>
-                            </tr>
-                `;
-                
-                // Add equity accounts
-                const equityAccounts = this.accounts.filter(a => a.type === 'Equity');
-                equityAccounts.forEach(account => {
-                    const balance = this.getAccountBalance(account.id);
-                    if (balance !== 0) {
-                        html += `
-                            <tr>
-                                <td>${account.name}</td>
-                                <td>${this.formatCurrency(balance)}</td>
-                            </tr>
-                        `;
-                    }
-                });
-                
-                // Calculate net income (Revenue - Expenses)
-                const revenue = this.calculateAccountTypeTotal('Revenue');
-                const expenses = this.calculateAccountTypeTotal('Expense');
-                const netIncome = revenue - expenses;
-                
-                html += `
-                            <tr>
-                                <td>Retained Earnings</td>
-                                <td>${this.formatCurrency(netIncome)}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Total Equity</strong></td>
-                                <td><strong>${this.formatCurrency(totalEquity + netIncome)}</strong></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Total Liabilities & Equity</strong></td>
-                                <td><strong>${this.formatCurrency(totalLiabilities + totalEquity + netIncome)}</strong></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                `;
-                
-                return html;
-            },
-            
-            // Generate cash flow statement
-            generateCashFlowStatement(asOfDate, style) {
-                // Simplified implementation
-                return `
-                    <p>Cash Flow Statement implementation would go here.</p>
-                    <p>This would include operating, investing, and financing activities.</p>
-                `;
-            },
-            
-            // Generate changes in equity statement
-            generateChangesInEquity(asOfDate, style) {
-                // Simplified implementation
-                return `
-                    <p>Statement of Changes in Equity implementation would go here.</p>
-                    <p>This would show changes in equity accounts over time.</p>
-                `;
-            },
-            
-            // Get report title based on type and style
-            getReportTitle(type, style) {
-                const titles = {
-                    'income-statement': 'Income Statement',
-                    'balance-sheet': 'Balance Sheet',
-                    'cash-flow': 'Cash Flow Statement',
-                    'changes-equity': 'Statement of Changes in Equity'
-                };
-                
-                const styles = {
-                    'standard': '',
-                    'comparative': 'Comparative ',
-                    'common-size': 'Common Size '
-                };
-                
-                return styles[style] + titles[type];
-            }
-        };
-        
-        // Initialize the application when the DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            OpenLedger.init();
+            }, 1000);
+        });
+
+        // Modal functionality
+        document.querySelectorAll('.close-modal').forEach(button => {
+            button.addEventListener('click', function() {
+                document.getElementById('importModal').style.display = 'none';
+            });
+        });
+
+        document.querySelector('[class*="import"]').addEventListener('click', function() {
+            document.getElementById('importModal').style.display = 'flex';
         });
     </script>
 </body>
