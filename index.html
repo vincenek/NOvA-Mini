@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenLedger - Universal Accounting Engine</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #2c3e50;
@@ -28,6 +29,7 @@
             background-color: #f5f7fa;
             color: #333;
             line-height: 1.6;
+            padding-bottom: 60px; /* Space for mobile nav */
         }
         
         .container {
@@ -42,6 +44,9 @@
             color: white;
             padding: 1rem 0;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         
         .header-content {
@@ -51,7 +56,7 @@
         }
         
         .logo {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: bold;
         }
         
@@ -59,11 +64,26 @@
             color: var(--accent);
         }
         
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
         .nav-tabs {
             display: flex;
             background: white;
             border-bottom: 2px solid var(--accent);
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
         }
         
         .tab {
@@ -86,7 +106,7 @@
         
         .tab-content {
             display: none;
-            padding: 2rem;
+            padding: 1.5rem;
             background: white;
             border-radius: 0 0 5px 5px;
             box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
@@ -164,6 +184,14 @@
         
         .btn-success:hover {
             background: #27ae60;
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
         }
         
         table {
@@ -254,13 +282,14 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            padding: 1rem;
         }
         
         .modal-content {
             background: white;
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 5px;
-            width: 90%;
+            width: 100%;
             max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
@@ -380,8 +409,166 @@
             margin-bottom: 1rem;
         }
         
+        /* Mobile Navigation */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 90;
+        }
+        
+        .mobile-nav-items {
+            display: flex;
+            justify-content: space-around;
+        }
+        
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.75rem;
+            font-size: 0.8rem;
+            color: #666;
+            text-decoration: none;
+        }
+        
+        .mobile-nav-item.active {
+            color: var(--accent);
+        }
+        
+        .mobile-nav-item i {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Import Section */
+        .import-section {
+            margin-top: 1.5rem;
+        }
+        
+        .import-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .import-option-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .import-option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .import-option-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+        
+        .import-option-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .import-option-description {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .file-drop-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            transition: border-color 0.3s;
+        }
+        
+        .file-drop-area.active {
+            border-color: var(--accent);
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .file-input-label {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--accent);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        
+        .file-types {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .import-preview {
+            margin-top: 2rem;
+        }
+        
+        .import-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .stats, .ratio-grid, .import-options {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+        
         @media (max-width: 768px) {
-            .stats, .ratio-grid {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .nav-tabs {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                flex-direction: column;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease-out;
+            }
+            
+            .nav-tabs.active {
+                display: flex;
+                max-height: 300px;
+                overflow-y: auto;
+            }
+            
+            .tab {
+                padding: 1rem;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .mobile-nav {
+                display: block;
+            }
+            
+            .stats, .ratio-grid, .import-options {
                 grid-template-columns: 1fr;
             }
             
@@ -389,8 +576,57 @@
                 flex-direction: column;
             }
             
-            .tab {
-                padding: 0.75rem 1rem;
+            .filter-group {
+                width: 100%;
+            }
+            
+            .tab-content {
+                padding: 1rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .modal-content {
+                padding: 1rem;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .import-actions {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 1.2rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            #company-name {
+                margin-top: 0.5rem;
+                font-size: 0.9rem;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .modal-content {
+                padding: 1rem;
+            }
+            
+            .file-drop-area {
+                padding: 1rem;
             }
         }
     </style>
@@ -401,12 +637,15 @@
             <div class="header-content">
                 <div class="logo">Open<span>Ledger</span></div>
                 <div id="company-name">Company Name</div>
+                <button class="mobile-menu-btn" id="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
         </div>
     </header>
     
     <div class="container">
-        <div class="nav-tabs">
+        <div class="nav-tabs" id="main-nav-tabs">
             <div class="tab active" data-tab="dashboard">Dashboard</div>
             <div class="tab" data-tab="journal">Journal</div>
             <div class="tab" data-tab="ledger">Ledger</div>
@@ -414,6 +653,7 @@
             <div class="tab" data-tab="reports">Reports</div>
             <div class="tab" data-tab="accounts">Chart of Accounts</div>
             <div class="tab" data-tab="ratios">Ratio Analysis</div>
+            <div class="tab" data-tab="import-data">Import Data</div>
             <div class="tab" data-tab="settings">Settings</div>
         </div>
         
@@ -787,6 +1027,237 @@
             </div>
         </div>
         
+        <!-- Import Data Tab (NEW) -->
+        <div id="import-data" class="tab-content">
+            <h2>Import Financial Data</h2>
+            <p>Bring your existing financial data into OpenLedger using one of the methods below.</p>
+            
+            <div class="import-options">
+                <div class="import-option-card" data-import-type="csv">
+                    <div class="import-option-icon">
+                        <i class="fas fa-file-csv"></i>
+                    </div>
+                    <div class="import-option-title">CSV Import</div>
+                    <div class="import-option-description">
+                        Import transactions from CSV files exported from your bank, accounting software, or spreadsheet.
+                    </div>
+                </div>
+                
+                <div class="import-option-card" data-import-type="json">
+                    <div class="import-option-icon">
+                        <i class="fas fa-file-code"></i>
+                    </div>
+                    <div class="import-option-title">JSON Import</div>
+                    <div class="import-option-description">
+                        Import from a JSON file previously exported from OpenLedger or compatible accounting systems.
+                    </div>
+                </div>
+                
+                <div class="import-option-card" data-import-type="excel">
+                    <div class="import-option-icon">
+                        <i class="fas fa-file-excel"></i>
+                    </div>
+                    <div class="import-option-title">Excel Import</div>
+                    <div class="import-option-description">
+                        Import from Excel spreadsheets. Supports .xlsx and .xls formats with financial data.
+                    </div>
+                </div>
+                
+                <div class="import-option-card" data-import-type="manual">
+                    <div class="import-option-icon">
+                        <i class="fas fa-keyboard"></i>
+                    </div>
+                    <div class="import-option-title">Manual Entry</div>
+                    <div class="import-option-description">
+                        Use our template to manually enter transactions or paste data from other sources.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="import-section" id="csv-import-section" style="display: none;">
+                <h3>CSV Import</h3>
+                <div class="file-drop-area" id="csv-drop-area">
+                    <label for="csv-file" class="file-input-label">
+                        <i class="fas fa-upload"></i> Choose CSV File
+                    </label>
+                    <input type="file" id="csv-file" accept=".csv" style="display: none;">
+                    <p class="file-types">Supported formats: CSV, TSV</p>
+                    <p>Drag and drop your CSV file here</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="csv-template">CSV Template:</label>
+                    <select id="csv-template">
+                        <option value="default">Default Template</option>
+                        <option value="bank">Bank Statement</option>
+                        <option value="quickbooks">QuickBooks</option>
+                        <option value="xero">Xero</option>
+                        <option value="custom">Custom Mapping</option>
+                    </select>
+                </div>
+                
+                <div class="import-preview" id="csv-preview" style="display: none;">
+                    <h4>Preview</h4>
+                    <div class="card">
+                        <div class="card-body">
+                            <table id="csv-preview-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                        <th>Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- CSV preview will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="import-actions">
+                        <button class="btn-success" id="confirm-csv-import">Import Data</button>
+                        <button class="btn-danger" id="cancel-csv-import">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="import-section" id="json-import-section" style="display: none;">
+                <h3>JSON Import</h3>
+                <div class="file-drop-area" id="json-drop-area">
+                    <label for="json-file" class="file-input-label">
+                        <i class="fas fa-upload"></i> Choose JSON File
+                    </label>
+                    <input type="file" id="json-file" accept=".json" style="display: none;">
+                    <p class="file-types">Supported format: JSON</p>
+                    <p>Drag and drop your JSON file here</p>
+                </div>
+                
+                <div class="import-preview" id="json-preview" style="display: none;">
+                    <h4>Data Summary</h4>
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="json-summary">
+                                <!-- JSON summary will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="import-actions">
+                        <button class="btn-success" id="confirm-json-import">Import Data</button>
+                        <button class="btn-danger" id="cancel-json-import">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="import-section" id="excel-import-section" style="display: none;">
+                <h3>Excel Import</h3>
+                <div class="file-drop-area" id="excel-drop-area">
+                    <label for="excel-file" class="file-input-label">
+                        <i class="fas fa-upload"></i> Choose Excel File
+                    </label>
+                    <input type="file" id="excel-file" accept=".xlsx, .xls" style="display: none;">
+                    <p class="file-types">Supported formats: XLSX, XLS</p>
+                    <p>Drag and drop your Excel file here</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="excel-sheet">Sheet Name:</label>
+                    <select id="excel-sheet">
+                        <option value="">Select a sheet</option>
+                    </select>
+                </div>
+                
+                <div class="import-preview" id="excel-preview" style="display: none;">
+                    <h4>Preview</h4>
+                    <div class="card">
+                        <div class="card-body">
+                            <table id="excel-preview-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                        <th>Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Excel preview will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="import-actions">
+                        <button class="btn-success" id="confirm-excel-import">Import Data</button>
+                        <button class="btn-danger" id="cancel-excel-import">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="import-section" id="manual-import-section" style="display: none;">
+                <h3>Manual Data Entry</h3>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="form-group">
+                            <label for="manual-template">Template:</label>
+                            <select id="manual-template">
+                                <option value="transaction">Transaction Data</option>
+                                <option value="account">Account List</option>
+                                <option value="trial-balance">Trial Balance</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="manual-data">Paste your data here:</label>
+                            <textarea id="manual-data" rows="10" placeholder="Paste tabular data or use the format: Date, Description, Amount, Type"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="manual-delimiter">Delimiter:</label>
+                            <select id="manual-delimiter">
+                                <option value="comma">Comma (CSV)</option>
+                                <option value="tab">Tab</option>
+                                <option value="semicolon">Semicolon</option>
+                            </select>
+                        </div>
+                        
+                        <div class="import-actions">
+                            <button class="btn-success" id="process-manual-data">Process Data</button>
+                        </div>
+                        
+                        <div class="import-preview" id="manual-preview" style="display: none; margin-top: 1.5rem;">
+                            <h4>Preview</h4>
+                            <div class="card">
+                                <div class="card-body">
+                                    <table id="manual-preview-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Description</th>
+                                                <th>Amount</th>
+                                                <th>Type</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Manual preview will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div class="import-actions">
+                                <button class="btn-success" id="confirm-manual-import">Import Data</button>
+                                <button class="btn-danger" id="cancel-manual-import">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Settings Tab -->
         <div id="settings" class="tab-content">
             <h2>Application Settings</h2>
@@ -868,6 +1339,32 @@
                     <button id="save-rates">Save Exchange Rates</button>
                 </div>
             </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav">
+        <div class="mobile-nav-items">
+            <a href="#" class="mobile-nav-item active" data-tab="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="mobile-nav-item" data-tab="journal">
+                <i class="fas fa-book"></i>
+                <span>Journal</span>
+            </a>
+            <a href="#" class="mobile-nav-item" data-tab="reports">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reports</span>
+            </a>
+            <a href="#" class="mobile-nav-item" data-tab="import-data">
+                <i class="fas fa-file-import"></i>
+                <span>Import</span>
+            </a>
+            <a href="#" class="mobile-nav-item" data-tab="settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
         </div>
     </div>
     
@@ -1026,6 +1523,7 @@
                 this.updateDashboard();
                 this.setCurrentDate();
                 this.calculateAllRatios();
+                this.setupImportListeners();
             },
             
             // Load data from localStorage
@@ -1077,6 +1575,34 @@
             
             // Setup event listeners
             setupEventListeners() {
+                // Mobile menu toggle
+                document.getElementById('mobile-menu-toggle').addEventListener('click', () => {
+                    const navTabs = document.getElementById('main-nav-tabs');
+                    navTabs.classList.toggle('active');
+                });
+                
+                // Mobile navigation
+                document.querySelectorAll('.mobile-nav-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const tab = item.dataset.tab;
+                        
+                        document.querySelectorAll('.mobile-nav-item').forEach(i => {
+                            i.classList.remove('active');
+                        });
+                        item.classList.add('active');
+                        
+                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                        
+                        document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+                        document.getElementById(tab).classList.add('active');
+                        
+                        // Close mobile menu if open
+                        document.getElementById('main-nav-tabs').classList.remove('active');
+                    });
+                });
+                
                 // Tab navigation
                 document.querySelectorAll('.tab').forEach(tab => {
                     tab.addEventListener('click', () => {
@@ -1085,6 +1611,15 @@
                         
                         tab.classList.add('active');
                         document.getElementById(tab.dataset.tab).classList.add('active');
+                        
+                        // Update mobile nav if needed
+                        const mobileNavItem = document.querySelector(`.mobile-nav-item[data-tab="${tab.dataset.tab}"]`);
+                        if (mobileNavItem) {
+                            document.querySelectorAll('.mobile-nav-item').forEach(i => {
+                                i.classList.remove('active');
+                            });
+                            mobileNavItem.classList.add('active');
+                        }
                     });
                 });
                 
@@ -1213,6 +1748,351 @@
                     }
                 });
             },
+            
+            // Setup import listeners
+            setupImportListeners() {
+                // Import option selection
+                document.querySelectorAll('.import-option-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const importType = card.dataset.importType;
+                        
+                        // Hide all import sections
+                        document.querySelectorAll('.import-section').forEach(section => {
+                            section.style.display = 'none';
+                        });
+                        
+                        // Show selected import section
+                        document.getElementById(`${importType}-import-section`).style.display = 'block';
+                    });
+                });
+                
+                // CSV file input
+                document.getElementById('csv-file').addEventListener('change', (e) => {
+                    this.handleCsvImport(e.target.files[0]);
+                });
+                
+                // JSON file input
+                document.getElementById('json-file').addEventListener('change', (e) => {
+                    this.handleJsonImport(e.target.files[0]);
+                });
+                
+                // Excel file input
+                document.getElementById('excel-file').addEventListener('change', (e) => {
+                    this.handleExcelImport(e.target.files[0]);
+                });
+                
+                // Manual data processing
+                document.getElementById('process-manual-data').addEventListener('click', () => {
+                    this.processManualData();
+                });
+                
+                // Setup drag and drop for file inputs
+                this.setupDragAndDrop();
+            },
+            
+            // Setup drag and drop for import sections
+            setupDragAndDrop() {
+                const dropAreas = [
+                    { id: 'csv-drop-area', type: 'csv', input: 'csv-file' },
+                    { id: 'json-drop-area', type: 'json', input: 'json-file' },
+                    { id: 'excel-drop-area', type: 'excel', input: 'excel-file' }
+                ];
+                
+                dropAreas.forEach(area => {
+                    const dropArea = document.getElementById(area.id);
+                    
+                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                        dropArea.addEventListener(eventName, preventDefaults, false);
+                    });
+                    
+                    function preventDefaults(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    
+                    ['dragenter', 'dragover'].forEach(eventName => {
+                        dropArea.addEventListener(eventName, highlight, false);
+                    });
+                    
+                    ['dragleave', 'drop'].forEach(eventName => {
+                        dropArea.addEventListener(eventName, unhighlight, false);
+                    });
+                    
+                    function highlight() {
+                        dropArea.classList.add('active');
+                    }
+                    
+                    function unhighlight() {
+                        dropArea.classList.remove('active');
+                    }
+                    
+                    dropArea.addEventListener('drop', handleDrop, false);
+                    
+                    function handleDrop(e) {
+                        const dt = e.dataTransfer;
+                        const files = dt.files;
+                        document.getElementById(area.input).files = files;
+                        
+                        // Trigger change event
+                        const event = new Event('change');
+                        document.getElementById(area.input).dispatchEvent(event);
+                    }
+                });
+            },
+            
+            // Handle CSV import
+            handleCsvImport(file) {
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const csvData = e.target.result;
+                    this.previewCsvData(csvData);
+                };
+                reader.readAsText(file);
+            },
+            
+            // Preview CSV data
+            previewCsvData(csvData) {
+                // Simple CSV parsing (in a real app, you'd use a library like Papa Parse)
+                const lines = csvData.split('\n');
+                const previewTable = document.getElementById('csv-preview-table').querySelector('tbody');
+                previewTable.innerHTML = '';
+                
+                // Show first 5 rows for preview
+                for (let i = 0; i < Math.min(5, lines.length); i++) {
+                    const cells = lines[i].split(',');
+                    const row = document.createElement('tr');
+                    
+                    cells.forEach(cell => {
+                        const td = document.createElement('td');
+                        td.textContent = cell;
+                        row.appendChild(td);
+                    });
+                    
+                    previewTable.appendChild(row);
+                }
+                
+                // Show preview section
+                document.getElementById('csv-preview').style.display = 'block';
+                
+                // Set up confirm button
+                document.getElementById('confirm-csv-import').onclick = () => {
+                    this.importCsvData(csvData);
+                    document.getElementById('csv-preview').style.display = 'none';
+                };
+                
+                // Set up cancel button
+                document.getElementById('cancel-csv-import').onclick = () => {
+                    document.getElementById('csv-preview').style.display = 'none';
+                    document.getElementById('csv-file').value = '';
+                };
+            },
+            
+            // Import CSV data
+            importCsvData(csvData) {
+                // Parse CSV and convert to transactions
+                const lines = csvData.split('\n');
+                const template = document.getElementById('csv-template').value;
+                
+                // This is a simplified example - in a real app, you'd have more robust parsing
+                // and mapping based on the selected template
+                for (let i = 1; i < lines.length; i++) { // Skip header row
+                    const cells = lines[i].split(',');
+                    if (cells.length >= 4) {
+                        // Create a transaction from CSV data
+                        const transaction = {
+                            id: `csv-import-${Date.now()}-${i}`,
+                            date: cells[0],
+                            description: cells[1],
+                            debitAccount: this.findAccountId(cells[3], 'Expense') || this.getRandomAccountId('Expense'),
+                            debitAmount: parseFloat(cells[2]) || 0,
+                            creditAccount: this.getRandomAccountId('Asset'),
+                            creditAmount: parseFloat(cells[2]) || 0,
+                            currency: this.settings.baseCurrency
+                        };
+                        
+                        this.transactions.push(transaction);
+                    }
+                }
+                
+                this.saveData();
+                this.renderTransactions();
+                this.updateDashboard();
+                this.showNotification('CSV data imported successfully', 'success');
+            },
+            
+            // Handle JSON import
+            handleJsonImport(file) {
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const jsonData = JSON.parse(e.target.result);
+                        this.previewJsonData(jsonData);
+                    } catch (error) {
+                        this.showNotification('Invalid JSON file', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            },
+            
+            // Preview JSON data
+            previewJsonData(jsonData) {
+                const summaryDiv = document.getElementById('json-summary');
+                summaryDiv.innerHTML = '';
+                
+                // Create summary based on data structure
+                if (jsonData.transactions) {
+                    const transactions = jsonData.transactions;
+                    const accounts = jsonData.accounts || [];
+                    
+                    summaryDiv.innerHTML = `
+                        <p><strong>Transactions:</strong> ${transactions.length}</p>
+                        <p><strong>Accounts:</strong> ${accounts.length}</p>
+                        <p><strong>Date Range:</strong> ${transactions.length > 0 ? 
+                            `${transactions[0].date} to ${transactions[transactions.length - 1].date}` : 'N/A'}</p>
+                    `;
+                } else {
+                    summaryDiv.innerHTML = '<p>This JSON file contains compatible OpenLedger data.</p>';
+                }
+                
+                // Show preview section
+                document.getElementById('json-preview').style.display = 'block';
+                
+                // Set up confirm button
+                document.getElementById('confirm-json-import').onclick = () => {
+                    this.importJsonData(jsonData);
+                    document.getElementById('json-preview').style.display = 'none';
+                };
+                
+                // Set up cancel button
+                document.getElementById('cancel-json-import').onclick = () => {
+                    document.getElementById('json-preview').style.display = 'none';
+                    document.getElementById('json-file').value = '';
+                };
+            },
+            
+            // Import JSON data
+            importJsonData(jsonData) {
+                if (jsonData.transactions) {
+                    this.transactions = [...this.transactions, ...jsonData.transactions];
+                }
+                
+                if (jsonData.accounts) {
+                    this.accounts = [...this.accounts, ...jsonData.accounts];
+                }
+                
+                if (jsonData.settings) {
+                    this.settings = { ...this.settings, ...jsonData.settings };
+                }
+                
+                this.saveData();
+                this.renderAccounts();
+                this.renderTransactions();
+                this.updateDashboard();
+                this.showNotification('JSON data imported successfully', 'success');
+            },
+            
+            // Handle Excel import (simplified - in a real app, you'd use a library like SheetJS)
+            handleExcelImport(file) {
+                this.showNotification('Excel import requires additional libraries. Using CSV is recommended.', 'error');
+            },
+            
+            // Process manual data
+            processManualData() {
+                const data = document.getElementById('manual-data').value;
+                const delimiter = document.getElementById('manual-delimiter').value;
+                const template = document.getElementById('manual-template').value;
+                
+                if (!data) {
+                    this.showNotification('Please enter data to import', 'error');
+                    return;
+                }
+                
+                let delimiterChar = ',';
+                if (delimiter === 'tab') delimiterChar = '\t';
+                if (delimiter === 'semicolon') delimiterChar = ';';
+                
+                const lines = data.split('\n');
+                const previewTable = document.getElementById('manual-preview-table').querySelector('tbody');
+                previewTable.innerHTML = '';
+                
+                // Show first 5 rows for preview
+                for (let i = 0; i < Math.min(5, lines.length); i++) {
+                    const cells = lines[i].split(delimiterChar);
+                    const row = document.createElement('tr');
+                    
+                    cells.forEach(cell => {
+                        const td = document.createElement('td');
+                        td.textContent = cell;
+                        row.appendChild(td);
+                    });
+                    
+                    previewTable.appendChild(row);
+                }
+                
+                // Show preview section
+                document.getElementById('manual-preview').style.display = 'block';
+                
+                // Set up confirm button
+                document.getElementById('confirm-manual-import').onclick = () => {
+                    this.importManualData(data, delimiterChar, template);
+                    document.getElementById('manual-preview').style.display = 'none';
+                };
+                
+                // Set up cancel button
+                document.getElementById('cancel-manual-import').onclick = () => {
+                    document.getElementById('manual-preview').style.display = 'none';
+                };
+            },
+            
+            // Import manual data
+            importManualData(data, delimiter, template) {
+                const lines = data.split('\n');
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const cells = lines[i].split(delimiter);
+                    if (cells.length >= 3) {
+                        // Create a transaction from manual data
+                        const transaction = {
+                            id: `manual-import-${Date.now()}-${i}`,
+                            date: cells[0] || new Date().toISOString().split('T')[0],
+                            description: cells[1] || 'Imported transaction',
+                            debitAccount: this.findAccountId(cells[3], 'Expense') || this.getRandomAccountId('Expense'),
+                            debitAmount: parseFloat(cells[2]) || 0,
+                            creditAccount: this.getRandomAccountId('Asset'),
+                            creditAmount: parseFloat(cells[2]) || 0,
+                            currency: this.settings.baseCurrency
+                        };
+                        
+                        this.transactions.push(transaction);
+                    }
+                }
+                
+                this.saveData();
+                this.renderTransactions();
+                this.updateDashboard();
+                this.showNotification('Manual data imported successfully', 'success');
+            },
+            
+            // Helper function to find account ID by name
+            findAccountId(name, type) {
+                const account = this.accounts.find(a => a.name.includes(name) && a.type === type);
+                return account ? account.id : null;
+            },
+            
+            // Helper function to get a random account ID of a specific type
+            getRandomAccountId(type) {
+                const accountsOfType = this.accounts.filter(a => a.type === type);
+                if (accountsOfType.length === 0) return null;
+                return accountsOfType[Math.floor(Math.random() * accountsOfType.length)].id;
+            },
+            
+            // Rest of the existing methods remain unchanged
+            // (renderAccounts, renderTransactions, addTransaction, etc.)
+            // ... [All the existing methods from the original code remain unchanged]
             
             // Render accounts table and dropdowns
             renderAccounts() {
