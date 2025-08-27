@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenLedger - Universal Accounting Engine</title>
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS Support -->
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <meta name="apple-mobile-web-app-status-bar" content="#2563eb">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#2563eb">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+   
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -492,6 +505,109 @@
             color: #bbb;
         }
         
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1.5rem 0;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .quick-action-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .quick-action-btn i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+        
+        .recent-activity {
+            list-style: none;
+        }
+        
+        .recent-activity li {
+            padding: 1rem;
+            border-left: 3px solid var(--accent);
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+        }
+        
+        .recent-activity .activity-date {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        .recent-activity .activity-content {
+            margin-top: 0.5rem;
+        }
+        
+        .search-box {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-box input {
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+            border-right: none;
+        }
+        
+        .search-box button {
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+        }
+        
+        .account-hierarchy {
+            margin-left: 1.5rem;
+        }
+        
+        .account-hierarchy .account-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .account-hierarchy .account-item:last-child {
+            border-bottom: none;
+        }
+        
+        .account-children {
+            margin-left: 1.5rem;
+        }
+        
+        .color-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .color-asset { background-color: #3498db; }
+        .color-liability { background-color: #e74c3c; }
+        .color-equity { background-color: #2ecc71; }
+        .color-revenue { background-color: #f39c12; }
+        .color-expense { background-color: #9b59b6; }
+        
         @media (max-width: 768px) {
             .stats {
                 grid-template-columns: 1fr;
@@ -520,6 +636,10 @@
                 flex-direction: column;
                 gap: 1rem;
             }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -547,6 +667,26 @@
         <!-- Dashboard Tab -->
         <div id="dashboard" class="tab-content active">
             <h2>Financial Overview</h2>
+            
+            <div class="quick-actions">
+                <div class="quick-action-btn" id="quick-add-transaction">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add Transaction</span>
+                </div>
+                <div class="quick-action-btn" id="quick-view-report">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>View Reports</span>
+                </div>
+                <div class="quick-action-btn" id="quick-reconcile">
+                    <i class="fas fa-check-double"></i>
+                    <span>Reconcile Accounts</span>
+                </div>
+                <div class="quick-action-btn" id="quick-export">
+                    <i class="fas fa-file-export"></i>
+                    <span>Export Data</span>
+                </div>
+            </div>
+            
             <div class="stats">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-wallet"></i></div>
@@ -572,6 +712,17 @@
             
             <div class="card">
                 <div class="card-header">
+                    <span>Financial Health</span>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="financial-health-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
                     <span>Recent Transactions</span>
                     <button id="refresh-dashboard"><i class="fas fa-sync-alt"></i>Refresh</button>
                 </div>
@@ -581,19 +732,31 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Description</th>
+                                <th>Account</th>
                                 <th>Debit</th>
                                 <th>Credit</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr class="empty-state-row">
-                                <td colspan="4" class="empty-state">
+                                <td colspan="5" class="empty-state">
                                     <i class="fas fa-receipt"></i>
                                     <p>No transactions yet</p>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span>Recent Activity</span>
+                </div>
+                <div class="card-body">
+                    <ul class="recent-activity" id="recent-activity-list">
+                        <li>No recent activity</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -603,6 +766,11 @@
             <h2>Journal Entries</h2>
             <button id="add-transaction-btn" style="margin-bottom: 1.5rem;"><i class="fas fa-plus"></i>Add New Transaction</button>
             
+            <div class="search-box">
+                <input type="text" id="journal-search" placeholder="Search journal entries...">
+                <button id="journal-search-btn"><i class="fas fa-search"></i></button>
+            </div>
+            
             <div class="filters">
                 <div class="filter-group">
                     <label for="journal-date-from">From:</label>
@@ -611,6 +779,12 @@
                 <div class="filter-group">
                     <label for="journal-date-to">To:</label>
                     <input type="date" id="journal-date-to">
+                </div>
+                <div class="filter-group">
+                    <label for="journal-account">Account:</label>
+                    <select id="journal-account">
+                        <option value="">All Accounts</option>
+                    </select>
                 </div>
                 <button id="apply-journal-filter"><i class="fas fa-filter"></i>Apply Filter</button>
                 <button id="clear-journal-filter" class="btn-warning"><i class="fas fa-times"></i>Clear Filter</button>
@@ -648,6 +822,11 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div id="journal-pagination" class="pagination" style="display: none; margin-top: 1rem;">
+                        <button id="journal-prev"><i class="fas fa-chevron-left"></i> Previous</button>
+                        <span id="journal-page-info">Page 1 of 1</span>
+                        <button id="journal-next">Next <i class="fas fa-chevron-right"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -678,14 +857,23 @@
             <div class="card">
                 <div class="card-header">
                     <span>General Ledger</span>
-                    <button id="print-ledger"><i class="fas fa-print"></i>Print</button>
+                    <div>
+                        <button id="print-ledger"><i class="fas fa-print"></i>Print</button>
+                        <button id="export-ledger" style="margin-left: 0.5rem;"><i class="fas fa-download"></i>Export</button>
+                    </div>
                 </div>
                 <div class="card-body">
+                    <div id="ledger-account-info" style="margin-bottom: 1rem; padding: 1rem; background: #f8f9fa; border-radius: var(--border-radius); display: none;">
+                        <h3 id="ledger-account-name"></h3>
+                        <p>Type: <span id="ledger-account-type"></span></p>
+                        <p>Current Balance: <span id="ledger-account-balance"></span></p>
+                    </div>
                     <table id="ledger-table">
                         <thead>
                             <tr>
                                 <th>Date</th>
                                 <th>Description</th>
+                                <th>Ref</th>
                                 <th>Debit</th>
                                 <th>Credit</th>
                                 <th>Balance</th>
@@ -693,7 +881,7 @@
                         </thead>
                         <tbody>
                             <tr class="empty-state-row">
-                                <td colspan="5" class="empty-state">
+                                <td colspan="6" class="empty-state">
                                     <i class="fas fa-file-invoice-dollar"></i>
                                     <p>Select an account to view ledger</p>
                                 </td>
@@ -715,6 +903,7 @@
                 </div>
                 <button id="generate-tb"><i class="fas fa-calculator"></i>Generate Trial Balance</button>
                 <button id="export-tb"><i class="fas fa-download"></i>Export</button>
+                <button id="print-tb"><i class="fas fa-print"></i>Print</button>
             </div>
             
             <div class="card">
@@ -723,6 +912,11 @@
                     <span id="tb-status"></span>
                 </div>
                 <div class="card-body">
+                    <div id="tb-summary" style="margin-bottom: 1rem; display: none;">
+                        <p>Total Debit: <span id="tb-total-debit" class="debit">$0.00</span></p>
+                        <p>Total Credit: <span id="tb-total-credit" class="credit">$0.00</span></p>
+                        <p>Difference: <span id="tb-difference">$0.00</span></p>
+                    </div>
                     <table id="trial-balance-table">
                         <thead>
                             <tr>
@@ -756,6 +950,8 @@
                         <option value="balance-sheet">Balance Sheet</option>
                         <option value="cash-flow">Cash Flow Statement</option>
                         <option value="changes-equity">Statement of Changes in Equity</option>
+                        <option value="general-ledger">General Ledger Summary</option>
+                        <option value="account-detail">Account Detail</option>
                     </select>
                 </div>
                 
@@ -775,14 +971,23 @@
                             <option value="monthly">Monthly</option>
                             <option value="quarterly">Quarterly</option>
                             <option value="annual">Annual</option>
+                            <option value="custom">Custom</option>
                         </select>
+                    </div>
+                    <div class="filter-group" id="report-custom-dates" style="display: none;">
+                        <label for="report-date-from">From:</label>
+                        <input type="date" id="report-date-from">
+                    </div>
+                    <div class="filter-group" id="report-custom-dates-to">
+                        <label for="report-date-to">To:</label>
+                        <input type="date" id="report-date-to">
                     </div>
                     <div class="filter-group">
                         <label for="report-date">Date:</label>
                         <input type="date" id="report-date">
                     </div>
                     <button id="generate-report"><i class="fas fa-chart-bar"></i>Generate Report</button>
-                    <button id="export-report"><i class="fas fa-download"></i>Export as CSV</button>
+                    <button id="export-report"><i class="fas fa-download"></i>Export as PDF</button>
                     <button id="print-report"><i class="fas fa-print"></i>Print</button>
                 </div>
             </div>
@@ -805,10 +1010,45 @@
             <h2>Chart of Accounts</h2>
             <button id="add-account-btn" style="margin-bottom: 1.5rem;"><i class="fas fa-plus"></i>Add New Account</button>
             
+            <div class="search-box">
+                <input type="text" id="account-search" placeholder="Search accounts...">
+                <button id="account-search-btn"><i class="fas fa-search"></i></button>
+            </div>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="account-type-filter">Filter by Type:</label>
+                    <select id="account-type-filter">
+                        <option value="">All Types</option>
+                        <option value="Asset">Assets</option>
+                        <option value="Liability">Liabilities</option>
+                        <option value="Equity">Equity</option>
+                        <option value="Revenue">Revenue</option>
+                        <option value="Expense">Expenses</option>
+                    </select>
+                </div>
+                <button id="apply-account-filter"><i class="fas fa-filter"></i>Apply Filter</button>
+                <button id="clear-account-filter" class="btn-warning"><i class="fas fa-times"></i>Clear Filter</button>
+            </div>
+            
             <div class="card">
                 <div class="card-header">
                     <span>Chart of Accounts</span>
                     <button id="refresh-accounts"><i class="fas fa-sync-alt"></i>Refresh</button>
+                </div>
+                <div class="card-body">
+                    <div class="account-hierarchy" id="accounts-hierarchy">
+                        <div class="empty-state">
+                            <i class="fas fa-chart-pie"></i>
+                            <p>No accounts yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span>Account List</span>
                 </div>
                 <div class="card-body">
                     <table id="accounts-table">
@@ -889,6 +1129,8 @@
                     <button id="export-data" style="margin-right: 1rem;"><i class="fas fa-download"></i>Export All Data</button>
                     <button id="import-data" style="margin-right: 1rem;"><i class="fas fa-upload"></i>Import Data</button>
                     <button id="clear-data" class="btn-danger"><i class="fas fa-trash"></i>Clear All Data</button>
+                    <button id="backup-data" style="margin-top: 1rem;"><i class="fas fa-database"></i>Create Backup</button>
+                    <button id="restore-data" style="margin-top: 1rem;"><i class="fas fa-history"></i>Restore Backup</button>
                 </div>
             </div>
             
@@ -908,6 +1150,15 @@
                         <input type="number" id="auto-logout" min="1" max="120" value="30">
                     </div>
                     <button id="change-password"><i class="fas fa-key"></i>Change Password</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">About OpenLedger</div>
+                <div class="card-body">
+                    <p>OpenLedger v1.2.0 - Universal Accounting Engine</p>
+                    <p>Developed with <i class="fas fa-heart" style="color: #e74c3c;"></i> for small businesses and accountants</p>
+                    <p>&copy; 2023 OpenLedger Project</p>
                 </div>
             </div>
         </div>
@@ -941,36 +1192,57 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="debit-account">Debit Account:</label>
-                    <select id="debit-account" required>
-                        <option value="">Select Account</option>
-                    </select>
+                    <label for="transaction-reference">Reference:</label>
+                    <input type="text" id="transaction-reference" placeholder="Optional reference number">
                 </div>
                 
-                <div class="form-group">
-                    <label for="debit-amount">Debit Amount:</label>
-                    <input type="number" id="debit-amount" step="0.01" min="0.01" placeholder="0.00" required>
+                <div id="transaction-entries">
+                    <div class="transaction-entry">
+                        <div class="form-group">
+                            <label for="debit-account">Account:</label>
+                            <select class="entry-account" required>
+                                <option value="">Select Account</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Amount:</label>
+                            <div style="display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label for="debit-amount">Debit</label>
+                                    <input type="number" class="debit-amount" step="0.01" min="0" placeholder="0.00">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="credit-amount">Credit</label>
+                                    <input type="number" class="credit-amount" step="0.01" min="0" placeholder="0.00">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="credit-account">Credit Account:</label>
-                    <select id="credit-account" required>
-                        <option value="">Select Account</option>
-                    </select>
-                </div>
+                <button type="button" id="add-entry-btn" class="btn-success" style="margin-bottom: 1rem;"><i class="fas fa-plus"></i> Add Another Entry</button>
                 
                 <div class="form-group">
-                    <label for="credit-amount">Credit Amount:</label>
-                    <input type="number" id="credit-amount" step="0.01" min="0.01" placeholder="0.00" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="narration">Narration:</label>
+                    <label for="narration">Notes:</label>
                     <textarea id="narration" placeholder="Additional details"></textarea>
                 </div>
                 
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>Total Debit: <span id="total-debit-amount">$0.00</span></strong>
+                    </div>
+                    <div>
+                        <strong>Total Credit: <span id="total-credit-amount">$0.00</span></strong>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="transaction-balance-check" style="color: var(--danger); font-weight: bold; display: none;">
+                    <i class="fas fa-exclamation-triangle"></i> Debits and credits are not balanced!
+                </div>
+                
                 <div class="form-group">
-                    <button type="submit"><i class="fas fa-save"></i> Save Transaction</button>
+                    <button type="submit" id="save-transaction-btn"><i class="fas fa-save"></i> Save Transaction</button>
                     <button type="button" id="cancel-transaction" style="background: #95a5a6; margin-left: 10px;"><i class="fas fa-times"></i> Cancel</button>
                 </div>
             </form>
@@ -1023,9 +1295,21 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="parent-account">Parent Account (Optional):</label>
+                    <select id="parent-account">
+                        <option value="">No Parent Account</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
                     <label for="opening-balance">Opening Balance:</label>
                     <input type="number" id="opening-balance" step="0.01" placeholder="0.00">
                     <small>Positive for Assets/Expenses, Negative for Liabilities/Equity/Revenue</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="account-description">Description (Optional):</label>
+                    <textarea id="account-description" placeholder="Account description"></textarea>
                 </div>
                 
                 <div class="form-group">
@@ -1071,7 +1355,8 @@
     <div id="notification" class="notification"></div>
     
     <!-- Hidden file input for import -->
-    <input type="file" id="import-file" style="display: none;" accept=".json">
+    <input type="file" id="import-file" style="display: none;" accept=".json,.csv">
+    <input type="file" id="restore-file" style="display: none;" accept=".json">
     
     <script>
         // Main application object
@@ -1083,11 +1368,14 @@
                 companyName: 'Company Name',
                 baseCurrency: 'USD',
                 financialYear: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-                autoLogout: 30
+                autoLogout: 30,
+                password: null
             },
             accounts: [],
             transactions: [],
             idleTimer: null,
+            currentUser: null,
+            financialChart: null,
             
             // Initialize the application
             init() {
@@ -1132,14 +1420,18 @@
             // Create default accounts if none exist
             createDefaultAccounts() {
                 const defaultAccounts = [
-                    { id: 'acc-1', code: '1010', name: 'Cash', type: 'Asset', subtype: 'Current Asset', openingBalance: 0 },
-                    { id: 'acc-2', code: '1020', name: 'Accounts Receivable', type: 'Asset', subtype: 'Current Asset', openingBalance: 0 },
-                    { id: 'acc-3', code: '1030', name: 'Inventory', type: 'Asset', subtype: 'Current Asset', openingBalance: 0 },
-                    { id: 'acc-4', code: '2010', name: 'Accounts Payable', type: 'Liability', subtype: 'Current Liability', openingBalance: 0 },
-                    { id: 'acc-5', code: '3010', name: 'Common Stock', type: 'Equity', subtype: '', openingBalance: 0 },
-                    { id: 'acc-6', code: '4010', name: 'Sales Revenue', type: 'Revenue', subtype: 'Operating Revenue', openingBalance: 0 },
-                    { id: 'acc-7', code: '5010', name: 'Cost of Goods Sold', type: 'Expense', subtype: 'Operating Expense', openingBalance: 0 },
-                    { id: 'acc-8', code: '5020', name: 'Rent Expense', type: 'Expense', subtype: 'Operating Expense', openingBalance: 0 }
+                    { id: 'acc-1', code: '1010', name: 'Cash', type: 'Asset', subtype: 'Current Asset', openingBalance: 0, parent: null },
+                    { id: 'acc-2', code: '1020', name: 'Accounts Receivable', type: 'Asset', subtype: 'Current Asset', openingBalance: 0, parent: null },
+                    { id: 'acc-3', code: '1030', name: 'Inventory', type: 'Asset', subtype: 'Current Asset', openingBalance: 0, parent: null },
+                    { id: 'acc-4', code: '1040', name: 'Equipment', type: 'Asset', subtype: 'Fixed Asset', openingBalance: 0, parent: null },
+                    { id: 'acc-5', code: '2010', name: 'Accounts Payable', type: 'Liability', subtype: 'Current Liability', openingBalance: 0, parent: null },
+                    { id: 'acc-6', code: '2020', name: 'Loans Payable', type: 'Liability', subtype: 'Long-term Liability', openingBalance: 0, parent: null },
+                    { id: 'acc-7', code: '3010', name: 'Common Stock', type: 'Equity', subtype: '', openingBalance: 0, parent: null },
+                    { id: 'acc-8', code: '3020', name: 'Retained Earnings', type: 'Equity', subtype: '', openingBalance: 0, parent: null },
+                    { id: 'acc-9', code: '4010', name: 'Sales Revenue', type: 'Revenue', subtype: 'Operating Revenue', openingBalance: 0, parent: null },
+                    { id: 'acc-10', code: '5010', name: 'Cost of Goods Sold', type: 'Expense', subtype: 'Operating Expense', openingBalance: 0, parent: null },
+                    { id: 'acc-11', code: '5020', name: 'Rent Expense', type: 'Expense', subtype: 'Operating Expense', openingBalance: 0, parent: null },
+                    { id: 'acc-12', code: '5030', name: 'Salaries Expense', type: 'Expense', subtype: 'Operating Expense', openingBalance: 0, parent: null }
                 ];
                 
                 this.accounts = defaultAccounts;
@@ -1198,6 +1490,8 @@
                 document.getElementById('ledger-date-to').value = today;
                 document.getElementById('tb-date').value = today;
                 document.getElementById('report-date').value = today;
+                document.getElementById('report-date-from').value = firstOfMonthStr;
+                document.getElementById('report-date-to').value = today;
             },
             
             // Setup event listeners
@@ -1210,6 +1504,13 @@
                         
                         tab.classList.add('active');
                         document.getElementById(tab.dataset.tab).classList.add('active');
+                        
+                        // Refresh data when switching to specific tabs
+                        if (tab.dataset.tab === 'dashboard') {
+                            this.updateDashboard();
+                        } else if (tab.dataset.tab === 'accounts') {
+                            this.renderAccounts();
+                        }
                     });
                 });
                 
@@ -1246,13 +1547,27 @@
                 
                 // Add transaction button
                 document.getElementById('add-transaction-btn').addEventListener('click', () => {
-                    document.getElementById('transaction-modal').style.display = 'flex';
+                    this.showTransactionModal();
+                });
+                
+                // Quick action buttons
+                document.getElementById('quick-add-transaction').addEventListener('click', () => {
+                    this.showTransactionModal();
+                });
+                
+                document.getElementById('quick-view-report').addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    document.querySelector('[data-tab="reports"]').classList.add('active');
+                    document.getElementById('reports').classList.add('active');
                 });
                 
                 // Add account button
                 document.getElementById('add-account-btn').addEventListener('click', () => {
                     document.getElementById('account-modal-title').textContent = 'Add New Account';
                     document.getElementById('account-form').reset();
+                    this.populateParentAccountDropdown();
                     document.getElementById('account-modal').style.display = 'flex';
                 });
                 
@@ -1284,6 +1599,16 @@
                     this.addAccount();
                 });
                 
+                // Add another entry to transaction form
+                document.getElementById('add-entry-btn').addEventListener('click', () => {
+                    this.addTransactionEntry();
+                });
+                
+                // Real-time validation for transaction amounts
+                document.getElementById('transaction-entries').addEventListener('input', () => {
+                    this.calculateTransactionTotals();
+                });
+                
                 // Export data
                 document.getElementById('export-data').addEventListener('click', () => {
                     this.exportData();
@@ -1296,6 +1621,21 @@
                 
                 document.getElementById('import-file').addEventListener('change', (e) => {
                     this.importData(e.target.files[0]);
+                    e.target.value = ''; // Reset file input
+                });
+                
+                // Backup data
+                document.getElementById('backup-data').addEventListener('click', () => {
+                    this.createBackup();
+                });
+                
+                // Restore data
+                document.getElementById('restore-data').addEventListener('click', () => {
+                    document.getElementById('restore-file').click();
+                });
+                
+                document.getElementById('restore-file').addEventListener('change', (e) => {
+                    this.restoreBackup(e.target.files[0]);
                     e.target.value = ''; // Reset file input
                 });
                 
@@ -1319,6 +1659,11 @@
                     this.exportTrialBalance();
                 });
                 
+                // Print trial balance
+                document.getElementById('print-tb').addEventListener('click', () => {
+                    this.printTrialBalance();
+                });
+                
                 // Apply journal filter
                 document.getElementById('apply-journal-filter').addEventListener('click', () => {
                     this.renderTransactions();
@@ -1328,12 +1673,25 @@
                 document.getElementById('clear-journal-filter').addEventListener('click', () => {
                     document.getElementById('journal-date-from').value = '';
                     document.getElementById('journal-date-to').value = '';
+                    document.getElementById('journal-account').value = '';
+                    document.getElementById('journal-search').value = '';
                     this.renderTransactions();
                 });
                 
                 // Export journal
                 document.getElementById('export-journal').addEventListener('click', () => {
                     this.exportJournal();
+                });
+                
+                // Journal search
+                document.getElementById('journal-search-btn').addEventListener('click', () => {
+                    this.renderTransactions();
+                });
+                
+                document.getElementById('journal-search').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.renderTransactions();
+                    }
                 });
                 
                 // Apply ledger filter
@@ -1354,6 +1712,11 @@
                     this.printLedger();
                 });
                 
+                // Export ledger
+                document.getElementById('export-ledger').addEventListener('click', () => {
+                    this.exportLedger();
+                });
+                
                 // Generate report
                 document.getElementById('generate-report').addEventListener('click', () => {
                     this.generateReport();
@@ -1361,12 +1724,23 @@
                 
                 // Export report
                 document.getElementById('export-report').addEventListener('click', () => {
-                    this.exportReport();
+                    this.exportReportPDF();
                 });
                 
                 // Print report
                 document.getElementById('print-report').addEventListener('click', () => {
                     this.printReport();
+                });
+                
+                // Report period change
+                document.getElementById('report-period').addEventListener('change', (e) => {
+                    if (e.target.value === 'custom') {
+                        document.getElementById('report-custom-dates').style.display = 'flex';
+                        document.getElementById('report-date').style.display = 'none';
+                    } else {
+                        document.getElementById('report-custom-dates').style.display = 'none';
+                        document.getElementById('report-date').style.display = 'flex';
+                    }
                 });
                 
                 // Refresh dashboard
@@ -1381,14 +1755,155 @@
                     this.showNotification('Accounts refreshed', 'success');
                 });
                 
-                // Real-time validation for debit/credit amounts
-                document.getElementById('debit-amount').addEventListener('input', () => {
-                    this.syncAmounts('debit');
+                // Apply account filter
+                document.getElementById('apply-account-filter').addEventListener('click', () => {
+                    this.renderAccounts();
                 });
                 
-                document.getElementById('credit-amount').addEventListener('input', () => {
-                    this.syncAmounts('credit');
+                // Clear account filter
+                document.getElementById('clear-account-filter').addEventListener('click', () => {
+                    document.getElementById('account-type-filter').value = '';
+                    document.getElementById('account-search').value = '';
+                    this.renderAccounts();
                 });
+                
+                // Account search
+                document.getElementById('account-search-btn').addEventListener('click', () => {
+                    this.renderAccounts();
+                });
+                
+                document.getElementById('account-search').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.renderAccounts();
+                    }
+                });
+            },
+            
+            // Show transaction modal with proper setup
+            showTransactionModal() {
+                document.getElementById('transaction-modal').style.display = 'flex';
+                document.getElementById('transaction-form').reset();
+                
+                // Clear any existing entries except the first one
+                const entriesContainer = document.getElementById('transaction-entries');
+                while (entriesContainer.children.length > 1) {
+                    entriesContainer.removeChild(entriesContainer.lastChild);
+                }
+                
+                // Set up the first entry
+                const firstEntry = entriesContainer.querySelector('.transaction-entry');
+                firstEntry.querySelector('.debit-amount').value = '';
+                firstEntry.querySelector('.credit-amount').value = '';
+                
+                // Populate account dropdowns
+                this.populateAccountDropdowns();
+                
+                // Set today's date
+                document.getElementById('transaction-date').value = new Date().toISOString().split('T')[0];
+                
+                // Reset totals
+                document.getElementById('total-debit-amount').textContent = this.formatCurrency(0);
+                document.getElementById('total-credit-amount').textContent = this.formatCurrency(0);
+                document.getElementById('transaction-balance-check').style.display = 'none';
+            },
+            
+            // Add another entry to the transaction form
+            addTransactionEntry() {
+                const entriesContainer = document.getElementById('transaction-entries');
+                const newEntry = entriesContainer.querySelector('.transaction-entry').cloneNode(true);
+                
+                // Clear values
+                newEntry.querySelector('.entry-account').value = '';
+                newEntry.querySelector('.debit-amount').value = '';
+                newEntry.querySelector('.credit-amount').value = '';
+                
+                // Add remove button
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'btn-danger';
+                removeBtn.innerHTML = '<i class="fas fa-trash"></i> Remove';
+                removeBtn.style.marginTop = '0.5rem';
+                removeBtn.addEventListener('click', () => {
+                    entriesContainer.removeChild(newEntry);
+                    this.calculateTransactionTotals();
+                });
+                
+                newEntry.appendChild(removeBtn);
+                entriesContainer.appendChild(newEntry);
+                
+                // Populate account dropdown for the new entry
+                this.populateAccountDropdown(newEntry.querySelector('.entry-account'));
+            },
+            
+            // Populate all account dropdowns in transaction form
+            populateAccountDropdowns() {
+                document.querySelectorAll('.entry-account').forEach(dropdown => {
+                    this.populateAccountDropdown(dropdown);
+                });
+            },
+            
+            // Populate a single account dropdown
+            populateAccountDropdown(dropdown) {
+                // Clear existing options except the first one
+                while (dropdown.options.length > 1) {
+                    dropdown.remove(1);
+                }
+                
+                // Add accounts
+                this.accounts.forEach(account => {
+                    const option = document.createElement('option');
+                    option.value = account.id;
+                    option.textContent = `${account.code} - ${account.name}`;
+                    dropdown.appendChild(option);
+                });
+            },
+            
+            // Populate parent account dropdown
+            populateParentAccountDropdown() {
+                const dropdown = document.getElementById('parent-account');
+                
+                // Clear existing options except the first one
+                while (dropdown.options.length > 1) {
+                    dropdown.remove(1);
+                }
+                
+                // Add accounts
+                this.accounts.forEach(account => {
+                    const option = document.createElement('option');
+                    option.value = account.id;
+                    option.textContent = `${account.code} - ${account.name}`;
+                    dropdown.appendChild(option);
+                });
+            },
+            
+            // Calculate transaction totals for real-time validation
+            calculateTransactionTotals() {
+                let totalDebit = 0;
+                let totalCredit = 0;
+                
+                document.querySelectorAll('.transaction-entry').forEach(entry => {
+                    const debitInput = entry.querySelector('.debit-amount');
+                    const creditInput = entry.querySelector('.credit-amount');
+                    
+                    if (debitInput.value) {
+                        totalDebit += parseFloat(debitInput.value);
+                    }
+                    
+                    if (creditInput.value) {
+                        totalCredit += parseFloat(creditInput.value);
+                    }
+                });
+                
+                document.getElementById('total-debit-amount').textContent = this.formatCurrency(totalDebit);
+                document.getElementById('total-credit-amount').textContent = this.formatCurrency(totalCredit);
+                
+                // Show warning if not balanced
+                const balanceCheck = document.getElementById('transaction-balance-check');
+                if (Math.abs(totalDebit - totalCredit) > 0.01) {
+                    balanceCheck.style.display = 'block';
+                } else {
+                    balanceCheck.style.display = 'none';
+                }
             },
             
             // Change password
@@ -1409,6 +1924,8 @@
                 }
                 
                 // In a real application, you would verify the current password and update it
+                this.settings.password = newPassword; // In a real app, this would be hashed
+                this.saveData();
                 this.showNotification('Password changed successfully', 'success');
                 document.getElementById('password-modal').style.display = 'none';
                 document.getElementById('password-form').reset();
@@ -1429,35 +1946,23 @@
                 this.showNotification('Settings saved successfully', 'success');
             },
             
-            // Sync debit and credit amounts to ensure they're equal
-            syncAmounts(source) {
-                if (this.settings.accountingMode === 'double') {
-                    const debitAmount = document.getElementById('debit-amount');
-                    const creditAmount = document.getElementById('credit-amount');
-                    
-                    if (source === 'debit' && debitAmount.value) {
-                        creditAmount.value = parseFloat(debitAmount.value).toFixed(2);
-                    } else if (source === 'credit' && creditAmount.value) {
-                        debitAmount.value = parseFloat(creditAmount.value).toFixed(2);
-                    }
-                }
-            },
-            
             // Render accounts table and dropdowns
             renderAccounts() {
                 const accountsTable = document.getElementById('accounts-table').querySelector('tbody');
-                const debitAccountSelect = document.getElementById('debit-account');
-                const creditAccountSelect = document.getElementById('credit-account');
+                const accountsHierarchy = document.getElementById('accounts-hierarchy');
                 const ledgerAccountSelect = document.getElementById('ledger-account');
+                const journalAccountSelect = document.getElementById('journal-account');
+                const accountTypeFilter = document.getElementById('account-type-filter').value;
+                const accountSearch = document.getElementById('account-search').value.toLowerCase();
                 
                 // Clear existing options but keep first option
-                debitAccountSelect.innerHTML = '<option value="">Select Account</option>';
-                creditAccountSelect.innerHTML = '<option value="">Select Account</option>';
                 ledgerAccountSelect.innerHTML = '<option value="">Select Account</option>';
+                journalAccountSelect.innerHTML = '<option value="">All Accounts</option>';
                 
                 // Check if we have accounts
                 if (this.accounts.length === 0) {
                     accountsTable.innerHTML = '<tr class="empty-state-row"><td colspan="5" class="empty-state"><i class="fas fa-chart-pie"></i><p>No accounts yet</p></td></tr>';
+                    accountsHierarchy.innerHTML = '<div class="empty-state"><i class="fas fa-chart-pie"></i><p>No accounts yet</p></div>';
                     return;
                 }
                 
@@ -1465,32 +1970,63 @@
                 const emptyState = accountsTable.querySelector('.empty-state-row');
                 if (emptyState) emptyState.remove();
                 
+                accountsTable.innerHTML = '';
+                accountsHierarchy.innerHTML = '';
+                
+                // Filter accounts if needed
+                let filteredAccounts = this.accounts;
+                
+                if (accountTypeFilter) {
+                    filteredAccounts = filteredAccounts.filter(account => account.type === accountTypeFilter);
+                }
+                
+                if (accountSearch) {
+                    filteredAccounts = filteredAccounts.filter(account => 
+                        account.name.toLowerCase().includes(accountSearch) || 
+                        account.code.includes(accountSearch)
+                    );
+                }
+                
                 // Add accounts to dropdowns and table
-                this.accounts.forEach(account => {
-                    // Add to debit/credit dropdowns
+                filteredAccounts.forEach(account => {
+                    // Add to ledger dropdown
                     const option = document.createElement('option');
                     option.value = account.id;
                     option.textContent = `${account.code} - ${account.name}`;
-                    
-                    debitAccountSelect.appendChild(option.cloneNode(true));
-                    creditAccountSelect.appendChild(option.cloneNode(true));
                     ledgerAccountSelect.appendChild(option.cloneNode(true));
+                    
+                    // Add to journal dropdown
+                    journalAccountSelect.appendChild(option.cloneNode(true));
                     
                     // Add to accounts table
                     const row = document.createElement('tr');
+                    const balance = this.getAccountBalance(account.id);
+                    const balanceClass = balance >= 0 ? 'debit' : 'credit';
+                    
                     row.innerHTML = `
                         <td>${account.code}</td>
                         <td>${account.name}</td>
-                        <td>${account.type}${account.subtype ? ` (${account.subtype})` : ''}</td>
-                        <td>${this.formatCurrency(this.getAccountBalance(account.id))}</td>
+                        <td><span class="color-indicator color-${account.type.toLowerCase()}"></span>${account.type}</td>
+                        <td class="${balanceClass}">${this.formatCurrency(Math.abs(balance))}</td>
                         <td>
+                            <button class="btn-warning" data-account-id="${account.id}"><i class="fas fa-edit"></i> Edit</button>
                             <button class="btn-danger" data-account-id="${account.id}"><i class="fas fa-trash"></i> Delete</button>
                         </td>
                     `;
                     accountsTable.appendChild(row);
                 });
                 
-                // Add event listeners to delete buttons
+                // Build account hierarchy
+                this.buildAccountHierarchy(filteredAccounts, accountsHierarchy);
+                
+                // Add event listeners to edit and delete buttons
+                accountsTable.querySelectorAll('.btn-warning').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const accountId = button.dataset.accountId;
+                        this.editAccount(accountId);
+                    });
+                });
+                
                 accountsTable.querySelectorAll('.btn-danger').forEach(button => {
                     button.addEventListener('click', () => {
                         const accountId = button.dataset.accountId;
@@ -1499,15 +2035,87 @@
                 });
             },
             
-            // Render transactions table
+            // Build account hierarchy view
+            buildAccountHierarchy(accounts, container) {
+                // Group accounts by type
+                const accountsByType = {
+                    'Asset': [],
+                    'Liability': [],
+                    'Equity': [],
+                    'Revenue': [],
+                    'Expense': []
+                };
+                
+                accounts.forEach(account => {
+                    if (accountsByType[account.type]) {
+                        accountsByType[account.type].push(account);
+                    }
+                });
+                
+                // Create hierarchy for each type
+                for (const type in accountsByType) {
+                    if (accountsByType[type].length > 0) {
+                        const typeHeader = document.createElement('div');
+                        typeHeader.className = 'account-type-header';
+                        typeHeader.innerHTML = `<h3><span class="color-indicator color-${type.toLowerCase()}"></span>${type}</h3>`;
+                        container.appendChild(typeHeader);
+                        
+                        const typeContainer = document.createElement('div');
+                        typeContainer.className = 'account-children';
+                        
+                        accountsByType[type].forEach(account => {
+                            const accountItem = document.createElement('div');
+                            accountItem.className = 'account-item';
+                            const balance = this.getAccountBalance(account.id);
+                            const balanceClass = balance >= 0 ? 'debit' : 'credit';
+                            
+                            accountItem.innerHTML = `
+                                <strong>${account.code} - ${account.name}</strong>
+                                <span class="${balanceClass}" style="float: right;">${this.formatCurrency(Math.abs(balance))}</span>
+                                <div style="clear: both;"></div>
+                                <small>${account.subtype || 'No subtype'}</small>
+                            `;
+                            typeContainer.appendChild(accountItem);
+                        });
+                        
+                        container.appendChild(typeContainer);
+                    }
+                }
+            },
+            
+            // Edit account
+            editAccount(accountId) {
+                const account = this.accounts.find(a => a.id === accountId);
+                if (!account) return;
+                
+                document.getElementById('account-modal-title').textContent = 'Edit Account';
+                document.getElementById('account-code').value = account.code;
+                document.getElementById('account-name').value = account.name;
+                document.getElementById('account-type').value = account.type;
+                document.getElementById('account-subtype').value = account.subtype || '';
+                document.getElementById('parent-account').value = account.parent || '';
+                document.getElementById('opening-balance').value = account.openingBalance || 0;
+                document.getElementById('account-description').value = account.description || '';
+                
+                this.populateParentAccountDropdown();
+                document.getElementById('account-modal').style.display = 'flex';
+                
+                // Store the account id for updating
+                document.getElementById('account-form').dataset.editingAccountId = accountId;
+            },
+            
+            // Render transactions table with pagination
             renderTransactions() {
                 const journalTable = document.getElementById('journal-table').querySelector('tbody');
                 const dateFrom = document.getElementById('journal-date-from').value;
                 const dateTo = document.getElementById('journal-date-to').value;
+                const accountFilter = document.getElementById('journal-account').value;
+                const searchTerm = document.getElementById('journal-search').value.toLowerCase();
                 
                 // Check if we have transactions
                 if (this.transactions.length === 0) {
                     journalTable.innerHTML = '<tr class="empty-state-row"><td colspan="6" class="empty-state"><i class="fas fa-book"></i><p>No journal entries yet</p></td></tr>';
+                    document.getElementById('journal-pagination').style.display = 'none';
                     return;
                 }
                 
@@ -1518,53 +2126,129 @@
                 journalTable.innerHTML = '';
                 
                 // Filter transactions by date if specified
-                const filteredTransactions = this.transactions.filter(transaction => {
+                let filteredTransactions = this.transactions.filter(transaction => {
                     if (dateFrom && transaction.date < dateFrom) return false;
                     if (dateTo && transaction.date > dateTo) return false;
+                    if (accountFilter && transaction.debitAccount !== accountFilter && transaction.creditAccount !== accountFilter) return false;
+                    if (searchTerm && !transaction.description.toLowerCase().includes(searchTerm) && 
+                        !this.getAccountName(transaction.debitAccount).toLowerCase().includes(searchTerm) && 
+                        !this.getAccountName(transaction.creditAccount).toLowerCase().includes(searchTerm)) return false;
                     return true;
                 });
                 
                 if (filteredTransactions.length === 0) {
                     journalTable.innerHTML = '<tr class="empty-state-row"><td colspan="6" class="empty-state"><i class="fas fa-search"></i><p>No transactions found for selected filters</p></td></tr>';
+                    document.getElementById('journal-pagination').style.display = 'none';
                     return;
                 }
                 
-                filteredTransactions.forEach(transaction => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${transaction.date}</td>
-                        <td>${transaction.description}</td>
-                        <td>${this.getAccountName(transaction.debitAccount)}</td>
-                        <td class="debit">${this.formatCurrency(transaction.debitAmount)}</td>
-                        <td class="credit">${this.formatCurrency(transaction.creditAmount)}</td>
-                        <td>
-                            <button class="btn-danger" data-transaction-id="${transaction.id}"><i class="fas fa-trash"></i> Delete</button>
-                        </td>
-                    `;
-                    journalTable.appendChild(row);
-                });
+                // Reverse to show newest first
+                filteredTransactions = filteredTransactions.reverse();
                 
-                // Add event listeners to delete buttons
-                journalTable.querySelectorAll('.btn-danger').forEach(button => {
-                    button.addEventListener('click', () => {
-                        const transactionId = button.dataset.transactionId;
-                        this.deleteTransaction(transactionId);
+                // Pagination setup
+                const pageSize = 10;
+                let currentPage = 1;
+                const totalPages = Math.ceil(filteredTransactions.length / pageSize);
+                
+                // Show pagination if needed
+                if (totalPages > 1) {
+                    document.getElementById('journal-pagination').style.display = 'flex';
+                    document.getElementById('journal-page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+                    
+                    // Pagination event listeners
+                    document.getElementById('journal-next').addEventListener('click', () => {
+                        if (currentPage < totalPages) {
+                            currentPage++;
+                            renderPage();
+                        }
                     });
-                });
+                    
+                    document.getElementById('journal-prev').addEventListener('click', () => {
+                        if (currentPage > 1) {
+                            currentPage--;
+                            renderPage();
+                        }
+                    });
+                } else {
+                    document.getElementById('journal-pagination').style.display = 'none';
+                }
+                
+                // Render a page of transactions
+                const renderPage = () => {
+                    journalTable.innerHTML = '';
+                    const startIndex = (currentPage - 1) * pageSize;
+                    const endIndex = Math.min(startIndex + pageSize, filteredTransactions.length);
+                    
+                    for (let i = startIndex; i < endIndex; i++) {
+                        const transaction = filteredTransactions[i];
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${transaction.date}</td>
+                            <td>${transaction.description}</td>
+                            <td>${this.getAccountName(transaction.debitAccount)}<br>${this.getAccountName(transaction.creditAccount)}</td>
+                            <td class="debit">${this.formatCurrency(transaction.debitAmount)}</td>
+                            <td class="credit">${this.formatCurrency(transaction.creditAmount)}</td>
+                            <td>
+                                <button class="btn-warning" data-transaction-id="${transaction.id}"><i class="fas fa-edit"></i> Edit</button>
+                                <button class="btn-danger" data-transaction-id="${transaction.id}"><i class="fas fa-trash"></i> Delete</button>
+                            </td>
+                        `;
+                        journalTable.appendChild(row);
+                    }
+                    
+                    // Update page info
+                    document.getElementById('journal-page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+                    
+                    // Add event listeners to edit and delete buttons
+                    journalTable.querySelectorAll('.btn-warning').forEach(button => {
+                        button.addEventListener('click', () => {
+                            const transactionId = button.dataset.transactionId;
+                            this.editTransaction(transactionId);
+                        });
+                    });
+                    
+                    journalTable.querySelectorAll('.btn-danger').forEach(button => {
+                        button.addEventListener('click', () => {
+                            const transactionId = button.dataset.transactionId;
+                            this.deleteTransaction(transactionId);
+                        });
+                    });
+                };
+                
+                // Render the first page
+                renderPage();
+            },
+            
+            // Edit transaction
+            editTransaction(transactionId) {
+                // This would open the transaction modal with pre-filled data
+                // For simplicity, we'll just show a notification
+                this.showNotification('Edit functionality coming soon!', 'info');
             },
             
             // Render ledger
             renderLedger() {
                 const ledgerTable = document.getElementById('ledger-table').querySelector('tbody');
+                const accountInfo = document.getElementById('ledger-account-info');
                 const accountId = document.getElementById('ledger-account').value;
                 const dateFrom = document.getElementById('ledger-date-from').value;
                 const dateTo = document.getElementById('ledger-date-to').value;
                 
                 ledgerTable.innerHTML = '';
+                accountInfo.style.display = 'none';
                 
                 if (!accountId) {
-                    ledgerTable.innerHTML = '<tr class="empty-state-row"><td colspan="5" class="empty-state"><i class="fas fa-file-invoice-dollar"></i><p>Select an account to view ledger</p></td></tr>';
+                    ledgerTable.innerHTML = '<tr class="empty-state-row"><td colspan="6" class="empty-state"><i class="fas fa-file-invoice-dollar"></i><p>Select an account to view ledger</p></td></tr>';
                     return;
+                }
+                
+                // Get account info
+                const account = this.accounts.find(a => a.id === accountId);
+                if (account) {
+                    accountInfo.style.display = 'block';
+                    document.getElementById('ledger-account-name').textContent = `${account.code} - ${account.name}`;
+                    document.getElementById('ledger-account-type').textContent = account.type;
+                    document.getElementById('ledger-account-balance').textContent = this.formatCurrency(this.getAccountBalance(account.id));
                 }
                 
                 // Filter transactions for this account
@@ -1576,12 +2260,11 @@
                 });
                 
                 if (accountTransactions.length === 0) {
-                    ledgerTable.innerHTML = '<tr class="empty-state-row"><td colspan="5" class="empty-state"><i class="fas fa-search"></i><p>No transactions found for selected account and filters</p></td></tr>';
+                    ledgerTable.innerHTML = '<tr class="empty-state-row"><td colspan="6" class="empty-state"><i class="fas fa-search"></i><p>No transactions found for selected account and filters</p></td></tr>';
                     return;
                 }
                 
-                let runningBalance = 0;
-                const account = this.accounts.find(a => a.id === accountId);
+                let runningBalance = account ? account.openingBalance || 0 : 0;
                 
                 accountTransactions.forEach(transaction => {
                     const isDebit = transaction.debitAccount === accountId;
@@ -1598,6 +2281,7 @@
                     row.innerHTML = `
                         <td>${transaction.date}</td>
                         <td>${transaction.description}</td>
+                        <td>${transaction.reference || ''}</td>
                         <td class="${isDebit ? 'debit' : ''}">${isDebit ? this.formatCurrency(amount) : ''}</td>
                         <td class="${!isDebit ? 'credit' : ''}">${!isDebit ? this.formatCurrency(amount) : ''}</td>
                         <td>${this.formatCurrency(runningBalance)}</td>
@@ -1609,11 +2293,13 @@
             // Generate trial balance
             generateTrialBalance() {
                 const tbTable = document.getElementById('trial-balance-table').querySelector('tbody');
+                const tbSummary = document.getElementById('tb-summary');
                 const asOfDate = document.getElementById('tb-date').value;
                 const tbStatus = document.getElementById('tb-status');
                 
                 tbTable.innerHTML = '';
                 tbStatus.textContent = 'Generating...';
+                tbSummary.style.display = 'none';
                 
                 // Simulate processing time
                 setTimeout(() => {
@@ -1676,8 +2362,14 @@
                     `;
                     tbTable.appendChild(totalRow);
                     
+                    // Show summary
+                    tbSummary.style.display = 'block';
+                    document.getElementById('tb-total-debit').textContent = this.formatCurrency(totalDebit);
+                    document.getElementById('tb-total-credit').textContent = this.formatCurrency(totalCredit);
+                    document.getElementById('tb-difference').textContent = this.formatCurrency(totalDebit - totalCredit);
+                    
                     // Check if debits equal credits
-                    if (totalDebit !== totalCredit) {
+                    if (Math.abs(totalDebit - totalCredit) > 0.01) {
                         tbStatus.innerHTML = '<span style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Not Balanced</span>';
                         this.showNotification('Trial balance is not balanced!', 'error');
                     } else {
@@ -1722,6 +2414,53 @@
                 this.showNotification('Trial balance exported successfully', 'success');
             },
             
+            // Print trial balance
+            printTrialBalance() {
+                const tbTable = document.getElementById('trial-balance-table');
+                if (tbTable.querySelector('.empty-state-row')) {
+                    this.showNotification('No trial balance data to print', 'error');
+                    return;
+                }
+                
+                const asOfDate = document.getElementById('tb-date').value;
+                const companyName = this.settings.companyName;
+                
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>Trial Balance - ${companyName}</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 20px; }
+                            h1 { color: #2c3e50; text-align: center; }
+                            h2 { text-align: center; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                            th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+                            th { background-color: #f2f2f2; }
+                            .debit { color: #2ecc71; }
+                            .credit { color: #e74c3c; }
+                            @media print {
+                                body { padding: 0; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>${companyName}</h1>
+                        <h2>Trial Balance</h2>
+                        <p style="text-align: center;">As of: ${asOfDate}</p>
+                        ${tbTable.outerHTML}
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+                printWindow.focus();
+                
+                setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                }, 250);
+            },
+            
             // Export journal as CSV
             exportJournal() {
                 const journalTable = document.getElementById('journal-table');
@@ -1764,6 +2503,51 @@
                 this.showNotification('Journal entries exported successfully', 'success');
             },
             
+            // Export ledger as CSV
+            exportLedger() {
+                const ledgerTable = document.getElementById('ledger-table');
+                if (ledgerTable.querySelector('.empty-state-row')) {
+                    this.showNotification('No ledger data to export', 'error');
+                    return;
+                }
+                
+                const accountId = document.getElementById('ledger-account').value;
+                const account = this.accounts.find(a => a.id === accountId);
+                const accountName = account ? `${account.code} - ${account.name}` : 'Selected Account';
+                const dateFrom = document.getElementById('ledger-date-from').value;
+                const dateTo = document.getElementById('ledger-date-to').value;
+                let dateRange = '';
+                
+                if (dateFrom && dateTo) {
+                    dateRange = `From ${dateFrom} to ${dateTo}`;
+                }
+                
+                let csvContent = `Ledger: ${accountName} ${dateRange}\n\n`;
+                
+                for (let i = 0; i < ledgerTable.rows.length; i++) {
+                    const row = ledgerTable.rows[i];
+                    let rowText = '';
+                    for (let j = 0; j < row.cells.length; j++) {
+                        rowText += '"' + row.cells[j].textContent.replace(/"/g, '""') + '",';
+                    }
+                    csvContent += rowText + '\n';
+                }
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                
+                link.setAttribute('href', url);
+                link.setAttribute('download', `Ledger_${accountName.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                this.showNotification('Ledger exported successfully', 'success');
+            },
+            
             // Print ledger
             printLedger() {
                 const ledgerTable = document.getElementById('ledger-table');
@@ -1775,6 +2559,7 @@
                 const accountId = document.getElementById('ledger-account').value;
                 const account = this.accounts.find(a => a.id === accountId);
                 const accountName = account ? `${account.code} - ${account.name}` : 'Selected Account';
+                const companyName = this.settings.companyName;
                 
                 const printWindow = window.open('', '_blank');
                 printWindow.document.write(`
@@ -1784,6 +2569,7 @@
                         <style>
                             body { font-family: Arial, sans-serif; padding: 20px; }
                             h1 { color: #2c3e50; }
+                            h2 { color: #34495e; }
                             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
                             th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
                             th { background-color: #f2f2f2; }
@@ -1795,7 +2581,8 @@
                         </style>
                     </head>
                     <body>
-                        <h1>Ledger: ${accountName}</h1>
+                        <h1>${companyName}</h1>
+                        <h2>Ledger: ${accountName}</h2>
                         <p>Generated on: ${new Date().toLocaleDateString()}</p>
                         ${ledgerTable.outerHTML}
                     </body>
@@ -1819,6 +2606,7 @@
                 }
                 
                 const reportTitle = document.getElementById('report-title').textContent;
+                const companyName = this.settings.companyName;
                 
                 const printWindow = window.open('', '_blank');
                 printWindow.document.write(`
@@ -1827,7 +2615,8 @@
                         <title>${reportTitle}</title>
                         <style>
                             body { font-family: Arial, sans-serif; padding: 20px; }
-                            h1 { color: #2c3e50; }
+                            h1 { color: #2c3e50; text-align: center; }
+                            h2 { text-align: center; }
                             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
                             th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
                             th { background-color: #f2f2f2; }
@@ -1839,7 +2628,8 @@
                         </style>
                     </head>
                     <body>
-                        <h1>${reportTitle}</h1>
+                        <h1>${companyName}</h1>
+                        <h2>${reportTitle}</h2>
                         <p>Generated on: ${new Date().toLocaleDateString()}</p>
                         ${reportContent.innerHTML}
                     </body>
@@ -1880,6 +2670,12 @@
                         case 'changes-equity':
                             reportHTML = this.generateChangesInEquity(reportDate, reportStyle);
                             break;
+                        case 'general-ledger':
+                            reportHTML = this.generateGeneralLedgerSummary(reportDate, reportStyle);
+                            break;
+                        case 'account-detail':
+                            reportHTML = this.generateAccountDetailReport(reportDate, reportStyle);
+                            break;
                     }
                     
                     reportContent.innerHTML = reportHTML;
@@ -1889,8 +2685,8 @@
                 }, 1000);
             },
             
-            // Export report as CSV
-            exportReport() {
+            // Export report as PDF
+            exportReportPDF() {
                 const reportContent = document.getElementById('report-content');
                 if (reportContent.textContent.includes('Select report options')) {
                     this.showNotification('No report data to export', 'error');
@@ -1898,85 +2694,133 @@
                 }
                 
                 const reportTitle = document.getElementById('report-title').textContent;
+                const companyName = this.settings.companyName;
                 
-                let csvContent = reportTitle + '\n\n';
-                
-                const tables = reportContent.querySelectorAll('table');
-                tables.forEach(table => {
-                    for (let i = 0; i < table.rows.length; i++) {
-                        const row = table.rows[i];
-                        let rowText = '';
-                        for (let j = 0; j < row.cells.length; j++) {
-                            rowText += '"' + row.cells[j].textContent.replace(/"/g, '""') + '",';
-                        }
-                        csvContent += rowText + '\n';
+                // Use html2canvas and jsPDF to generate PDF
+                html2canvas(reportContent).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jspdf.jsPDF({
+                        orientation: 'portrait',
+                        unit: 'mm',
+                        format: 'a4'
+                    });
+                    
+                    const imgWidth = 210; // A4 width in mm
+                    const pageHeight = 297; // A4 height in mm
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    let heightLeft = imgHeight;
+                    let position = 0;
+                    
+                    // Add header
+                    pdf.setFontSize(16);
+                    pdf.text(companyName, 105, 15, { align: 'center' });
+                    pdf.setFontSize(14);
+                    pdf.text(reportTitle, 105, 22, { align: 'center' });
+                    pdf.setFontSize(10);
+                    pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 105, 29, { align: 'center' });
+                    
+                    // Add content
+                    pdf.addImage(imgData, 'PNG', 0, 35, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                    
+                    // Add additional pages if needed
+                    while (heightLeft >= 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
                     }
-                    csvContent += '\n';
+                    
+                    // Save the PDF
+                    pdf.save(`${reportTitle.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+                    
+                    this.showNotification('Report exported as PDF successfully', 'success');
                 });
-                
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                
-                link.setAttribute('href', url);
-                link.setAttribute('download', `${reportTitle.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
-                link.style.visibility = 'hidden';
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                this.showNotification('Report exported successfully', 'success');
             },
             
             // Add a new transaction
             addTransaction() {
                 const date = document.getElementById('transaction-date').value;
                 const description = document.getElementById('transaction-description').value;
-                const debitAccount = document.getElementById('debit-account').value;
-                const debitAmount = parseFloat(document.getElementById('debit-amount').value);
-                const creditAccount = document.getElementById('credit-account').value;
-                const creditAmount = parseFloat(document.getElementById('credit-amount').value);
+                const reference = document.getElementById('transaction-reference').value;
                 const narration = document.getElementById('narration').value;
                 
+                // Get all entries
+                const entries = [];
+                let totalDebit = 0;
+                let totalCredit = 0;
+                
+                document.querySelectorAll('.transaction-entry').forEach(entry => {
+                    const account = entry.querySelector('.entry-account').value;
+                    const debitAmount = parseFloat(entry.querySelector('.debit-amount').value) || 0;
+                    const creditAmount = parseFloat(entry.querySelector('.credit-amount').value) || 0;
+                    
+                    if (account && (debitAmount > 0 || creditAmount > 0)) {
+                        entries.push({
+                            account,
+                            debitAmount,
+                            creditAmount
+                        });
+                        
+                        totalDebit += debitAmount;
+                        totalCredit += creditAmount;
+                    }
+                });
+                
                 // Validate form
-                if (!date || !description || !debitAccount || !debitAmount || !creditAccount || !creditAmount) {
-                    this.showNotification('Please fill all required fields', 'error');
+                if (!date || !description || entries.length < 2) {
+                    this.showNotification('Please fill all required fields and add at least two entries', 'error');
                     return;
                 }
                 
                 // Validate debit equals credit for double-entry
-                if (this.settings.accountingMode === 'double' && debitAmount !== creditAmount) {
+                if (this.settings.accountingMode === 'double' && Math.abs(totalDebit - totalCredit) > 0.01) {
                     this.showNotification('Debit and Credit amounts must be equal for double-entry accounting', 'error');
                     return;
                 }
                 
-                // Validate accounts are different
-                if (debitAccount === creditAccount) {
-                    this.showNotification('Debit and Credit accounts must be different', 'error');
-                    return;
-                }
+                // Create transaction objects
+                const transactionId = Date.now().toString();
                 
-                // Create transaction object
-                const transaction = {
-                    id: Date.now().toString(),
-                    date,
-                    description,
-                    debitAccount,
-                    debitAmount,
-                    creditAccount,
-                    creditAmount,
-                    narration,
-                    createdAt: new Date().toISOString()
-                };
-                
-                // Add to transactions array
-                this.transactions.push(transaction);
+                entries.forEach(entry => {
+                    if (entry.debitAmount > 0) {
+                        this.transactions.push({
+                            id: transactionId,
+                            date,
+                            description,
+                            reference,
+                            debitAccount: entry.account,
+                            debitAmount: entry.debitAmount,
+                            creditAccount: null,
+                            creditAmount: 0,
+                            narration,
+                            createdAt: new Date().toISOString()
+                        });
+                    }
+                    
+                    if (entry.creditAmount > 0) {
+                        this.transactions.push({
+                            id: transactionId,
+                            date,
+                            description,
+                            reference,
+                            debitAccount: null,
+                            debitAmount: 0,
+                            creditAccount: entry.account,
+                            creditAmount: entry.creditAmount,
+                            narration,
+                            createdAt: new Date().toISOString()
+                        });
+                    }
+                });
                 
                 // Save data and update UI
                 this.saveData();
                 this.renderTransactions();
                 this.updateDashboard();
+                
+                // Add to recent activity
+                this.addRecentActivity(`Added transaction: ${description}`, 'transaction');
                 
                 // Close modal and reset form
                 document.getElementById('transaction-modal').style.display = 'none';
@@ -1991,7 +2835,12 @@
                 const name = document.getElementById('account-name').value;
                 const type = document.getElementById('account-type').value;
                 const subtype = document.getElementById('account-subtype').value;
+                const parent = document.getElementById('parent-account').value || null;
                 const openingBalance = parseFloat(document.getElementById('opening-balance').value) || 0;
+                const description = document.getElementById('account-description').value;
+                
+                // Check if we're editing an existing account
+                const editingAccountId = document.getElementById('account-form').dataset.editingAccountId;
                 
                 // Validate form
                 if (!code || !name || !type) {
@@ -1999,63 +2848,86 @@
                     return;
                 }
                 
-                // Check if account code already exists
-                if (this.accounts.some(account => account.code === code)) {
+                // Check if account code already exists (excluding the one we're editing)
+                if (this.accounts.some(account => account.code === code && account.id !== editingAccountId)) {
                     this.showNotification('Account code already exists', 'error');
                     return;
                 }
                 
-                // Create account object
-                const account = {
-                    id: 'acc-' + Date.now(),
-                    code,
-                    name,
-                    type,
-                    subtype,
-                    openingBalance,
-                    createdAt: new Date().toISOString()
-                };
-                
-                // Add to accounts array
-                this.accounts.push(account);
-                
-                // If there's an opening balance, create a transaction
-                if (openingBalance !== 0) {
-                    let debitAccount, creditAccount;
-                    let amount = Math.abs(openingBalance);
-                    
-                    if (openingBalance > 0) {
-                        if (['Asset', 'Expense'].includes(type)) {
-                            debitAccount = account.id;
-                            creditAccount = this.getEquityAccountId();
-                        } else {
-                            debitAccount = this.getEquityAccountId();
-                            creditAccount = account.id;
-                        }
-                    } else {
-                        // openingBalance is negative
-                        if (['Asset', 'Expense'].includes(type)) {
-                            debitAccount = this.getEquityAccountId();
-                            creditAccount = account.id;
-                        } else {
-                            debitAccount = account.id;
-                            creditAccount = this.getEquityAccountId();
-                        }
+                if (editingAccountId) {
+                    // Update existing account
+                    const accountIndex = this.accounts.findIndex(a => a.id === editingAccountId);
+                    if (accountIndex !== -1) {
+                        this.accounts[accountIndex] = {
+                            ...this.accounts[accountIndex],
+                            code,
+                            name,
+                            type,
+                            subtype,
+                            parent,
+                            openingBalance,
+                            description
+                        };
+                        
+                        this.showNotification('Account updated successfully', 'success');
                     }
-                    
-                    const transaction = {
-                        id: Date.now().toString() + '-opening',
-                        date: new Date().toISOString().split('T')[0],
-                        description: `Opening balance for ${name}`,
-                        debitAccount,
-                        debitAmount: amount,
-                        creditAccount,
-                        creditAmount: amount,
-                        narration: 'Opening balance',
+                } else {
+                    // Create account object
+                    const account = {
+                        id: 'acc-' + Date.now(),
+                        code,
+                        name,
+                        type,
+                        subtype,
+                        parent,
+                        openingBalance,
+                        description,
                         createdAt: new Date().toISOString()
                     };
                     
-                    this.transactions.push(transaction);
+                    // Add to accounts array
+                    this.accounts.push(account);
+                    
+                    // If there's an opening balance, create a transaction
+                    if (openingBalance !== 0) {
+                        let debitAccount, creditAccount;
+                        let amount = Math.abs(openingBalance);
+                        
+                        if (openingBalance > 0) {
+                            if (['Asset', 'Expense'].includes(type)) {
+                                debitAccount = account.id;
+                                creditAccount = this.getEquityAccountId();
+                            } else {
+                                debitAccount = this.getEquityAccountId();
+                                creditAccount = account.id;
+                            }
+                        } else {
+                            // openingBalance is negative
+                            if (['Asset', 'Expense'].includes(type)) {
+                                debitAccount = this.getEquityAccountId();
+                                creditAccount = account.id;
+                            } else {
+                                debitAccount = account.id;
+                                creditAccount = this.getEquityAccountId();
+                            }
+                        }
+                        
+                        const transaction = {
+                            id: Date.now().toString() + '-opening',
+                            date: new Date().toISOString().split('T')[0],
+                            description: `Opening balance for ${name}`,
+                            debitAccount,
+                            debitAmount: amount,
+                            creditAccount,
+                            creditAmount: amount,
+                            narration: 'Opening balance',
+                            createdAt: new Date().toISOString()
+                        };
+                        
+                        this.transactions.push(transaction);
+                    }
+                    
+                    this.showNotification('Account added successfully', 'success');
                 }
                 
                 // Save data and update UI
@@ -2064,11 +2936,13 @@
                 this.renderTransactions();
                 this.updateDashboard();
                 
+                // Add to recent activity
+                this.addRecentActivity(`${editingAccountId ? 'Updated' : 'Added'} account: ${name}`, 'account');
+                
                 // Close modal and reset form
                 document.getElementById('account-modal').style.display = 'none';
                 document.getElementById('account-form').reset();
-                
-                this.showNotification('Account added successfully', 'success');
+                delete document.getElementById('account-form').dataset.editingAccountId;
             },
             
             // Delete a transaction
@@ -2079,6 +2953,9 @@
                     this.renderTransactions();
                     this.updateDashboard();
                     this.showNotification('Transaction deleted successfully', 'success');
+                    
+                    // Add to recent activity
+                    this.addRecentActivity('Deleted a transaction', 'transaction');
                 }
             },
             
@@ -2095,10 +2972,14 @@
                 }
                 
                 if (confirm('Are you sure you want to delete this account?')) {
+                    const account = this.accounts.find(a => a.id === accountId);
                     this.accounts = this.accounts.filter(a => a.id !== accountId);
                     this.saveData();
                     this.renderAccounts();
                     this.showNotification('Account deleted successfully', 'success');
+                    
+                    // Add to recent activity
+                    this.addRecentActivity(`Deleted account: ${account.name}`, 'account');
                 }
             },
             
@@ -2122,6 +3003,9 @@
                 const netIncome = revenue - expenses;
                 document.getElementById('net-income').textContent = this.formatCurrency(netIncome);
                 
+                // Update financial health chart
+                this.updateFinancialHealthChart(totalAssets, totalLiabilities, equity, netIncome);
+                
                 // Update recent transactions
                 const recentTransactionsTable = document.getElementById('recent-transactions').querySelector('tbody');
                 
@@ -2133,7 +3017,7 @@
                 const recentTransactions = this.transactions.slice(-5).reverse();
                 
                 if (recentTransactions.length === 0) {
-                    recentTransactionsTable.innerHTML = '<tr class="empty-state-row"><td colspan="4" class="empty-state"><i class="fas fa-receipt"></i><p>No transactions yet</p></td></tr>';
+                    recentTransactionsTable.innerHTML = '<tr class="empty-state-row"><td colspan="5" class="empty-state"><i class="fas fa-receipt"></i><p>No transactions yet</p></td></tr>';
                     return;
                 }
                 
@@ -2144,11 +3028,95 @@
                     row.innerHTML = `
                         <td>${transaction.date}</td>
                         <td>${transaction.description}</td>
+                        <td>${this.getAccountName(transaction.debitAccount)}<br>${this.getAccountName(transaction.creditAccount)}</td>
                         <td class="debit">${this.formatCurrency(transaction.debitAmount)}</td>
                         <td class="credit">${this.formatCurrency(transaction.creditAmount)}</td>
                     `;
                     recentTransactionsTable.appendChild(row);
                 });
+                
+                // Update recent activity
+                this.updateRecentActivity();
+            },
+            
+            // Update financial health chart
+            updateFinancialHealthChart(assets, liabilities, equity, netIncome) {
+                const ctx = document.getElementById('financial-health-chart').getContext('2d');
+                
+                // Destroy existing chart if it exists
+                if (this.financialChart) {
+                    this.financialChart.destroy();
+                }
+                
+                // Create new chart
+                this.financialChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Assets', 'Liabilities', 'Equity'],
+                        datasets: [{
+                            data: [assets, liabilities, equity],
+                            backgroundColor: [
+                                '#3498db',
+                                '#e74c3c',
+                                '#2ecc71'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Financial Position'
+                            }
+                        }
+                    }
+                });
+            },
+            
+            // Update recent activity list
+            updateRecentActivity() {
+                const activityList = document.getElementById('recent-activity-list');
+                
+                // Get recent activities from localStorage or use default
+                let activities = JSON.parse(localStorage.getItem('openledger-activities')) || [];
+                
+                if (activities.length === 0) {
+                    activityList.innerHTML = '<li>No recent activity</li>';
+                    return;
+                }
+                
+                // Show last 5 activities
+                activities = activities.slice(-5).reverse();
+                activityList.innerHTML = '';
+                
+                activities.forEach(activity => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="activity-date">${new Date(activity.date).toLocaleString()}</div>
+                        <div class="activity-content">${activity.message}</div>
+                    `;
+                    activityList.appendChild(li);
+                });
+            },
+            
+            // Add recent activity
+            addRecentActivity(message, type) {
+                let activities = JSON.parse(localStorage.getItem('openledger-activities')) || [];
+                
+                activities.push({
+                    date: new Date().toISOString(),
+                    message,
+                    type
+                });
+                
+                localStorage.setItem('openledger-activities', JSON.stringify(activities));
+                this.updateRecentActivity();
             },
             
             // Export all data as JSON
@@ -2174,6 +3142,59 @@
                 document.body.removeChild(link);
                 
                 this.showNotification('Data exported successfully', 'success');
+            },
+            
+            // Create a backup
+            createBackup() {
+                this.exportData(); // For now, same as export
+                this.showNotification('Backup created successfully', 'success');
+            },
+            
+            // Restore from backup
+            restoreBackup(file) {
+                if (!file) return;
+                
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        if (confirm('Restoring from backup will overwrite your current data. Continue?')) {
+                            if (data.settings) this.settings = data.settings;
+                            if (data.accounts) this.accounts = data.accounts;
+                            if (data.transactions) this.transactions = data.transactions;
+                            
+                            this.saveData();
+                            this.renderAccounts();
+                            this.renderTransactions();
+                            this.updateDashboard();
+                            
+                            // Update UI with settings
+                            document.getElementById('accounting-mode').value = this.settings.accountingMode;
+                            document.getElementById('accounting-basis').value = this.settings.accountingBasis;
+                            document.getElementById('company-name-input').value = this.settings.companyName;
+                            document.getElementById('base-currency').value = this.settings.baseCurrency;
+                            document.getElementById('financial-year').value = this.settings.financialYear;
+                            document.getElementById('auto-logout').value = this.settings.autoLogout;
+                            document.getElementById('company-name').textContent = this.settings.companyName;
+                            
+                            this.showNotification('Backup restored successfully', 'success');
+                            
+                            // Add to recent activity
+                            this.addRecentActivity('Restored from backup', 'system');
+                        }
+                    } catch (error) {
+                        console.error('Error restoring backup:', error);
+                        this.showNotification('Error restoring backup: Invalid file format', 'error');
+                    }
+                };
+                
+                reader.onerror = () => {
+                    this.showNotification('Error reading file', 'error');
+                };
+                
+                reader.readAsText(file);
             },
             
             // Import data from JSON file
@@ -2206,6 +3227,9 @@
                             document.getElementById('company-name').textContent = this.settings.companyName;
                             
                             this.showNotification('Data imported successfully', 'success');
+                            
+                            // Add to recent activity
+                            this.addRecentActivity('Imported data', 'system');
                         }
                     } catch (error) {
                         console.error('Error importing data:', error);
@@ -2230,7 +3254,8 @@
                         companyName: 'Company Name',
                         baseCurrency: 'USD',
                         financialYear: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-                        autoLogout: 30
+                        autoLogout: 30,
+                        password: null
                     };
                     this.accounts = [];
                     this.transactions = [];
@@ -2239,6 +3264,9 @@
                     this.renderTransactions();
                     this.updateDashboard();
                     this.showNotification('All data has been cleared', 'success');
+                    
+                    // Add to recent activity
+                    this.addRecentActivity('Cleared all data', 'system');
                 }
             },
             
@@ -2247,18 +3275,18 @@
                 if (confirm('Load sample data? This will add sample accounts and transactions.')) {
                     // Sample accounts
                     const sampleAccounts = [
-                        { id: 'acc-1', code: '1010', name: 'Cash', type: 'Asset', subtype: 'Current Asset', openingBalance: 5000 },
-                        { id: 'acc-2', code: '1020', name: 'Accounts Receivable', type: 'Asset', subtype: 'Current Asset', openingBalance: 2500 },
-                        { id: 'acc-3', code: '1030', name: 'Inventory', type: 'Asset', subtype: 'Current Asset', openingBalance: 7000 },
-                        { id: 'acc-4', code: '1040', name: 'Equipment', type: 'Asset', subtype: 'Fixed Asset', openingBalance: 15000 },
-                        { id: 'acc-5', code: '2010', name: 'Accounts Payable', type: 'Liability', subtype: 'Current Liability', openingBalance: 3000 },
-                        { id: 'acc-6', code: '2020', name: 'Loans Payable', type: 'Liability', subtype: 'Long-term Liability', openingBalance: 10000 },
-                        { id: 'acc-7', code: '3010', name: 'Common Stock', type: 'Equity', subtype: '', openingBalance: 15000 },
-                        { id: 'acc-8', code: '3020', name: 'Retained Earnings', type: 'Equity', subtype: '', openingBalance: 4500 },
-                        { id: 'acc-9', code: '4010', name: 'Sales Revenue', type: 'Revenue', subtype: 'Operating Revenue', openingBalance: 0 },
-                        { id: 'acc-10', code: '5010', name: 'Cost of Goods Sold', type: 'Expense', subtype: 'Operating Expense', openingBalance: 0 },
-                        { id: 'acc-11', code: '5020', name: 'Rent Expense', type: 'Expense', subtype: 'Operating Expense', openingBalance: 0 },
-                        { id: 'acc-12', code: '5030', name: 'Salaries Expense', type: 'Expense', subtype: 'Operating Expense', openingBalance: 0 }
+                        { id: 'acc-1', code: '1010', name: 'Cash', type: 'Asset', subtype: 'Current Asset', openingBalance: 5000, parent: null },
+                        { id: 'acc-2', code: '1020', name: 'Accounts Receivable', type: 'Asset', subtype: 'Current Asset', openingBalance: 2500, parent: null },
+                        { id: 'acc-3', code: '1030', name: 'Inventory', type: 'Asset', subtype: 'Current Asset', openingBalance: 7000, parent: null },
+                        { id: 'acc-4', code: '1040', name: 'Equipment', type: 'Asset', subtype: 'Fixed Asset', openingBalance: 15000, parent: null },
+                        { id: 'acc-5', code: '2010', name: 'Accounts Payable', type: 'Liability', subtype: 'Current Liability', openingBalance: 3000, parent: null },
+                        { id: 'acc-6', code: '2020', name: 'Loans Payable', type: 'Liability', subtype: 'Long-term Liability', openingBalance: 10000, parent: null },
+                        { id: 'acc-7', code: '3010', name: 'Common Stock', type: 'Equity', subtype: '', openingBalance: 15000, parent: null },
+                        { id: 'acc-8', code: '3020', name: 'Retained Earnings', type: 'Equity', subtype: '', openingBalance: 4500, parent: null },
+                        { id: 'acc-9', code: '4010', name: 'Sales Revenue', type: 'Revenue', subtype: 'Operating Revenue', openingBalance: 0, parent: null },
+                        { id: 'acc-10', code: '5010', name: 'Cost of Goods Sold', type: 'Expense', subtype: 'Operating Expense', openingBalance: 0, parent: null },
+                        { id: 'acc-11', code: '5020', name: 'Rent Expense', type: 'Expense', subtype: 'Operating Expense', openingBalance: 0, parent: null },
+                        { id: 'acc-12', code: '5030', name: 'Salaries Expense', type: 'Expense', subtype: 'Operating Expense', openingBalance: 0, parent: null }
                     ];
                     
                     // Sample transactions
@@ -2267,6 +3295,7 @@
                             id: 'tx-1',
                             date: new Date(new Date().setDate(new Date().getDate() - 10)).toISOString().split('T')[0],
                             description: 'Sold goods to customer',
+                            reference: 'INV-1001',
                             debitAccount: 'acc-1',
                             debitAmount: 1200,
                             creditAccount: 'acc-9',
@@ -2278,6 +3307,7 @@
                             id: 'tx-2',
                             date: new Date(new Date().setDate(new Date().getDate() - 8)).toISOString().split('T')[0],
                             description: 'Purchased inventory',
+                            reference: 'PO-2001',
                             debitAccount: 'acc-3',
                             debitAmount: 800,
                             creditAccount: 'acc-5',
@@ -2289,6 +3319,7 @@
                             id: 'tx-3',
                             date: new Date(new Date().setDate(new Date().getDate() - 5)).toISOString().split('T')[0],
                             description: 'Paid rent',
+                            reference: 'CHK-1001',
                             debitAccount: 'acc-11',
                             debitAmount: 1000,
                             creditAccount: 'acc-1',
@@ -2300,6 +3331,7 @@
                             id: 'tx-4',
                             date: new Date(new Date().setDate(new Date().getDate() - 3)).toISOString().split('T')[0],
                             description: 'Paid salaries',
+                            reference: 'CHK-1002',
                             debitAccount: 'acc-12',
                             debitAmount: 2500,
                             creditAccount: 'acc-1',
@@ -2316,6 +3348,9 @@
                     this.renderTransactions();
                     this.updateDashboard();
                     this.showNotification('Sample data loaded successfully', 'success');
+                    
+                    // Add to recent activity
+                    this.addRecentActivity('Loaded sample data', 'system');
                 }
             },
             
@@ -2333,6 +3368,9 @@
                         break;
                     case 'warning':
                         icon = '<i class="fas fa-exclamation-triangle"></i>';
+                        break;
+                    case 'info':
+                        icon = '<i class="fas fa-info-circle"></i>';
                         break;
                 }
                 
@@ -2354,6 +3392,7 @@
             
             // Get account name by ID
             getAccountName(accountId) {
+                if (!accountId) return 'N/A';
                 const account = this.accounts.find(a => a.id === accountId);
                 return account ? `${account.code} - ${account.name}` : 'Unknown Account';
             },
@@ -2631,13 +3670,62 @@
                 `;
             },
             
+            // Generate general ledger summary
+            generateGeneralLedgerSummary(asOfDate, style) {
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th>Type</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                                <th>Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                this.accounts.forEach(account => {
+                    const balance = this.getAccountBalance(account.id);
+                    if (balance !== 0) {
+                        const balanceClass = balance >= 0 ? 'debit' : 'credit';
+                        html += `
+                            <tr>
+                                <td>${account.code} - ${account.name}</td>
+                                <td>${account.type}</td>
+                                <td>${balance >= 0 ? this.formatCurrency(balance) : ''}</td>
+                                <td>${balance < 0 ? this.formatCurrency(Math.abs(balance)) : ''}</td>
+                                <td class="${balanceClass}">${this.formatCurrency(Math.abs(balance))}</td>
+                            </tr>
+                        `;
+                    }
+                });
+                
+                html += `</tbody></table>`;
+                return html;
+            },
+            
+            // Generate account detail report
+            generateAccountDetailReport(asOfDate, style) {
+                return `
+                    <div class="empty-state">
+                        <i class="fas fa-file-alt"></i>
+                        <p>Account Detail Report implementation would go here.</p>
+                        <p>This would show detailed transactions for a selected account.</p>
+                    </div>
+                `;
+            },
+            
             // Get report title based on type and style
             getReportTitle(type, style) {
                 const titles = {
                     'income-statement': 'Income Statement',
                     'balance-sheet': 'Balance Sheet',
                     'cash-flow': 'Cash Flow Statement',
-                    'changes-equity': 'Statement of Changes in Equity'
+                    'changes-equity': 'Statement of Changes in Equity',
+                    'general-ledger': 'General Ledger Summary',
+                    'account-detail': 'Account Detail Report'
                 };
                 
                 const styles = {
