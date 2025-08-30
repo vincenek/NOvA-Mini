@@ -676,6 +676,7 @@
             cursor: pointer;
             margin-top: 10px;
             transition: all 0.3s ease;
+            display: inline-block;
         }
         
         .learn-more:hover {
@@ -757,6 +758,32 @@
         
         .progress-step.completed {
             background: var(--secondary);
+        }
+        
+        /* Scan details */
+        .scan-details {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .scan-details summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--cyber-blue);
+        }
+        
+        .scan-details pre {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
         }
         
         /* Desktop Styles */
@@ -949,6 +976,12 @@
                         Security analysis will appear here after scan completes.
                     </div>
                 </div>
+
+                <!-- Scan Details -->
+                <details class="scan-details">
+                    <summary>View Technical Details</summary>
+                    <pre id="technical-details">No scan data available yet.</pre>
+                </details>
             </div>
             
             <div class="card">
@@ -1050,6 +1083,7 @@
                     'https://corsproxy.io/?',
                     'https://cors-anywhere.herokuapp.com/'
                 ];
+                this.technicalDetails = {};
             }
             
             // Update progress steps
@@ -1071,10 +1105,36 @@
             
             // Try multiple CORS proxies until one works
             async fetchWithCorsProxies(url, options = {}) {
+                const useProxy = document.getElementById('proxy-toggle').checked;
+                if (!useProxy) {
+                    // Try direct access first
+                    try {
+                        const response = await fetch(url, {
+                            ...options,
+                            mode: 'cors',
+                            headers: {
+                                'Accept': 'text/html,application/xhtml+xml,application/xml',
+                                ...options.headers
+                            }
+                        });
+                        if (response.ok) return response;
+                        throw new Error(`Direct access failed: ${response.status}`);
+                    } catch (error) {
+                        console.log('Direct access failed, trying proxies...');
+                    }
+                }
+                
+                // Try each proxy
                 for (const proxy of this.corsProxies) {
                     try {
                         const proxyUrl = proxy + encodeURIComponent(url);
-                        const response = await fetch(proxyUrl, options);
+                        const response = await fetch(proxyUrl, {
+                            ...options,
+                            headers: {
+                                'Accept': 'text/html,application/xhtml+xml,application/xml',
+                                ...options.headers
+                            }
+                        });
                         if (response.ok) return response;
                     } catch (e) {
                         console.log(`Proxy ${proxy} failed, trying next...`);
@@ -1094,6 +1154,12 @@
                     jsFrameworks: [],
                     obfuscationLevel: 0
                 };
+                this.technicalDetails = {
+                    url: url,
+                    timestamp: new Date().toISOString(),
+                    headers: {},
+                    findings: []
+                };
                 
                 // Update status
                 this.updateProgress(1);
@@ -1105,42 +1171,22 @@
                     document.getElementById('status-message').innerHTML = '<i class="fas fa-sync fa-spin"></i> Checking URL accessibility...';
                     
                     // Use a proxy to bypass CORS limitations
-                    const useProxy = document.getElementById('proxy-toggle').checked;
-                    let response;
-                    
-                    if (useProxy) {
-                        response = await this.fetchWithCorsProxies(url, {
-                            method: 'GET',
-                            headers: {
-                                'Accept': 'text/html,application/xhtml+xml,application/xml',
-                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                            }
-                        });
-                    } else {
-                        // Try direct access first
-                        try {
-                            response = await fetch(url, {
-                                method: 'GET',
-                                mode: 'cors',
-                                headers: {
-                                    'Accept': 'text/html,application/xhtml+xml,application/xml'
-                                }
-                            });
-                            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-                        } catch (e) {
-                            // Fall back to proxy if direct access fails
-                            response = await this.fetchWithCorsProxies(url, {
-                                method: 'GET',
-                                headers: {
-                                    'Accept': 'text/html,application/xhtml+xml,application/xml'
-                                }
-                            });
+                    const response = await this.fetchWithCorsProxies(url, {
+                        method: 'GET',
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
                         }
-                    }
+                    });
                     
                     if (!response.ok) {
                         throw new Error(`Failed to access URL: ${response.status} ${response.statusText}`);
                     }
+                    
+                    // Store headers for technical details
+                    this.technicalDetails.headers = {};
+                    response.headers.forEach((value, key) => {
+                        this.technicalDetails.headers[key] = value;
+                    });
                     
                     // Step 2: Analyze headers
                     this.updateProgress(3);
@@ -1157,7 +1203,7 @@
                     this.analyzeSecurityProtocols(url);
                     
                     // Step 5: Check for additional vulnerabilities
-                    this.checkAdditionalVulnerabilities(url);
+                    await this.checkAdditionalVulnerabilities(url);
                     
                     // Step 6: Generate threat analysis
                     this.generateThreatAnalysis();
@@ -1173,7 +1219,8 @@
                     score: this.securityScore,
                     vulnerabilities: this.vulnerabilities,
                     threatAnalysis: this.threatAnalysis,
-                    advancedMetrics: this.advancedMetrics
+                    advancedMetrics: this.advancedMetrics,
+                    technicalDetails: this.technicalDetails
                 };
             }
             
@@ -1215,6 +1262,12 @@
                             recommendation: `Add the ${header.toUpperCase()} header with appropriate security values.`,
                             points: points
                         });
+
+                        this.technicalDetails.findings.push({
+                            type: 'missing_header',
+                            header: header,
+                            severity: severity
+                        });
                     } else {
                         // Analyze header values
                         const value = headers.get(header);
@@ -1249,6 +1302,11 @@
                             recommendation: 'Remove unsafe-inline from CSP and use nonces or hashes instead.',
                             points: 8
                         });
+
+                        this.technicalDetails.findings.push({
+                            type: 'csp_unsafe_inline',
+                            severity: 'medium'
+                        });
                     }
                     
                     if (hasUnsafeEval) {
@@ -1259,6 +1317,11 @@
                             description: 'The Content Security Policy contains unsafe-eval, which allows execution of dynamic code.',
                             recommendation: 'Remove unsafe-eval from CSP to prevent code injection attacks.',
                             points: 8
+                        });
+
+                        this.technicalDetails.findings.push({
+                            type: 'csp_unsafe_eval',
+                            severity: 'medium'
                         });
                     }
                 }
@@ -1274,6 +1337,11 @@
                             recommendation: 'Set HSTS with max-age of at least 31536000 (1 year) and includeSubDomains.',
                             points: 12
                         });
+
+                        this.technicalDetails.findings.push({
+                            type: 'hsts_misconfiguration',
+                            severity: 'high'
+                        });
                     }
                     
                     if (!value.includes('includeSubDomains')) {
@@ -1284,6 +1352,11 @@
                             description: 'HSTS header does not include subdomains, leaving them unprotected.',
                             recommendation: 'Add includeSubDomains to HSTS header for comprehensive protection.',
                             points: 7
+                        });
+
+                        this.technicalDetails.findings.push({
+                            type: 'hsts_no_includesubdomains',
+                            severity: 'medium'
                         });
                     }
                 }
@@ -1300,6 +1373,11 @@
                             recommendation: 'Set X-Frame-Options to either DENY or SAMEORIGIN.',
                             points: 8
                         });
+
+                        this.technicalDetails.findings.push({
+                            type: 'xframe_options_misconfiguration',
+                            severity: 'medium'
+                        });
                     }
                 }
             }
@@ -1308,6 +1386,9 @@
             analyzeContent(html, url) {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
+                
+                // Store HTML for technical details
+                this.technicalDetails.html = html.substring(0, 1000) + (html.length > 1000 ? '...' : '');
                 
                 // Check for insecure forms
                 const forms = doc.querySelectorAll('form');
@@ -1321,6 +1402,11 @@
                             recommendation: 'Change form action to HTTPS URL',
                             points: 15
                         });
+
+                        this.technicalDetails.findings.push({
+                            type: 'insecure_form',
+                            severity: 'high'
+                        });
                     }
                     
                     // Check for forms without CSRF tokens
@@ -1332,6 +1418,11 @@
                             description: 'Form does not contain CSRF protection token',
                             recommendation: 'Add CSRF token to all forms to prevent cross-site request forgery',
                             points: 15
+                        });
+
+                        this.technicalDetails.findings.push({
+                            type: 'missing_csrf',
+                            severity: 'high'
                         });
                     }
                 });
@@ -1356,6 +1447,12 @@
                         recommendation: 'Load all resources over HTTPS',
                         points: 10
                     });
+
+                    this.technicalDetails.findings.push({
+                        type: 'mixed_content',
+                        severity: 'medium',
+                        count: insecureResources.length
+                    });
                 }
                 
                 // Check for jQuery vulnerabilities
@@ -1378,6 +1475,12 @@
                                 recommendation: 'Upgrade to jQuery 3.6.0 or later',
                                 points: 8
                             });
+
+                            this.technicalDetails.findings.push({
+                                type: 'outdated_jquery',
+                                severity: 'medium',
+                                version: version
+                            });
                         }
                     }
                 });
@@ -1399,6 +1502,11 @@
                             recommendation: 'Sanitize all user input before inserting into DOM',
                             points: 12
                         });
+
+                        this.technicalDetails.findings.push({
+                            type: 'xss_vector',
+                            severity: 'high'
+                        });
                     }
                 });
                 
@@ -1414,6 +1522,11 @@
                             recommendation: 'Add autocomplete="off" to password fields',
                             points: 3
                         });
+
+                        this.technicalDetails.findings.push({
+                            type: 'password_autocomplete',
+                            severity: 'low'
+                        });
                     }
                     
                     if (!field.form || !field.form.action.startsWith('https://')) {
@@ -1424,6 +1537,11 @@
                             description: 'Password field may be transmitted insecurely',
                             recommendation: 'Ensure form is submitted over HTTPS',
                             points: 15
+                        });
+
+                        this.technicalDetails.findings.push({
+                            type: 'insecure_password',
+                            severity: 'high'
                         });
                     }
                 });
@@ -1440,6 +1558,12 @@
                             recommendation: 'Add integrity attribute to ensure resource integrity',
                             points: 7
                         });
+
+                        this.technicalDetails.findings.push({
+                            type: 'missing_sri',
+                            severity: 'medium',
+                            resource: 'script'
+                        });
                     }
                 });
                 
@@ -1453,6 +1577,12 @@
                             description: 'External stylesheet does not have integrity attribute',
                             recommendation: 'Add integrity attribute to ensure resource integrity',
                             points: 7
+                        });
+
+                        this.technicalDetails.findings.push({
+                            type: 'missing_sri',
+                            severity: 'medium',
+                            resource: 'stylesheet'
                         });
                     }
                 });
@@ -1473,6 +1603,11 @@
                         description: 'Shadow DOM usage detected which may hide vulnerabilities from traditional scanners',
                         recommendation: 'Perform manual security review of Shadow DOM components',
                         points: 5
+                    });
+
+                    this.technicalDetails.findings.push({
+                        type: 'shadow_dom',
+                        severity: 'low'
                     });
                 }
                 
@@ -1514,6 +1649,12 @@
                         description: 'Obfuscated code detected which may hide malicious functionality',
                         recommendation: 'Review obfuscated code manually for security issues',
                         points: 8
+                    });
+
+                    this.technicalDetails.findings.push({
+                        type: 'obfuscation',
+                        severity: 'medium',
+                        level: obfuscationLevel
                     });
                 }
             }
@@ -1563,6 +1704,12 @@
                             recommendation: `Upgrade to ${lib.name} ${lib.minVersion} or later`,
                             points: 10
                         });
+
+                        this.technicalDetails.findings.push({
+                            type: 'vulnerable_library',
+                            severity: 'medium',
+                            library: lib.name
+                        });
                     }
                 });
             }
@@ -1581,6 +1728,11 @@
                         description: 'Site is not using HTTPS, exposing all traffic to interception',
                         recommendation: 'Implement SSL/TLS certificate to encrypt all traffic',
                         points: 20
+                    });
+
+                    this.technicalDetails.findings.push({
+                        type: 'no_https',
+                        severity: 'critical'
                     });
                 } else {
                     // Try to get SSL certificate information (limited in browser)
@@ -1610,6 +1762,12 @@
                                     recommendation: 'Fix SSL certificate configuration issues',
                                     points: 15
                                 });
+
+                                this.technicalDetails.findings.push({
+                                    type: 'ssl_issues',
+                                    severity: 'high',
+                                    grade: data.grade
+                                });
                             }
                         }
                     }
@@ -1619,12 +1777,12 @@
             }
             
             // Check for additional vulnerabilities
-            checkAdditionalVulnerabilities(url) {
+            async checkAdditionalVulnerabilities(url) {
                 // Check for common misconfigurations
-                this.checkCommonMisconfigurations(url);
+                await this.checkCommonMisconfigurations(url);
                 
                 // Check for exposed sensitive files
-                this.checkSensitiveFiles(url);
+                await this.checkSensitiveFiles(url);
             }
             
             // Check for common misconfigurations
@@ -1641,6 +1799,11 @@
                             description: 'Directory listing is enabled, exposing file structure to attackers',
                             recommendation: 'Disable directory listing in server configuration',
                             points: 8
+                        });
+
+                        this.technicalDetails.findings.push({
+                            type: 'directory_listing',
+                            severity: 'medium'
                         });
                     }
                 } catch (error) {
@@ -1672,6 +1835,12 @@
                                 description: `Sensitive file ${file} is publicly accessible`,
                                 recommendation: `Restrict access to ${file} using server configuration`,
                                 points: file === '.env' || file.includes('config') ? 12 : 5
+                            });
+
+                            this.technicalDetails.findings.push({
+                                type: 'exposed_file',
+                                severity: file === '.env' || file.includes('config') ? 'high' : 'low',
+                                file: file
                             });
                         }
                     } catch (error) {
@@ -1740,6 +1909,7 @@ consider using professional security tools and services.`;
         const statusMessage = document.getElementById('status-message');
         const heatmapGrid = document.getElementById('heatmap-grid');
         const threatContent = document.getElementById('threat-content');
+        const technicalDetails = document.getElementById('technical-details');
         
         // Initialize scanner
         const scanner = new CyberForgeScanner();
@@ -1783,6 +1953,7 @@ consider using professional security tools and services.`;
             securityScoreBar.style.width = '0%';
             securityScoreValue.textContent = '0%';
             threatContent.innerHTML = '<div class="threat-loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+            technicalDetails.textContent = 'Scan in progress...';
             
             // Clear previous results
             criticalCount.textContent = '0';
@@ -1805,6 +1976,7 @@ consider using professional security tools and services.`;
                 statusMessage.className = 'status-message status-error';
                 statusMessage.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
                 threatContent.textContent = 'Security analysis failed: ' + error.message;
+                technicalDetails.textContent = 'Error: ' + error.message;
             } finally {
                 testBtn.classList.remove('running');
                 testBtn.innerHTML = '<i class="fas fa-bolt"></i> Run Security Analysis';
@@ -1888,6 +2060,9 @@ consider using professional security tools and services.`;
             
             // Update threat analysis
             threatContent.textContent = scanResults.threatAnalysis;
+            
+            // Update technical details
+            technicalDetails.textContent = JSON.stringify(scanResults.technicalDetails, null, 2);
         }
         
         // Initialize
