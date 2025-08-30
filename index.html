@@ -88,7 +88,7 @@
         .logo h1 {
             font-size: 22px;
             font-weight: 800;
-            background: linear-gradient(to right, var(--cyber-blue), var(--cyber-purple));
+            background: linear-gradient(to right, var(--cyber-blue), var(--cyber-purple);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -786,6 +786,105 @@
             overflow-y: auto;
         }
         
+        /* Network Map */
+        .network-map {
+            width: 100%;
+            height: 300px;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 12px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .node {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            z-index: 2;
+        }
+        
+        .node-center {
+            background: var(--cyber-blue);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px var(--cyber-blue);
+        }
+        
+        .node-risk {
+            background: var(--danger);
+            box-shadow: 0 0 15px var(--danger);
+        }
+        
+        .node-protection {
+            background: var(--secondary);
+            box-shadow: 0 0 15px var(--secondary);
+        }
+        
+        .connection {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.2);
+            transform-origin: 0 0;
+            z-index: 1;
+        }
+        
+        .connection-risk {
+            background: linear-gradient(to right, var(--danger), transparent);
+        }
+        
+        .connection-protection {
+            background: linear-gradient(to right, var(--secondary), transparent);
+        }
+        
+        /* Manual Toggle Section */
+        .manual-toggle-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .toggle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-item:hover {
+            background: rgba(15, 23, 42, 0.8);
+        }
+        
+        .toggle-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .toggle-item label {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        
         /* Desktop Styles */
         @media (min-width: 768px) {
             .input-group {
@@ -809,6 +908,10 @@
             }
             
             .innovation-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .toggle-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
@@ -878,6 +981,43 @@
                     <div class="progress-step" id="step-5">5</div>
                 </div>
             </div>
+        </section>
+        
+        <!-- Manual Toggle Section -->
+        <section class="manual-toggle-section">
+            <h2 class="section-title">Manual Security Configuration</h2>
+            <p>Alternatively, manually configure security settings to see potential risks</p>
+            
+            <div class="toggle-grid">
+                <div class="toggle-item">
+                    <input type="checkbox" id="https-toggle" checked>
+                    <label for="https-toggle">Uses HTTPS</label>
+                </div>
+                <div class="toggle-item">
+                    <input type="checkbox" id="secure-cookies-toggle" checked>
+                    <label for="secure-cookies-toggle">Secure Cookies</label>
+                </div>
+                <div class="toggle-item">
+                    <input type="checkbox" id="csp-toggle" checked>
+                    <label for="csp-toggle">Content Security Policy</label>
+                </div>
+                <div class="toggle-item">
+                    <input type="checkbox" id="hsts-toggle" checked>
+                    <label for="hsts-toggle">HTTP Strict Transport Security</label>
+                </div>
+                <div class="toggle-item">
+                    <input type="checkbox" id="xfo-toggle" checked>
+                    <label for="xfo-toggle">X-Frame-Options</label>
+                </div>
+                <div class="toggle-item">
+                    <input type="checkbox" id="referrer-toggle" checked>
+                    <label for="referrer-toggle">Referrer Policy</label>
+                </div>
+            </div>
+            
+            <button class="test-btn" id="manual-test-btn" style="margin-top: 20px;">
+                <i class="fas fa-cog"></i> Generate Manual Report
+            </button>
         </section>
         
         <!-- Proprietary Technology -->
@@ -950,6 +1090,11 @@
                         <div class="result-value result-low" id="low-count">0</div>
                         <div class="result-label">Low Severity</div>
                     </div>
+                </div>
+                
+                <!-- Network Map Visualization -->
+                <div class="network-map" id="network-map">
+                    <!-- Nodes and connections will be generated by JavaScript -->
                 </div>
                 
                 <div class="vulnerability-list" id="vulnerability-list">
@@ -1084,6 +1229,7 @@
                     'https://cors-anywhere.herokuapp.com/'
                 ];
                 this.technicalDetails = {};
+                this.manualMode = false;
             }
             
             // Update progress steps
@@ -1214,6 +1360,134 @@
                 } catch (error) {
                     throw new Error(`Scan failed: ${error.message}`);
                 }
+                
+                return {
+                    score: this.securityScore,
+                    vulnerabilities: this.vulnerabilities,
+                    threatAnalysis: this.threatAnalysis,
+                    advancedMetrics: this.advancedMetrics,
+                    technicalDetails: this.technicalDetails
+                };
+            }
+            
+            // Generate manual report based on toggle settings
+            generateManualReport() {
+                this.vulnerabilities = [];
+                this.securityScore = 100;
+                this.threatAnalysis = "";
+                this.advancedMetrics = {
+                    shadowDom: false,
+                    webComponents: false,
+                    jsFrameworks: [],
+                    obfuscationLevel: 0
+                };
+                this.technicalDetails = {
+                    manual: true,
+                    timestamp: new Date().toISOString(),
+                    findings: []
+                };
+                
+                this.manualMode = true;
+                
+                // Check each toggle and generate vulnerabilities accordingly
+                if (!document.getElementById('https-toggle').checked) {
+                    this.addVulnerability({
+                        type: 'protocol',
+                        name: 'No HTTPS Encryption',
+                        severity: 'critical',
+                        description: 'Site is not using HTTPS, exposing all traffic to interception',
+                        recommendation: 'Implement SSL/TLS certificate to encrypt all traffic',
+                        points: 20
+                    });
+                    
+                    this.technicalDetails.findings.push({
+                        type: 'no_https',
+                        severity: 'critical'
+                    });
+                }
+                
+                if (!document.getElementById('secure-cookies-toggle').checked) {
+                    this.addVulnerability({
+                        type: 'cookie',
+                        name: 'Insecure Cookies',
+                        severity: 'medium',
+                        description: 'Cookies are not properly secured with HttpOnly and Secure flags',
+                        recommendation: 'Set HttpOnly and Secure flags on all sensitive cookies',
+                        points: 10
+                    });
+                    
+                    this.technicalDetails.findings.push({
+                        type: 'insecure_cookies',
+                        severity: 'medium'
+                    });
+                }
+                
+                if (!document.getElementById('csp-toggle').checked) {
+                    this.addVulnerability({
+                        type: 'header',
+                        name: 'Missing Content Security Policy Header',
+                        severity: 'high',
+                        description: 'Content Security Policy header is missing, which could expose your site to XSS attacks',
+                        recommendation: 'Add Content Security Policy header with appropriate security values',
+                        points: 15
+                    });
+                    
+                    this.technicalDetails.findings.push({
+                        type: 'missing_csp',
+                        severity: 'high'
+                    });
+                }
+                
+                if (!document.getElementById('hsts-toggle').checked) {
+                    this.addVulnerability({
+                        type: 'header',
+                        name: 'Missing HSTS Header',
+                        severity: 'high',
+                        description: 'HTTP Strict Transport Security header is missing, which could expose your site to SSL stripping attacks',
+                        recommendation: 'Add HSTS header with appropriate security values',
+                        points: 15
+                    });
+                    
+                    this.technicalDetails.findings.push({
+                        type: 'missing_hsts',
+                        severity: 'high'
+                    });
+                }
+                
+                if (!document.getElementById('xfo-toggle').checked) {
+                    this.addVulnerability({
+                        type: 'header',
+                        name: 'Missing X-Frame-Options Header',
+                        severity: 'medium',
+                        description: 'X-Frame-Options header is missing, which could expose your site to clickjacking attacks',
+                        recommendation: 'Add X-Frame-Options header with appropriate security values',
+                        points: 10
+                    });
+                    
+                    this.technicalDetails.findings.push({
+                        type: 'missing_xfo',
+                        severity: 'medium'
+                    });
+                }
+                
+                if (!document.getElementById('referrer-toggle').checked) {
+                    this.addVulnerability({
+                        type: 'header',
+                        name: 'Missing Referrer Policy Header',
+                        severity: 'low',
+                        description: 'Referrer Policy header is missing, which could expose sensitive information in referrer headers',
+                        recommendation: 'Add Referrer Policy header with appropriate security values',
+                        points: 5
+                    });
+                    
+                    this.technicalDetails.findings.push({
+                        type: 'missing_referrer',
+                        severity: 'low'
+                    });
+                }
+                
+                // Generate threat analysis
+                this.generateThreatAnalysis();
                 
                 return {
                     score: this.securityScore,
@@ -1879,7 +2153,7 @@ RECOMMENDATIONS:
 5. ${this.vulnerabilities.some(v => v.name.includes('jQuery')) ? 'Update jQuery to the latest version' : 'Keep all dependencies updated'}
 
 NOTE:
-This analysis is based on client-side checks only. For comprehensive security testing, 
+This analysis is based on ${this.manualMode ? 'manual configuration' : 'client-side checks'} only. For comprehensive security testing, 
 consider using professional security tools and services.`;
             }
             
@@ -1887,6 +2161,78 @@ consider using professional security tools and services.`;
             addVulnerability(vuln) {
                 this.vulnerabilities.push(vuln);
                 this.securityScore = Math.max(0, this.securityScore - vuln.points);
+            }
+            
+            // Create network map visualization
+            createNetworkMap() {
+                const networkMap = document.getElementById('network-map');
+                networkMap.innerHTML = '';
+                
+                // Create center node (website)
+                const centerNode = document.createElement('div');
+                centerNode.className = 'node node-center';
+                centerNode.innerHTML = '<i class="fas fa-globe"></i>';
+                centerNode.style.left = '50%';
+                centerNode.style.top = '50%';
+                networkMap.appendChild(centerNode);
+                
+                // Create risk nodes
+                const risks = this.vulnerabilities.filter(v => v.severity === 'critical' || v.severity === 'high');
+                const protections = this.vulnerabilities.filter(v => v.severity === 'low' || v.severity === 'medium');
+                
+                // Position risk nodes around the center
+                risks.forEach((risk, index) => {
+                    const angle = (index / risks.length) * Math.PI * 2;
+                    const radius = 120;
+                    const x = 50 + radius * Math.cos(angle);
+                    const y = 50 + radius * Math.sin(angle);
+                    
+                    const node = document.createElement('div');
+                    node.className = 'node node-risk';
+                    node.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                    node.style.left = `${x}px`;
+                    node.style.top = `${y}px`;
+                    node.title = risk.name;
+                    networkMap.appendChild(node);
+                    
+                    // Create connection line
+                    const connection = document.createElement('div');
+                    connection.className = 'connection connection-risk';
+                    const length = Math.sqrt(Math.pow(x - 50, 2) + Math.pow(y - 50, 2));
+                    const angleDeg = Math.atan2(y - 50, x - 50) * 180 / Math.PI;
+                    connection.style.width = `${length}px`;
+                    connection.style.left = '50%';
+                    connection.style.top = '50%';
+                    connection.style.transform = `rotate(${angleDeg}deg)`;
+                    networkMap.appendChild(connection);
+                });
+                
+                // Position protection nodes around the center (further out)
+                protections.forEach((protection, index) => {
+                    const angle = (index / protections.length) * Math.PI * 2;
+                    const radius = 180;
+                    const x = 50 + radius * Math.cos(angle);
+                    const y = 50 + radius * Math.sin(angle);
+                    
+                    const node = document.createElement('div');
+                    node.className = 'node node-protection';
+                    node.innerHTML = '<i class="fas fa-shield-alt"></i>';
+                    node.style.left = `${x}px`;
+                    node.style.top = `${y}px`;
+                    node.title = protection.name;
+                    networkMap.appendChild(node);
+                    
+                    // Create connection line
+                    const connection = document.createElement('div');
+                    connection.className = 'connection connection-protection';
+                    const length = Math.sqrt(Math.pow(x - 50, 2) + Math.pow(y - 50, 2));
+                    const angleDeg = Math.atan2(y - 50, x - 50) * 180 / Math.PI;
+                    connection.style.width = `${length}px`;
+                    connection.style.left = '50%';
+                    connection.style.top = '50%';
+                    connection.style.transform = `rotate(${angleDeg}deg)`;
+                    networkMap.appendChild(connection);
+                });
             }
             
             // Utility function for delays
@@ -1897,6 +2243,7 @@ consider using professional security tools and services.`;
         
         // DOM elements
         const testBtn = document.getElementById('test-btn');
+        const manualTestBtn = document.getElementById('manual-test-btn');
         const appUrlInput = document.getElementById('app-url');
         const securityScoreBar = document.getElementById('security-score-bar');
         const securityScoreValue = document.getElementById('security-score-value');
@@ -1983,6 +2330,48 @@ consider using professional security tools and services.`;
             }
         }
         
+        // Run manual security assessment
+        function runManualAssessment() {
+            // Reset UI
+            statusMessage.className = 'status-message status-info';
+            statusMessage.innerHTML = '<i class="fas fa-sync fa-spin"></i> Generating manual security assessment...';
+            reportStatus.textContent = 'Analyzing...';
+            manualTestBtn.classList.add('running');
+            manualTestBtn.innerHTML = '<i class="fas fa-sync fa-spin"></i> Analyzing...';
+            vulnerabilityList.innerHTML = '';
+            securityScoreBar.style.width = '0%';
+            securityScoreValue.textContent = '0%';
+            threatContent.innerHTML = '<div class="threat-loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+            technicalDetails.textContent = 'Analysis in progress...';
+            
+            // Clear previous results
+            criticalCount.textContent = '0';
+            highCount.textContent = '0';
+            mediumCount.textContent = '0';
+            lowCount.textContent = '0';
+            
+            // Initialize heatmap
+            initHeatmap();
+            
+            try {
+                // Generate manual report
+                const scanResults = scanner.generateManualReport();
+                
+                // Update UI with results
+                updateResults(scanResults);
+                
+            } catch (error) {
+                console.error('Manual assessment error:', error);
+                statusMessage.className = 'status-message status-error';
+                statusMessage.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
+                threatContent.textContent = 'Manual assessment failed: ' + error.message;
+                technicalDetails.textContent = 'Error: ' + error.message;
+            } finally {
+                manualTestBtn.classList.remove('running');
+                manualTestBtn.innerHTML = '<i class="fas fa-cog"></i> Generate Manual Report';
+            }
+        }
+        
         // Update UI with scan results
         function updateResults(scanResults) {
             // Update status
@@ -2063,6 +2452,9 @@ consider using professional security tools and services.`;
             
             // Update technical details
             technicalDetails.textContent = JSON.stringify(scanResults.technicalDetails, null, 2);
+            
+            // Create network map visualization
+            scanner.createNetworkMap();
         }
         
         // Initialize
@@ -2072,6 +2464,9 @@ consider using professional security tools and services.`;
             
             // Add event listener to test button
             testBtn.addEventListener('click', runSecurityScan);
+            
+            // Add event listener to manual test button
+            manualTestBtn.addEventListener('click', runManualAssessment);
             
             // Add example URLs for quick testing
             appUrlInput.addEventListener('focus', function() {
