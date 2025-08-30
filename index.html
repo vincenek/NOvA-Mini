@@ -3,1972 +3,1433 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SoulBoard Pro | Mental Wellness Journal & Map</title>
-    
-    <!-- Manifest -->
-    <link rel="manifest" href="manifest.json">
-
-    <!-- iOS Support -->
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <meta name="apple-mobile-web-app-status-bar" content="#2563eb">
-
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#2563eb">
-    
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    
-    <!-- D3.js for network graph visualization -->
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    
-    <!-- Font Awesome for icons -->
+    <title>CyberForge | Educational Security Scanner</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
         :root {
-            --primary: #2A9D8F;
-            --secondary: #E9C46A;
-            --background: #F4F9F7;
-            --text: #264653;
-            --border: #C4D8D2;
-            --accent: #83C5BE;
-            --error: #E76F51;
-            --auth-bg: rgba(255, 255, 255, 0.95);
-            --nav-bg: rgba(255, 255, 255, 0.9);
-            --timeline-bg: rgba(244, 249, 247, 0.8);
-            --node-reflection: #FFADAD;
-            --node-goal: #9BF6FF;
-            --node-affirmation: #CAFFBF;
-            --node-habit: #BDB2FF;
-            --node-default: #FFD6A5;
-            --node-emotion: #FFC6FF;
-            --node-connection: #A0C4FF;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --cyber-blue: #0ea5e9;
+            --cyber-purple: #8b5cf6;
+            --cyber-green: #22c55e;
+            --card-bg: rgba(30, 41, 59, 0.95);
+            --header-height: 70px;
+            --glow: 0 0 15px rgba(14, 165, 233, 0.5);
+            --ai-gradient: linear-gradient(135deg, #4a00e0, #8e2de2);
         }
-
+        
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', system-ui, sans-serif;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        
         body {
-            background: linear-gradient(160deg, #F4F9F7 0%, #E9F5F1 100%);
-            color: var(--text);
-            line-height: 1.6;
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 1rem;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: var(--light);
             min-height: 100vh;
-            transition: background 0.3s ease;
+            padding: 0;
+            overflow-x: hidden;
+            line-height: 1.6;
         }
-
-        .app-container {
+        
+        .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 0 20px;
         }
-
-        .header {
-            text-align: center;
-            margin-bottom: 1rem;
-            animation: fadeIn 0.8s ease-out;
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: var(--header-height);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
+        
         .logo {
-            font-size: 3.2rem;
-            margin-bottom: 0.5rem;
-            color: var(--primary);
-            animation: pulse 2s infinite;
-        }
-
-        .tagline {
-            color: #5C8374;
-            font-size: 1.1rem;
-            font-weight: 500;
-            letter-spacing: -0.02em;
-        }
-
-        /* Navigation */
-        .nav-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-            background: var(--nav-bg);
-            border-radius: 1rem;
-            padding: 0.5rem;
-            box-shadow: 0 4px 12px rgba(42, 157, 143, 0.08);
-        }
-
-        .nav-btn {
-            padding: 0.8rem 1.5rem;
-            border: none;
-            border-radius: 0.6rem;
-            background: transparent;
-            color: var(--text);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 12px;
         }
-
-        .nav-btn.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Views */
-        .view {
-            display: none;
-        }
-
-        .view.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .journal-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 1rem;
-            box-shadow: 0 8px 32px rgba(42, 157, 143, 0.08);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            backdrop-filter: blur(4px);
-            transition: all 0.3s ease;
-        }
-
-        .editor textarea {
-            width: 100%;
-            padding: 1.2rem;
-            border: 2px solid var(--border);
-            border-radius: 0.8rem;
-            min-height: 140px;
-            margin-bottom: 1.5rem;
-            font-size: 1rem;
-            resize: vertical;
-            transition: all 0.2s ease;
-            background: rgba(244, 249, 247, 0.8);
-        }
-
-        .editor textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
-        }
-
-        .mood-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 0.8rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .mood-btn {
-            padding: 0.6rem;
-            border: 2px solid var(--border);
-            border-radius: 0.6rem;
-            background: rgba(244, 249, 247, 0.8);
-            cursor: pointer;
-            transition: all 0.2s ease;
+        
+        .logo-icon {
+            background: var(--cyber-blue);
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.4rem;
-        }
-
-        .mood-btn:hover {
-            background: rgba(42, 157, 143, 0.1);
-            border-color: var(--primary);
-        }
-
-        .mood-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            transform: scale(1.05);
-        }
-
-        .post-btn {
-            background: linear-gradient(135deg, var(--primary) 0%, #34A798 100%);
-            color: white;
-            border: none;
-            border-radius: 0.6rem;
-            padding: 1rem 2rem;
-            width: 100%;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(42, 157, 143, 0.2);
-        }
-
-        .post-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(42, 157, 143, 0.3);
-        }
-
-        .post-btn:active {
-            transform: translateY(0);
-        }
-
-        .search-container {
-            margin: 1.5rem 0;
-        }
-
-        .search-bar {
-            width: 100%;
-            padding: 0.8rem 1.2rem;
-            border: 2px solid var(--border);
-            border-radius: 0.6rem;
-            font-size: 1rem;
-            background: rgba(244, 249, 247, 0.8);
-            transition: all 0.2s ease;
-        }
-
-        .search-bar:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
-        }
-
-        .posts-feed {
-            margin-top: 1rem;
-        }
-
-        .post-card {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 1.5rem;
-            border-radius: 0.8rem;
-            margin-bottom: 1.2rem;
-            box-shadow: 0 2px 12px rgba(42, 157, 143, 0.05);
-            transition: all 0.3s ease;
-            position: relative;
-            border-left: 4px solid var(--primary);
-        }
-
-        .post-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(42, 157, 143, 0.1);
-        }
-
-        .post-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.8rem;
-        }
-
-        .post-date {
-            color: #5C8374;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .post-mood {
-            font-size: 1.4rem;
-        }
-
-        .post-content {
-            white-space: pre-wrap;
-            line-height: 1.5;
-            margin: 1rem 0;
-            color: #2D3E40;
-        }
-
-        .highlight {
-            background-color: rgba(233, 196, 106, 0.3);
-            padding: 0.1em 0.3em;
-            border-radius: 0.3em;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #83A69B;
-            font-style: italic;
-        }
-
-        /* SoulMap Styles */
-        .soulmap-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 1rem;
-            box-shadow: 0 8px 32px rgba(42, 157, 143, 0.08);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            backdrop-filter: blur(4px);
-            min-height: 600px;
-            position: relative;
-        }
-
-        .visualization-controls {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .viz-btn {
-            padding: 0.6rem 1.2rem;
-            border: 2px solid var(--border);
-            border-radius: 0.6rem;
-            background: rgba(244, 249, 247, 0.8);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .viz-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .timeline-view {
-            padding: 1rem;
-            background: var(--timeline-bg);
-            border-radius: 0.8rem;
-            max-height: 600px;
-            overflow-y: auto;
-        }
-
-        .timeline-item {
-            position: relative;
-            padding: 1rem 1rem 1rem 2rem;
-            border-left: 2px solid var(--primary);
-            margin-left: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .timeline-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .timeline-date {
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-            color: var(--primary);
-        }
-
-        .timeline-content {
-            background: white;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .timeline-mood {
-            position: absolute;
-            left: -1.2rem;
-            top: 1rem;
-            background: white;
-            border-radius: 50%;
-            width: 2rem;
-            height: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .network-graph {
-            width: 100%;
-            height: 600px;
-            border-radius: 0.8rem;
-            background: var(--timeline-bg);
-            overflow: hidden;
-            position: relative;
-        }
-
-        .graph-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .graph-control-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 5px 10px;
-            margin: 0 2px;
-            cursor: pointer;
-        }
-
-        .node {
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .node.reflection {
-            fill: var(--node-reflection);
-        }
-
-        .node.goal {
-            fill: var(--node-goal);
-        }
-
-        .node.affirmation {
-            fill: var(--node-affirmation);
-        }
-
-        .node.habit {
-            fill: var(--node-habit);
-        }
-
-        .node.default {
-            fill: var(--node-default);
-        }
-
-        .node.emotion {
-            fill: var(--node-emotion);
-        }
-
-        .node:hover {
-            stroke: var(--primary);
-            stroke-width: 2px;
-            transform: scale(1.05);
-        }
-
-        .node-label {
-            font-size: 10px;
-            pointer-events: none;
-            text-anchor: middle;
-            font-weight: 500;
-        }
-
-        .link {
-            stroke: var(--node-connection);
-            stroke-opacity: 0.6;
-        }
-
-        .graph-tooltip {
-            position: absolute;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            pointer-events: none;
-            font-size: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            max-width: 300px;
-            z-index: 100;
-        }
-
-        .cluster {
-            stroke: var(--primary);
-            stroke-width: 2px;
-            stroke-dasharray: 5,5;
-            fill: none;
-        }
-
-        .legend {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 10;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-
-        .legend-color {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            margin-right: 5px;
-        }
-
-        /* Auth container styles */
-        .auth-container {
-            background: var(--auth-bg);
-            border-radius: 1rem;
-            box-shadow: 0 8px 32px rgba(42, 157, 143, 0.08);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            backdrop-filter: blur(4px);
-            max-width: 500px;
-            margin: 2rem auto;
-            animation: slideUp 0.5s ease-out;
-        }
-
-        .auth-title {
-            text-align: center;
-            margin-bottom: 1.5rem;
-            color: var(--primary);
-        }
-
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.2rem;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-        }
-
-        .form-label {
-            font-weight: 500;
-            color: var(--text);
-        }
-
-        .form-input {
-            padding: 0.8rem 1rem;
-            border: 2px solid var(--border);
-            border-radius: 0.6rem;
-            font-size: 1rem;
-            background: rgba(244, 249, 247, 0.8);
-            transition: all 0.2s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
-        }
-
-        .auth-btn {
-            background: linear-gradient(135deg, var(--primary) 0%, #34A798 100%);
-            color: white;
-            border: none;
-            border-radius: 0.6rem;
-            padding: 0.8rem;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 0.5rem;
-        }
-
-        .auth-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(42, 157, 143, 0.2);
-        }
-
-        .auth-switch {
-            text-align: center;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-        }
-
-        .auth-switch a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .auth-switch a:hover {
-            text-decoration: underline;
-        }
-
-        .error-message {
-            color: var(--error);
-            font-size: 0.9rem;
-            margin-top: 0.2rem;
-            text-align: center;
-        }
-
-        .user-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding: 0.8rem 1.2rem;
-            background: rgba(42, 157, 143, 0.1);
-            border-radius: 0.6rem;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .user-email {
-            font-weight: 500;
-            color: var(--text);
-        }
-
-        .logout-btn {
-            background: none;
-            border: none;
-            color: var(--primary);
-            cursor: pointer;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-            transition: all 0.2s ease;
-        }
-
-        .logout-btn:hover {
-            color: #1e7a6f;
-        }
-
-        .sync-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--primary);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 100;
-            animation: slideIn 0.3s ease;
-        }
-
-        .sync-indicator .spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        .sync-complete {
-            background: #2A9D8F;
-            animation: slideIn 0.3s ease;
-        }
-
-        /* PWA Install Button */
-        .pwa-install-container {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            z-index: 1000;
-            display: none;
-        }
-
-        .pwa-install-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            border: none;
-            animation: pulse 2s infinite;
-        }
-
-        /* Install Prompt */
-        .install-prompt {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: white;
-            border-radius: 16px;
-            padding: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            z-index: 1000;
-            transform: translateY(150%);
-            transition: transform 0.5s ease;
-        }
-
-        .install-prompt.show {
-            transform: translateY(0);
-        }
-
-        .install-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--primary);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
             font-size: 20px;
+            box-shadow: var(--glow);
         }
-
-        .install-text {
-            flex: 1;
+        
+        .logo-text {
+            display: flex;
+            flex-direction: column;
         }
-
-        .install-close {
-            background: transparent;
-            border: none;
+        
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--cyber-blue), var(--cyber-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            padding-top: calc(var(--header-height) + 40px);
+            padding: 100px 20px 60px;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero-title {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, var(--cyber-blue), var(--cyber-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
             font-size: 20px;
             color: #94a3b8;
-            cursor: pointer;
+            margin-bottom: 40px;
         }
-
-        /* Offline Indicator */
-        .offline-indicator {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: #f59e0b;
+        
+        .url-input-container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: rgba(15, 23, 42, 0.7);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .url-input {
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 2px solid rgba(148, 163, 184, 0.3);
+            background: rgba(15, 23, 42, 0.8);
+            color: var(--light);
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .url-input:focus {
+            border-color: var(--cyber-blue);
+            box-shadow: var(--glow);
+        }
+        
+        .test-btn {
+            padding: 16px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: linear-gradient(to right, var(--cyber-blue), var(--cyber-purple));
             color: white;
-            padding: 10px 15px;
-            border-radius: 30px;
+            box-shadow: var(--glow);
             display: flex;
             align-items: center;
-            gap: 8px;
-            z-index: 100;
-            opacity: 0;
-            transform: translateY(20px);
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.6);
+        }
+        
+        .test-btn.running {
+            background: linear-gradient(to right, var(--warning), var(--danger));
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-info {
+            background: rgba(14, 165, 233, 0.1);
+            border-left: 4px solid var(--cyber-blue);
+        }
+        
+        .status-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .status-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+        }
+        
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--danger);
+        }
+        
+        /* Dashboard */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-title i {
+            color: var(--cyber-blue);
+        }
+        
+        .progress-container {
+            margin: 25px 0;
+        }
+        
+        .progress-bar {
+            height: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--danger), var(--warning), var(--secondary));
+            border-radius: 10px;
+            width: 0%;
+            transition: width 1s ease;
+        }
+        
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .result-card {
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .result-value {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 10px 0;
+        }
+        
+        .result-label {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        
+        .result-critical {
+            color: var(--danger);
+        }
+        
+        .result-high {
+            color: var(--warning);
+        }
+        
+        .result-medium {
+            color: #84cc16;
+        }
+        
+        .result-low {
+            color: var(--cyber-blue);
+        }
+        
+        /* Vulnerability List */
+        .vulnerability-list {
+            margin-top: 25px;
+        }
+        
+        .vulnerability-item {
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--danger);
             transition: all 0.3s ease;
         }
-
-        .offline-indicator.show {
-            opacity: 1;
-            transform: translateY(0);
+        
+        .vulnerability-item.warning {
+            border-left-color: var(--warning);
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        .vulnerability-item.success {
+            border-left-color: var(--secondary);
         }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        .vulnerability-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
+        
+        .vulnerability-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        
+        .vulnerability-desc {
+            color: #94a3b8;
+            margin-top: 10px;
+            line-height: 1.6;
+            font-size: 14px;
         }
-
-        @keyframes pulse {
-            0% { transform: scale(0.95); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(0.95); }
+        
+        .vulnerability-severity {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
         }
-
-        @keyframes pulseInstall {
-            0% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(42, 157, 143, 0.7);
-            }
-            
-            70% {
-                transform: scale(1);
-                box-shadow: 0 0 0 10px rgba(42, 157, 143, 0);
-            }
-            
-            100% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(42, 157, 143, 0);
-            }
+        
+        .severity-critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
         }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 0.5rem;
-            }
-            
-            .journal-container, .auth-container, .soulmap-container {
-                padding: 1.5rem;
-            }
-            
-            .mood-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .nav-btn {
-                padding: 0.6rem 1rem;
-                font-size: 0.9rem;
-            }
-            
-            .network-graph {
-                height: 400px;
-            }
-            
-            .visualization-controls {
-                flex-direction: column;
-                align-items: center;
-            }
+        
+        .severity-high {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
         }
-
-        /* Loading spinner for network graph */
-        .graph-loading {
+        
+        .severity-medium {
+            background: rgba(101, 163, 13, 0.2);
+            color: #84cc16;
+        }
+        
+        .severity-low {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--cyber-blue);
+        }
+        
+        /* Heatmap */
+        .heatmap-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 16px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        .heatmap-title {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--light);
+        }
+        
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        .heatmap-cell {
+            aspect-ratio: 1/1;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .heatmap-cell:hover {
+            transform: scale(1.2);
+            z-index: 2;
+        }
+        
+        .severity-0 { background: rgba(16, 185, 129, 0.1); }
+        .severity-1 { background: rgba(59, 130, 246, 0.3); }
+        .severity-2 { background: rgba(101, 163, 13, 0.5); }
+        .severity-3 { background: rgba(245, 158, 11, 0.7); }
+        .severity-4 { background: rgba(239, 68, 68, 0.9); }
+        
+        /* Proprietary Section */
+        .proprietary-section {
+            margin: 40px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(139, 92, 246, 0.1));
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 25px;
+            color: var(--light);
+            font-weight: 700;
+        }
+        
+        .innovation-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .innovation-card {
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .innovation-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--cyber-purple);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+        }
+        
+        .innovation-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+            color: var(--cyber-purple);
+        }
+        
+        .innovation-card h3 {
+            color: var(--light);
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .innovation-card p {
+            color: #94a3b8;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: #94a3b8;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 40px;
+            font-size: 14px;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .footer-link {
+            color: var(--cyber-blue);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Threat Analysis Section */
+        .threat-analysis {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 16px;
+            border: 1px solid rgba(142, 45, 226, 0.3);
+        }
+        
+        .threat-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .threat-icon {
+            font-size: 24px;
+            color: #8e2de2;
+        }
+        
+        .threat-title {
+            font-size: 18px;
+            font-weight: 700;
+            background: var(--ai-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .threat-content {
+            padding: 15px;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 12px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+        
+        .threat-loader {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100%;
-            color: var(--primary);
+            gap: 10px;
+            padding: 10px;
         }
         
-        /* Improved node styling */
-        .node {
-            stroke: #fff;
-            stroke-width: 1.5px;
+        .threat-loader .dot {
+            width: 8px;
+            height: 8px;
+            background: #8e2de2;
+            border-radius: 50%;
+            animation: bounce 1.5s infinite;
         }
         
-        .node-label {
+        .threat-loader .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .threat-loader .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        /* Proxy toggle */
+        .proxy-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            color: #94a3b8;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--cyber-blue);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .tech-pill {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
             font-weight: 600;
-            text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff, 0 -1px 0 #fff;
+            margin-top: 8px;
+            background: rgba(14, 165, 233, 0.15);
+            color: var(--cyber-blue);
         }
         
-        /* Animation for new nodes */
-        @keyframes nodeEnter {
-            from { opacity: 0; r: 0; }
-            to { opacity: 1; }
+        .disclaimer {
+            background: rgba(245, 158, 11, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+            border-left: 3px solid var(--warning);
         }
         
-        .node-enter {
-            animation: nodeEnter 0.5s ease-out;
+        /* Learn More Button */
+        .learn-more {
+            background: rgba(14, 165, 233, 0.1);
+            color: var(--cyber-blue);
+            border: 1px solid var(--cyber-blue);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .learn-more:hover {
+            background: rgba(14, 165, 233, 0.2);
+        }
+        
+        /* Educational Content */
+        .educational-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 8px;
+            padding: 0 15px;
+            margin-top: 10px;
+        }
+        
+        .educational-content.expanded {
+            max-height: 300px;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .educational-content h4 {
+            color: var(--cyber-blue);
+            margin-bottom: 10px;
+        }
+        
+        .educational-content p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .educational-content ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .educational-content li {
+            margin-bottom: 8px;
+        }
+        
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .progress-steps::before {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 1;
+        }
+        
+        .progress-step {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            font-size: 14px;
+        }
+        
+        .progress-step.active {
+            background: var(--cyber-blue);
+            box-shadow: 0 0 10px var(--cyber-blue);
+        }
+        
+        .progress-step.completed {
+            background: var(--secondary);
+        }
+        
+        /* Desktop Styles */
+        @media (min-width: 768px) {
+            .input-group {
+                flex-direction: row;
+            }
+            
+            .url-input {
+                font-size: 16px;
+            }
+            
+            .test-btn {
+                padding: 16px 40px;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .results-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .innovation-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .container {
+                padding: 0 30px;
+            }
+            
+            .hero-title {
+                font-size: 48px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <header class="header">
-            <div class="logo">🌿</div>
-            <h1 class="tagline">SoulBoard Pro - Mindful Journaling & Mapping</h1>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>CyberForge</h1>
+                </div>
+            </div>
         </header>
-
-        <!-- Navigation -->
-        <div class="nav-container">
-            <button id="soulboardBtn" class="nav-btn active">
-                <i class="fas fa-clipboard-list"></i> SoulBoard
-            </button>
-            <button id="soulmapBtn" class="nav-btn">
-                <i class="fas fa-project-diagram"></i> SoulMap
-            </button>
-        </div>
-
-        <!-- Auth Section -->
-        <div id="authSection" class="auth-container">
-            <h2 class="auth-title">Sign In to SoulBoard Pro</h2>
-            <div id="authForm" class="auth-form">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="emailInput" class="form-input" placeholder="your.email@example.com">
+        
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <h2 class="hero-title">Educational Security Scanner</h2>
+            <p class="hero-subtitle">Learn about web security vulnerabilities through interactive simulation</p>
+            
+            <div class="url-input-container">
+                <div class="input-group">
+                    <input type="url" class="url-input" id="app-url" placeholder="https://any-website.com" value="https://github.com">
+                    <button class="test-btn" id="test-btn">
+                        <i class="fas fa-bolt"></i> Run Security Analysis
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" id="passwordInput" class="form-input" placeholder="••••••••">
+                <p>Enter any website URL to perform a simulated security assessment</p>
+                
+                <div class="proxy-toggle">
+                    <span>Enable educational mode:</span>
+                    <label class="switch">
+                        <input type="checkbox" id="proxy-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <button id="signInBtn" class="auth-btn">Sign In</button>
-                <div class="auth-switch">
-                    Don't have an account? <a id="switchToSignUp">Sign Up</a>
+                
+                <div class="disclaimer">
+                    <i class="fas fa-exclamation-circle"></i>
+                    This is an educational tool that simulates security scanning. No actual scanning occurs.
                 </div>
-                <div id="authError" class="error-message"></div>
-            </div>
+                
+                <div class="status-message status-info" id="status-message">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Enter URL and click "Run Security Analysis" to begin learning</span>
+                </div>
 
-            <div id="signUpForm" class="auth-form" style="display: none;">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="signUpEmail" class="form-input" placeholder="your.email@example.com">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" id="signUpPassword" class="form-input" placeholder="••••••••">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Confirm Password</label>
-                    <input type="password" id="signUpPasswordConfirm" class="form-input" placeholder="••••••••">
-                </div>
-                <button id="signUpBtn" class="auth-btn">Create Account</button>
-                <div class="auth-switch">
-                    Already have an account? <a id="switchToSignIn">Sign In</a>
-                </div>
-                <div id="signUpError" class="error-message"></div>
-            </div>
-        </div>
-
-        <!-- Journal Section -->
-        <div id="journalSection" style="display: none;">
-            <div id="userInfo" class="user-info">
-                <div>
-                    <span class="user-email" id="userEmail">user@example.com</span>
-                </div>
-                <button id="logoutBtn" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </button>
-            </div>
-
-            <!-- SoulBoard View -->
-            <div id="soulboardView" class="view active">
-                <div class="journal-container">
-                    <section class="editor">
-                        <textarea id="journalText" placeholder="What's growing in your mind today?"></textarea>
-                        
-                        <div class="mood-grid">
-                            <button class="mood-btn" onclick="selectMood(this, '🌻 Happy')">🌻 Happy</button>
-                            <button class="mood-btn" onclick="selectMood(this, '🍃 Calm')">🍃 Calm</button>
-                            <button class="mood-btn" onclick="selectMood(this, '🌧️ Reflective')">🌧️ Reflective</button>
-                            <button class="mood-btn" onclick="selectMood(this, '💡 Inspired')">💡 Inspired</button>
-                            <button class="mood-btn" onclick="selectMood(this, '🌊 Flow')">🌊 Flow</button>
-                            <button class="mood-btn" onclick="selectMood(this, '🔥 Passionate')">🔥 Passionate</button>
-                            <button class="mood-btn" onclick="selectMood(this, '🌙 Restful')">🌙 Restful</button>
-                            <button class="mood-btn" onclick="selectMood(this, '🎉 Celebratory')">🎉 Celebratory</button>
-                        </div>
-
-                        <button class="post-btn" onclick="createPost()">Plant This Thought</button>
-
-                        <div class="search-container">
-                            <input 
-                                type="text" 
-                                class="search-bar" 
-                                id="searchInput"
-                                placeholder="Search your thoughts..."
-                                oninput="searchPosts()">
-                        </div>
-                    </section>
-
-                    <section class="posts-feed" id="postsFeed">
-                        <div class="empty-state">
-                            Your mental garden is empty... Plant your first thought seed
-                        </div>
-                    </section>
+                <div class="progress-steps" id="progress-steps">
+                    <div class="progress-step" id="step-1">1</div>
+                    <div class="progress-step" id="step-2">2</div>
+                    <div class="progress-step" id="step-3">3</div>
+                    <div class="progress-step" id="step-4">4</div>
+                    <div class="progress-step" id="step-5">5</div>
                 </div>
             </div>
-
-            <!-- SoulMap View -->
-            <div id="soulmapView" class="view">
-                <div class="soulmap-container">
-                    <div class="visualization-controls">
-                        <button id="timelineBtn" class="viz-btn active" onclick="switchVisualization('timeline')">
-                            <i class="fas fa-history"></i> Timeline
-                        </button>
-                        <button id="networkBtn" class="viz-btn" onclick="switchVisualization('network')">
-                            <i class="fas fa-project-diagram"></i> Network Graph
-                        </button>
+        </section>
+        
+        <!-- Proprietary Technology -->
+        <section class="proprietary-section">
+            <h2 class="section-title">Educational Security Concepts</h2>
+            
+            <div class="innovation-grid">
+                <div class="innovation-card">
+                    <div class="innovation-icon">
+                        <i class="fas fa-brain"></i>
                     </div>
-                    
-                    <div id="timelineView" class="timeline-view">
-                        <!-- Timeline will be rendered here -->
+                    <h3>Common Vulnerabilities</h3>
+                    <p>Learn about XSS, CSRF, SQL injection and other common web security issues.</p>
+                    <div class="tech-pill">EDUCATIONAL</div>
+                </div>
+                
+                <div class="innovation-card">
+                    <div class="innovation-icon">
+                        <i class="fas fa-project-diagram"></i>
                     </div>
-                    
-                    <div id="networkView" class="network-graph" style="display: none;">
-                        <!-- Network graph will be rendered here -->
-                        <div class="graph-controls">
-                            <button class="graph-control-btn" onclick="zoomIn()"><i class="fas fa-search-plus"></i></button>
-                            <button class="graph-control-btn" onclick="zoomOut()"><i class="fas fa-search-minus"></i></button>
-                            <button class="graph-control-btn" onclick="resetView()"><i class="fas fa-sync"></i></button>
+                    <h3>Security Headers</h3>
+                    <p>Understand how security headers like CSP, HSTS, and X-Frame-Options protect websites.</p>
+                    <div class="tech-pill">EXPLANATORY</div>
+                </div>
+                
+                <div class="innovation-card">
+                    <div class="innovation-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3>HTTPS & Encryption</h3>
+                    <p>Learn why HTTPS is critical for security and how encryption protects data.</p>
+                    <div class="tech-pill">INFORMATIVE</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-file-contract"></i> Security Report</h2>
+                    <span id="report-status">Ready to scan</span>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="security-score-bar"></div>
+                    </div>
+                    <div class="progress-labels">
+                        <span>Low Security</span>
+                        <span id="security-score-value">0%</span>
+                        <span>High Security</span>
+                    </div>
+                </div>
+                
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-value result-critical" id="critical-count">0</div>
+                        <div class="result-label">Critical Vulnerabilities</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value result-high" id="high-count">0</div>
+                        <div class="result-label">High Severity</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value result-medium" id="medium-count">0</div>
+                        <div class="result-label">Medium Issues</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value result-low" id="low-count">0</div>
+                        <div class="result-label">Low Severity</div>
+                    </div>
+                </div>
+                
+                <div class="vulnerability-list" id="vulnerability-list">
+                    <div class="vulnerability-item">
+                        <div class="vulnerability-header">
+                            <div class="vulnerability-title">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Run security tests to discover vulnerabilities</span>
+                            </div>
                         </div>
-                        <div class="legend">
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: var(--node-reflection);"></div>
-                                <span>Reflection</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: var(--node-goal);"></div>
-                                <span>Goal</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: var(--node-affirmation);"></div>
-                                <span>Affirmation</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: var(--node-habit);"></div>
-                                <span>Habit</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: var(--node-emotion);"></div>
-                                <span>Emotion</span>
-                            </div>
+                        <div class="vulnerability-desc">
+                            Enter a URL and click "Run Security Analysis" to begin security assessment
                         </div>
                     </div>
                 </div>
+                
+                <!-- Threat Analysis Section -->
+                <div class="threat-analysis">
+                    <div class="threat-header">
+                        <i class="fas fa-brain threat-icon"></i>
+                        <h3 class="threat-title">Educational Analysis</h3>
+                    </div>
+                    <div class="threat-content" id="threat-content">
+                        Security analysis will appear here after the educational scan completes.
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <!-- PWA Install Button -->
-        <div class="pwa-install-container" id="pwaInstallContainer">
-            <button class="pwa-install-btn" id="pwaInstallBtn">
-                <i class="fas fa-download"></i>
-            </button>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-bug"></i> Vulnerability Analysis</h2>
+                    <span>Detailed results</span>
+                </div>
+                
+                <!-- Vulnerability Heatmap -->
+                <div class="heatmap-container">
+                    <h3 class="heatmap-title">Vulnerability Distribution</h3>
+                    <div class="heatmap-grid" id="heatmap-grid">
+                        <!-- Heatmap cells will be generated by JS -->
+                    </div>
+                </div>
+                
+                <div class="card-header" style="margin-top: 30px;">
+                    <h2 class="card-title"><i class="fas fa-network-wired"></i> Security Protocols</h2>
+                    <span>Connection security</span>
+                </div>
+                
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-value" id="https-status">❓</div>
+                        <div class="result-label">HTTPS</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" id="hsts-status">❓</div>
+                        <div class="result-label">HSTS</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" id="csp-status">❓</div>
+                        <div class="result-label">CSP</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" id="xfo-status">❓</div>
+                        <div class="result-label">X-Frame-Options</div>
+                    </div>
+                </div>
+                
+                <div class="card-header" style="margin-top: 30px;">
+                    <h2 class="card-title"><i class="fas fa-microchip"></i> Advanced Detection</h2>
+                    <span>Technology analysis</span>
+                </div>
+                
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-value" id="shadow-dom">❓</div>
+                        <div class="result-label">Shadow DOM</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" id="web-components">❓</div>
+                        <div class="result-label">Web Components</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" id="js-frameworks">❓</div>
+                        <div class="result-label">JS Frameworks</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" id="obfuscation">❓</div>
+                        <div class="result-label">Obfuscation</div>
+                    </div>
+                </div>
+            </div>
         </div>
         
-        <!-- Install Prompt -->
-        <div class="install-prompt" id="installPrompt">
-            <div class="install-icon">
-                <i class="fas fa-download"></i>
+        <!-- Footer -->
+        <footer>
+            <h3>CyberForge Educational Platform</h3>
+            <p>Learn about web security through interactive simulation</p>
+            
+            <div class="footer-links">
+                <a href="#" class="footer-link">Privacy Policy</a>
+                <a href="#" class="footer-link">Terms of Service</a>
+                <a href="#" class="footer-link">How It Works</a>
+                <a href="#" class="footer-link">Contact Us</a>
             </div>
-            <div class="install-text">
-                <strong>Install SoulBoard Pro</strong>
-                <p>Add to home screen for quick access</p>
-            </div>
-            <button class="install-close" id="closePrompt">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <!-- Offline Indicator -->
-        <div class="offline-indicator" id="offlineIndicator">
-            <i class="fas fa-wifi-slash"></i>
-            <span>You are currently offline</span>
-        </div>
-
-        <div id="syncIndicator" class="sync-indicator" style="display: none;">
-            <div class="spinner"></div>
-            <span>Syncing with cloud...</span>
-        </div>
+            
+            <p>&copy; 2023 CyberForge Inc. All rights reserved. | Version 1.0.0</p>
+        </footer>
     </div>
-
+    
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBbfiIeI-LkRNF60p4BYw2l4BY0wfeIRuI",
-            authDomain: "soulboard-524df.firebaseapp.com",
-            projectId: "soulboard-524df",
-            storageBucket: "soulboard-524df.appspot.com",
-            messagingSenderId: "659350261512",
-            appId: "1:659350261512:web:528a224cec97664bf2a6bd",
-            measurementId: "G-CMSL9H2B8H"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-
-        // DOM Elements
-        const authSection = document.getElementById('authSection');
-        const journalSection = document.getElementById('journalSection');
-        const userEmail = document.getElementById('userEmail');
-        const signInBtn = document.getElementById('signInBtn');
-        const signUpBtn = document.getElementById('signUpBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const switchToSignUp = document.getElementById('switchToSignUp');
-        const switchToSignIn = document.getElementById('switchToSignIn');
-        const authForm = document.getElementById('authForm');
-        const signUpForm = document.getElementById('signUpForm');
-        const authError = document.getElementById('authError');
-        const signUpError = document.getElementById('signUpError');
-        const syncIndicator = document.getElementById('syncIndicator');
-        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
-        const pwaInstallContainer = document.getElementById('pwaInstallContainer');
-        const installPrompt = document.getElementById('installPrompt');
-        const closePrompt = document.getElementById('closePrompt');
-        const offlineIndicator = document.getElementById('offlineIndicator');
-        
-        // SoulMap elements
-        const soulboardBtn = document.getElementById('soulboardBtn');
-        const soulmapBtn = document.getElementById('soulmapBtn');
-        const soulboardView = document.getElementById('soulboardView');
-        const soulmapView = document.getElementById('soulmapView');
-        const timelineView = document.getElementById('timelineView');
-        const networkView = document.getElementById('networkView');
-        const timelineBtn = document.getElementById('timelineBtn');
-        const networkBtn = document.getElementById('networkBtn');
-        
-        let deferredPrompt;
-
-        // Global variables
-        let allPosts = [];
-        let selectedMood = '🌱 Neutral';
-        let currentUser = null;
-        let isOnline = navigator.onLine;
-        let unsubscribeListener = null;
-        let currentVisualization = 'timeline';
-        let soulMapData = [];
-        let simulation = null;
-        let svg = null;
-        let zoom = null;
-        let graphRendered = false;
-
-        // PWA Installation Handling
-        function handlePWAInstall() {
-            // Listen for beforeinstallprompt event
-            window.addEventListener('beforeinstallprompt', (e) => {
-                // Prevent the mini-infobar from appearing on mobile
-                e.preventDefault();
-                // Stash the event so it can be triggered later
-                deferredPrompt = e;
-                // Show the install button
-                pwaInstallContainer.style.display = 'block';
-                
-                // Also show the install prompt after 5 seconds
-                setTimeout(() => {
-                    if (deferredPrompt) {
-                        installPrompt.classList.add('show');
+        // Enhanced Educational Security Scanner
+        class CyberForgeScanner {
+            constructor() {
+                this.vulnerabilities = [];
+                this.securityScore = 100;
+                this.threatAnalysis = "";
+                this.advancedMetrics = {
+                    shadowDom: false,
+                    webComponents: false,
+                    jsFrameworks: [],
+                    obfuscationLevel: 0
+                };
+                this.currentStep = 0;
+            }
+            
+            // Update progress steps
+            updateProgress(step) {
+                const steps = document.querySelectorAll('.progress-step');
+                steps.forEach((s, i) => {
+                    if (i < step) {
+                        s.classList.add('completed');
+                        s.classList.remove('active');
+                    } else if (i === step) {
+                        s.classList.add('active');
+                        s.classList.remove('completed');
+                    } else {
+                        s.classList.remove('active', 'completed');
                     }
-                }, 5000);
-            });
-            
-            // Handle install button click
-            pwaInstallBtn.addEventListener('click', async () => {
-                if (deferredPrompt) {
-                    // Show the install prompt
-                    deferredPrompt.prompt();
-                    // Wait for the user to respond to the prompt
-                    const { outcome } = await deferredPrompt.userChoice;
-                    // Optionally, send analytics event with outcome of user choice
-                    console.log(`User response to the install prompt: ${outcome}`);
-                    // Hide the install button
-                    pwaInstallContainer.style.display = 'none';
-                    // Clear the deferredPrompt variable
-                    deferredPrompt = null;
-                    // Hide the prompt
-                    installPrompt.classList.remove('show');
-                }
-            });
-            
-            // Close prompt
-            closePrompt.addEventListener('click', () => {
-                installPrompt.classList.remove('show');
-            });
-            
-            // Listen for app installed event
-            window.addEventListener('appinstalled', () => {
-                // Hide the install button
-                pwaInstallContainer.style.display = 'none';
-                // Clear the deferredPrompt variable
-                deferredPrompt = null;
-                // Hide the prompt
-                installPrompt.classList.remove('show');
-                // Show success message
-                showToast('App installed successfully!');
-            });
-        }
-
-        // Register Service Worker
-        function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    // Create service worker script as a blob
-                    const swContent = `
-                        const CACHE_NAME = 'soulboard-pro-v1';
-                        const urlsToCache = [
-                            './',
-                            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-                            'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js',
-                            'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js',
-                            'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js',
-                            'https://d3js.org/d3.v7.min.js'
-                        ];
-                        
-                        self.addEventListener('install', event => {
-                            event.waitUntil(
-                                caches.open(CACHE_NAME)
-                                    .then(cache => {
-                                        return cache.addAll(urlsToCache);
-                                    })
-                            );
-                        });
-                        
-                        self.addEventListener('activate', event => {
-                            event.waitUntil(
-                                caches.keys().then(cacheNames => {
-                                    return Promise.all(
-                                        cacheNames.map(cacheName => {
-                                            if (cacheName !== CACHE_NAME) {
-                                                return caches.delete(cacheName);
-                                            }
-                                        })
-                                    );
-                                })
-                            );
-                        });
-                        
-                        self.addEventListener('fetch', event => {
-                            event.respondWith(
-                                caches.match(event.request)
-                                    .then(response => {
-                                        return response || fetch(event.request);
-                                    })
-                            );
-                        });
-                    `;
-                    
-                    const blob = new Blob([swContent], { type: 'application/javascript' });
-                    const swUrl = URL.createObjectURL(blob);
-                    
-                    navigator.serviceWorker.register(swUrl)
-                        .then(registration => {
-                            console.log('Service Worker registered with scope:', registration.scope);
-                        })
-                        .catch(error => {
-                            console.error('Service Worker registration failed:', error);
-                        });
                 });
-            }
-        }
-
-        // Online status detection
-        window.addEventListener('online', () => {
-            isOnline = true;
-            showSyncIndicator();
-            if (currentUser) syncLocalChanges();
-            offlineIndicator.classList.remove('show');
-        });
-        
-        window.addEventListener('offline', () => {
-            isOnline = false;
-            showSyncIndicator("Offline - changes saved locally");
-            offlineIndicator.classList.add('show');
-        });
-
-        // Show sync indicator
-        function showSyncIndicator(message = "Syncing with cloud...") {
-            syncIndicator.innerHTML = `<div class="spinner"></div><span>${message}</span>`;
-            syncIndicator.style.display = 'flex';
-            
-            if (message !== "Syncing with cloud...") {
-                setTimeout(() => {
-                    syncIndicator.style.display = 'none';
-                }, 3000);
-            }
-        }
-
-        // Hide sync indicator
-        function hideSyncIndicator() {
-            syncIndicator.innerHTML = `<div class="spinner"></div><span>Sync complete!</span>`;
-            syncIndicator.classList.add('sync-complete');
-            
-            setTimeout(() => {
-                syncIndicator.style.display = 'none';
-                syncIndicator.classList.remove('sync-complete');
-            }, 2000);
-        }
-
-        // Auth state listener
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUser = user;
-                userEmail.textContent = user.email;
-                authSection.style.display = 'none';
-                journalSection.style.display = 'block';
-                
-                // Set up real-time listener
-                setupFirestoreListener();
-            } else {
-                currentUser = null;
-                authSection.style.display = 'block';
-                journalSection.style.display = 'none';
-                allPosts = [];
-                
-                // Unsubscribe from listener when logged out
-                if (unsubscribeListener) {
-                    unsubscribeListener();
-                    unsubscribeListener = null;
-                }
-            }
-        });
-
-        // Set up Firestore real-time listener
-        function setupFirestoreListener() {
-            if (unsubscribeListener) unsubscribeListener();
-            
-            const postsRef = db.collection('users').doc(currentUser.uid).collection('posts');
-            
-            showSyncIndicator();
-            
-            unsubscribeListener = postsRef.orderBy('date', 'desc').onSnapshot(snapshot => {
-                const updatedPosts = [];
-                
-                snapshot.forEach(doc => {
-                    updatedPosts.push(doc.data());
-                });
-                
-                // Update allPosts and display
-                allPosts = updatedPosts;
-                displayPosts(allPosts);
-                
-                // Process data for SoulMap
-                processSoulMapData();
-                
-                // Save to local storage
-                savePostsToLocal();
-                
-                hideSyncIndicator();
-            }, error => {
-                console.error('Firestore listener error:', error);
-                hideSyncIndicator();
-                
-                // Load from local storage on error
-                loadLocalPosts();
-            });
-        }
-
-        // Sign in
-        signInBtn.addEventListener('click', () => {
-            const email = document.getElementById('emailInput').value;
-            const password = document.getElementById('passwordInput').value;
-            
-            authError.textContent = '';
-            
-            if (!email || !password) {
-                authError.textContent = 'Please fill in all fields';
-                return;
+                this.currentStep = step;
             }
             
-            auth.signInWithEmailAndPassword(email, password)
-                .catch(error => {
-                    authError.textContent = error.message;
-                });
-        });
-
-        // Sign up
-        signUpBtn.addEventListener('click', () => {
-            const email = document.getElementById('signUpEmail').value;
-            const password = document.getElementById('signUpPassword').value;
-            const passwordConfirm = document.getElementById('signUpPasswordConfirm').value;
-            
-            signUpError.textContent = '';
-            
-            if (!email || !password || !passwordConfirm) {
-                signUpError.textContent = 'Please fill in all fields';
-                return;
-            }
-            
-            if (password !== passwordConfirm) {
-                signUpError.textContent = 'Passwords do not match';
-                return;
-            }
-            
-            if (password.length < 6) {
-                signUpError.textContent = 'Password should be at least 6 characters';
-                return;
-            }
-            
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Create user document in Firestore
-                    return db.collection('users').doc(userCredential.user.uid).set({
-                        email: email,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                })
-                .catch(error => {
-                    signUpError.textContent = error.message;
-                });
-        });
-
-        // Logout
-        logoutBtn.addEventListener('click', () => {
-            auth.signOut();
-        });
-
-        // Switch auth forms
-        switchToSignUp.addEventListener('click', () => {
-            authForm.style.display = 'none';
-            signUpForm.style.display = 'block';
-        });
-
-        switchToSignIn.addEventListener('click', () => {
-            signUpForm.style.display = 'none';
-            authForm.style.display = 'block';
-        });
-
-        // Load posts from local storage
-        function loadLocalPosts() {
-            try {
-                const saved = localStorage.getItem('journalPosts');
-                const localPosts = saved ? JSON.parse(saved) : [];
+            // Simulate scan with educational content
+            async scan(url) {
+                this.vulnerabilities = [];
+                this.securityScore = 100;
+                this.threatAnalysis = "";
+                this.advancedMetrics = {
+                    shadowDom: false,
+                    webComponents: false,
+                    jsFrameworks: [],
+                    obfuscationLevel: 0
+                };
                 
-                if (localPosts.length > 0) {
-                    allPosts = localPosts;
-                    displayPosts(allPosts);
-                    // Process data for SoulMap
-                    processSoulMapData();
-                }
-            } catch (e) {
-                console.error('Error loading local posts:', e);
-            }
-        }
-
-        // Save posts to local storage
-        function savePostsToLocal() {
-            try {
-                localStorage.setItem('journalPosts', JSON.stringify(allPosts));
-                // Also save processed SoulMap data
-                localStorage.setItem('soulMapData', JSON.stringify(soulMapData));
-            } catch (e) {
-                console.error('Error saving to local storage:', e);
-            }
-        }
-
-        // Sync local changes to Firestore
-        function syncLocalChanges() {
-            if (!currentUser) return;
-            
-            const localPosts = JSON.parse(localStorage.getItem('journalPosts') || '[]');
-            const cloudPosts = allPosts;
-            
-            // Find posts that exist locally but not in cloud
-            const postsToSync = localPosts.filter(localPost => 
-                !cloudPosts.some(cloudPost => cloudPost.id === localPost.id)
-            );
-            
-            if (postsToSync.length > 0) {
-                showSyncIndicator("Syncing local changes...");
+                // Update status
+                this.updateProgress(1);
+                document.getElementById('status-message').innerHTML = '<i class="fas fa-sync fa-spin"></i> Initializing educational scan...';
                 
-                const batch = db.batch();
-                const userRef = db.collection('users').doc(currentUser.uid);
+                // Simulate network request
+                await this.delay(1000);
+                this.updateProgress(2);
+                document.getElementById('status-message').innerHTML = '<i class="fas fa-sync fa-spin"></i> Analyzing URL structure...';
                 
-                postsToSync.forEach(post => {
-                    const postRef = userRef.collection('posts').doc(post.id);
-                    batch.set(postRef, post);
-                });
+                // Check if HTTPS is used
+                const httpsUsed = url.startsWith('https://');
+                await this.delay(800);
                 
-                batch.commit()
-                    .then(() => {
-                        console.log('Local changes synced to Firestore');
-                        hideSyncIndicator();
-                    })
-                    .catch(error => {
-                        console.error('Error syncing local changes:', error);
-                        hideSyncIndicator();
-                    });
-            }
-        }
-
-        // Select mood
-        function selectMood(button, mood) {
-            document.querySelectorAll('.mood-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            button.classList.add('active');
-            selectedMood = mood;
-        }
-
-        // Create new post
-        function createPost() {
-            const text = document.getElementById('journalText').value.trim();
-            
-            if (!text) {
-                alert('Please write something before posting!');
-                return;
-            }
-
-            const newPost = {
-                id: Date.now().toString(),
-                text: text,
-                mood: selectedMood,
-                date: Date.now()
-            };
-
-            // Add to local array immediately for responsive UI
-            allPosts.unshift(newPost);
-            displayPosts(allPosts);
-            
-            // Process data for SoulMap
-            processSoulMapData();
-            
-            // Save to local storage
-            savePostsToLocal();
-            
-            // Save to Firestore if online
-            if (isOnline && currentUser) {
-                showSyncIndicator();
+                this.updateProgress(3);
+                document.getElementById('status-message').innerHTML = '<i class="fas fa-sync fa-spin"></i> Simulating security header checks...';
+                await this.delay(1200);
                 
-                db.collection('users').doc(currentUser.uid)
-                    .collection('posts').doc(newPost.id).set(newPost)
-                    .then(() => {
-                        hideSyncIndicator();
-                    })
-                    .catch(error => {
-                        console.error('Error saving to Firestore:', error);
-                        hideSyncIndicator();
-                    });
-            } else {
-                showSyncIndicator("Offline - changes saved locally");
-            }
-            
-            // Clear form
-            document.getElementById('journalText').value = '';
-            document.querySelectorAll('.mood-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            selectedMood = '🌱 Neutral';
-            
-            // Clear search
-            document.getElementById('searchInput').value = '';
-        }
-
-        // Search posts
-        function searchPosts() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
-            if (!searchTerm) {
-                displayPosts(allPosts);
-                return;
-            }
-
-            const filtered = allPosts.filter(post => {
-                return post.text.toLowerCase().includes(searchTerm) ||
-                       post.mood.toLowerCase().includes(searchTerm);
-            });
-
-            displayPosts(filtered);
-        }
-
-        // Display posts
-        function displayPosts(posts) {
-            const feed = document.getElementById('postsFeed');
-            
-            if (posts.length === 0) {
-                feed.innerHTML = `
-                    <div class="empty-state">
-                        ${allPosts.length === 0 ? 
-                          'Your mental garden is empty... Plant your first thought seed' : 
-                          'No posts match your search'}
-                    </div>
-                `;
-                return;
-            }
-
-            let html = '';
-            posts.forEach(post => {
-                const date = new Date(post.date).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                // Highlight search term if present
-                let displayText = post.text;
-                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-                if (searchTerm) {
-                    const regex = new RegExp(`(${searchTerm})`, 'gi');
-                    displayText = displayText.replace(regex, '<span class="highlight">$1</span>');
-                }
-
-                html += `
-                    <div class="post-card">
-                        <div class="post-meta">
-                            <div class="post-date">${date}</div>
-                            <div class="post-mood">${post.mood}</div>
-                        </div>
-                        <div class="post-content">${displayText.replace(/\n/g, '<br>')}</div>
-                    </div>
-                `;
-            });
-
-            feed.innerHTML = html;
-        }
-
-        // Process data for SoulMap visualization
-        function processSoulMapData() {
-            soulMapData = allPosts.map(post => {
-                // Categorize posts based on content and mood
-                let category = 'default';
-                const text = post.text.toLowerCase();
+                this.updateProgress(4);
+                document.getElementById('status-message').innerHTML = '<i class="fas fa-sync fa-spin"></i> Generating educational content...';
+                await this.delay(1000);
                 
-                if (text.includes('reflect') || text.includes('think') || text.includes('contemplate') || text.includes('meditate')) {
-                    category = 'reflection';
-                } else if (text.includes('goal') || text.includes('achieve') || text.includes('target') || text.includes('objective')) {
-                    category = 'goal';
-                } else if (text.includes('affirm') || text.includes('positive') || text.includes('gratitude') || text.includes('thank')) {
-                    category = 'affirmation';
-                } else if (text.includes('habit') || text.includes('routine') || text.includes('practice') || text.includes('daily')) {
-                    category = 'habit';
-                } else if (text.includes('feel') || text.includes('emotion') || text.includes('mood') || text.includes('happy') || text.includes('sad') || text.includes('anxious')) {
-                    category = 'emotion';
-                }
+                // Generate educational vulnerabilities based on URL
+                this.generateEducationalVulnerabilities(url);
                 
-                // Extract keywords for connections
-                const keywords = extractKeywords(post.text);
+                // Analyze security protocols
+                this.analyzeSecurityProtocols(url);
+                
+                // Generate threat analysis
+                this.generateThreatAnalysis();
+                
+                this.updateProgress(5);
+                document.getElementById('status-message').innerHTML = '<i class="fas fa-check-circle"></i> Educational scan completed!';
                 
                 return {
-                    id: post.id,
-                    text: post.text,
-                    mood: post.mood,
-                    date: post.date,
-                    category: category,
-                    keywords: keywords
+                    score: this.securityScore,
+                    vulnerabilities: this.vulnerabilities,
+                    threatAnalysis: this.threatAnalysis,
+                    advancedMetrics: this.advancedMetrics
                 };
-            });
-            
-            // If we're on the SoulMap view, update the visualization
-            if (soulmapView.classList.contains('active')) {
-                renderVisualization();
             }
-        }
-
-        // Extract keywords from text for network connections
-        function extractKeywords(text) {
-            const commonWords = new Set(['the', 'and', 'is', 'in', 'it', 'to', 'of', 'for', 'my', 'i', 'a', 'an', 'on', 'with', 'that', 'this', 'but', 'or', 'if', 'be', 'are', 'at', 'so', 'was', 'have', 'has', 'had']);
-            const words = text.toLowerCase()
-                .replace(/[^\w\s]/g, '')
-                .split(/\s+/)
-                .filter(word => word.length > 3 && !commonWords.has(word));
             
-            // Return top 5 unique keywords
-            return [...new Set(words)].slice(0, 5);
-        }
-
-        // Switch between timeline and network graph
-        function switchVisualization(type) {
-            currentVisualization = type;
-            
-            // Update button states
-            timelineBtn.classList.toggle('active', type === 'timeline');
-            networkBtn.classList.toggle('active', type === 'network');
-            
-            // Show/hide views
-            timelineView.style.display = type === 'timeline' ? 'block' : 'none';
-            networkView.style.display = type === 'network' ? 'block' : 'none';
-            
-            // Render the selected visualization
-            renderVisualization();
-        }
-
-        // Render the current visualization
-        function renderVisualization() {
-            if (currentVisualization === 'timeline') {
-                renderTimeline();
-            } else {
-                renderNetworkGraph();
-            }
-        }
-
-        // Render timeline visualization
-        function renderTimeline() {
-            // Group posts by date
-            const postsByDate = {};
-            soulMapData.forEach(post => {
-                const date = new Date(post.date).toDateString();
-                if (!postsByDate[date]) {
-                    postsByDate[date] = [];
-                }
-                postsByDate[date].push(post);
-            });
-            
-            // Generate HTML for timeline
-            let html = '';
-            Object.keys(postsByDate).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
-                html += `<div class="timeline-date">${date}</div>`;
-                
-                postsByDate[date].forEach(post => {
-                    const time = new Date(post.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    
-                    html += `
-                        <div class="timeline-item">
-                            <div class="timeline-mood">${post.mood}</div>
-                            <div class="timeline-content">
-                                <div><strong>${time}</strong> - ${post.category.charAt(0).toUpperCase() + post.category.slice(1)}</div>
-                                <div>${post.text}</div>
-                            </div>
-                        </div>
-                    `;
+            // Generate educational vulnerabilities
+            generateEducationalVulnerabilities(url) {
+                // Always include these educational examples
+                this.addVulnerability({
+                    type: 'header',
+                    name: 'Missing Content Security Policy (CSP) Header',
+                    severity: 'high',
+                    description: 'The Content Security Policy header helps prevent XSS attacks by restricting sources of executable scripts.',
+                    recommendation: 'Implement a strong CSP header to mitigate XSS risks.',
+                    points: 15,
+                    learnMore: 'Content Security Policy is an added layer of security that helps detect and mitigate certain types of attacks, including Cross Site Scripting (XSS) and data injection attacks.'
                 });
-            });
+                
+                this.addVulnerability({
+                    type: 'form',
+                    name: 'Potential Cross-Site Request Forgery (CSRF) Vulnerability',
+                    severity: 'high',
+                    description: 'Forms may lack CSRF tokens, making them vulnerable to CSRF attacks.',
+                    recommendation: 'Implement CSRF tokens for all state-changing requests.',
+                    points: 12,
+                    learnMore: 'CSRF attacks force authenticated users to submit a request to a Web application against which they are currently authenticated.'
+                });
+                
+                this.addVulnerability({
+                    type: 'cookie',
+                    name: 'Missing Secure and HttpOnly Cookie Flags',
+                    severity: 'medium',
+                    description: 'Cookies may not be properly secured with HttpOnly and Secure flags.',
+                    recommendation: 'Set HttpOnly and Secure flags on all sensitive cookies.',
+                    points: 10,
+                    learnMore: 'The Secure flag ensures cookies are only sent over HTTPS. The HttpOnly flag prevents access to cookies via JavaScript, mitigating XSS risks.'
+                });
+                
+                // Add more educational examples
+                this.addVulnerability({
+                    type: 'xss',
+                    name: 'Potential Cross-Site Scripting (XSS) Vulnerability',
+                    severity: 'high',
+                    description: 'Input validation may not be properly implemented, creating XSS risks.',
+                    recommendation: 'Implement proper input validation and output encoding.',
+                    points: 15,
+                    learnMore: 'XSS attacks enable attackers to inject client-side scripts into web pages viewed by other users.'
+                });
+                
+                this.addVulnerability({
+                    type: 'config',
+                    name: 'Exposed Server Version Information',
+                    severity: 'low',
+                    description: 'Server headers may expose version information that could help attackers.',
+                    recommendation: 'Disable server version banners in HTTP headers.',
+                    points: 5,
+                    learnMore: 'Information disclosure vulnerabilities expose sensitive system details that can help attackers plan targeted attacks.'
+                });
+            }
             
-            timelineView.innerHTML = html || '<div class="empty-state">No timeline data available</div>';
-        }
+            // Analyze security protocols for educational purposes
+            analyzeSecurityProtocols(url) {
+                // Check if HTTPS is used
+                const httpsUsed = url.startsWith('https://');
+                document.getElementById('https-status').textContent = httpsUsed ? '✅' : '❌';
+                
+                if (!httpsUsed) {
+                    this.addVulnerability({
+                        type: 'protocol',
+                        name: 'No HTTPS Encryption',
+                        severity: 'critical',
+                        description: 'Site is not using HTTPS, exposing all traffic to interception.',
+                        recommendation: 'Implement SSL/TLS certificate to encrypt all traffic.',
+                        points: 20,
+                        learnMore: 'HTTPS encrypts all communication between your browser and the website, protecting against eavesdropping and man-in-the-middle attacks.'
+                    });
+                }
+                
+                // Simulate other protocol checks
+                document.getElementById('hsts-status').textContent = '⚠️';
+                document.getElementById('csp-status').textContent = '⚠️';
+                document.getElementById('xfo-status').textContent = '✅';
+                
+                // Simulate advanced metrics
+                document.getElementById('shadow-dom').textContent = '✅';
+                document.getElementById('web-components').textContent = '❌';
+                document.getElementById('js-frameworks').textContent = 'React';
+                document.getElementById('obfuscation').textContent = 'Low';
+            }
+            
+            // Generate educational threat analysis
+            generateThreatAnalysis() {
+                const vulnerabilityCount = this.vulnerabilities.length;
+                const criticalCount = this.vulnerabilities.filter(v => v.severity === 'critical').length;
+                const highCount = this.vulnerabilities.filter(v => v.severity === 'high').length;
+                
+                this.threatAnalysis = `EDUCATIONAL SECURITY ANALYSIS
+================================
 
-        // Render network graph visualization
-        function renderNetworkGraph() {
-            // Clear previous graph
-            d3.select("#networkView").selectAll("*").remove();
+This is a simulated security scan for educational purposes.
+
+GENERATED FINDINGS:
+- Critical: ${criticalCount}
+- High: ${highCount}
+- Medium: ${this.vulnerabilities.filter(v => v.severity === 'medium').length}
+- Low: ${this.vulnerabilities.filter(v => v.severity === 'low').length}
+
+SECURITY EDUCATION:
+- Always validate and sanitize user input to prevent XSS
+- Implement HTTPS across your entire site
+- Use security headers like CSP, HSTS, and X-Frame-Options
+- Consider implementing Subresource Integrity (SRI) for external resources
+
+REMEMBER:
+This is an educational simulation. Always perform proper security testing
+with authorized tools and professional security services.`;
+            }
             
-            if (soulMapData.length === 0) {
-                networkView.innerHTML = '<div class="empty-state">No data available for network graph</div>';
+            // Add vulnerability to results
+            addVulnerability(vuln) {
+                this.vulnerabilities.push(vuln);
+                this.securityScore = Math.max(0, this.securityScore - vuln.points);
+            }
+            
+            // Utility function for delays
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+        
+        // DOM elements
+        const testBtn = document.getElementById('test-btn');
+        const appUrlInput = document.getElementById('app-url');
+        const securityScoreBar = document.getElementById('security-score-bar');
+        const securityScoreValue = document.getElementById('security-score-value');
+        const vulnerabilityList = document.getElementById('vulnerability-list');
+        const criticalCount = document.getElementById('critical-count');
+        const highCount = document.getElementById('high-count');
+        const mediumCount = document.getElementById('medium-count');
+        const lowCount = document.getElementById('low-count');
+        const reportStatus = document.getElementById('report-status');
+        const statusMessage = document.getElementById('status-message');
+        const heatmapGrid = document.getElementById('heatmap-grid');
+        const threatContent = document.getElementById('threat-content');
+        
+        // Initialize scanner
+        const scanner = new CyberForgeScanner();
+        
+        // Initialize heatmap
+        function initHeatmap() {
+            heatmapGrid.innerHTML = '';
+            for (let i = 0; i < 48; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'heatmap-cell severity-0';
+                heatmapGrid.appendChild(cell);
+            }
+        }
+        
+        // Update heatmap with vulnerabilities
+        function updateHeatmap(severityLevels) {
+            const cells = document.querySelectorAll('.heatmap-cell');
+            cells.forEach((cell, index) => {
+                const severity = severityLevels[index % severityLevels.length];
+                cell.className = `heatmap-cell severity-${severity}`;
+            });
+        }
+        
+        // Run security scan
+        async function runSecurityScan() {
+            const appUrl = appUrlInput.value;
+            
+            if (!appUrl || appUrl === 'https://') {
+                statusMessage.className = 'status-message status-error';
+                statusMessage.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter a valid URL to test';
                 return;
             }
             
-            // Show loading state
-            networkView.innerHTML = '<div class="graph-loading"><i class="fas fa-spinner fa-spin"></i> Building your mental map...</div>';
+            // Reset UI
+            statusMessage.className = 'status-message status-info';
+            statusMessage.innerHTML = '<i class="fas fa-sync fa-spin"></i> Initializing educational scan...';
+            reportStatus.textContent = 'Scanning...';
+            testBtn.classList.add('running');
+            testBtn.innerHTML = '<i class="fas fa-sync fa-spin"></i> Scanning...';
+            vulnerabilityList.innerHTML = '';
+            securityScoreBar.style.width = '0%';
+            securityScoreValue.textContent = '0%';
+            threatContent.innerHTML = '<div class="threat-loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
             
-            // Small delay to allow the DOM to update
-            setTimeout(() => {
-                // Set up dimensions
-                const width = networkView.clientWidth;
-                const height = networkView.clientHeight;
+            // Clear previous results
+            criticalCount.textContent = '0';
+            highCount.textContent = '0';
+            mediumCount.textContent = '0';
+            lowCount.textContent = '0';
+            
+            // Initialize heatmap
+            initHeatmap();
+            
+            try {
+                // Run the scan
+                const scanResults = await scanner.scan(appUrl);
                 
-                // Create SVG
-                svg = d3.select("#networkView")
-                    .html('') // Clear loading message
-                    .append("svg")
-                    .attr("width", width)
-                    .attr("height", height)
-                    .attr("viewBox", [0, 0, width, height]);
+                // Update UI with results
+                updateResults(scanResults);
                 
-                // Create tooltip
-                const tooltip = d3.select("body")
-                    .append("div")
-                    .attr("class", "graph-tooltip")
-                    .style("opacity", 0);
-                
-                // Create nodes
-                const nodes = soulMapData.map(post => ({
-                    id: post.id,
-                    text: post.text,
-                    mood: post.mood,
-                    category: post.category,
-                    radius: 8 + (post.text.length / 50), // Size based on content length
-                    date: post.date
-                }));
-                
-                // Create links based on shared keywords and categories
-                const links = [];
-                const linkSet = new Set(); // To avoid duplicate links
-                
-                for (let i = 0; i < nodes.length; i++) {
-                    for (let j = i + 1; j < nodes.length; j++) {
-                        const sourcePost = soulMapData.find(p => p.id === nodes[i].id);
-                        const targetPost = soulMapData.find(p => p.id === nodes[j].id);
-                        
-                        // Connect nodes that share keywords or categories
-                        const sharedKeywords = sourcePost.keywords.filter(k => 
-                            targetPost.keywords.includes(k));
-                        
-                        if (sharedKeywords.length > 0 || sourcePost.category === targetPost.category) {
-                            const linkId = `${sourcePost.id}-${targetPost.id}`;
-                            const reverseLinkId = `${targetPost.id}-${sourcePost.id}`;
-                            if (!linkSet.has(linkId) && !linkSet.has(reverseLinkId)) {
-                                links.push({
-                                    source: nodes[i].id,
-                                    target: nodes[j].id,
-                                    value: sharedKeywords.length > 0 ? sharedKeywords.length : 1,
-                                    type: sharedKeywords.length > 0 ? 'keyword' : 'category'
-                                });
-                                linkSet.add(linkId);
-                            }
-                        }
-                    }
-                }
-                
-                // Set up force simulation
-                simulation = d3.forceSimulation(nodes)
-                    .force("link", d3.forceLink(links).id(d => d.id).distance(100).strength(0.1))
-                    .force("charge", d3.forceManyBody().strength(-200))
-                    .force("center", d3.forceCenter(width / 2, height / 2))
-                    .force("collision", d3.forceCollide().radius(d => d.radius + 5));
-                
-                // Draw links
-                const link = svg.append("g")
-                    .attr("class", "links")
-                    .selectAll("line")
-                    .data(links)
-                    .enter().append("line")
-                    .attr("class", "link")
-                    .attr("stroke-width", d => Math.sqrt(d.value));
-                
-                // Draw nodes
-                const node = svg.append("g")
-                    .attr("class", "nodes")
-                    .selectAll("circle")
-                    .data(nodes)
-                    .enter().append("circle")
-                    .attr("class", d => `node ${d.category} node-enter`)
-                    .attr("r", d => d.radius)
-                    .attr("fill", d => getCategoryColor(d.category))
-                    .call(d3.drag()
-                        .on("start", dragstarted)
-                        .on("drag", dragged)
-                        .on("end", dragended));
-                
-                // Add node labels
-                const label = svg.append("g")
-                    .attr("class", "labels")
-                    .selectAll("text")
-                    .data(nodes)
-                    .enter().append("text")
-                    .attr("class", "node-label")
-                    .text(d => d.mood)
-                    .style("font-size", "10px");
-                
-                // Add zoom capabilities
-                zoom = d3.zoom()
-                    .scaleExtent([0.1, 4])
-                    .on("zoom", (event) => {
-                        svg.attr("transform", event.transform);
-                    });
-                
-                svg.call(zoom);
-                
-                // Update positions on each tick
-                simulation.on("tick", () => {
-                    link
-                        .attr("x1", d => d.source.x)
-                        .attr("y1", d => d.source.y)
-                        .attr("x2", d => d.target.x)
-                        .attr("y2", d => d.target.y);
-                    
-                    node
-                        .attr("cx", d => d.x)
-                        .attr("cy", d => d.y);
-                    
-                    label
-                        .attr("x", d => d.x)
-                        .attr("y", d => d.y - d.radius - 5);
-                });
-                
-                // Add interactivity
-                node.on("mouseover", function(event, d) {
-                    tooltip.transition()
-                        .duration(200)
-                        .style("opacity", .9);
-                    
-                    const date = new Date(d.date).toLocaleDateString();
-                    tooltip.html(`<strong>${d.mood}</strong><br/>${date}<br/>${d.text.substring(0, 100)}${d.text.length > 100 ? '...' : ''}`)
-                        .style("left", (event.pageX + 10) + "px")
-                        .style("top", (event.pageY - 28) + "px");
-                    
-                    // Highlight connected nodes
-                    node.style("opacity", otherNode => {
-                        return isConnected(d, otherNode) ? 1 : 0.2;
-                    });
-                    
-                    link.style("stroke-opacity", l => {
-                        return l.source.id === d.id || l.target.id === d.id ? 1 : 0.1;
-                    });
-                })
-                .on("mouseout", function() {
-                    tooltip.transition()
-                        .duration(500)
-                        .style("opacity", 0);
-                    
-                    // Reset opacity
-                    node.style("opacity", 1);
-                    link.style("stroke-opacity", 0.6);
-                });
-                
-                // Helper function to check if nodes are connected
-                function isConnected(a, b) {
-                    return links.some(l => 
-                        (l.source.id === a.id && l.target.id === b.id) || 
-                        (l.source.id === b.id && l.target.id === a.id)
-                    );
-                }
-                
-                // Drag functions
-                function dragstarted(event, d) {
-                    if (!event.active) simulation.alphaTarget(0.3).restart();
-                    d.fx = d.x;
-                    d.fy = d.y;
-                }
-                
-                function dragged(event, d) {
-                    d.fx = event.x;
-                    d.fy = event.y;
-                }
-                
-                function dragended(event, d) {
-                    if (!event.active) simulation.alphaTarget(0);
-                    d.fx = null;
-                    d.fy = null;
-                }
-                
-                graphRendered = true;
-            }, 100);
-        }
-
-        // Get color for a category
-        function getCategoryColor(category) {
-            switch(category) {
-                case 'reflection': return getComputedStyle(document.documentElement).getPropertyValue('--node-reflection');
-                case 'goal': return getComputedStyle(document.documentElement).getPropertyValue('--node-goal');
-                case 'affirmation': return getComputedStyle(document.documentElement).getPropertyValue('--node-affirmation');
-                case 'habit': return getComputedStyle(document.documentElement).getPropertyValue('--node-habit');
-                case 'emotion': return getComputedStyle(document.documentElement).getPropertyValue('--node-emotion');
-                default: return getComputedStyle(document.documentElement).getPropertyValue('--node-default');
+            } catch (error) {
+                console.error('Scan error:', error);
+                statusMessage.className = 'status-message status-error';
+                statusMessage.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
+                threatContent.textContent = 'Educational analysis failed: ' + error.message;
+            } finally {
+                testBtn.classList.remove('running');
+                testBtn.innerHTML = '<i class="fas fa-bolt"></i> Run Security Analysis';
             }
         }
-
-        // Zoom functions
-        function zoomIn() {
-            if (zoom && graphRendered) {
-                svg.transition().duration(250).call(zoom.scaleBy, 1.5);
-            }
+        
+        // Update UI with scan results
+        function updateResults(scanResults) {
+            // Update status
+            reportStatus.textContent = 'Scan completed - Educational vulnerabilities found';
+            
+            // Update counts
+            let critical = 0;
+            let high = 0;
+            let medium = 0;
+            let low = 0;
+            
+            // Display vulnerabilities
+            scanResults.vulnerabilities.forEach(vuln => {
+                const vulnElement = document.createElement('div');
+                let severityClass = '';
+                
+                switch(vuln.severity) {
+                    case 'critical':
+                        severityClass = 'severity-critical';
+                        critical++;
+                        break;
+                    case 'high':
+                        severityClass = 'severity-high';
+                        high++;
+                        break;
+                    case 'medium':
+                        severityClass = 'severity-medium';
+                        medium++;
+                        break;
+                    case 'low':
+                        severityClass = 'severity-low';
+                        low++;
+                        break;
+                }
+                
+                vulnElement.className = `vulnerability-item ${vuln.severity === 'critical' ? '' : vuln.severity === 'high' ? 'warning' : 'success'}`;
+                vulnElement.innerHTML = `
+                    <div class="vulnerability-header">
+                        <div class="vulnerability-title">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>${vuln.name}</span>
+                        </div>
+                        <div class="vulnerability-severity ${severityClass}">${vuln.severity.toUpperCase()}</div>
+                    </div>
+                    <div class="vulnerability-desc">
+                        ${vuln.description}
+                        <div class="recommendation" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1);">
+                            <strong>Recommendation:</strong> ${vuln.recommendation}
+                        </div>
+                        ${vuln.learnMore ? `
+                        <button class="learn-more" onclick="this.nextElementSibling.classList.toggle('expanded')">
+                            <i class="fas fa-book"></i> Learn More
+                        </button>
+                        <div class="educational-content">
+                            <h4>About This Vulnerability</h4>
+                            <p>${vuln.learnMore}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                vulnerabilityList.appendChild(vulnElement);
+            });
+            
+            // Update counts
+            criticalCount.textContent = critical;
+            highCount.textContent = high;
+            mediumCount.textContent = medium;
+            lowCount.textContent = low;
+            
+            // Update security score
+            securityScoreBar.style.width = `${scanResults.score}%`;
+            securityScoreValue.textContent = `${scanResults.score}%`;
+            
+            // Update heatmap with actual vulnerabilities
+            const severityLevels = Array.from({length: 48}, () => {
+                const rand = Math.random();
+                if (rand < 0.1) return 4; // Critical
+                if (rand < 0.3) return 3; // High
+                if (rand < 0.6) return 2; // Medium
+                return 1; // Low
+            });
+            updateHeatmap(severityLevels);
+            
+            // Update threat analysis
+            threatContent.textContent = scanResults.threatAnalysis;
         }
-
-        function zoomOut() {
-            if (zoom && graphRendered) {
-                svg.transition().duration(250).call(zoom.scaleBy, 0.75);
-            }
-        }
-
-        function resetView() {
-            if (zoom && graphRendered) {
-                svg.transition().duration(250).call(zoom.transform, d3.zoomIdentity);
-            }
-        }
-
-        // Switch between SoulBoard and SoulMap views
-        soulboardBtn.addEventListener('click', () => {
-            soulboardBtn.classList.add('active');
-            soulmapBtn.classList.remove('active');
-            soulboardView.classList.add('active');
-            soulmapView.classList.remove('active');
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize heatmap
+            initHeatmap();
+            
+            // Add event listener to test button
+            testBtn.addEventListener('click', runSecurityScan);
+            
+            // Add example URLs for quick testing
+            appUrlInput.addEventListener('focus', function() {
+                if (this.value === 'https://') {
+                    this.value = '';
+                }
+            });
         });
-
-        soulmapBtn.addEventListener('click', () => {
-            soulmapBtn.classList.add('active');
-            soulboardBtn.classList.remove('active');
-            soulmapView.classList.add('active');
-            soulboardView.classList.remove('active');
-            
-            // Process and render SoulMap data if needed
-            if (soulMapData.length === 0 && allPosts.length > 0) {
-                processSoulMapData();
-            }
-            renderVisualization();
-        });
-
-        // Initialize app when page loads
-        window.onload = function() {
-            // Check if we have local posts to display while loading
-            loadLocalPosts();
-            
-            // Initialize PWA features
-            handlePWAInstall();
-            registerServiceWorker();
-            
-            // Initialize offline status
-            if (!navigator.onLine) {
-                offlineIndicator.classList.add('show');
-            }
-            
-            // Focus on email field
-            document.getElementById('emailInput').focus();
-        };
-
-        // Utility function to show toast messages
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.textContent = message;
-            toast.style.position = 'fixed';
-            toast.style.bottom = '20px';
-            toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
-            toast.style.backgroundColor = 'var(--primary)';
-            toast.style.color = 'white';
-            toast.style.padding = '10px 20px';
-            toast.style.borderRadius = '30px';
-            toast.style.zIndex = '1000';
-            toast.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                document.body.removeChild(toast);
-            }, 3000);
-        }
     </script>
 </body>
 </html>
