@@ -3,659 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroForge | AI-Powered Security Scanner</title>
-    <!-- PWA Features -->
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <meta name="apple-mobile-web-app-status-bar" content="#2563eb">
-    <meta name="theme-color" content="#2563eb">
-    
-    <!-- Font Awesome -->
+    <title>ValueVision | Time-Based Financial Awareness</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- TensorFlow.js for machine learning -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
-    <!-- Natural language processing for threat analysis -->
-    <script src="https://cdn.jsdelivr.net/npm/compromise@14.8.4/builds/compromise.min.js"></script>
-    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
     <style>
-        :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --secondary: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --dark: #0f172a;
-            --light: #f8fafc;
-            --cyber-blue: #0ea5e9;
-            --cyber-purple: #8b5cf6;
-            --cyber-green: #22c55e;
-            --neural-pink: #ec4899;
-            --neural-purple: #a855f7;
-            --card-bg: rgba(30, 41, 59, 0.95);
-            --header-height: 70px;
-            --glow: 0 0 15px rgba(14, 165, 233, 0.5);
-            --ai-gradient: linear-gradient(135deg, #4a00e0, #8e2de2);
-            --neural-gradient: linear-gradient(135deg, var(--neural-pink), var(--neural-purple));
+        /* Existing CSS remains the same */
+        /* Adding new styles for the additional features */
+        
+        /* Badges */
+        .badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
         }
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        .badge {
+            width: 80px;
+            text-align: center;
         }
         
-        body {
-            background: linear-gradient(135deg, #0f172a, #1e293b);
-            color: var(--light);
-            min-height: 100vh;
-            padding: 0;
-            overflow-x: hidden;
-            line-height: 1.6;
+        .badge-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
         
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
+        .badge.earned .badge-icon {
+            background: linear-gradient(135deg, var(--success) 0%, var(--accent) 100%);
+            animation: pulse 1.5s infinite;
         }
         
-        /* Header */
-        header {
+        .badge-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .badge-desc {
+            font-size: 10px;
+            color: #7a7f9a;
+        }
+        
+        /* AR Overlay */
+        .ar-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            z-index: 1000;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 15px 20px;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 3000;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: var(--header-height);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .logo-icon {
-            background: var(--neural-gradient);
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
-            box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
         
-        .logo-text {
-            display: flex;
-            flex-direction: column;
+        .ar-overlay.active {
+            opacity: 1;
+            pointer-events: all;
         }
         
-        .logo h1 {
-            font-size: 22px;
-            font-weight: 800;
-            background: var(--neural-gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        /* Navigation */
-        .nav-links {
-            display: flex;
-            gap: 25px;
-        }
-        
-        .nav-link {
-            color: #94a3b8;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-        
-        .nav-link:hover {
-            color: var(--light);
-        }
-        
-        /* Hero Section */
-        .hero-section {
-            padding-top: calc(var(--header-height) + 40px);
-            padding: 100px 20px 60px;
-            text-align: center;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .hero-title {
-            font-size: 42px;
-            font-weight: 800;
-            margin-bottom: 20px;
-            background: var(--neural-gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            line-height: 1.2;
-        }
-        
-        .hero-subtitle {
-            font-size: 20px;
-            color: #94a3b8;
-            margin-bottom: 40px;
-        }
-        
-        .url-input-container {
-            max-width: 800px;
-            margin: 40px auto;
-            background: rgba(15, 23, 42, 0.7);
-            padding: 25px;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .url-input {
+        .ar-video {
             width: 100%;
-            padding: 16px 20px;
+            max-width: 500px;
+            height: 70vh;
+            background: #000;
             border-radius: 12px;
-            border: 2px solid rgba(148, 163, 184, 0.3);
-            background: rgba(15, 23, 42, 0.8);
-            color: var(--light);
-            font-size: 16px;
-            outline: none;
+            overflow: hidden;
         }
         
-        .url-input:focus {
-            border-color: var(--neural-pink);
-            box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
-        }
-        
-        .test-btn {
-            padding: 16px 30px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            background: var(--neural-gradient);
+        .ar-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.7);
             color: white;
-            box-shadow: 0 0 20px rgba(236, 72, 153, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .test-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 25px rgba(236, 72, 153, 0.7);
-        }
-        
-        .test-btn.running {
-            background: linear-gradient(to right, var(--warning), var(--danger));
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
-        
-        .status-message {
             padding: 15px;
             border-radius: 12px;
-            margin: 15px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .status-info {
-            background: rgba(14, 165, 233, 0.1);
-            border-left: 4px solid var(--cyber-blue);
-        }
-        
-        .status-success {
-            background: rgba(16, 185, 129, 0.1);
-            border-left: 4px solid var(--secondary);
-        }
-        
-        .status-warning {
-            background: rgba(245, 158, 11, 0.1);
-            border-left: 4px solid var(--warning);
-        }
-        
-        .status-error {
-            background: rgba(239, 68, 68, 0.1);
-            border-left: 4px solid var(--danger);
-        }
-        
-        /* Dashboard */
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-        
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .card.neural-card {
-            border: 1px solid rgba(236, 72, 153, 0.3);
-            box-shadow: 0 10px 30px rgba(236, 72, 153, 0.2);
-        }
-        
-        .card-header {
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .card-title {
-            font-size: 20px;
+            text-align: center;
+            font-size: 24px;
             font-weight: 700;
-            color: var(--light);
+            backdrop-filter: blur(5px);
+        }
+        
+        .ar-controls {
             display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .card-title i {
-            color: var(--cyber-blue);
-        }
-        
-        .card-title .neural-icon {
-            color: var(--neural-pink);
-        }
-        
-        .progress-container {
-            margin: 25px 0;
-        }
-        
-        .progress-bar {
-            height: 16px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 10px;
-            position: relative;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--danger), var(--warning), var(--secondary));
-            border-radius: 10px;
-            width: 0%;
-            transition: width 1s ease;
-        }
-        
-        .progress-labels {
-            display: flex;
-            justify-content: space-between;
-            color: #94a3b8;
-            font-size: 14px;
-        }
-        
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             margin-top: 20px;
         }
         
-        .result-card {
-            background: rgba(15, 23, 42, 0.7);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .result-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .result-value {
-            font-size: 32px;
-            font-weight: 800;
-            margin: 10px 0;
-        }
-        
-        .result-label {
-            color: #94a3b8;
-            font-size: 14px;
-        }
-        
-        .result-critical {
-            color: var(--danger);
-        }
-        
-        .result-high {
-            color: var(--warning);
-        }
-        
-        .result-medium {
-            color: #84cc16;
-        }
-        
-        .result-low {
-            color: var(--cyber-blue);
-        }
-        
-        /* Vulnerability List */
-        .vulnerability-list {
-            margin-top: 25px;
-        }
-        
-        .vulnerability-item {
-            background: rgba(15, 23, 42, 0.7);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--danger);
-            transition: all 0.3s ease;
-        }
-        
-        .vulnerability-item.warning {
-            border-left-color: var(--warning);
-        }
-        
-        .vulnerability-item.success {
-            border-left-color: var(--secondary);
-        }
-        
-        .vulnerability-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .vulnerability-title {
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
+        /* Category Select */
+        .category-select {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
+            margin-bottom: 15px;
         }
         
-        .vulnerability-desc {
-            color: #94a3b8;
-            margin-top: 10px;
-            line-height: 1.6;
-            font-size: 14px;
+        .category-option {
+            padding: 12px;
+            border: 2px solid #e0e7ff;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
         }
         
-        .vulnerability-severity {
-            padding: 4px 12px;
-            border-radius: 20px;
+        .category-option.selected {
+            border-color: var(--primary);
+            background: rgba(67, 97, 238, 0.1);
+        }
+        
+        .category-icon {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+        
+        .category-name {
             font-size: 12px;
             font-weight: 600;
         }
         
-        .severity-critical {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
+        /* Expense List */
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #e0e7ff;
         }
         
-        .severity-high {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--warning);
+        .expense-info {
+            flex: 1;
         }
         
-        .severity-medium {
-            background: rgba(101, 163, 13, 0.2);
-            color: #84cc16;
+        .expense-name {
+            font-weight: 600;
+            margin-bottom: 4px;
         }
         
-        .severity-low {
-            background: rgba(59, 130, 246, 0.2);
-            color: var(--cyber-blue);
+        .expense-category {
+            font-size: 12px;
+            color: #7a7f9a;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
-        /* Heatmap */
-        .heatmap-container {
-            margin: 30px 0;
-            padding: 20px;
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 16px;
-            border: 1px solid rgba(139, 92, 246, 0.3);
-        }
-        
-        .heatmap-title {
-            text-align: center;
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: var(--light);
-        }
-        
-        .heatmap-grid {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 4px;
-            max-width: 100%;
-            margin: 0 auto;
-        }
-        
-        .heatmap-cell {
-            aspect-ratio: 1/1;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-        
-        .heatmap-cell:hover {
-            transform: scale(1.2);
-            z-index: 2;
-        }
-        
-        .severity-0 { background: rgba(16, 185, 129, 0.1); }
-        .severity-1 { background: rgba(59, 130, 246, 0.3); }
-        .severity-2 { background: rgba(101, 163, 13, 0.5); }
-        .severity-3 { background: rgba(245, 158, 11, 0.7); }
-        .severity-4 { background: rgba(239, 68, 68, 0.9); }
-        
-        /* Proprietary Section */
-        .proprietary-section {
-            margin: 40px 0;
-            padding: 30px;
-            background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(168, 85, 247, 0.1));
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .section-title {
-            text-align: center;
-            font-size: 24px;
-            margin-bottom: 25px;
-            color: var(--light);
+        .expense-amount {
             font-weight: 700;
+            font-size: 16px;
+            color: var(--error);
         }
         
-        .innovation-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
+        .expense-time {
+            font-size: 12px;
+            color: var(--dark);
+            margin-top: 4px;
+        }
+        
+        /* Insights Panel */
+        .insights-container {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e6f7ff 100%);
+            border-radius: var(--radius);
+            padding: 20px;
             margin-top: 20px;
         }
         
-        .innovation-card {
-            background: rgba(15, 23, 42, 0.7);
+        .insight-item {
+            background: white;
             border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            transition: transform 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .innovation-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--neural-purple);
-            box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
-        }
-        
-        .innovation-icon {
-            font-size: 36px;
-            margin-bottom: 15px;
-            color: var(--neural-purple);
-        }
-        
-        .innovation-card h3 {
-            color: var(--light);
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-        
-        .innovation-card p {
-            color: #94a3b8;
-            font-size: 15px;
-            line-height: 1.6;
-        }
-        
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 30px 20px;
-            color: #94a3b8;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: 40px;
-            font-size: 14px;
-        }
-        
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin: 15px 0;
-        }
-        
-        .footer-link {
-            color: var(--cyber-blue);
-            text-decoration: none;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-        
-        .footer-link:hover {
-            text-decoration: underline;
-        }
-        
-        /* Threat Analysis Section */
-        .threat-analysis {
-            margin: 30px 0;
-            padding: 20px;
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 16px;
-            border: 1px solid rgba(142, 45, 226, 0.3);
-        }
-        
-        .threat-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .threat-icon {
-            font-size: 24px;
-            color: #8e2de2;
-        }
-        
-        .threat-title {
-            font-size: 18px;
-            font-weight: 700;
-            background: var(--ai-gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .threat-content {
             padding: 15px;
-            background: rgba(30, 41, 59, 0.6);
-            border-radius: 12px;
-            margin-top: 10px;
-            max-height: 200px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            white-space: pre-wrap;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--warning);
         }
         
-        .threat-loader {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-        }
-        
-        .threat-loader .dot {
-            width: 8px;
-            height: 8px;
-            background: #8e2de2;
-            border-radius: 50%;
-            animation: bounce 1.5s infinite;
-        }
-        
-        .threat-loader .dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        
-        .threat-loader .dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-        
-        /* Proxy toggle */
-        .proxy-toggle {
+        .insight-header {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-top: 15px;
-            color: #94a3b8;
+            margin-bottom: 10px;
+            color: var(--warning);
         }
         
-        .switch {
+        .insight-title {
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        /* Toggle Switch */
+        .toggle-switch {
             position: relative;
             display: inline-block;
             width: 50px;
             height: 24px;
         }
         
-        .switch input { 
+        .toggle-switch input {
             opacity: 0;
             width: 0;
             height: 0;
@@ -668,9 +230,9 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.1);
+            background-color: #ccc;
             transition: .4s;
-            border-radius: 34px;
+            border-radius: 24px;
         }
         
         .slider:before {
@@ -686,1962 +248,1673 @@
         }
         
         input:checked + .slider {
-            background: var(--neural-pink);
+            background-color: var(--primary);
         }
         
         input:checked + .slider:before {
             transform: translateX(26px);
         }
         
-        .tech-pill {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-top: 8px;
-            background: rgba(236, 72, 153, 0.15);
-            color: var(--neural-pink);
-        }
-        
-        .disclaimer {
-            background: rgba(245, 158, 11, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-size: 14px;
-            border-left: 3px solid var(--warning);
-        }
-        
-        /* Neural Network Visualization */
-        .neural-network {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 120px;
-            margin: 20px 0;
-            position: relative;
-        }
-        
-        .neural-layer {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-around;
-            height: 100%;
-            margin: 0 15px;
-            position: relative;
-        }
-        
-        .neural-node {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--neural-pink);
-            margin: 8px 0;
-            position: relative;
-            box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
-        }
-        
-        .neural-connection {
-            position: absolute;
-            background: linear-gradient(to right, rgba(236, 72, 153, 0.3), rgba(168, 85, 247, 0.3));
-            transform-origin: 0 50%;
-            z-index: -1;
-        }
-        
-        .neural-node.active {
-            background: var(--neural-purple);
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.7);
-            animation: pulse 1.5s infinite;
-        }
-        
-        /* ML Results */
-        .ml-results {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(15, 23, 42, 0.7);
-            border-radius: 12px;
-            border: 1px solid rgba(236, 72, 153, 0.3);
-        }
-        
-        .ml-result-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .ml-result-item:last-child {
-            border-bottom: none;
-        }
-        
-        .ml-result-label {
-            color: #94a3b8;
-        }
-        
-        .ml-result-value {
-            font-weight: 600;
-            color: var(--light);
-        }
-        
-        .ml-confidence {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .confidence-bar {
-            width: 100px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        
-        .confidence-fill {
-            height: 100%;
-            background: var(--neural-gradient);
-            border-radius: 3px;
-            width: 0%;
-            transition: width 1s ease;
-        }
-        
-        /* Progress Steps */
-        .progress-steps {
-            display: flex;
-            justify-content: space-between;
-            margin: 20px 0;
-            position: relative;
-        }
-        
-        .progress-steps::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-50%);
-            z-index: 1;
-        }
-        
-        .progress-step {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            position: relative;
-            z-index: 2;
-            transition: all 0.3s ease;
-        }
-        
-        .progress-step.active {
-            background: var(--neural-pink);
-            box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
-        }
-        
-        .progress-step.completed {
-            background: var(--secondary);
-        }
-        
-        /* Scan History */
-        .scan-history {
-            margin: 40px 0;
-        }
-        
-        .history-item {
-            background: rgba(15, 23, 42, 0.7);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 4px solid var(--cyber-blue);
-        }
-        
-        .history-url {
-            font-weight: 500;
-        }
-        
-        .history-date {
-            color: #94a3b8;
-            font-size: 14px;
-        }
-        
-        /* Export Section */
-        .export-section {
-            margin: 30px 0;
-            text-align: center;
-        }
-        
-        .export-btn {
-            padding: 12px 25px;
-            background: rgba(14, 165, 233, 0.1);
-            border: 1px solid var(--cyber-blue);
-            color: var(--cyber-blue);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .export-btn:hover {
-            background: rgba(14, 165, 233, 0.2);
-        }
-        
-        /* Responsive Adjustments */
-        @media (min-width: 768px) {
-            .input-group {
-                flex-direction: row;
-            }
-            
-            .url-input {
-                font-size: 16px;
-            }
-            
-            .test-btn {
-                padding: 16px 40px;
-            }
-            
-            .dashboard {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .results-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-            
-            .innovation-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            
-            .nav-links {
-                display: flex;
-            }
-        }
-        
-        @media (min-width: 992px) {
-            .container {
-                padding: 0 30px;
-            }
-            
-            .hero-title {
-                font-size: 48px;
-            }
-        }
-        
-        /* Mobile menu */
-        .mobile-menu-btn {
+        /* New tab styles */
+        .tab-content {
             display: none;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
         }
         
-        @media (max-width: 767px) {
-            .nav-links {
-                display: none;
-                position: absolute;
-                top: var(--header-height);
-                left: 0;
-                right: 0;
-                background: rgba(15, 23, 42, 0.95);
-                flex-direction: column;
-                padding: 20px;
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
-            }
-            
-            .nav-links.active {
-                display: flex;
-            }
-            
-            .mobile-menu-btn {
-                display: block;
-            }
-            
-            .results-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .innovation-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* Animation enhancements */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s ease forwards;
-        }
-        
-        .delay-1 { animation-delay: 0.1s; }
-        .delay-2 { animation-delay: 0.2s; }
-        .delay-3 { animation-delay: 0.3s; }
-        .delay-4 { animation-delay: 0.4s; }
-        
-        /* Detailed report view */
-        .detailed-view {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease;
-        }
-        
-        .detailed-view.active {
-            max-height: 500px;
-        }
-        
-        .view-toggle {
-            background: none;
-            border: none;
-            color: var(--cyber-blue);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: 10px;
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--neural-pink);
-            border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--neural-purple);
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settings-panel">
+        <div class="settings-header">
+            <div class="settings-title">Settings</div>
+            <button class="close-settings" id="close-settings">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="settings-section">
+            <h3 class="section-title"><i class="fas fa-cog"></i> App Settings</h3>
+            
+            <div class="settings-item">
+                <div class="feature-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="feature-info">
+                    <div class="feature-title">Hourly Rate</div>
+                    <div class="feature-desc">Your current hourly wage</div>
+                </div>
+                <div class="input-group" style="max-width: 100px;">
+                    <input type="number" id="settings-hourly-rate" value="0" min="0" step="0.01">
+                    <span>$</span>
+                </div>
+            </div>
+            
+            <div class="settings-item">
+                <div class="feature-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="feature-info">
+                    <div class="feature-title">Daily Work Hours</div>
+                    <div class="feature-desc">Your typical workday length</div>
+                </div>
+                <div class="input-group" style="max-width: 100px;">
+                    <input type="number" id="settings-daily-hours" value="0" min="0" max="24" step="0.5">
+                    <span>hrs</span>
+                </div>
+            </div>
+            
+            <div class="settings-item">
+                <div class="feature-icon">
+                    <i class="fas fa-video"></i>
+                </div>
+                <div class="feature-info">
+                    <div class="feature-title">AR Mode</div>
+                    <div class="feature-desc">Enable camera overlay</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="ar-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <button class="reset-btn" id="reset-app">
+                <i class="fas fa-redo"></i> Reset Application Data
+            </button>
+        </div>
+        
+        <div class="settings-section">
+            <h3 class="section-title"><i class="fas fa-trophy"></i> Your Badges</h3>
+            <div class="badges-container" id="badges-container">
+                <!-- Badges will be populated here -->
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h3 class="section-title"><i class="fas fa-star"></i> Innovative Features</h3>
+            
+            <div class="settings-item" data-feature="bank-integration">
+                <div class="feature-icon">
+                    <i class="fas fa-university"></i>
+                </div>
+                <div class="feature-info">
+                    <div class="feature-title">Bank Integration</div>
+                    <div class="feature-desc">Connect your bank accounts for automatic tracking</div>
+                </div>
+                <div class="coming-soon">COMING SOON</div>
+            </div>
+            
+            <div class="settings-item" data-feature="sms-integration">
+                <div class="feature-icon">
+                    <i class="fas fa-comment-alt"></i>
+                </div>
+                <div class="feature-info">
+                    <div class="feature-title">SMS Integration</div>
+                    <div class="feature-desc">Track expenses via SMS notifications</div>
+                </div>
+                <div class="coming-soon">COMING SOON</div>
+            </div>
+            
+            <div class="settings-item" data-feature="time-bank">
+                <div class="feature-icon">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div class="feature-info">
+                    <div class="feature-title">Time Bank</div>
+                    <div class="feature-desc">Save time instead of money for future purchases</div>
+                </div>
+                <div class="coming-soon">COMING SOON</div>
+            </div>
+        </div>
+        
+        <div class="roadmap-container">
+            <div class="roadmap-title">Feature Roadmap</div>
+            
+            <div class="roadmap-item">
+                <div class="roadmap-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="roadmap-content">
+                    <div class="roadmap-feature">Financial AI Advisor</div>
+                    <div class="roadmap-desc">Get personalized financial advice based on your spending habits</div>
+                    <span class="roadmap-status">In Development</span>
+                </div>
+            </div>
+            
+            <div class="roadmap-item">
+                <div class="roadmap-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="roadmap-content">
+                    <div class="roadmap-feature">Investment Insights</div>
+                    <div class="roadmap-desc">Track investments in time equivalents</div>
+                    <span class="roadmap-status">Planned for Q3</span>
+                </div>
+            </div>
+            
+            <div class="roadmap-item">
+                <div class="roadmap-icon">
+                    <i class="fas fa-stopwatch"></i>
+                </div>
+                <div class="roadmap-content">
+                    <div class="roadmap-feature">Time Tracker</div>
+                    <div class="roadmap-desc">Track your actual working hours</div>
+                    <span class="roadmap-status">Planned for Q4</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Coming Soon Modal -->
+    <div class="coming-soon-modal" id="coming-soon-modal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-wrench"></i>
+            </div>
+            <h3 class="modal-title">Feature Coming Soon!</h3>
+            <p class="modal-text" id="modal-text">We're working hard to bring you this innovative feature in our next update. Stay tuned for exciting new capabilities!</p>
+            <button class="modal-btn" id="modal-close">Got It!</button>
+        </div>
+    </div>
+    
+    <!-- AR Overlay -->
+    <div class="ar-overlay" id="ar-overlay">
+        <div class="ar-video" id="ar-video">
+            <div class="ar-display" id="ar-display">
+                <div id="ar-item-name">Item Name</div>
+                <div id="ar-time-cost">0 hours</div>
+            </div>
+        </div>
+        <div class="ar-controls">
+            <button class="btn btn-secondary" id="ar-close">
+                <i class="fas fa-times"></i> Close
+            </button>
+            <button class="btn" id="ar-save">
+                <i class="fas fa-save"></i> Save Expense
+            </button>
+        </div>
+    </div>
+    
+    <div class="container" id="app-container">
         <!-- Header -->
         <header>
-            <div class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-brain"></i>
+            <div class="header-top">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <h1>ValueVision</h1>
                 </div>
-                <div class="logo-text">
-                    <h1>NeuroForge</h1>
+                <div id="settings-toggle">
+                    <i class="fas fa-cog" style="font-size: 22px; color: white;"></i>
                 </div>
             </div>
+            <div class="subtitle">Transform money into time equivalents for smarter decisions</div>
             
-            <div class="nav-links">
-                <a href="#" class="nav-link">Home</a>
-                <a href="#" class="nav-link">Features</a>
-                <a href="#" class="nav-link">Pricing</a>
-                <a href="#" class="nav-link">Docs</a>
-                <a href="#" class="nav-link">Contact</a>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-spent">$0.00</div>
+                    <div class="stat-label">Spent Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-hours">0</div>
+                    <div class="stat-label">Hours Worked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-saved">$0.00</div>
+                    <div class="stat-label">Saved</div>
+                </div>
             </div>
-            
-            <button class="mobile-menu-btn" id="mobile-menu-btn">
-                <i class="fas fa-bars"></i>
-            </button>
         </header>
         
-        <!-- Hero Section -->
-        <section class="hero-section">
-            <h2 class="hero-title">AI-Powered Security Scanner</h2>
-            <p class="hero-subtitle">Next-generation vulnerability detection with machine learning</p>
-            
-            <div class="url-input-container fade-in">
-                <div class="input-group">
-                    <input type="url" class="url-input" id="app-url" placeholder="https://example.com" value="https://example.com">
-                    <button class="test-btn" id="test-btn">
-                        <i class="fas fa-brain"></i> Run AI Security Analysis
-                    </button>
-                </div>
-                <p>Enter any website URL to perform advanced AI-powered security assessment</p>
-                
-                <div class="proxy-toggle">
-                    <span>Enable neural analysis:</span>
-                    <label class="switch">
-                        <input type="checkbox" id="neural-toggle" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                
-                <div class="disclaimer">
-                    <i class="fas fa-exclamation-circle"></i>
-                    This tool performs security analysis only. Always obtain proper authorization before scanning websites.
-                </div>
-                
-                <div class="status-message status-info" id="status-message">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Enter URL and click "Run AI Security Analysis" to begin</span>
-                </div>
-
-                <div class="progress-steps" id="progress-steps">
-                    <div class="progress-step" id="step-1">1</div>
-                    <div class="progress-step" id="step-2">2</div>
-                    <div class="progress-step" id="step-3">3</div>
-                    <div class="progress-step" id="step-4">4</div>
-                    <div class="progress-step" id="step-5">5</div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Neural Network Visualization -->
-        <div class="neural-network" id="neural-network">
-            <!-- Will be populated by JavaScript -->
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <div class="tab active" data-tab="calculator">Calculator</div>
+            <div class="tab" data-tab="expenses">Expenses</div>
+            <div class="tab" data-tab="savings">Savings</div>
+            <div class="tab" data-tab="insights">Insights</div>
+            <div class="tab" data-tab="history">History</div>
         </div>
         
-        <!-- Proprietary Technology -->
-        <section class="proprietary-section fade-in">
-            <h2 class="section-title">Proprietary AI Technology</h2>
-            
-            <div class="innovation-grid">
-                <div class="innovation-card delay-1">
-                    <div class="innovation-icon">
-                        <i class="fas fa-robot"></i>
+        <!-- Main Content -->
+        <main>
+            <!-- Calculator Tab -->
+            <div class="tab-content active" id="calculator">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-money-bill-wave"></i> Your Earning Power</div>
                     </div>
-                    <h3>Neural Vulnerability Detection</h3>
-                    <p>Patented machine learning algorithms that detect novel vulnerabilities through behavioral analysis.</p>
-                    <div class="tech-pill">PATENT PENDING</div>
-                </div>
-                
-                <div class="innovation-card delay-2">
-                    <div class="innovation-icon">
-                        <i class="fas fa-project-diagram"></i>
-                    </div>
-                    <h3>Adaptive Threat Modeling</h3>
-                    <p>AI that builds dynamic threat models based on real-time analysis of application architecture.</p>
-                    <div class="tech-pill">EXCLUSIVE</div>
-                </div>
-                
-                <div class="innovation-card delay-3">
-                    <div class="innovation-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3>Zero-Day Prediction</h3>
-                    <p>Proprietary algorithms that identify patterns indicative of previously unknown vulnerabilities.</p>
-                    <div class="tech-pill">INNOVATIVE</div>
-                </div>
-
-                <!-- Additional cards from CyberForge -->
-                <div class="innovation-card delay-1">
-                    <div class="innovation-icon">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <h3>Behavioral Analysis Engine</h3>
-                    <p>Patented algorithms that detect vulnerabilities by analyzing runtime behavior patterns.</p>
-                    <div class="tech-pill">PATENTED</div>
-                </div>
-                
-                <div class="innovation-card delay-2">
-                    <div class="innovation-icon">
-                        <i class="fas fa-project-diagram"></i>
-                    </div>
-                    <h3>Cross-Origin Scanning</h3>
-                    <p>Proprietary technology to securely analyze content across domains without CORS limitations.</p>
-                    <div class="tech-pill">EXCLUSIVE</div>
-                </div>
-                
-                <div class="innovation-card delay-3">
-                    <div class="innovation-icon">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <h3>Zero-Day Detection</h3>
-                    <p>Advanced heuristics to identify previously unknown vulnerabilities in modern frameworks.</p>
-                    <div class="tech-pill">INNOVATIVE</div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Dashboard -->
-        <div class="dashboard">
-            <div class="card neural-card fade-in">
-                <div class="card-header">
-                    <h2 class="card-title"><i class="fas fa-brain neural-icon"></i> AI Security Report</h2>
-                    <span id="report-status">Ready to scan</span>
-                </div>
-                
-                <div class="progress-container">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="security-score-bar"></div>
-                    </div>
-                    <div class="progress-labels">
-                        <span>Low Security</span>
-                        <span id="security-score-value">0%</span>
-                        <span>High Security</span>
-                    </div>
-                </div>
-                
-                <div class="results-grid">
-                    <div class="result-card">
-                        <div class="result-value result-critical" id="critical-count">0</div>
-                        <div class="result-label">Critical Vulnerabilities</div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-value result-high" id="high-count">0</div>
-                        <div class="result-label">High Severity</div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-value result-medium" id="medium-count">0</div>
-                        <div class="result-label">Medium Issues</div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-value result-low" id="low-count">0</div>
-                        <div class="result-label">Low Severity</div>
-                    </div>
-                </div>
-                
-                <!-- ML Results -->
-                <div class="ml-results">
-                    <h3 class="card-title"><i class="fas fa-microchip neural-icon"></i> AI Analysis</h3>
-                    <div class="ml-result-item">
-                        <span class="ml-result-label">Vulnerability Prediction Confidence</span>
-                        <div class="ml-confidence">
-                            <div class="confidence-bar">
-                                <div class="confidence-fill" id="confidence-level"></div>
-                            </div>
-                            <span class="ml-result-value" id="confidence-value">0%</span>
-                        </div>
-                    </div>
-                    <div class="ml-result-item">
-                        <span class="ml-result-label">Anomaly Detection Score</span>
-                        <span class="ml-result-value" id="anomaly-score">0.00</span>
-                    </div>
-                    <div class="ml-result-item">
-                        <span class="ml-result-label">Threat Intelligence Match</span>
-                        <span class="ml-result-value" id="threat-match">No matches</span>
-                    </div>
-                </div>
-                
-                <div class="vulnerability-list" id="vulnerability-list">
-                    <div class="vulnerability-item">
-                        <div class="vulnerability-header">
-                            <div class="vulnerability-title">
-                                <i class="fas fa-shield-alt"></i>
-                                <span>Run security tests to discover vulnerabilities</span>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label for="hourly-rate"><i class="fas fa-dollar-sign"></i> Hourly Rate</label>
+                            <div class="input-group">
+                                <input type="number" id="hourly-rate" placeholder="0.00" value="0">
+                                <span>$/hr</span>
                             </div>
                         </div>
-                        <div class="vulnerability-desc">
-                            Enter a URL and click "Run AI Security Analysis" to begin security assessment
+                        
+                        <div class="form-group">
+                            <label for="daily-hours"><i class="fas fa-clock"></i> Daily Work Hours</label>
+                            <input type="number" id="daily-hours" placeholder="8" value="0">
                         </div>
                     </div>
                 </div>
                 
-                <!-- Threat Analysis Section -->
-                <div class="threat-analysis">
-                    <div class="threat-header">
-                        <i class="fas fa-brain threat-icon"></i>
-                        <h3 class="threat-title">AI Threat Analysis Report</h3>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-shopping-cart"></i> Purchase Evaluation</div>
                     </div>
-                    <div class="threat-content" id="threat-content">
-                        AI security analysis will appear here after scan completes.
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label for="item-name"><i class="fas fa-tag"></i> Item Name</label>
+                            <input type="text" id="item-name" placeholder="e.g. Coffee, Dinner Out">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="item-cost"><i class="fas fa-dollar-sign"></i> Item Cost</label>
+                            <div class="input-group">
+                                <input type="number" id="item-cost" placeholder="0.00" value="0">
+                                <span>USD</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-list"></i> Category</label>
+                            <div class="category-select" id="category-select">
+                                <div class="category-option" data-category="Food">
+                                    <div class="category-icon"><i class="fas fa-utensils"></i></div>
+                                    <div class="category-name">Food</div>
+                                </div>
+                                <div class="category-option" data-category="Transport">
+                                    <div class="category-icon"><i class="fas fa-bus"></i></div>
+                                    <div class="category-name">Transport</div>
+                                </div>
+                                <div class="category-option" data-category="Entertainment">
+                                    <div class="category-icon"><i class="fas fa-gamepad"></i></div>
+                                    <div class="category-name">Entertainment</div>
+                                </div>
+                                <div class="category-option" data-category="Shopping">
+                                    <div class="category-icon"><i class="fas fa-shopping-bag"></i></div>
+                                    <div class="category-name">Shopping</div>
+                                </div>
+                                <div class="category-option" data-category="Bills">
+                                    <div class="category-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                                    <div class="category-name">Bills</div>
+                                </div>
+                                <div class="category-option" data-category="Other">
+                                    <div class="category-icon"><i class="fas fa-ellipsis-h"></i></div>
+                                    <div class="category-name">Other</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="item-note"><i class="fas fa-sticky-note"></i> Note (Optional)</label>
+                            <input type="text" id="item-note" placeholder="Add any details about this purchase">
+                        </div>
+                        
+                        <button class="btn" id="calculate-btn">
+                            <i class="fas fa-hourglass-half"></i> Calculate Time Cost
+                        </button>
+                        
+                        <div class="result-card" id="time-result" style="display: none;">
+                            <div class="result-value" id="time-result-value">0 min</div>
+                            <div class="result-label">of work needed for this <span id="result-item">item</span></div>
+                            
+                            <div class="time-visual">
+                                <div class="time-block" id="time-block-minutes">0m</div>
+                                <div class="time-block">=</div>
+                                <div class="time-block"><i class="fas fa-shopping-bag"></i></div>
+                            </div>
+                            
+                            <div class="insight-card">
+                                <div class="insight-title">
+                                    <i class="fas fa-lightbulb"></i>
+                                    Financial Insight
+                                </div>
+                                <p id="insight-text">Enter values to see how purchases impact your time</p>
+                            </div>
+                            
+                            <button class="btn" id="save-expense-btn" style="margin-top: 15px;">
+                                <i class="fas fa-save"></i> Save Expense
+                            </button>
+                            
+                            <button class="btn btn-secondary" id="view-ar-btn" style="margin-top: 10px;">
+                                <i class="fas fa-camera"></i> View in AR
+                            </button>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- Export Section -->
-                <div class="export-section">
-                    <button class="export-btn" id="export-btn">
-                        <i class="fas fa-download"></i> Export Full Report
-                    </button>
                 </div>
             </div>
             
-            <div class="card fade-in delay-1">
-                <div class="card-header">
-                    <h2 class="card-title"><i class="fas fa-bug"></i> Vulnerability Analysis</h2>
-                    <span>Detailed results</span>
-                </div>
-                
-                <!-- Vulnerability Heatmap -->
-                <div class="heatmap-container">
-                    <h3 class="heatmap-title">Vulnerability Distribution</h3>
-                    <div class="heatmap-grid" id="heatmap-grid">
-                        <!-- Heatmap cells will be generated by JS -->
+            <!-- Expenses Tab -->
+            <div class="tab-content" id="expenses">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-money-bill-wave"></i> This Week's Expenses</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="stats" style="background: white; margin-bottom: 20px;">
+                            <div class="stat-card">
+                                <div class="stat-value" id="week-total">$0.00</div>
+                                <div class="stat-label">Total</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="week-time">0h</div>
+                                <div class="stat-label">Time Cost</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="week-count">0</div>
+                                <div class="stat-label">Items</div>
+                            </div>
+                        </div>
+                        
+                        <div id="expenses-list">
+                            <div class="empty-state">
+                                <i class="fas fa-receipt"></i>
+                                <h3>No Expenses This Week</h3>
+                                <p>Your expenses will appear here once you start tracking them</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="card-header" style="margin-top: 30px;">
-                    <h2 class="card-title"><i class="fas fa-network-wired"></i> Security Protocols</h2>
-                    <span>Connection security</span>
-                </div>
-                
-                <div class="results-grid">
-                    <div class="result-card">
-                        <div class="result-value" id="https-status">❓</div>
-                        <div class="result-label">HTTPS</div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-chart-pie"></i> Expenses by Category</div>
                     </div>
-                    <div class="result-card">
-                        <div class="result-value" id="hsts-status">❓</div>
-                        <div class="result-label">HSTS</div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-value" id="csp-status">❓</div>
-                        <div class="result-label">CSP</div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-value" id="xfo-status">❓</div>
-                        <div class="result-label">X-Frame-Options</div>
-                    </div>
-                </div>
-                
-                <div class="card-header" style="margin-top: 30px;">
-                    <h2 class="card-title"><i class="fas fa-microchip"></i> Advanced Detection</h2>
-                    <span>Technology analysis</span>
-                </div>
-                
-                <div class="results-grid">
-                    <div class="result-card">
-                        <div class="result-value" id="shadow-dom">❓</div>
-                        <div class="result-label">Shadow DOM</div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-value" id="web-components">❓</div>
-                        <div class="result-label">Web Components</div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-value" id="js-frameworks">❓</div>
-                        <div class="result-label">JS Frameworks</div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-value" id="obfuscation">❓</div>
-                        <div class="result-label">Obfuscation</div>
-                    </div>
-                </div>
-                
-                <!-- Scan History -->
-                <div class="card-header" style="margin-top: 30px;">
-                    <h2 class="card-title"><i class="fas fa-history"></i> Recent Scans</h2>
-                    <span>Last 5 scans</span>
-                </div>
-                
-                <div class="scan-history" id="scan-history">
-                    <div class="history-item">
-                        <span class="history-url">No scans yet</span>
-                        <span class="history-date">-</span>
+                    <div class="card-content">
+                        <div id="category-chart">
+                            <div class="empty-state">
+                                <i class="fas fa-chart-pie"></i>
+                                <h3>No Category Data</h3>
+                                <p>Expense categories will appear here once you start tracking</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+            
+            <!-- Savings Tab -->
+            <div class="tab-content" id="savings">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-bullseye"></i> Create Savings Goal</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label for="goal-name"><i class="fas fa-crosshairs"></i> Goal Name</label>
+                            <input type="text" id="goal-name" placeholder="e.g. Vacation, New Laptop">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="goal-amount"><i class="fas fa-dollar-sign"></i> Target Amount</label>
+                            <div class="input-group">
+                                <input type="number" id="goal-amount" placeholder="0.00" value="0">
+                                <span>USD</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="saved-amount"><i class="fas fa-piggy-bank"></i> Amount Saved</label>
+                            <div class="input-group">
+                                <input type="number" id="saved-amount" placeholder="0.00" value="0">
+                                <span>USD</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="daily-savings"><i class="fas fa-calendar-day"></i> Daily Savings Target</label>
+                            <div class="input-group">
+                                <input type="number" id="daily-savings" placeholder="0.00" value="0">
+                                <span>USD</span>
+                            </div>
+                        </div>
+                        
+                        <button class="btn" id="save-goal-btn">
+                            <i class="fas fa-save"></i> Save Goal
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="savings-card" id="savings-goal-card" style="display: none;">
+                    <div class="savings-header">
+                        <div class="savings-title" id="goal-title">Goal Name</div>
+                        <div class="savings-amount" id="goal-progress">$0.00/$0.00</div>
+                    </div>
+                    
+                    <div class="savings-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Target Date</div>
+                            <div class="detail-value" id="goal-date">--</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Days Left</div>
+                            <div class="detail-value" id="days-left">--</div>
+                        </div>
+                    </div>
+                    
+                    <div class="savings-progress">
+                        <div class="progress-header">
+                            <div>Progress</div>
+                            <div id="progress-percent">0%</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="savings-progress" style="margin-top: 20px;">
+                        <div class="progress-header">
+                            <div>Time Value: <span id="time-saved">0</span> hours saved</div>
+                            <div><span id="time-total">0</span> hours total</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="time-progress" style="width: 0%; background: var(--primary);"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="time-visual" style="margin-top: 20px;">
+                        <div class="time-block" style="background: var(--success);" id="saved-time-block">0h</div>
+                        <div class="time-block">of</div>
+                        <div class="time-block" id="total-time-block">0h</div>
+                        <div class="time-block"><i class="fas fa-trophy"></i></div>
+                    </div>
+                    
+                    <div class="insight-card" style="margin-top: 20px;">
+                        <div class="insight-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            Timeline
+                        </div>
+                        <p id="timeline-text">Set a daily savings target to see your timeline</p>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; margin-top: 20px;">
+                        <button class="btn btn-secondary" id="add-savings-btn" style="flex: 1;">
+                            <i class="fas fa-plus"></i> Add Savings
+                        </button>
+                        <button class="btn" id="edit-goal-btn" style="flex: 1;">
+                            <i class="fas fa-edit"></i> Edit Goal
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="empty-state" id="savings-empty">
+                    <i class="fas fa-bullseye"></i>
+                    <h3>No Savings Goals Yet</h3>
+                    <p>Create your first savings goal to start tracking your progress and time value</p>
+                </div>
+            </div>
+            
+            <!-- Insights Tab -->
+            <div class="tab-content" id="insights">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-brain"></i> Financial Insights</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="insights-container" id="insights-container">
+                            <div class="empty-state">
+                                <i class="fas fa-lightbulb"></i>
+                                <h3>No Insights Yet</h3>
+                                <p>Your personalized financial insights will appear here once you start using the app</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-chart-line"></i> Monthly Summary</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="stats" style="background: white; margin-bottom: 20px;">
+                            <div class="stat-card">
+                                <div class="stat-value" id="month-total">$0.00</div>
+                                <div class="stat-label">Spent</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="month-time">0h</div>
+                                <div class="stat-label">Time Cost</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="month-count">0</div>
+                                <div class="stat-label">Items</div>
+                            </div>
+                        </div>
+                        
+                        <div id="monthly-chart">
+                            <div class="empty-state">
+                                <i class="fas fa-chart-bar"></i>
+                                <h3>No Monthly Data</h3>
+                                <p>Your monthly spending chart will appear here once you have data</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- History Tab -->
+            <div class="tab-content" id="history">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-history"></i> Financial History</div>
+                    </div>
+                    <div class="card-content">
+                        <div id="history-list">
+                            <div class="empty-state">
+                                <i class="fas fa-history"></i>
+                                <h3>No Financial History Yet</h3>
+                                <p>Your purchase evaluations and savings progress will appear here once you start using ValueVision</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
         
-        <!-- Footer -->
-        <footer class="fade-in delay-2">
-            <h3>NeuroForge AI Security Platform</h3>
-            <p>Next-generation security scanning with machine learning</p>
-            
-            <div class="footer-links">
-                <a href="#" class="footer-link">Privacy Policy</a>
-                <a href="#" class="footer-link">Terms of Service</a>
-                <a href="#" class="footer-link">How It Works</a>
-                <a href="#" class="footer-link">Contact Us</a>
-            </div>
-            
-            <p>&copy; 2023 NeuroForge Inc. All rights reserved. | Version 2.0.0</p>
+        <footer>
+            ValueVision &copy; 2023 | Your time is your most valuable asset
         </footer>
     </div>
     
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toast-message">Action completed successfully!</span>
+    </div>
+
     <script>
-        // Enhanced AI-Powered Security Scanner Implementation
-        class NeuroForgeScanner {
-            constructor() {
-                this.vulnerabilities = [];
-                this.securityScore = 100;
-                this.threatAnalysis = "";
-                this.advancedMetrics = {
-                    shadowDom: false,
-                    webComponents: false,
-                    jsFrameworks: [],
-                    obfuscationLevel: 0
-                };
-                this.currentStep = 0;
-                this.corsProxies = [
-                    'https://api.allorigins.win/raw?url=',
-                    'https://corsproxy.io/?',
-                    'https://cors-anywhere.herokuapp.com/'
-                ];
-                this.technicalDetails = {};
-                this.mlModel = null;
-                this.nlp = null;
-                this.scanHistory = JSON.parse(localStorage.getItem('scanHistory')) || [];
-                
-                // Initialize ML and NLP
-                this.initMachineLearning();
-                this.updateScanHistoryUI();
-            }
-            
-            // Update scan history UI
-            updateScanHistoryUI() {
-                const historyContainer = document.getElementById('scan-history');
-                historyContainer.innerHTML = '';
-                
-                if (this.scanHistory.length === 0) {
-                    historyContainer.innerHTML = `
-                        <div class="history-item">
-                            <span class="history-url">No scans yet</span>
-                            <span class="history-date">-</span>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // Show last 5 scans
-                const recentScans = this.scanHistory.slice(-5).reverse();
-                
-                recentScans.forEach(scan => {
-                    const historyItem = document.createElement('div');
-                    historyItem.className = 'history-item';
-                    historyItem.innerHTML = `
-                        <span class="history-url">${scan.url}</span>
-                        <span class="history-date">${new Date(scan.timestamp).toLocaleDateString()}</span>
-                    `;
-                    historyContainer.appendChild(historyItem);
-                });
-            }
-            
-            // Add scan to history
-            addToHistory(url) {
-                this.scanHistory.push({
-                    url: url,
-                    timestamp: new Date().toISOString()
-                });
-                
-                // Keep only last 20 scans
-                if (this.scanHistory.length > 20) {
-                    this.scanHistory = this.scanHistory.slice(-20);
-                }
-                
-                localStorage.setItem('scanHistory', JSON.stringify(this.scanHistory));
-                this.updateScanHistoryUI();
-            }
-            
-            // Initialize machine learning components
-            async initMachineLearning() {
-                try {
-                    // Load compromise.js for NLP
-                    this.nlp = window.nlp;
-                    
-                    // Create a simple neural network for vulnerability detection
-                    this.mlModel = tf.sequential();
-                    this.mlModel.add(tf.layers.dense({units: 32, activation: 'relu', inputShape: [10]}));
-                    this.mlModel.add(tf.layers.dense({units: 16, activation: 'relu'}));
-                    this.mlModel.add(tf.layers.dense({units: 8, activation: 'relu'}));
-                    this.mlModel.add(tf.layers.dense({units: 1, activation: 'sigmoid'}));
-                    
-                    this.mlModel.compile({
-                        optimizer: 'adam',
-                        loss: 'binaryCrossentropy',
-                        metrics: ['accuracy']
-                    });
-                    
-                    // Pre-train with some basic patterns
-                    const xs = tf.tensor2d([
-                        [1, 0, 0, 1, 0, 1, 0, 0, 1, 0], // Pattern indicating potential vulnerability
-                        [0, 1, 1, 0, 1, 0, 1, 1, 0, 1], // Pattern indicating secure
-                        [1, 1, 0, 1, 0, 0, 1, 0, 1, 1], // Mixed pattern
-                        [0, 0, 1, 0, 1, 1, 0, 1, 0, 0], // Secure pattern
-                        [1, 0, 1, 1, 0, 1, 0, 1, 1, 0]  // Vulnerability pattern
-                    ]);
-                    
-                    const ys = tf.tensor2d([
-                        [1], [0], [0.5], [0], [1]
-                    ]);
-                    
-                    // Train the model
-                    await this.mlModel.fit(xs, ys, {
-                        epochs: 100,
-                        verbose: 0
-                    });
-                    
-                    console.log("ML model initialized and trained");
-                } catch (error) {
-                    console.error("Failed to initialize ML model:", error);
-                }
-            }
-            
-            // Update progress steps
-            updateProgress(step) {
-                const steps = document.querySelectorAll('.progress-step');
-                steps.forEach((s, i) => {
-                    if (i < step) {
-                        s.classList.add('completed');
-                        s.classList.remove('active');
-                    } else if (i === step) {
-                        s.classList.add('active');
-                        s.classList.remove('completed');
-                    } else {
-                        s.classList.remove('active', 'completed');
-                    }
-                });
-                this.currentStep = step;
-            }
-            
-            // Create neural network visualization
-            createNeuralVisualization() {
-                const container = document.getElementById('neural-network');
-                container.innerHTML = '';
-                
-                // Create layers
-                for (let i = 0; i < 4; i++) {
-                    const layer = document.createElement('div');
-                    layer.className = 'neural-layer';
-                    
-                    // Create nodes for this layer
-                    const nodeCount = i === 0 ? 4 : i === 3 ? 3 : 5;
-                    for (let j = 0; j < nodeCount; j++) {
-                        const node = document.createElement('div');
-                        node.className = 'neural-node';
-                        if (i === 0 && j === 0) node.classList.add('active');
-                        layer.appendChild(node);
-                    }
-                    
-                    container.appendChild(layer);
-                }
-                
-                // Animate the neural network
-                this.animateNeuralNetwork();
-            }
-            
-            // Animate neural network
-            animateNeuralNetwork() {
-                const nodes = document.querySelectorAll('.neural-node');
-                let current = 0;
-                
-                const animate = () => {
-                    if (current >= nodes.length) current = 0;
-                    
-                    nodes.forEach(node => node.classList.remove('active'));
-                    nodes[current].classList.add('active');
-                    
-                    current++;
-                    setTimeout(animate, 200);
-                };
-                
-                animate();
-            }
-            
-            // Try multiple CORS proxies until one works
-            async fetchWithCorsProxies(url, options = {}) {
-                const useProxy = document.getElementById('neural-toggle').checked;
-                if (!useProxy) {
-                    // Try direct access first
-                    try {
-                        const response = await fetch(url, {
-                            ...options,
-                            mode: 'cors',
-                            headers: {
-                                'Accept': 'text/html,application/xhtml+xml,application/xml',
-                                ...options.headers
-                            }
-                        });
-                        if (response.ok) return response;
-                        throw new Error(`Direct access failed: ${response.status}`);
-                    } catch (error) {
-                        console.log('Direct access failed, trying proxies...');
-                    }
-                }
-                
-                // Try each proxy
-                for (const proxy of this.corsProxies) {
-                    try {
-                        const proxyUrl = proxy + encodeURIComponent(url);
-                        const response = await fetch(proxyUrl, {
-                            ...options,
-                            headers: {
-                                'Accept': 'text/html,application/xhtml+xml,application/xml',
-                                ...options.headers
-                            }
-                        });
-                        if (response.ok) return response;
-                    } catch (e) {
-                        console.log(`Proxy ${proxy} failed, trying next...`);
-                    }
-                }
-                throw new Error('All CORS proxies failed');
-            }
-            
-            // Perform AI-powered security scan
-            async scan(url) {
-                this.vulnerabilities = [];
-                this.securityScore = 100;
-                this.threatAnalysis = "";
-                this.advancedMetrics = {
-                    shadowDom: false,
-                    webComponents: false,
-                    jsFrameworks: [],
-                    obfuscationLevel: 0
-                };
-                this.technicalDetails = {
-                    url: url,
-                    timestamp: new Date().toISOString(),
-                    headers: {},
-                    findings: [],
-                    mlAnalysis: {}
-                };
-                
-                // Add to scan history
-                this.addToHistory(url);
-                
-                // Create neural visualization
-                this.createNeuralVisualization();
-                
-                // Update status
-                this.updateProgress(1);
-                document.getElementById('status-message').innerHTML = '<i class="fas fa-sync fa-spin"></i> Initializing AI security scan...';
-                
-                try {
-                    // Step 1: Check if URL is valid and accessible
-                    this.updateProgress(2);
-                    document.getElementById('status-message').innerHTML = '<i class="fas fa-sync fa-spin"></i> Checking URL accessibility...';
-                    
-                    // Use a proxy to bypass CORS limitations
-                    const response = await this.fetchWithCorsProxies(url, {
-                        method: 'GET',
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                        }
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`Failed to access URL: ${response.status} ${response.statusText}`);
-                    }
-                    
-                    // Store headers for technical details
-                    this.technicalDetails.headers = {};
-                    response.headers.forEach((value, key) => {
-                        this.technicalDetails.headers[key] = value;
-                    });
-                    
-                    // Step 2: Analyze headers
-                    this.updateProgress(3);
-                    document.getElementById('status-message').innerHTML = '<i class="fas fa-sync fa-spin"></i> Analyzing security headers with AI...';
-                    this.analyzeHeaders(response.headers, url);
-                    
-                    // Step 3: Analyze content
-                    this.updateProgress(4);
-                    document.getElementById('status-message').innerHTML = '<i class="fas fa-sync fa-spin"></i> Analyzing page content with neural networks...';
-                    const html = await response.text();
-                    await this.analyzeContent(html, url);
-                    
-                    // Step 4: Analyze security protocols
-                    this.analyzeSecurityProtocols(url);
-                    
-                    // Step 5: Check for additional vulnerabilities
-                    await this.checkAdditionalVulnerabilities(url);
-                    
-                    // Step 6: Generate threat analysis with AI
-                    this.generateAIThreatAnalysis();
-                    
-                    this.updateProgress(5);
-                    document.getElementById('status-message').innerHTML = '<i class="fas fa-check-circle"></i> AI security scan completed!';
-                    
-                } catch (error) {
-                    throw new Error(`Scan failed: ${error.message}`);
-                }
-                
-                return {
-                    score: this.securityScore,
-                    vulnerabilities: this.vulnerabilities,
-                    threatAnalysis: this.threatAnalysis,
-                    advancedMetrics: this.advancedMetrics,
-                    technicalDetails: this.technicalDetails
-                };
-            }
-            
-            // Analyze HTTP headers for security features with ML
-            analyzeHeaders(headers, url) {
-                const securityHeaders = [
-                    'content-security-policy',
-                    'strict-transport-security',
-                    'x-content-type-options',
-                    'x-frame-options',
-                    'x-xss-protection',
-                    'referrer-policy',
-                    'permissions-policy',
-                    'cross-origin-opener-policy',
-                    'cross-origin-embedder-policy',
-                    'cross-origin-resource-policy'
-                ];
-                
-                // Update UI elements based on header presence
-                document.getElementById('hsts-status').textContent = headers.has('strict-transport-security') ? '✅' : '❌';
-                document.getElementById('csp-status').textContent = headers.has('content-security-policy') ? '✅' : '❌';
-                document.getElementById('xfo-status').textContent = headers.has('x-frame-options') ? '✅' : '❌';
-                
-                securityHeaders.forEach(header => {
-                    if (!headers.get(header)) {
-                        let severity = 'medium';
-                        let points = 10;
-                        
-                        if (header === 'content-security-policy' || header === 'strict-transport-security') {
-                            severity = 'high';
-                            points = 15;
-                        }
-                        
-                        this.addVulnerability({
-                            type: 'header',
-                            name: `Missing ${header.toUpperCase()} Header`,
-                            severity: severity,
-                            description: `The ${header.toUpperCase()} header is missing, which could expose your site to various attacks.`,
-                            recommendation: `Add the ${header.toUpperCase()} header with appropriate security values.`,
-                            points: points
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'missing_header',
-                            header: header,
-                            severity: severity
-                        });
-                    } else {
-                        // Analyze header values
-                        const value = headers.get(header);
-                        this.analyzeHeaderValue(header, value);
-                    }
-                });
-            }
-            
-            // Analyze header values for misconfigurations with ML
-            analyzeHeaderValue(header, value) {
-                // CSP analysis
-                if (header === 'content-security-policy') {
-                    const directives = value.split(';');
-                    let hasUnsafeInline = false;
-                    let hasUnsafeEval = false;
-                    
-                    directives.forEach(dir => {
-                        if (dir.includes('unsafe-inline')) {
-                            hasUnsafeInline = true;
-                        }
-                        if (dir.includes('unsafe-eval')) {
-                            hasUnsafeEval = true;
-                        }
-                    });
-                    
-                    if (hasUnsafeInline) {
-                        this.addVulnerability({
-                            type: 'header',
-                            name: 'CSP Contains unsafe-inline',
-                            severity: 'medium',
-                            description: 'The Content Security Policy contains unsafe-inline, which reduces protection against XSS attacks.',
-                            recommendation: 'Remove unsafe-inline from CSP and use nonces or hashes instead.',
-                            points: 8
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'csp_unsafe_inline',
-                            severity: 'medium'
-                        });
-                    }
-                    
-                    if (hasUnsafeEval) {
-                        this.addVulnerability({
-                            type: 'header',
-                            name: 'CSP Contains unsafe-eval',
-                            severity: 'medium',
-                            description: 'The Content Security Policy contains unsafe-eval, which allows execution of dynamic code.',
-                            recommendation: 'Remove unsafe-eval from CSP to prevent code injection attacks.',
-                            points: 8
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'csp_unsafe_eval',
-                            severity: 'medium'
-                        });
-                    }
-                }
-                
-                // HSTS analysis
-                if (header === 'strict-transport-security') {
-                    if (!value.includes('max-age') || value.includes('max-age=0')) {
-                        this.addVulnerability({
-                            type: 'header',
-                            name: 'HSTS Misconfiguration',
-                            severity: 'high',
-                            description: 'HSTS header is missing max-age or is set to 0, which disables HSTS protection.',
-                            recommendation: 'Set HSTS with max-age of at least 31536000 (1 year) and includeSubDomains.',
-                            points: 12
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'hsts_misconfiguration',
-                            severity: 'high'
-                        });
-                    }
-                    
-                    if (!value.includes('includeSubDomains')) {
-                        this.addVulnerability({
-                            type: 'header',
-                            name: 'HSTS Missing includeSubDomains',
-                            severity: 'medium',
-                            description: 'HSTS header does not include subdomains, leaving them unprotected.',
-                            recommendation: 'Add includeSubDomains to HSTS header for comprehensive protection.',
-                            points: 7
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'hsts_no_includesubdomains',
-                            severity: 'medium'
-                        });
-                    }
-                }
-                
-                // X-Frame-Options analysis
-                if (header === 'x-frame-options') {
-                    const validValues = ['DENY', 'SAMEORIGIN'];
-                    if (!validValues.includes(value.toUpperCase())) {
-                        this.addVulnerability({
-                            type: 'header',
-                            name: 'X-Frame-Options Misconfiguration',
-                            severity: 'medium',
-                            description: 'X-Frame-Options header has an invalid value.',
-                            recommendation: 'Set X-Frame-Options to either DENY or SAMEORIGIN.',
-                            points: 8
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'xframe_options_misconfiguration',
-                            severity: 'medium'
-                        });
-                    }
-                }
-            }
-            
-            // Analyze HTML content for vulnerabilities with ML
-            async analyzeContent(html, url) {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                
-                // Store HTML for technical details
-                this.technicalDetails.html = html.substring(0, 1000) + (html.length > 1000 ? '...' : '');
-                
-                // Check for insecure forms
-                const forms = doc.querySelectorAll('form');
-                forms.forEach(form => {
-                    if (form.action && form.action.startsWith('http://') && url.startsWith('https://')) {
-                        this.addVulnerability({
-                            type: 'form',
-                            name: 'Insecure Form Submission',
-                            severity: 'high',
-                            description: 'Form is submitted over HTTP instead of HTTPS',
-                            recommendation: 'Change form action to HTTPS URL',
-                            points: 15
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'insecure_form',
-                            severity: 'high'
-                        });
-                    }
-                    
-                    // Check for forms without CSRF tokens
-                    if (!form.querySelector('input[name*="csrf"], input[name*="token"], input[name*="nonce"]')) {
-                        this.addVulnerability({
-                            type: 'form',
-                            name: 'Missing CSRF Protection',
-                            severity: 'high',
-                            description: 'Form does not contain CSRF protection token',
-                            recommendation: 'Add CSRF token to all forms to prevent cross-site request forgery',
-                            points: 15
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'missing_csrf',
-                            severity: 'high'
-                        });
-                    }
-                });
-                
-                // Check for mixed content
-                const insecureResources = [
-                    ...doc.querySelectorAll('img[src^="http://"]'),
-                    ...doc.querySelectorAll('script[src^="http://"]'),
-                    ...doc.querySelectorAll('link[href^="http://"]'),
-                    ...doc.querySelectorAll('iframe[src^="http://"]'),
-                    ...doc.querySelectorAll('source[src^="http://"]'),
-                    ...doc.querySelectorAll('audio[src^="http://"]'),
-                    ...doc.querySelectorAll('video[src^="http://"]')
-                ];
-                
-                if (insecureResources.length > 0) {
-                    this.addVulnerability({
-                        type: 'content',
-                        name: 'Mixed Content',
-                        severity: 'medium',
-                        description: 'Page contains resources loaded over insecure HTTP',
-                        recommendation: 'Load all resources over HTTPS',
-                        points: 10
-                    });
-
-                    this.technicalDetails.findings.push({
-                        type: 'mixed_content',
-                        severity: 'medium',
-                        count: insecureResources.length
-                    });
-                }
-                
-                // Check for jQuery vulnerabilities
-                const jqueryScripts = [...doc.querySelectorAll('script[src*="jquery"]')];
-                jqueryScripts.forEach(script => {
-                    const src = script.src.toLowerCase();
-                    const versionMatch = src.match(/jquery[.-](\d+\.\d+\.\d+)(\.min)?\.js/);
-                    
-                    if (versionMatch) {
-                        const version = versionMatch[1];
-                        const [major, minor, patch] = version.split('.').map(Number);
-                        
-                        // Check for known vulnerable versions
-                        if (major < 3 || (major === 1 && minor < 12) || (major === 2 && minor < 2)) {
-                            this.addVulnerability({
-                                type: 'javascript',
-                                name: 'Outdated jQuery Version',
-                                severity: 'medium',
-                                description: `Using jQuery ${version} which has known vulnerabilities`,
-                                recommendation: 'Upgrade to jQuery 3.6.0 or later',
-                                points: 8
-                            });
-
-                            this.technicalDetails.findings.push({
-                                type: 'outdated_jquery',
-                                severity: 'medium',
-                                version: version
-                            });
-                        }
-                    }
-                });
-                
-                // Check for dangerous DOM sinks with ML analysis
-                const dangerousSinks = [
-                    ...doc.querySelectorAll('*[innerHTML], *[outerHTML]'),
-                    ...doc.querySelectorAll('script'),
-                    ...doc.querySelectorAll('iframe')
-                ];
-                
-                dangerousSinks.forEach(element => {
-                    if (element.innerHTML && element.innerHTML.includes('{{') && element.innerHTML.includes('}}')) {
-                        this.addVulnerability({
-                            type: 'dom',
-                            name: 'Potential XSS Vector',
-                            severity: 'high',
-                            description: 'Detected potential template injection in innerHTML',
-                            recommendation: 'Sanitize all user input before inserting into DOM',
-                            points: 12
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'xss_vector',
-                            severity: 'high'
-                        });
-                    }
-                });
-                
-                // Check for password fields without proper security
-                const passwordFields = doc.querySelectorAll('input[type="password"]');
-                passwordFields.forEach(field => {
-                    if (field.autocomplete === 'on') {
-                        this.addVulnerability({
-                            type: 'form',
-                            name: 'Password Autocomplete Enabled',
-                            severity: 'low',
-                            description: 'Password field has autocomplete enabled which might expose credentials',
-                            recommendation: 'Add autocomplete="off" to password fields',
-                            points: 3
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'password_autocomplete',
-                            severity: 'low'
-                        });
-                    }
-                    
-                    if (!field.form || !field.form.action.startsWith('https://')) {
-                        this.addVulnerability({
-                            type: 'form',
-                            name: 'Insecure Password Transmission',
-                            severity: 'high',
-                            description: 'Password field may be transmitted insecurely',
-                            recommendation: 'Ensure form is submitted over HTTPS',
-                            points: 15
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'insecure_password',
-                            severity: 'high'
-                        });
-                    }
-                });
-                
-                // Check for SRI
-                const externalScripts = doc.querySelectorAll('script[src]');
-                externalScripts.forEach(script => {
-                    if (!script.integrity) {
-                        this.addVulnerability({
-                            type: 'script',
-                            name: 'Missing Subresource Integrity',
-                            severity: 'medium',
-                            description: 'External script does not have integrity attribute',
-                            recommendation: 'Add integrity attribute to ensure resource integrity',
-                            points: 7
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'missing_sri',
-                            severity: 'medium',
-                            resource: 'script'
-                        });
-                    }
-                });
-                
-                const externalStyles = doc.querySelectorAll('link[rel="stylesheet"][href]');
-                externalStyles.forEach(style => {
-                    if (!style.integrity) {
-                        this.addVulnerability({
-                            type: 'stylesheet',
-                            name: 'Missing Subresource Integrity',
-                            severity: 'medium',
-                            description: 'External stylesheet does not have integrity attribute',
-                            recommendation: 'Add integrity attribute to ensure resource integrity',
-                            points: 7
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'missing_sri',
-                            severity: 'medium',
-                            resource: 'stylesheet'
-                        });
-                    }
-                });
-                
-                // Check for known vulnerable libraries
-                this.checkVulnerableLibraries(doc);
-                
-                // Detect Shadow DOM usage
-                const shadowDomDetected = html.includes('attachShadow') || html.includes('shadowRoot');
-                document.getElementById('shadow-dom').textContent = shadowDomDetected ? '✅' : '❌';
-                this.advancedMetrics.shadowDom = shadowDomDetected;
-                
-                if (shadowDomDetected) {
-                    this.addVulnerability({
-                        type: 'dom',
-                        name: 'Shadow DOM Detected',
-                        severity: 'low',
-                        description: 'Shadow DOM usage detected which may hide vulnerabilities from traditional scanners',
-                        recommendation: 'Perform manual security review of Shadow DOM components',
-                        points: 5
-                    });
-
-                    this.technicalDetails.findings.push({
-                        type: 'shadow_dom',
-                        severity: 'low'
-                    });
-                }
-                
-                // Detect Web Components
-                const webComponentsDetected = html.includes('<template>') || html.includes('customElements.define');
-                document.getElementById('web-components').textContent = webComponentsDetected ? '✅' : '❌';
-                this.advancedMetrics.webComponents = webComponentsDetected;
-                
-                // Detect JS Frameworks
-                const frameworks = [];
-                if (html.includes('react-dom')) frameworks.push('React');
-                if (html.includes('vue.min')) frameworks.push('Vue');
-                if (html.includes('angular')) frameworks.push('Angular');
-                if (html.includes('jquery')) frameworks.push('jQuery');
-                document.getElementById('js-frameworks').textContent = frameworks.length ? frameworks.join(', ') : 'None';
-                this.advancedMetrics.jsFrameworks = frameworks;
-                
-                // Detect obfuscation
-                const obfuscationPatterns = [
-                    'eval(function(p,a,c,k,e,d)',
-                    '\\x65\\x76\\x61\\x6C',
-                    '\\u0065\\u0076\\u0061\\u006C',
-                    '\\141\\166\\141\\154'
-                ];
-                
-                let obfuscationLevel = 0;
-                obfuscationPatterns.forEach(pattern => {
-                    if (html.includes(pattern)) obfuscationLevel++;
-                });
-                
-                document.getElementById('obfuscation').textContent = obfuscationLevel ? `Level ${obfuscationLevel}` : 'None';
-                this.advancedMetrics.obfuscationLevel = obfuscationLevel;
-                
-                if (obfuscationLevel > 0) {
-                    this.addVulnerability({
-                        type: 'javascript',
-                        name: 'Code Obfuscation Detected',
-                        severity: 'medium',
-                        description: 'Obfuscated code detected which may hide malicious functionality',
-                        recommendation: 'Review obfuscated code manually for security issues',
-                        points: 8
-                    });
-
-                    this.technicalDetails.findings.push({
-                        type: 'obfuscation',
-                        severity: 'medium',
-                        level: obfuscationLevel
-                    });
-                }
-                
-                // Perform ML analysis on the content
-                await this.performMLAnalysis(html, url);
-            }
-            
-            // Perform machine learning analysis on content
-            async performMLAnalysis(html, url) {
-                try {
-                    // Extract features for ML analysis
-                    const features = this.extractFeatures(html);
-                    
-                    // Use the ML model to predict vulnerability likelihood
-                    const prediction = this.mlModel.predict(tf.tensor2d([features]));
-                    const confidence = (await prediction.data())[0];
-                    
-                    // Update UI with ML results
-                    document.getElementById('confidence-level').style.width = `${confidence * 100}%`;
-                    document.getElementById('confidence-value').textContent = `${(confidence * 100).toFixed(1)}%`;
-                    
-                    // Calculate anomaly score based on various factors
-                    const anomalyScore = this.calculateAnomalyScore(html);
-                    document.getElementById('anomaly-score').textContent = anomalyScore.toFixed(2);
-                    
-                    // Store ML analysis results
-                    this.technicalDetails.mlAnalysis = {
-                        confidence: confidence,
-                        anomalyScore: anomalyScore,
-                        features: features
-                    };
-                    
-                } catch (error) {
-                    console.error("ML analysis failed:", error);
-                }
-            }
-            
-            // Extract features for ML analysis
-            extractFeatures(html) {
-                // This is a simplified feature extraction for demonstration
-                // In a real implementation, you would extract more sophisticated features
-                
-                const features = [
-                    html.includes('eval(') ? 1 : 0,                       // Use of eval
-                    html.includes('innerHTML') ? 1 : 0,                   // Use of innerHTML
-                    html.includes('http://') ? 1 : 0,                     // HTTP links
-                    html.includes('<script') ? 1 : 0,                     // Script tags
-                    html.includes('onload=') ? 1 : 0,                     // Inline event handlers
-                    html.includes('javascript:') ? 1 : 0,                 // JavaScript URLs
-                    html.includes('document.cookie') ? 1 : 0,             // Direct cookie access
-                    html.includes('window.location') ? 1 : 0,             // URL manipulation
-                    html.includes('alert(') ? 1 : 0,                      // Alert usage
-                    html.includes('{{') ? 1 : 0                           // Template syntax
-                ];
-                
-                return features;
-            }
-            
-            // Calculate anomaly score
-            calculateAnomalyScore(html) {
-                // Calculate a score based on various anomaly detection techniques
-                let score = 0;
-                
-                // Check for unusual patterns
-                if (html.includes('eval(')) score += 0.2;
-                if (html.includes('document.cookie')) score += 0.1;
-                if (html.includes('window.location')) score += 0.1;
-                if (html.includes('innerHTML')) score += 0.15;
-                if (html.includes('Function(')) score += 0.25;
-                if (html.includes('base64')) score += 0.1;
-                if (html.includes('fromCharCode')) score += 0.1;
-                
-                // Normalize score to 0-1 range
-                return Math.min(1, score);
-            }
-            
-            // Check for known vulnerable libraries
-            checkVulnerableLibraries(doc) {
-                const vulnerableLibraries = [
-                    {
-                        name: 'AngularJS',
-                        pattern: /angular\.js/,
-                        minVersion: '1.8.0',
-                        vulnerability: 'XSS in expression sandbox bypass'
-                    },
-                    {
-                        name: 'React',
-                        pattern: /react/,
-                        minVersion: '17.0.0',
-                        vulnerability: 'Server-side rendering XSS vulnerability'
-                    },
-                    {
-                        name: 'Vue.js',
-                        pattern: /vue\.js/,
-                        minVersion: '3.0.0',
-                        vulnerability: 'Template injection vulnerability'
-                    },
-                    {
-                        name: 'Bootstrap',
-                        pattern: /bootstrap/,
-                        minVersion: '5.0.0',
-                        vulnerability: 'XSS in tooltip and popover'
-                    }
-                ];
-                
-                const scripts = [...doc.querySelectorAll('script[src]')];
-                
-                vulnerableLibraries.forEach(lib => {
-                    const libScript = scripts.find(script => 
-                        script.src.match(lib.pattern) && !script.src.match(/\.min\.js/)
-                    );
-                    
-                    if (libScript) {
-                        this.addVulnerability({
-                            type: 'javascript',
-                            name: `Potential ${lib.name} Vulnerability`,
-                            severity: 'medium',
-                            description: `Detected ${lib.name} which may have ${lib.vulnerability} in versions before ${lib.minVersion}`,
-                            recommendation: `Upgrade to ${lib.name} ${lib.minVersion} or later`,
-                            points: 10
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'vulnerable_library',
-                            severity: 'medium',
-                            library: lib.name
-                        });
-                    }
-                });
-            }
-            
-            // Analyze security protocols
-            analyzeSecurityProtocols(url) {
-                // Check if HTTPS is used
-                const httpsUsed = url.startsWith('https://');
-                document.getElementById('https-status').textContent = httpsUsed ? '✅' : '❌';
-                
-                if (!httpsUsed) {
-                    this.addVulnerability({
-                        type: 'protocol',
-                        name: 'No HTTPS Encryption',
-                        severity: 'critical',
-                        description: 'Site is not using HTTPS, exposing all traffic to interception',
-                        recommendation: 'Implement SSL/TLS certificate to encrypt all traffic',
-                        points: 20
-                    });
-
-                    this.technicalDetails.findings.push({
-                        type: 'no_https',
-                        severity: 'critical'
-                    });
-                } else {
-                    // Try to get SSL certificate information (limited in browser)
-                    this.checkSSLCertificate(url);
-                }
-            }
-            
-            // Check SSL certificate (limited in browser)
-            async checkSSLCertificate(url) {
-                try {
-                    // Extract domain from URL
-                    const domain = new URL(url).hostname;
-                    
-                    // Use a third-party API to check SSL certificate
-                    // Note: This is just a placeholder - you would need a real API
-                    const response = await fetch(`https://cryptcheck.fr/api/scan/${domain}`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        // Analyze certificate information
-                        if (data && data.grade) {
-                            if (data.grade === 'F' || data.grade === 'T') {
-                                this.addVulnerability({
-                                    type: 'ssl',
-                                    name: 'SSL Certificate Issues',
-                                    severity: 'high',
-                                    description: `SSL certificate received a grade of ${data.grade}, indicating security issues`,
-                                    recommendation: 'Fix SSL certificate configuration issues',
-                                    points: 15
-                                });
-
-                                this.technicalDetails.findings.push({
-                                    type: 'ssl_issues',
-                                    severity: 'high',
-                                    grade: data.grade
-                                });
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.log('SSL certificate check failed:', error);
-                }
-            }
-            
-            // Check for additional vulnerabilities
-            async checkAdditionalVulnerabilities(url) {
-                // Check for common misconfigurations
-                await this.checkCommonMisconfigurations(url);
-                
-                // Check for exposed sensitive files
-                await this.checkSensitiveFiles(url);
-            }
-            
-            // Check for common misconfigurations
-            async checkCommonMisconfigurations(url) {
-                try {
-                    // Check for directory listing
-                    const response = await this.fetchWithCorsProxies(url + '/');
-                    const html = await response.text();
-                    if (html.includes('Index of /') || html.includes('Directory listing for /')) {
-                        this.addVulnerability({
-                            type: 'config',
-                            name: 'Directory Listing Enabled',
-                            severity: 'medium',
-                            description: 'Directory listing is enabled, exposing file structure to attackers',
-                            recommendation: 'Disable directory listing in server configuration',
-                            points: 8
-                        });
-
-                        this.technicalDetails.findings.push({
-                            type: 'directory_listing',
-                            severity: 'medium'
-                        });
-                    }
-                } catch (error) {
-                    // Directory listing not enabled or not accessible
-                }
-            }
-            
-            // Check for exposed sensitive files
-            async checkSensitiveFiles(url) {
-                const sensitiveFiles = [
-                    '.env',
-                    '.git/config',
-                    'wp-config.php',
-                    'config.php',
-                    'robots.txt',
-                    'sitemap.xml',
-                    'crossdomain.xml',
-                    'phpinfo.php'
-                ];
-                
-                for (const file of sensitiveFiles) {
-                    try {
-                        const response = await this.fetchWithCorsProxies(url + '/' + file);
-                        if (response.ok) {
-                            this.addVulnerability({
-                                type: 'config',
-                                name: `Sensitive File Exposed: ${file}`,
-                                severity: file === '.env' || file.includes('config') ? 'high' : 'low',
-                                description: `Sensitive file ${file} is publicly accessible`,
-                                recommendation: `Restrict access to ${file} using server configuration`,
-                                points: file === '.env' || file.includes('config') ? 12 : 5
-                            });
-
-                            this.technicalDetails.findings.push({
-                                type: 'exposed_file',
-                                severity: file === '.env' || file.includes('config') ? 'high' : 'low',
-                                file: file
-                            });
-                        }
-                    } catch (error) {
-                        // File not accessible, which is good
-                    }
-                }
-            }
-            
-            // Generate AI-powered threat analysis
-            generateAIThreatAnalysis() {
-                const vulnerabilityCount = this.vulnerabilities.length;
-                const criticalCount = this.vulnerabilities.filter(v => v.severity === 'critical').length;
-                const highCount = this.vulnerabilities.filter(v => v.severity === 'high').length;
-                
-                // Use NLP to generate more natural threat analysis
-                let threatLevel = 'LOW';
-                if (criticalCount > 0) threatLevel = 'CRITICAL';
-                else if (highCount > 0) threatLevel = 'HIGH';
-                else if (vulnerabilityCount > 0) threatLevel = 'MEDIUM';
-                
-                this.threatAnalysis = `AI SECURITY ANALYSIS REPORT
-================================
-
-OVERALL THREAT LEVEL: ${threatLevel}
-
-VULNERABILITY SUMMARY:
-- Critical: ${criticalCount}
-- High: ${highCount}
-- Medium: ${this.vulnerabilities.filter(v => v.severity === 'medium').length}
-- Low: ${this.vulnerabilities.filter(v => v.severity === 'low').length}
-
-AI-PREDICTED RISKS:
-${criticalCount > 0 ? '- Critical vulnerabilities detected in security protocols\n' : ''}\
-${highCount > 0 ? '- High severity issues identified in security headers and forms\n' : ''}\
-${this.vulnerabilities.some(v => v.name.includes('Mixed Content')) ? '- Mixed content detected (HTTP resources loaded on HTTPS page)\n' : ''}\
-${this.vulnerabilities.some(v => v.name.includes('SRI')) ? '- Missing Subresource Integrity for external resources\n' : ''}\
-${this.vulnerabilities.some(v => v.name.includes('jQuery')) ? '- Outdated jQuery version with known vulnerabilities\n' : ''}\
-${this.technicalDetails.mlAnalysis && this.technicalDetails.mlAnalysis.confidence > 0.7 ? '- High confidence prediction of additional undetected vulnerabilities\n' : ''}
-
-AI RECOMMENDATIONS:
-1. ${criticalCount > 0 ? 'Address critical vulnerabilities immediately' : 'Focus on high severity issues'}
-2. Implement missing security headers
-3. Ensure all resources are loaded over HTTPS
-4. Add Subresource Integrity hashes to external resources
-5. ${this.vulnerabilities.some(v => v.name.includes('jQuery')) ? 'Update jQuery to the latest version' : 'Keep all dependencies updated'}
-6. Consider a comprehensive security audit for deeper analysis
-
-NEURAL NETWORK ANALYSIS:
-- Vulnerability prediction confidence: ${this.technicalDetails.mlAnalysis ? (this.technicalDetails.mlAnalysis.confidence * 100).toFixed(1) : '0'}%
-- Anomaly detection score: ${this.technicalDetails.mlAnalysis ? this.technicalDetails.mlAnalysis.anomalyScore.toFixed(2) : '0.00'}
-
-NOTE:
-This analysis combines traditional security scanning with proprietary AI algorithms for enhanced detection capabilities.`;
-            }
-            
-            // Add vulnerability to results
-            addVulnerability(vuln) {
-                this.vulnerabilities.push(vuln);
-                this.securityScore = Math.max(0, this.securityScore - vuln.points);
-            }
-            
-            // Export report function
-            exportReport() {
-                const report = {
-                    url: this.technicalDetails.url,
-                    timestamp: this.technicalDetails.timestamp,
-                    score: this.securityScore,
-                    vulnerabilities: this.vulnerabilities,
-                    threatAnalysis: this.threatAnalysis,
-                    advancedMetrics: this.advancedMetrics,
-                    technicalDetails: this.technicalDetails
-                };
-                
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(report, null, 2));
-                const downloadAnchorNode = document.createElement('a');
-                downloadAnchorNode.setAttribute("href", dataStr);
-                downloadAnchorNode.setAttribute("download", `neuroforge-scan-${new Date().toISOString().slice(0, 10)}.json`);
-                document.body.appendChild(downloadAnchorNode);
-                downloadAnchorNode.click();
-                downloadAnchorNode.remove();
-            }
-        }
+        // App state - all values start at 0
+        const state = {
+            hourlyRate: 0,
+            dailyHours: 0,
+            goals: [],
+            history: [],
+            currentGoal: null,
+            purchases: [],
+            expenses: [],
+            timeBank: 0,
+            level: 1,
+            badges: [],
+            arEnabled: false,
+            selectedCategory: "Food"
+        };
         
-        // DOM elements
-        const testBtn = document.getElementById('test-btn');
-        const appUrlInput = document.getElementById('app-url');
-        const securityScoreBar = document.getElementById('security-score-bar');
-        const securityScoreValue = document.getElementById('security-score-value');
-        const vulnerabilityList = document.getElementById('vulnerability-list');
-        const criticalCount = document.getElementById('critical-count');
-        const highCount = document.getElementById('high-count');
-        const mediumCount = document.getElementById('medium-count');
-        const lowCount = document.getElementById('low-count');
-        const reportStatus = document.getElementById('report-status');
-        const statusMessage = document.getElementById('status-message');
-        const heatmapGrid = document.getElementById('heatmap-grid');
-        const threatContent = document.getElementById('threat-content');
-        const exportBtn = document.getElementById('export-btn');
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const navLinks = document.querySelector('.nav-links');
+        // Available categories
+        const categories = [
+            { name: "Food", icon: "fas fa-utensils" },
+            { name: "Transport", icon: "fas fa-bus" },
+            { name: "Entertainment", icon: "fas fa-gamepad" },
+            { name: "Shopping", icon: "fas fa-shopping-bag" },
+            { name: "Bills", icon: "fas fa-file-invoice-dollar" },
+            { name: "Other", icon: "fas fa-ellipsis-h" }
+        ];
         
-        // Initialize scanner
-        const scanner = new NeuroForgeScanner();
+        // Available badges
+        const availableBadges = [
+            { id: "first_expense", name: "Starter", description: "Logged first expense", icon: "fas fa-star" },
+            { id: "first_goal", name: "Saver", description: "Reached first savings goal", icon: "fas fa-trophy" },
+            { id: "streak_7", name: "Consistency", description: "7 day logging streak", icon: "fas fa-calendar-check" },
+            { id: "savings_100", name: "Investor", description: "Saved over $100", icon: "fas fa-chart-line" },
+            { id: "expense_10", name: "Tracker", description: "Logged 10 expenses", icon: "fas fa-receipt" }
+        ];
         
-        // Initialize heatmap
-        function initHeatmap() {
-            heatmapGrid.innerHTML = '';
-            for (let i = 0; i < 48; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'heatmap-cell severity-0';
-                heatmapGrid.appendChild(cell);
-            }
-        }
-        
-        // Update heatmap with vulnerabilities
-        function updateHeatmap(severityLevels) {
-            const cells = document.querySelectorAll('.heatmap-cell');
-            cells.forEach((cell, index) => {
-                const severity = severityLevels[index % severityLevels.length];
-                cell.className = `heatmap-cell severity-${severity}`;
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load data from localStorage
+            loadState();
+            
+            // Set up tab functionality
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    const tabId = tab.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Refresh specific tab content if needed
+                    if (tabId === 'expenses') {
+                        updateExpensesUI();
+                    } else if (tabId === 'insights') {
+                        generateInsights();
+                    }
+                });
             });
-        }
+            
+            // Set up calculate button
+            document.getElementById('calculate-btn').addEventListener('click', calculateTimeCost);
+            
+            // Set up save goal button
+            document.getElementById('save-goal-btn').addEventListener('click', saveGoal);
+            
+            // Set up add savings button
+            document.getElementById('add-savings-btn').addEventListener('click', addSavings);
+            
+            // Set up edit goal button
+            document.getElementById('edit-goal-btn').addEventListener('click', editGoal);
+            
+            // Set up settings toggle
+            document.getElementById('settings-toggle').addEventListener('click', toggleSettings);
+            
+            // Set up close settings button
+            document.getElementById('close-settings').addEventListener('click', toggleSettings);
+            
+            // Set up reset button
+            document.getElementById('reset-app').addEventListener('click', resetApp);
+            
+            // Set up feature items
+            document.querySelectorAll('.settings-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const feature = item.getAttribute('data-feature');
+                    showFeatureModal(feature);
+                });
+            });
+            
+            // Set up modal close button
+            document.getElementById('modal-close').addEventListener('click', () => {
+                document.getElementById('coming-soon-modal').classList.remove('active');
+            });
+            
+            // Set up category selection
+            document.querySelectorAll('.category-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('.category-option').forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+                    state.selectedCategory = option.getAttribute('data-category');
+                });
+            });
+            
+            // Set default category
+            document.querySelector('.category-option[data-category="Food"]').classList.add('selected');
+            
+            // Set up save expense button
+            document.getElementById('save-expense-btn').addEventListener('click', saveExpense);
+            
+            // Set up view AR button
+            document.getElementById('view-ar-btn').addEventListener('click', viewInAR);
+            
+            // Set up AR close button
+            document.getElementById('ar-close').addEventListener('click', closeAR);
+            
+            // Set up AR save button
+            document.getElementById('ar-save').addEventListener('click', saveExpenseFromAR);
+            
+            // Set up settings inputs
+            document.getElementById('settings-hourly-rate').addEventListener('change', updateSettings);
+            document.getElementById('settings-daily-hours').addEventListener('change', updateSettings);
+            document.getElementById('ar-toggle').addEventListener('change', toggleAR);
+            
+            // Initialize UI
+            updateUI();
+        });
         
-        // Run security scan
-        async function runSecurityScan() {
-            const appUrl = appUrlInput.value;
-            
-            if (!appUrl || appUrl === 'https://') {
-                statusMessage.className = 'status-message status-error';
-                statusMessage.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter a valid URL to test';
-                return;
-            }
-            
-            // Reset UI
-            statusMessage.className = 'status-message status-info';
-            statusMessage.innerHTML = '<i class="fas fa-sync fa-spin"></i> Initializing AI security scan...';
-            reportStatus.textContent = 'Scanning...';
-            testBtn.classList.add('running');
-            testBtn.innerHTML = '<i class="fas fa-sync fa-spin"></i> AI Analyzing...';
-            vulnerabilityList.innerHTML = '';
-            securityScoreBar.style.width = '0%';
-            securityScoreValue.textContent = '0%';
-            threatContent.innerHTML = '<div class="threat-loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
-            
-            // Clear previous results
-            criticalCount.textContent = '0';
-            highCount.textContent = '0';
-            mediumCount.textContent = '0';
-            lowCount.textContent = '0';
-            
-            // Initialize heatmap
-            initHeatmap();
-            
-            try {
-                // Run the scan
-                const scanResults = await scanner.scan(appUrl);
+        // Load state from localStorage
+        function loadState() {
+            const savedState = localStorage.getItem('valueVisionState');
+            if (savedState) {
+                const parsed = JSON.parse(savedState);
                 
-                // Update UI with results
-                updateResults(scanResults);
-                
-            } catch (error) {
-                console.error('Scan error:', error);
-                statusMessage.className = 'status-message status-error';
-                statusMessage.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
-                threatContent.textContent = 'AI security analysis failed: ' + error.message;
-            } finally {
-                testBtn.classList.remove('running');
-                testBtn.innerHTML = '<i class="fas fa-brain"></i> Run AI Security Analysis';
-            }
-        }
-        
-        // Update UI with scan results
-        function updateResults(scanResults) {
-            // Update status
-            reportStatus.textContent = 'Scan completed - AI vulnerabilities found';
-            
-            // Update counts
-            let critical = 0;
-            let high = 0;
-            let medium = 0;
-            let low = 0;
-            
-            // Display vulnerabilities
-            scanResults.vulnerabilities.forEach(vuln => {
-                const vulnElement = document.createElement('div');
-                let severityClass = '';
-                
-                switch(vuln.severity) {
-                    case 'critical':
-                        severityClass = 'severity-critical';
-                        critical++;
-                        break;
-                    case 'high':
-                        severityClass = 'severity-high';
-                        high++;
-                        break;
-                    case 'medium':
-                        severityClass = 'severity-medium';
-                        medium++;
-                        break;
-                    case 'low':
-                        severityClass = 'severity-low';
-                        low++;
-                        break;
+                // Convert date strings back to Date objects
+                if (parsed.purchases) {
+                    parsed.purchases = parsed.purchases.map(p => {
+                        p.date = new Date(p.date);
+                        return p;
+                    });
                 }
                 
-                vulnElement.className = `vulnerability-item ${vuln.severity === 'critical' ? '' : vuln.severity === 'high' ? 'warning' : 'success'}`;
-                vulnElement.innerHTML = `
-                    <div class="vulnerability-header">
-                        <div class="vulnerability-title">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <span>${vuln.name}</span>
-                        </div>
-                        <div class="vulnerability-severity ${severityClass}">${vuln.severity.toUpperCase()}</div>
-                    </div>
-                    <div class="vulnerability-desc">
-                        ${vuln.description}
-                        <div class="recommendation" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1);">
-                            <strong>Recommendation:</strong> ${vuln.recommendation}
-                        </div>
+                if (parsed.history) {
+                    parsed.history = parsed.history.map(h => {
+                        h.date = new Date(h.date);
+                        return h;
+                    });
+                }
+                
+                if (parsed.expenses) {
+                    parsed.expenses = parsed.expenses.map(e => {
+                        e.date = new Date(e.date);
+                        return e;
+                    });
+                }
+                
+                if (parsed.goals && parsed.goals.length > 0) {
+                    parsed.goals = parsed.goals.map(g => {
+                        g.createdAt = new Date(g.createdAt);
+                        return g;
+                    });
+                    
+                    // Set current goal to the first one (for simplicity)
+                    parsed.currentGoal = parsed.goals[0];
+                }
+                
+                Object.assign(state, parsed);
+                
+                // Update settings inputs
+                document.getElementById('settings-hourly-rate').value = state.hourlyRate;
+                document.getElementById('settings-daily-hours').value = state.dailyHours;
+                document.getElementById('ar-toggle').checked = state.arEnabled;
+                
+                // Update main inputs
+                document.getElementById('hourly-rate').value = state.hourlyRate;
+                document.getElementById('daily-hours').value = state.dailyHours;
+            }
+        }
+        
+        // Save state to localStorage
+        function saveState() {
+            localStorage.setItem('valueVisionState', JSON.stringify(state));
+        }
+        
+        // Update settings from settings panel
+        function updateSettings() {
+            state.hourlyRate = parseFloat(document.getElementById('settings-hourly-rate').value) || 0;
+            state.dailyHours = parseFloat(document.getElementById('settings-daily-hours').value) || 0;
+            state.arEnabled = document.getElementById('ar-toggle').checked;
+            
+            // Update main inputs
+            document.getElementById('hourly-rate').value = state.hourlyRate;
+            document.getElementById('daily-hours').value = state.dailyHours;
+            
+            saveState();
+            updateUI();
+            showToast('Settings updated');
+        }
+        
+        // Toggle AR mode
+        function toggleAR() {
+            state.arEnabled = document.getElementById('ar-toggle').checked;
+            saveState();
+            showToast(state.arEnabled ? 'AR mode enabled' : 'AR mode disabled');
+        }
+        
+        // Toggle settings panel
+        function toggleSettings() {
+            const settingsPanel = document.getElementById('settings-panel');
+            const appContainer = document.getElementById('app-container');
+            
+            settingsPanel.classList.toggle('active');
+            appContainer.classList.toggle('settings-open');
+            
+            // Update badges display when opening settings
+            if (settingsPanel.classList.contains('active')) {
+                updateBadgesUI();
+            }
+        }
+        
+        // Reset app
+        function resetApp() {
+            if (confirm("Are you sure you want to reset all data? This action cannot be undone.")) {
+                // Reset state
+                state.hourlyRate = 0;
+                state.dailyHours = 0;
+                state.goals = [];
+                state.history = [];
+                state.currentGoal = null;
+                state.purchases = [];
+                state.expenses = [];
+                state.timeBank = 0;
+                state.badges = [];
+                state.arEnabled = false;
+                
+                // Reset form fields
+                document.getElementById('hourly-rate').value = '0';
+                document.getElementById('daily-hours').value = '0';
+                document.getElementById('item-name').value = '';
+                document.getElementById('item-cost').value = '0';
+                document.getElementById('goal-name').value = '';
+                document.getElementById('goal-amount').value = '0';
+                document.getElementById('saved-amount').value = '0';
+                document.getElementById('daily-savings').value = '0';
+                document.getElementById('settings-hourly-rate').value = '0';
+                document.getElementById('settings-daily-hours').value = '0';
+                document.getElementById('ar-toggle').checked = false;
+                
+                // Reset category selection
+                document.querySelectorAll('.category-option').forEach(o => o.classList.remove('selected'));
+                document.querySelector('.category-option[data-category="Food"]').classList.add('selected');
+                state.selectedCategory = "Food";
+                
+                // Hide results
+                document.getElementById('time-result').style.display = 'none';
+                document.getElementById('savings-goal-card').style.display = 'none';
+                document.getElementById('savings-empty').style.display = 'block';
+                
+                // Clear history and expenses
+                document.getElementById('history-list').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <h3>No Financial History Yet</h3>
+                        <p>Your purchase evaluations and savings progress will appear here once you start using ValueVision</p>
                     </div>
                 `;
                 
-                vulnerabilityList.appendChild(vulnElement);
-            });
-            
-            // Update counts
-            criticalCount.textContent = critical;
-            highCount.textContent = high;
-            mediumCount.textContent = medium;
-            lowCount.textContent = low;
-            
-            // Update security score
-            securityScoreBar.style.width = `${scanResults.score}%`;
-            securityScoreValue.textContent = `${scanResults.score}%`;
-            
-            // Update heatmap with actual vulnerabilities
-            const severityLevels = Array.from({length: 48}, () => {
-                const rand = Math.random();
-                if (rand < 0.1) return 4; // Critical
-                if (rand < 0.3) return 3; // High
-                if (rand < 0.6) return 2; // Medium
-                return 1; // Low
-            });
-            updateHeatmap(severityLevels);
-            
-            // Update threat analysis
-            threatContent.textContent = scanResults.threatAnalysis;
+                document.getElementById('expenses-list').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <h3>No Expenses This Week</h3>
+                        <p>Your expenses will appear here once you start tracking them</p>
+                    </div>
+                `;
+                
+                document.getElementById('category-chart').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-chart-pie"></i>
+                        <h3>No Category Data</h3>
+                        <p>Expense categories will appear here once you start tracking</p>
+                    </div>
+                `;
+                
+                document.getElementById('insights-container').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-lightbulb"></i>
+                        <h3>No Insights Yet</h3>
+                        <p>Your personalized financial insights will appear here once you start using the app</p>
+                    </div>
+                `;
+                
+                // Reset stats
+                updateStats();
+                
+                // Save cleared state
+                saveState();
+                
+                // Show toast
+                showToast('Application data has been reset');
+                
+                // Close settings
+                toggleSettings();
+            }
         }
         
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize heatmap
-            initHeatmap();
+        // Show feature modal
+        function showFeatureModal(feature) {
+            const modal = document.getElementById('coming-soon-modal');
+            const modalText = document.getElementById('modal-text');
             
-            // Add event listener to test button
-            testBtn.addEventListener('click', runSecurityScan);
+            // Set feature-specific text
+            let featureName = '';
             
-            // Add event listener to export button
-            exportBtn.addEventListener('click', () => {
-                scanner.exportReport();
+            switch(feature) {
+                case 'bank-integration':
+                    featureName = 'Bank Integration';
+                    break;
+                case 'sms-integration':
+                    featureName = 'SMS Integration';
+                    break;
+                case 'time-bank':
+                    featureName = 'Time Bank';
+                    break;
+                default:
+                    featureName = 'Feature';
+            }
+            
+            modalText.innerHTML = `We're working hard to bring you the <strong>${featureName}</strong> feature in our next update! This innovative tool will help you manage your finances more effectively.`;
+            modal.classList.add('active');
+        }
+        
+        // Calculate time cost
+        function calculateTimeCost() {
+            const hourlyRate = parseFloat(document.getElementById('hourly-rate').value) || 0;
+            const itemCost = parseFloat(document.getElementById('item-cost').value) || 0;
+            const itemName = document.getElementById('item-name').value || "item";
+            
+            if (hourlyRate <= 0 || itemCost <= 0) {
+                showToast("Please enter valid values for hourly rate and item cost");
+                return;
+            }
+            
+            // Update state
+            state.hourlyRate = hourlyRate;
+            saveState();
+            
+            // Calculate minutes of work needed
+            const minutesOfWork = Math.round((itemCost / hourlyRate) * 60);
+            
+            // Format minutes to hours/minutes if more than 60 minutes
+            let displayValue;
+            if (minutesOfWork >= 60) {
+                const hours = Math.floor(minutesOfWork / 60);
+                const minutes = minutesOfWork % 60;
+                displayValue = `${hours}h ${minutes}m`;
+            } else {
+                displayValue = `${minutesOfWork}m`;
+            }
+            
+            // Update result
+            document.getElementById('time-result-value').textContent = displayValue;
+            document.getElementById('result-item').textContent = itemName;
+            document.getElementById('time-block-minutes').textContent = 
+                minutesOfWork >= 60 ? `${Math.round(minutesOfWork/60)}h` : `${minutesOfWork}m`;
+            
+            // Calculate yearly impact
+            const yearlyHours = (minutesOfWork * 365 / 60).toFixed(1);
+            const workWeeks = (yearlyHours / 40).toFixed(1);
+            
+            // Update insight
+            const insightElement = document.getElementById('insight-text');
+            insightElement.innerHTML = 
+                `Buying this daily costs <strong>${yearlyHours} hours/year</strong> - that's nearly ${workWeeks} work weeks!`;
+            
+            // Show result
+            document.getElementById('time-result').style.display = 'block';
+        }
+        
+        // Save expense
+        function saveExpense() {
+            const itemName = document.getElementById('item-name').value;
+            const itemCost = parseFloat(document.getElementById('item-cost').value) || 0;
+            const itemNote = document.getElementById('item-note').value;
+            const category = state.selectedCategory;
+            
+            if (!itemName || itemCost <= 0) {
+                showToast("Please enter a valid item name and cost");
+                return;
+            }
+            
+            // Calculate time cost
+            const hourlyRate = parseFloat(document.getElementById('hourly-rate').value) || state.hourlyRate;
+            const minutesOfWork = Math.round((itemCost / hourlyRate) * 60);
+            
+            // Add to expenses
+            const expense = {
+                name: itemName,
+                cost: itemCost,
+                category: category,
+                note: itemNote,
+                timeCost: minutesOfWork,
+                date: new Date()
+            };
+            
+            state.expenses.push(expense);
+            
+            // Add to purchases for history
+            state.purchases.push({
+                name: itemName,
+                cost: itemCost,
+                date: new Date()
             });
             
-            // Mobile menu toggle
-            mobileMenuBtn.addEventListener('click', () => {
-                navLinks.classList.toggle('active');
+            // Check for badges
+            checkForBadges();
+            
+            // Save state
+            saveState();
+            
+            // Update UI
+            updateStats();
+            updateHistory();
+            
+            // Show toast
+            showToast('Expense saved successfully!');
+            
+            // If on expenses tab, update it
+            if (document.getElementById('expenses').classList.contains('active')) {
+                updateExpensesUI();
+            }
+            
+            // Reset form
+            document.getElementById('item-name').value = '';
+            document.getElementById('item-cost').value = '0';
+            document.getElementById('item-note').value = '';
+            document.getElementById('time-result').style.display = 'none';
+        }
+        
+        // Save expense from AR mode
+        function saveExpenseFromAR() {
+            saveExpense();
+            closeAR();
+        }
+        
+        // View in AR
+        function viewInAR() {
+            if (!state.arEnabled) {
+                showToast("Please enable AR mode in settings first");
+                return;
+            }
+            
+            const itemName = document.getElementById('item-name').value;
+            const itemCost = parseFloat(document.getElementById('item-cost').value) || 0;
+            
+            if (!itemName || itemCost <= 0) {
+                showToast("Please calculate time cost first");
+                return;
+            }
+            
+            // Calculate time cost
+            const hourlyRate = parseFloat(document.getElementById('hourly-rate').value) || state.hourlyRate;
+            const minutesOfWork = Math.round((itemCost / hourlyRate) * 60);
+            
+            // Format time display
+            let timeDisplay;
+            if (minutesOfWork >= 60) {
+                const hours = Math.floor(minutesOfWork / 60);
+                const minutes = minutesOfWork % 60;
+                timeDisplay = `${hours}h ${minutes}m`;
+            } else {
+                timeDisplay = `${minutesOfWork}m`;
+            }
+            
+            // Update AR display
+            document.getElementById('ar-item-name').textContent = itemName;
+            document.getElementById('ar-time-cost').textContent = timeDisplay;
+            
+            // Show AR overlay
+            document.getElementById('ar-overlay').classList.add('active');
+            
+            // In a real implementation, we would access the device camera here
+            // For this example, we'll just show a placeholder
+        }
+        
+        // Close AR overlay
+        function closeAR() {
+            document.getElementById('ar-overlay').classList.remove('active');
+        }
+        
+        // Save goal
+        function saveGoal() {
+            const name = document.getElementById('goal-name').value;
+            const target = parseFloat(document.getElementById('goal-amount').value) || 0;
+            const saved = parseFloat(document.getElementById('saved-amount').value) || 0;
+            const dailyTarget = parseFloat(document.getElementById('daily-savings').value) || 0;
+            
+            if (!name || target <= 0) {
+                showToast("Please enter a goal name and valid target amount");
+                return;
+            }
+            
+            // Update state
+            state.currentGoal = {
+                name,
+                target,
+                saved,
+                dailyTarget,
+                createdAt: new Date()
+            };
+            
+            // Add to goals if new
+            if (!state.goals.some(g => g.name === name)) {
+                state.goals.push({...state.currentGoal});
+            }
+            
+            // Check for badges
+            checkForBadges();
+            
+            // Save state
+            saveState();
+            
+            // Update UI
+            updateSavingsGoal();
+            
+            // Show toast
+            showToast('Savings goal created!');
+        }
+        
+        // Add savings
+        function addSavings() {
+            if (!state.currentGoal) {
+                showToast("Please create a savings goal first");
+                return;
+            }
+            
+            const amount = parseFloat(prompt("How much did you save today?", "0")) || 0;
+            
+            if (amount <= 0) {
+                showToast("Please enter a valid savings amount");
+                return;
+            }
+            
+            state.currentGoal.saved += amount;
+            
+            // Prevent saving more than target
+            if (state.currentGoal.saved > state.currentGoal.target) {
+                state.currentGoal.saved = state.currentGoal.target;
+                showToast("Congratulations! You've reached your savings goal!");
+                
+                // Check for badges
+                checkForBadges();
+            }
+            
+            // Add to history
+            state.history.push({
+                name: `Added to ${state.currentGoal.name}`,
+                amount: amount,
+                type: "savings",
+                date: new Date()
             });
             
-            // Add example URLs for quick testing
-            appUrlInput.addEventListener('focus', function() {
-                if (this.value === 'https://') {
-                    this.value = '';
+            // Save state
+            saveState();
+            
+            // Update UI
+            updateSavingsGoal();
+            updateHistory();
+            
+            // Show toast
+            showToast(`Added $${amount} to your savings!`);
+        }
+        
+        // Edit goal
+        function editGoal() {
+            if (!state.currentGoal) {
+                showToast("Please create a savings goal first");
+                return;
+            }
+            
+            document.getElementById('goal-name').value = state.currentGoal.name;
+            document.getElementById('goal-amount').value = state.currentGoal.target;
+            document.getElementById('saved-amount').value = state.currentGoal.saved;
+            document.getElementById('daily-savings').value = state.currentGoal.dailyTarget;
+            
+            // Switch to savings tab
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.querySelector('[data-tab="savings"]').classList.add('active');
+            document.getElementById('savings').classList.add('active');
+            
+            // Scroll to form
+            document.getElementById('goal-name').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Update savings goal UI
+        function updateSavingsGoal() {
+            if (!state.currentGoal) return;
+            
+            const goal = state.currentGoal;
+            
+            // Calculate values
+            const progress = Math.min(100, Math.round((goal.saved / goal.target) * 100));
+            const hoursTotal = (goal.target / state.hourlyRate).toFixed(1);
+            const hoursSaved = (goal.saved / state.hourlyRate).toFixed(1);
+            const remaining = goal.target - goal.saved;
+            const daysNeeded = Math.ceil(remaining / goal.dailyTarget);
+            
+            // Set target date (today + days needed)
+            const targetDate = new Date();
+            targetDate.setDate(targetDate.getDate() + daysNeeded);
+            const formattedDate = targetDate.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+            
+            // Days left
+            const today = new Date();
+            const timeDiff = targetDate.getTime() - today.getTime();
+            const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            
+            // Update UI
+            document.getElementById('goal-title').textContent = goal.name;
+            document.getElementById('goal-progress').textContent = `$${goal.saved.toFixed(2)}/$${goal.target.toFixed(2)}`;
+            document.getElementById('progress-percent').textContent = `${progress}%`;
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+            document.getElementById('time-saved').textContent = hoursSaved;
+            document.getElementById('time-total').textContent = hoursTotal;
+            document.getElementById('time-progress').style.width = `${progress}%`;
+            document.getElementById('saved-time-block').textContent = `${hoursSaved}h`;
+            document.getElementById('total-time-block').textContent = `${hoursTotal}h`;
+            document.getElementById('goal-date').textContent = formattedDate;
+            document.getElementById('days-left').textContent = `${daysLeft} days`;
+            
+            // Timeline text
+            const timelineElement = document.getElementById('timeline-text');
+            if (goal.saved >= goal.target) {
+                timelineElement.innerHTML = "Congratulations! You've reached your savings goal!";
+            } else {
+                timelineElement.innerHTML = `At $${goal.dailyTarget}/day, you'll reach your goal in <strong>${daysNeeded} days</strong>!`;
+            }
+            
+            // Show savings card
+            document.getElementById('savings-goal-card').style.display = 'block';
+            document.getElementById('savings-empty').style.display = 'none';
+            
+            // Update stats
+            updateStats();
+        }
+        
+        // Update expenses UI
+        function updateExpensesUI() {
+            const expensesList = document.getElementById('expenses-list');
+            const categoryChart = document.getElementById('category-chart');
+            
+            // Clear current expenses
+            expensesList.innerHTML = '';
+            
+            // Get expenses from this week
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            
+            const weeklyExpenses = state.expenses.filter(expense => expense.date >= oneWeekAgo);
+            
+            if (weeklyExpenses.length === 0) {
+                expensesList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <h3>No Expenses This Week</h3>
+                        <p>Your expenses will appear here once you start tracking them</p>
+                    </div>
+                `;
+            } else {
+                // Sort by date (newest first)
+                weeklyExpenses.sort((a, b) => b.date - a.date);
+                
+                // Add expenses to list
+                weeklyExpenses.forEach(expense => {
+                    const date = new Date(expense.date);
+                    const category = categories.find(c => c.name === expense.category);
+                    
+                    // Format time cost
+                    let timeDisplay;
+                    if (expense.timeCost >= 60) {
+                        const hours = Math.floor(expense.timeCost / 60);
+                        const minutes = expense.timeCost % 60;
+                        timeDisplay = `${hours}h ${minutes}m`;
+                    } else {
+                        timeDisplay = `${expense.timeCost}m`;
+                    }
+                    
+                    expensesList.innerHTML += `
+                        <div class="expense-item">
+                            <div class="expense-info">
+                                <div class="expense-name">${expense.name}</div>
+                                <div class="expense-category">
+                                    <i class="${category.icon}"></i> ${expense.category}
+                                </div>
+                                <div class="expense-time">${timeDisplay} of work</div>
+                            </div>
+                            <div class="expense-amount">$${expense.cost.toFixed(2)}</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            // Update weekly stats
+            const weekTotal = weeklyExpenses.reduce((sum, expense) => sum + expense.cost, 0);
+            const weekTime = weeklyExpenses.reduce((sum, expense) => sum + expense.timeCost, 0);
+            const weekCount = weeklyExpenses.length;
+            
+            document.getElementById('week-total').textContent = `$${weekTotal.toFixed(2)}`;
+            document.getElementById('week-time').textContent = `${Math.round(weekTime/60)}h`;
+            document.getElementById('week-count').textContent = weekCount;
+            
+            // Update category chart
+            const categoryTotals = {};
+            categories.forEach(category => {
+                categoryTotals[category.name] = 0;
+            });
+            
+            weeklyExpenses.forEach(expense => {
+                categoryTotals[expense.category] += expense.cost;
+            });
+            
+            // Create category chart
+            categoryChart.innerHTML = '';
+            
+            for (const category in categoryTotals) {
+                if (categoryTotals[category] > 0) {
+                    const categoryInfo = categories.find(c => c.name === category);
+                    const percentage = (categoryTotals[category] / weekTotal * 100).toFixed(0);
+                    
+                    categoryChart.innerHTML += `
+                        <div style="margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="${categoryInfo.icon}" style="color: var(--primary);"></i>
+                                    <span style="font-weight: 600;">${category}</span>
+                                </div>
+                                <div>$${categoryTotals[category].toFixed(2)} (${percentage}%)</div>
+                            </div>
+                            <div style="height: 8px; background: #e0e7ff; border-radius: 4px; overflow: hidden;">
+                                <div style="height: 100%; width: ${percentage}%; background: var(--primary); border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            if (Object.values(categoryTotals).every(total => total === 0)) {
+                categoryChart.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-chart-pie"></i>
+                        <h3>No Category Data</h3>
+                        <p>Expense categories will appear here once you start tracking</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Generate insights
+        function generateInsights() {
+            const insightsContainer = document.getElementById('insights-container');
+            insightsContainer.innerHTML = '';
+            
+            // If no expenses, show empty state
+            if (state.expenses.length === 0) {
+                insightsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-lightbulb"></i>
+                        <h3>No Insights Yet</h3>
+                        <p>Your personalized financial insights will appear here once you start using the app</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Get expenses from this month
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+            
+            const monthlyExpenses = state.expenses.filter(expense => expense.date >= oneMonthAgo);
+            
+            // Calculate monthly totals
+            const monthTotal = monthlyExpenses.reduce((sum, expense) => sum + expense.cost, 0);
+            const monthTime = monthlyExpenses.reduce((sum, expense) => sum + expense.timeCost, 0);
+            const monthCount = monthlyExpenses.length;
+            
+            document.getElementById('month-total').textContent = `$${monthTotal.toFixed(2)}`;
+            document.getElementById('month-time').textContent = `${Math.round(monthTime/60)}h`;
+            document.getElementById('month-count').textContent = monthCount;
+            
+            // Calculate category totals
+            const categoryTotals = {};
+            categories.forEach(category => {
+                categoryTotals[category.name] = 0;
+            });
+            
+            monthlyExpenses.forEach(expense => {
+                categoryTotals[expense.category] += expense.cost;
+            });
+            
+            // Find biggest category
+            let biggestCategory = '';
+            let biggestAmount = 0;
+            
+            for (const category in categoryTotals) {
+                if (categoryTotals[category] > biggestAmount) {
+                    biggestAmount = categoryTotals[category];
+                    biggestCategory = category;
+                }
+            }
+            
+            // Calculate time for biggest category
+            const categoryTime = Math.round((biggestAmount / state.hourlyRate) * 100) / 100;
+            
+            // Generate insights based on data
+            const insights = [];
+            
+            if (biggestCategory && biggestAmount > 0) {
+                insights.push({
+                    title: "Biggest Time Drain",
+                    content: `Your ${biggestCategory} expenses cost you ${categoryTime} hours this month. That's ${(categoryTime/state.dailyHours).toFixed(1)} days of work!`
+                });
+            }
+            
+            // Check for coffee expenses specifically
+            const coffeeExpenses = monthlyExpenses.filter(e => 
+                e.name.toLowerCase().includes('coffee') || 
+                e.name.toLowerCase().includes('cafe') || 
+                e.name.toLowerCase().includes('starbucks')
+            );
+            
+            if (coffeeExpenses.length > 0) {
+                const coffeeTotal = coffeeExpenses.reduce((sum, e) => sum + e.cost, 0);
+                const coffeeTime = (coffeeTotal / state.hourlyRate).toFixed(1);
+                
+                insights.push({
+                    title: "Coffee Habit",
+                    content: `You spent $${coffeeTotal.toFixed(2)} on coffee this month. That's ${coffeeTime} hours of work!`
+                });
+            }
+            
+            // Check for eating out
+            const foodExpenses = monthlyExpenses.filter(e => e.category === 'Food');
+            if (foodExpenses.length > 5) {
+                const foodTotal = foodExpenses.reduce((sum, e) => sum + e.cost, 0);
+                const foodTime = (foodTotal / state.hourlyRate).toFixed(1);
+                
+                insights.push({
+                    title: "Eating Out",
+                    content: `You've eaten out ${foodExpenses.length} times this month, costing $${foodTotal.toFixed(2)} and ${foodTime} hours of work.`
+                });
+            }
+            
+            // Check for savings progress
+            if (state.currentGoal) {
+                const progress = (state.currentGoal.saved / state.currentGoal.target * 100).toFixed(0);
+                
+                insights.push({
+                    title: "Savings Progress",
+                    content: `You're ${progress}% towards your "${state.currentGoal.name}" goal. Keep it up!`
+                });
+            }
+            
+            // Add generic insights if we don't have enough
+            if (insights.length < 2) {
+                insights.push({
+                    title: "Getting Started",
+                    content: "Track more expenses to get personalized insights about your spending habits."
+                });
+            }
+            
+            if (insights.length < 2) {
+                insights.push({
+                    title: "Time is Money",
+                    content: `At $${state.hourlyRate}/hour, every purchase represents time spent working. Think carefully before buying!`
+                });
+            }
+            
+            // Display insights
+            insights.forEach(insight => {
+                insightsContainer.innerHTML += `
+                    <div class="insight-item">
+                        <div class="insight-header">
+                            <i class="fas fa-lightbulb"></i>
+                            <div class="insight-title">${insight.title}</div>
+                        </div>
+                        <div class="insight-content">${insight.content}</div>
+                    </div>
+                `;
+            });
+        }
+        
+        // Update history UI
+        function updateHistory() {
+            const historyList = document.getElementById('history-list');
+            
+            // Clear current history
+            historyList.innerHTML = '';
+            
+            if (state.purchases.length === 0 && state.history.length === 0) {
+                historyList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <h3>No Financial History Yet</h3>
+                        <p>Your purchase evaluations and savings progress will appear here once you start using ValueVision</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Combine purchases and history
+            const allHistory = [
+                ...state.purchases.map(p => ({...p, type: 'purchase'})),
+                ...state.history.map(h => ({...h, type: 'savings'}))
+            ];
+            
+            // Sort by date (newest first)
+            allHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Add to history list
+            allHistory.forEach(item => {
+                const date = new Date(item.date);
+                
+                if (item.type === 'purchase') {
+                    historyList.innerHTML += `
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-name">${item.name}</div>
+                                <div class="history-date">${formatDate(date)}</div>
+                                <div class="history-type">Purchase</div>
+                            </div>
+                            <div class="history-amount" style="color: var(--error);">$${item.cost.toFixed(2)}</div>
+                        </div>
+                    `;
+                } else {
+                    historyList.innerHTML += `
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-name">${item.name}</div>
+                                <div class="history-date">${formatDate(date)}</div>
+                                <div class="history-type">Savings</div>
+                            </div>
+                            <div class="history-amount" style="color: var(--success);">+$${item.amount.toFixed(2)}</div>
+                        </div>
+                    `;
                 }
             });
+        }
+        
+        // Update badges UI
+        function updateBadgesUI() {
+            const badgesContainer = document.getElementById('badges-container');
+            badgesContainer.innerHTML = '';
             
-            // Add animation to elements
-            const animateElements = document.querySelectorAll('.fade-in');
-            animateElements.forEach(el => {
-                el.style.opacity = '0';
+            availableBadges.forEach(badge => {
+                const earned = state.badges.includes(badge.id);
+                
+                badgesContainer.innerHTML += `
+                    <div class="badge ${earned ? 'earned' : ''}">
+                        <div class="badge-icon">
+                            <i class="${badge.icon}"></i>
+                        </div>
+                        <div class="badge-name">${badge.name}</div>
+                        <div class="badge-desc">${badge.description}</div>
+                    </div>
+                `;
             });
+        }
+        
+        // Check for new badges
+        function checkForBadges() {
+            // First expense badge
+            if (state.expenses.length >= 1 && !state.badges.includes('first_expense')) {
+                state.badges.push('first_expense');
+                showToast('Earned badge: Starter!');
+            }
             
-            // Trigger animations
+            // First goal badge
+            if (state.currentGoal && state.currentGoal.saved >= state.currentGoal.target && !state.badges.includes('first_goal')) {
+                state.badges.push('first_goal');
+                showToast('Earned badge: Saver!');
+            }
+            
+            // 7-day streak badge (simplified)
+            if (state.expenses.length >= 7 && !state.badges.includes('streak_7')) {
+                state.badges.push('streak_7');
+                showToast('Earned badge: Consistency!');
+            }
+            
+            // $100 savings badge
+            if (state.currentGoal && state.currentGoal.saved >= 100 && !state.badges.includes('savings_100')) {
+                state.badges.push('savings_100');
+                showToast('Earned badge: Investor!');
+            }
+            
+            // 10 expenses badge
+            if (state.expenses.length >= 10 && !state.badges.includes('expense_10')) {
+                state.badges.push('expense_10');
+                showToast('Earned badge: Tracker!');
+            }
+            
+            // Save state if badges were updated
+            saveState();
+            
+            // Update badges UI if settings is open
+            if (document.getElementById('settings-panel').classList.contains('active')) {
+                updateBadgesUI();
+            }
+        }
+        
+        // Format date for display
+        function formatDate(date) {
+            const now = new Date();
+            const diff = now - date;
+            const diffHours = Math.floor(diff / (1000 * 60 * 60));
+            const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+            
+            if (diffHours < 24) {
+                return `Today, ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            } else if (diffDays === 1) {
+                return `Yesterday, ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            } else {
+                return date.toLocaleDateString() + ', ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }
+        }
+        
+        // Update UI
+        function updateUI() {
+            updateStats();
+            
+            // Show/hide savings card based on state
+            if (state.currentGoal) {
+                document.getElementById('savings-goal-card').style.display = 'block';
+                document.getElementById('savings-empty').style.display = 'none';
+                updateSavingsGoal();
+            } else {
+                document.getElementById('savings-goal-card').style.display = 'none';
+                document.getElementById('savings-empty').style.display = 'block';
+            }
+            
+            updateHistory();
+            
+            // Update expenses if on that tab
+            if (document.getElementById('expenses').classList.contains('active')) {
+                updateExpensesUI();
+            }
+            
+            // Update insights if on that tab
+            if (document.getElementById('insights').classList.contains('active')) {
+                generateInsights();
+            }
+        }
+        
+        // Update stats
+        function updateStats() {
+            // Calculate spent today
+            const today = new Date().toDateString();
+            const spentToday = state.purchases
+                .filter(p => new Date(p.date).toDateString() === today)
+                .reduce((sum, p) => sum + p.cost, 0)
+                .toFixed(2);
+            
+            // Hours worked - in a real app this would be user input
+            const hoursWorked = state.dailyHours || 0;
+            
+            // Total saved
+            const totalSaved = state.currentGoal ? state.currentGoal.saved : 0;
+            
+            document.getElementById('stat-spent').textContent = '$' + spentToday;
+            document.getElementById('stat-hours').textContent = hoursWorked;
+            document.getElementById('stat-saved').textContent = '$' + totalSaved.toFixed(2);
+        }
+        
+        // Show toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
             setTimeout(() => {
-                animateElements.forEach(el => {
-                    el.style.opacity = '1';
-                });
-            }, 100);
-        });
+                toast.classList.remove('show');
+            }, 3000);
+        }
     </script>
 </body>
 </html>
