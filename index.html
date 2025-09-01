@@ -9,188 +9,990 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
     <style>
-        /* Existing CSS remains the same */
-        /* Adding new styles for the additional features */
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #4cc9f0;
+            --success: #2ec4b6;
+            --warning: #ff9f1c;
+            --error: #e71d36;
+            --dark: #2b2d42;
+            --light: #f8f9fa;
+            --card: #ffffff;
+            --radius: 16px;
+            --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
         
-        /* Badges */
-        .badges-container {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e6f7ff 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 0;
             display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 20px;
+            justify-content: center;
+            align-items: center;
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
         }
         
-        .badge {
-            width: 80px;
-            text-align: center;
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.4s ease;
         }
         
-        .badge-icon {
-            width: 60px;
-            height: 60px;
+        .container.settings-open {
+            transform: translateX(-30%);
+        }
+        
+        /* Settings Panel */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 350px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.1);
+            z-index: 1000;
+            padding: 20px;
+            transition: right 0.4s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .settings-panel.active {
+            right: 0;
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e7ff;
+            margin-bottom: 20px;
+        }
+        
+        .settings-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+        
+        .close-settings {
+            background: #f0f4ff;
+            border: none;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .close-settings:hover {
+            background: #e0e7ff;
+        }
+        
+        .settings-section {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .settings-item {
+            background: #f8f9fa;
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid #e0e7ff;
+        }
+        
+        .settings-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+            border-color: var(--accent);
+        }
+        
+        .feature-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 8px;
-            font-size: 24px;
             color: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            font-size: 18px;
         }
         
-        .badge.earned .badge-icon {
-            background: linear-gradient(135deg, var(--success) 0%, var(--accent) 100%);
-            animation: pulse 1.5s infinite;
+        .feature-info {
+            flex: 1;
         }
         
-        .badge-name {
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 16px;
+        }
+        
+        .feature-desc {
+            font-size: 13px;
+            color: #6c738d;
+        }
+        
+        .coming-soon {
+            background: #f0f4ff;
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
-            color: var(--dark);
         }
         
-        .badge-desc {
-            font-size: 10px;
-            color: #7a7f9a;
+        /* Reset Button */
+        .reset-btn {
+            background: #fff0f0;
+            color: var(--error);
+            border: none;
+            padding: 16px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            margin-top: 10px;
+            transition: var(--transition);
         }
         
-        /* AR Overlay */
-        .ar-overlay {
+        .reset-btn:hover {
+            background: #ffe0e0;
+        }
+        
+        /* Coming Soon Modal */
+        .coming-soon-modal {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 3000;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
+            z-index: 2000;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
         
-        .ar-overlay.active {
+        .coming-soon-modal.active {
             opacity: 1;
             pointer-events: all;
         }
         
-        .ar-video {
-            width: 100%;
-            max-width: 500px;
-            height: 70vh;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        .ar-display {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 15px;
-            border-radius: 12px;
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            border-radius: var(--radius);
+            padding: 30px;
             text-align: center;
-            font-size: 24px;
-            font-weight: 700;
-            backdrop-filter: blur(5px);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
         }
         
-        .ar-controls {
+        .coming-soon-modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(76, 201, 240, 0.1);
+            border-radius: 50%;
             display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        /* Category Select */
-        .category-select {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .category-option {
-            padding: 12px;
-            border: 2px solid #e0e7ff;
-            border-radius: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .category-option.selected {
-            border-color: var(--primary);
-            background: rgba(67, 97, 238, 0.1);
-        }
-        
-        .category-icon {
-            font-size: 20px;
-            margin-bottom: 8px;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
             color: var(--primary);
         }
         
-        .category-name {
-            font-size: 12px;
-            font-weight: 600;
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--secondary);
         }
         
-        /* Expense List */
-        .expense-item {
+        .modal-text {
+            font-size: 16px;
+            color: #5a5f7c;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .modal-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 20px 15px 15px;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+        
+        .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #e0e7ff;
+            margin-bottom: 15px;
         }
         
-        .expense-info {
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            background: rgba(255, 255, 255, 0.2);
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        
+        h1 {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        /* Stats */
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 12px;
+            backdrop-filter: blur(5px);
+            margin-top: 10px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 0 8px;
             flex: 1;
         }
         
-        .expense-name {
-            font-weight: 600;
-            margin-bottom: 4px;
+        .stat-value {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 3px;
+            color: white;
         }
         
-        .expense-category {
+        .stat-label {
             font-size: 12px;
-            color: #7a7f9a;
+            opacity: 0.85;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: white;
+            border-bottom: 1px solid #e0e7ff;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 16px 5px;
+            font-weight: 700;
+            color: #6c738d;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            font-size: 14px;
+        }
+        
+        .tab.active {
+            color: var(--primary);
+        }
+        
+        .tab.active:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+        
+        /* Main Content */
+        main {
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        /* Card Design */
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--secondary);
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 10px;
         }
         
-        .expense-amount {
+        .card-title i {
+            color: var(--primary);
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e7ff;
+            border-radius: 12px;
+            background: white;
+            font-size: 16px;
+            transition: var(--transition);
+            color: var(--dark);
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .input-group span {
+            position: absolute;
+            right: 14px;
+            top: 14px;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 15px;
+        }
+        
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        /* Results Section */
+        .result-card {
+            text-align: center;
+            padding: 20px;
+            background: rgba(76, 201, 240, 0.05);
+            border-radius: var(--radius);
+            margin-top: 15px;
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        .result-value {
+            font-size: 38px;
+            font-weight: 800;
+            margin: 15px 0;
+            color: var(--secondary);
+            line-height: 1.1;
+        }
+        
+        .result-label {
+            font-size: 16px;
+            color: #5a5f7c;
+            margin-bottom: 20px;
+        }
+        
+        /* Time Visualization */
+        .time-visual {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .time-block {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
             font-weight: 700;
             font-size: 16px;
-            color: var(--error);
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.25);
         }
         
-        .expense-time {
-            font-size: 12px;
+        /* Insights */
+        .insight-card {
+            background: linear-gradient(135deg, #fdf6e3 0%, #fff9e6 100%);
+            border-left: 4px solid var(--warning);
+            padding: 16px;
+            border-radius: 0 12px 12px 0;
+            margin-top: 20px;
+            text-align: left;
+            font-size: 14px;
+        }
+        
+        .insight-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: var(--warning);
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--light);
+            padding: 15px;
+            text-align: center;
+            color: #6c738d;
+            font-size: 13px;
+            border-top: 1px solid #e0e7ff;
+        }
+        
+        /* Savings Card */
+        .savings-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--success);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .savings-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            background: rgba(46, 196, 182, 0.1);
+            border-radius: 0 0 0 100%;
+        }
+        
+        .savings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .savings-title {
+            font-weight: 700;
+            font-size: 18px;
             color: var(--dark);
-            margin-top: 4px;
         }
         
-        /* Insights Panel */
-        .insights-container {
-            background: linear-gradient(135deg, #f0f4ff 0%, #e6f7ff 100%);
+        .savings-amount {
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--success);
+        }
+        
+        .savings-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .detail-item {
+            background: rgba(46, 196, 182, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 14px;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        
+        .detail-value {
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        /* Progress Bar */
+        .savings-progress {
+            margin: 20px 0;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            height: 12px;
+            background: #e0e7ff;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success) 0%, var(--accent) 100%);
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+        
+        /* History Item */
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #e0e7ff;
+            position: relative;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .history-info {
+            flex: 1;
+        }
+        
+        .history-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        
+        .history-date {
+            font-size: 13px;
+            color: #7a7f9a;
+        }
+        
+        .history-amount {
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .history-type {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #f0f4ff;
+            color: var(--primary);
+            margin-top: 5px;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 30px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 30px 20px;
+            color: #7a7f9a;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: var(--primary);
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .empty-state p {
+            font-size: 15px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        
+        /* Feature Roadmap */
+        .roadmap-container {
+            background: #f8f9fa;
             border-radius: var(--radius);
             padding: 20px;
             margin-top: 20px;
         }
         
+        .roadmap-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--secondary);
+            font-weight: 700;
+        }
+        
+        .roadmap-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #e0e7ff;
+        }
+        
+        .roadmap-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .roadmap-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            flex-shrink: 0;
+            margin-right: 15px;
+        }
+        
+        .roadmap-content {
+            flex: 1;
+        }
+        
+        .roadmap-feature {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .roadmap-desc {
+            font-size: 14px;
+            color: #5a5f7c;
+            margin-bottom: 8px;
+        }
+        
+        .roadmap-status {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #e6f7ff;
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        /* Expense Form */
+        .expense-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .expense-form .form-group:first-child {
+            grid-column: 1 / span 2;
+        }
+        
+        /* Category Badges */
+        .category-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 6px;
+            margin-bottom: 6px;
+        }
+        
+        .category-food {
+            background: rgba(46, 196, 182, 0.15);
+            color: var(--success);
+        }
+        
+        .category-transport {
+            background: rgba(67, 97, 238, 0.15);
+            color: var(--primary);
+        }
+        
+        .category-entertainment {
+            background: rgba(255, 159, 28, 0.15);
+            color: var(--warning);
+        }
+        
+        .category-shopping {
+            background: rgba(231, 29, 54, 0.15);
+            color: var(--error);
+        }
+        
+        .category-utilities {
+            background: rgba(58, 12, 163, 0.15);
+            color: var(--secondary);
+        }
+        
+        .category-other {
+            background: rgba(76, 201, 240, 0.15);
+            color: var(--accent);
+        }
+        
+        /* Badges Section */
+        .badges-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .badge {
+            background: white;
+            border-radius: var(--radius);
+            padding: 15px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .badge.locked {
+            filter: grayscale(1);
+            opacity: 0.7;
+        }
+        
+        .badge-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+        
+        .badge.locked .badge-icon {
+            background: #e0e7ff;
+            color: #a5b4cb;
+        }
+        
+        .badge-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .badge-desc {
+            font-size: 12px;
+            color: #7a7f9a;
+        }
+        
+        /* Insights Section */
         .insight-item {
             background: white;
-            border-radius: 12px;
-            padding: 15px;
+            border-radius: var(--radius);
+            padding: 16px;
             margin-bottom: 15px;
             box-shadow: var(--shadow);
             border-left: 4px solid var(--warning);
@@ -201,68 +1003,80 @@
             align-items: center;
             gap: 10px;
             margin-bottom: 10px;
-            color: var(--warning);
         }
         
-        .insight-title {
-            font-weight: 700;
+        .insight-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 159, 28, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--warning);
             font-size: 16px;
         }
         
-        /* Toggle Switch */
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
+        .insight-content {
+            font-size: 14px;
+            line-height: 1.5;
         }
         
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
-        }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .slider {
-            background-color: var(--primary);
-        }
-        
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-        
-        /* New tab styles */
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.4s ease-out;
+        /* Responsive design */
+        @media (max-width: 480px) {
+            .container {
+                height: 100vh;
+            }
+            
+            .settings-panel {
+                width: 300px;
+                right: -300px;
+            }
+            
+            .container.settings-open {
+                transform: translateX(-40%);
+            }
+            
+            header {
+                padding: 15px 12px 12px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .subtitle {
+                font-size: 13px;
+            }
+            
+            .stat-value {
+                font-size: 16px;
+            }
+            
+            .stat-label {
+                font-size: 11px;
+            }
+            
+            .tab {
+                padding: 14px 5px;
+                font-size: 13px;
+            }
+            
+            .history-item {
+                padding: 12px;
+            }
+            
+            .badges-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .expense-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .expense-form .form-group:first-child {
+                grid-column: 1;
+            }
         }
     </style>
 </head>
@@ -279,58 +1093,9 @@
         <div class="settings-section">
             <h3 class="section-title"><i class="fas fa-cog"></i> App Settings</h3>
             
-            <div class="settings-item">
-                <div class="feature-icon">
-                    <i class="fas fa-money-bill-wave"></i>
-                </div>
-                <div class="feature-info">
-                    <div class="feature-title">Hourly Rate</div>
-                    <div class="feature-desc">Your current hourly wage</div>
-                </div>
-                <div class="input-group" style="max-width: 100px;">
-                    <input type="number" id="settings-hourly-rate" value="0" min="0" step="0.01">
-                    <span>$</span>
-                </div>
-            </div>
-            
-            <div class="settings-item">
-                <div class="feature-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="feature-info">
-                    <div class="feature-title">Daily Work Hours</div>
-                    <div class="feature-desc">Your typical workday length</div>
-                </div>
-                <div class="input-group" style="max-width: 100px;">
-                    <input type="number" id="settings-daily-hours" value="0" min="0" max="24" step="0.5">
-                    <span>hrs</span>
-                </div>
-            </div>
-            
-            <div class="settings-item">
-                <div class="feature-icon">
-                    <i class="fas fa-video"></i>
-                </div>
-                <div class="feature-info">
-                    <div class="feature-title">AR Mode</div>
-                    <div class="feature-desc">Enable camera overlay</div>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="ar-toggle">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            
             <button class="reset-btn" id="reset-app">
                 <i class="fas fa-redo"></i> Reset Application Data
             </button>
-        </div>
-        
-        <div class="settings-section">
-            <h3 class="section-title"><i class="fas fa-trophy"></i> Your Badges</h3>
-            <div class="badges-container" id="badges-container">
-                <!-- Badges will be populated here -->
-            </div>
         </div>
         
         <div class="settings-section">
@@ -420,24 +1185,6 @@
         </div>
     </div>
     
-    <!-- AR Overlay -->
-    <div class="ar-overlay" id="ar-overlay">
-        <div class="ar-video" id="ar-video">
-            <div class="ar-display" id="ar-display">
-                <div id="ar-item-name">Item Name</div>
-                <div id="ar-time-cost">0 hours</div>
-            </div>
-        </div>
-        <div class="ar-controls">
-            <button class="btn btn-secondary" id="ar-close">
-                <i class="fas fa-times"></i> Close
-            </button>
-            <button class="btn" id="ar-save">
-                <i class="fas fa-save"></i> Save Expense
-            </button>
-        </div>
-    </div>
-    
     <div class="container" id="app-container">
         <!-- Header -->
         <header>
@@ -477,6 +1224,7 @@
             <div class="tab" data-tab="savings">Savings</div>
             <div class="tab" data-tab="insights">Insights</div>
             <div class="tab" data-tab="history">History</div>
+            <div class="tab" data-tab="badges">Badges</div>
         </div>
         
         <!-- Main Content -->
@@ -521,41 +1269,6 @@
                             </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label><i class="fas fa-list"></i> Category</label>
-                            <div class="category-select" id="category-select">
-                                <div class="category-option" data-category="Food">
-                                    <div class="category-icon"><i class="fas fa-utensils"></i></div>
-                                    <div class="category-name">Food</div>
-                                </div>
-                                <div class="category-option" data-category="Transport">
-                                    <div class="category-icon"><i class="fas fa-bus"></i></div>
-                                    <div class="category-name">Transport</div>
-                                </div>
-                                <div class="category-option" data-category="Entertainment">
-                                    <div class="category-icon"><i class="fas fa-gamepad"></i></div>
-                                    <div class="category-name">Entertainment</div>
-                                </div>
-                                <div class="category-option" data-category="Shopping">
-                                    <div class="category-icon"><i class="fas fa-shopping-bag"></i></div>
-                                    <div class="category-name">Shopping</div>
-                                </div>
-                                <div class="category-option" data-category="Bills">
-                                    <div class="category-icon"><i class="fas fa-file-invoice-dollar"></i></div>
-                                    <div class="category-name">Bills</div>
-                                </div>
-                                <div class="category-option" data-category="Other">
-                                    <div class="category-icon"><i class="fas fa-ellipsis-h"></i></div>
-                                    <div class="category-name">Other</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="item-note"><i class="fas fa-sticky-note"></i> Note (Optional)</label>
-                            <input type="text" id="item-note" placeholder="Add any details about this purchase">
-                        </div>
-                        
                         <button class="btn" id="calculate-btn">
                             <i class="fas fa-hourglass-half"></i> Calculate Time Cost
                         </button>
@@ -577,14 +1290,6 @@
                                 </div>
                                 <p id="insight-text">Enter values to see how purchases impact your time</p>
                             </div>
-                            
-                            <button class="btn" id="save-expense-btn" style="margin-top: 15px;">
-                                <i class="fas fa-save"></i> Save Expense
-                            </button>
-                            
-                            <button class="btn btn-secondary" id="view-ar-btn" style="margin-top: 10px;">
-                                <i class="fas fa-camera"></i> View in AR
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -594,44 +1299,49 @@
             <div class="tab-content" id="expenses">
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title"><i class="fas fa-money-bill-wave"></i> This Week's Expenses</div>
+                        <div class="card-title"><i class="fas fa-money-bill-wave"></i> Log Expense</div>
                     </div>
                     <div class="card-content">
-                        <div class="stats" style="background: white; margin-bottom: 20px;">
-                            <div class="stat-card">
-                                <div class="stat-value" id="week-total">$0.00</div>
-                                <div class="stat-label">Total</div>
+                        <div class="expense-form">
+                            <div class="form-group">
+                                <label for="expense-amount"><i class="fas fa-dollar-sign"></i> Amount</label>
+                                <div class="input-group">
+                                    <input type="number" id="expense-amount" placeholder="0.00" value="0">
+                                    <span>USD</span>
+                                </div>
                             </div>
-                            <div class="stat-card">
-                                <div class="stat-value" id="week-time">0h</div>
-                                <div class="stat-label">Time Cost</div>
+                            <div class="form-group">
+                                <label for="expense-category"><i class="fas fa-tag"></i> Category</label>
+                                <select id="expense-category">
+                                    <option value="food">Food</option>
+                                    <option value="transport">Transport</option>
+                                    <option value="entertainment">Entertainment</option>
+                                    <option value="shopping">Shopping</option>
+                                    <option value="utilities">Utilities</option>
+                                    <option value="other">Other</option>
+                                </select>
                             </div>
-                            <div class="stat-card">
-                                <div class="stat-value" id="week-count">0</div>
-                                <div class="stat-label">Items</div>
+                            <div class="form-group">
+                                <label for="expense-note"><i class="fas fa-sticky-note"></i> Note (optional)</label>
+                                <input type="text" id="expense-note" placeholder="What was this for?">
                             </div>
                         </div>
-                        
-                        <div id="expenses-list">
-                            <div class="empty-state">
-                                <i class="fas fa-receipt"></i>
-                                <h3>No Expenses This Week</h3>
-                                <p>Your expenses will appear here once you start tracking them</p>
-                            </div>
-                        </div>
+                        <button class="btn" id="log-expense-btn">
+                            <i class="fas fa-plus-circle"></i> Log Expense
+                        </button>
                     </div>
                 </div>
                 
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title"><i class="fas fa-chart-pie"></i> Expenses by Category</div>
+                        <div class="card-title"><i class="fas fa-list"></i> Recent Expenses</div>
                     </div>
                     <div class="card-content">
-                        <div id="category-chart">
+                        <div id="expenses-list">
                             <div class="empty-state">
-                                <i class="fas fa-chart-pie"></i>
-                                <h3>No Category Data</h3>
-                                <p>Expense categories will appear here once you start tracking</p>
+                                <i class="fas fa-receipt"></i>
+                                <h3>No Expenses Yet</h3>
+                                <p>Your logged expenses will appear here</p>
                             </div>
                         </div>
                     </div>
@@ -753,44 +1463,14 @@
             <div class="tab-content" id="insights">
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title"><i class="fas fa-brain"></i> Financial Insights</div>
+                        <div class="card-title"><i class="fas fa-lightbulb"></i> Financial Insights</div>
                     </div>
                     <div class="card-content">
-                        <div class="insights-container" id="insights-container">
+                        <div id="insights-content">
                             <div class="empty-state">
-                                <i class="fas fa-lightbulb"></i>
+                                <i class="fas fa-chart-line"></i>
                                 <h3>No Insights Yet</h3>
-                                <p>Your personalized financial insights will appear here once you start using the app</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title"><i class="fas fa-chart-line"></i> Monthly Summary</div>
-                    </div>
-                    <div class="card-content">
-                        <div class="stats" style="background: white; margin-bottom: 20px;">
-                            <div class="stat-card">
-                                <div class="stat-value" id="month-total">$0.00</div>
-                                <div class="stat-label">Spent</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value" id="month-time">0h</div>
-                                <div class="stat-label">Time Cost</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value" id="month-count">0</div>
-                                <div class="stat-label">Items</div>
-                            </div>
-                        </div>
-                        
-                        <div id="monthly-chart">
-                            <div class="empty-state">
-                                <i class="fas fa-chart-bar"></i>
-                                <h3>No Monthly Data</h3>
-                                <p>Your monthly spending chart will appear here once you have data</p>
+                                <p>Start logging expenses to get personalized financial insights</p>
                             </div>
                         </div>
                     </div>
@@ -809,6 +1489,61 @@
                                 <i class="fas fa-history"></i>
                                 <h3>No Financial History Yet</h3>
                                 <p>Your purchase evaluations and savings progress will appear here once you start using ValueVision</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Badges Tab -->
+            <div class="tab-content" id="badges">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-trophy"></i> Your Badges</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="badges-container" id="badges-container">
+                            <div class="badge locked" data-badge="starter">
+                                <div class="badge-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="badge-title">Starter</div>
+                                <div class="badge-desc">Log your first expense</div>
+                            </div>
+                            <div class="badge locked" data-badge="saver">
+                                <div class="badge-icon">
+                                    <i class="fas fa-piggy-bank"></i>
+                                </div>
+                                <div class="badge-title">Saver</div>
+                                <div class="badge-desc">Reach a savings goal</div>
+                            </div>
+                            <div class="badge locked" data-badge="consistency">
+                                <div class="badge-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="badge-title">Consistency</div>
+                                <div class="badge-desc">7-day logging streak</div>
+                            </div>
+                            <div class="badge locked" data-badge="frugal">
+                                <div class="badge-icon">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                <div class="badge-title">Frugal Spender</div>
+                                <div class="badge-desc">Spend less than you earn</div>
+                            </div>
+                            <div class="badge locked" data-badge="planner">
+                                <div class="badge-icon">
+                                    <i class="fas fa-tasks"></i>
+                                </div>
+                                <div class="badge-title">Planner</div>
+                                <div class="badge-desc">Set 3 savings goals</div>
+                            </div>
+                            <div class="badge locked" data-badge="analyst">
+                                <div class="badge-icon">
+                                    <i class="fas fa-chart-pie"></i>
+                                </div>
+                                <div class="badge-title">Financial Analyst</div>
+                                <div class="badge-desc">Log 50 expenses</div>
                             </div>
                         </div>
                     </div>
@@ -836,32 +1571,13 @@
             history: [],
             currentGoal: null,
             purchases: [],
-            expenses: [],
             timeBank: 0,
             level: 1,
+            expenses: [],
             badges: [],
-            arEnabled: false,
-            selectedCategory: "Food"
+            lastLogDate: null,
+            logStreak: 0
         };
-        
-        // Available categories
-        const categories = [
-            { name: "Food", icon: "fas fa-utensils" },
-            { name: "Transport", icon: "fas fa-bus" },
-            { name: "Entertainment", icon: "fas fa-gamepad" },
-            { name: "Shopping", icon: "fas fa-shopping-bag" },
-            { name: "Bills", icon: "fas fa-file-invoice-dollar" },
-            { name: "Other", icon: "fas fa-ellipsis-h" }
-        ];
-        
-        // Available badges
-        const availableBadges = [
-            { id: "first_expense", name: "Starter", description: "Logged first expense", icon: "fas fa-star" },
-            { id: "first_goal", name: "Saver", description: "Reached first savings goal", icon: "fas fa-trophy" },
-            { id: "streak_7", name: "Consistency", description: "7 day logging streak", icon: "fas fa-calendar-check" },
-            { id: "savings_100", name: "Investor", description: "Saved over $100", icon: "fas fa-chart-line" },
-            { id: "expense_10", name: "Tracker", description: "Logged 10 expenses", icon: "fas fa-receipt" }
-        ];
         
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
@@ -877,13 +1593,6 @@
                     tab.classList.add('active');
                     const tabId = tab.getAttribute('data-tab');
                     document.getElementById(tabId).classList.add('active');
-                    
-                    // Refresh specific tab content if needed
-                    if (tabId === 'expenses') {
-                        updateExpensesUI();
-                    } else if (tabId === 'insights') {
-                        generateInsights();
-                    }
                 });
             });
             
@@ -898,6 +1607,9 @@
             
             // Set up edit goal button
             document.getElementById('edit-goal-btn').addEventListener('click', editGoal);
+            
+            // Set up log expense button
+            document.getElementById('log-expense-btn').addEventListener('click', logExpense);
             
             // Set up settings toggle
             document.getElementById('settings-toggle').addEventListener('click', toggleSettings);
@@ -921,35 +1633,6 @@
                 document.getElementById('coming-soon-modal').classList.remove('active');
             });
             
-            // Set up category selection
-            document.querySelectorAll('.category-option').forEach(option => {
-                option.addEventListener('click', () => {
-                    document.querySelectorAll('.category-option').forEach(o => o.classList.remove('selected'));
-                    option.classList.add('selected');
-                    state.selectedCategory = option.getAttribute('data-category');
-                });
-            });
-            
-            // Set default category
-            document.querySelector('.category-option[data-category="Food"]').classList.add('selected');
-            
-            // Set up save expense button
-            document.getElementById('save-expense-btn').addEventListener('click', saveExpense);
-            
-            // Set up view AR button
-            document.getElementById('view-ar-btn').addEventListener('click', viewInAR);
-            
-            // Set up AR close button
-            document.getElementById('ar-close').addEventListener('click', closeAR);
-            
-            // Set up AR save button
-            document.getElementById('ar-save').addEventListener('click', saveExpenseFromAR);
-            
-            // Set up settings inputs
-            document.getElementById('settings-hourly-rate').addEventListener('change', updateSettings);
-            document.getElementById('settings-daily-hours').addEventListener('change', updateSettings);
-            document.getElementById('ar-toggle').addEventListener('change', toggleAR);
-            
             // Initialize UI
             updateUI();
         });
@@ -958,78 +1641,21 @@
         function loadState() {
             const savedState = localStorage.getItem('valueVisionState');
             if (savedState) {
-                const parsed = JSON.parse(savedState);
+                const parsedState = JSON.parse(savedState);
+                Object.assign(state, parsedState);
                 
-                // Convert date strings back to Date objects
-                if (parsed.purchases) {
-                    parsed.purchases = parsed.purchases.map(p => {
-                        p.date = new Date(p.date);
-                        return p;
-                    });
-                }
-                
-                if (parsed.history) {
-                    parsed.history = parsed.history.map(h => {
-                        h.date = new Date(h.date);
-                        return h;
-                    });
-                }
-                
-                if (parsed.expenses) {
-                    parsed.expenses = parsed.expenses.map(e => {
-                        e.date = new Date(e.date);
-                        return e;
-                    });
-                }
-                
-                if (parsed.goals && parsed.goals.length > 0) {
-                    parsed.goals = parsed.goals.map(g => {
-                        g.createdAt = new Date(g.createdAt);
-                        return g;
-                    });
-                    
-                    // Set current goal to the first one (for simplicity)
-                    parsed.currentGoal = parsed.goals[0];
-                }
-                
-                Object.assign(state, parsed);
-                
-                // Update settings inputs
-                document.getElementById('settings-hourly-rate').value = state.hourlyRate;
-                document.getElementById('settings-daily-hours').value = state.dailyHours;
-                document.getElementById('ar-toggle').checked = state.arEnabled;
-                
-                // Update main inputs
+                // Update form fields with saved values
                 document.getElementById('hourly-rate').value = state.hourlyRate;
                 document.getElementById('daily-hours').value = state.dailyHours;
+                
+                // Update UI elements
+                updateBadges();
             }
         }
         
         // Save state to localStorage
         function saveState() {
             localStorage.setItem('valueVisionState', JSON.stringify(state));
-        }
-        
-        // Update settings from settings panel
-        function updateSettings() {
-            state.hourlyRate = parseFloat(document.getElementById('settings-hourly-rate').value) || 0;
-            state.dailyHours = parseFloat(document.getElementById('settings-daily-hours').value) || 0;
-            state.arEnabled = document.getElementById('ar-toggle').checked;
-            
-            // Update main inputs
-            document.getElementById('hourly-rate').value = state.hourlyRate;
-            document.getElementById('daily-hours').value = state.dailyHours;
-            
-            saveState();
-            updateUI();
-            showToast('Settings updated');
-        }
-        
-        // Toggle AR mode
-        function toggleAR() {
-            state.arEnabled = document.getElementById('ar-toggle').checked;
-            saveState();
-            showToast(state.arEnabled ? 'AR mode enabled' : 'AR mode disabled');
         }
         
         // Toggle settings panel
@@ -1039,11 +1665,6 @@
             
             settingsPanel.classList.toggle('active');
             appContainer.classList.toggle('settings-open');
-            
-            // Update badges display when opening settings
-            if (settingsPanel.classList.contains('active')) {
-                updateBadgesUI();
-            }
         }
         
         // Reset app
@@ -1056,10 +1677,11 @@
                 state.history = [];
                 state.currentGoal = null;
                 state.purchases = [];
-                state.expenses = [];
                 state.timeBank = 0;
+                state.expenses = [];
                 state.badges = [];
-                state.arEnabled = false;
+                state.lastLogDate = null;
+                state.logStreak = 0;
                 
                 // Reset form fields
                 document.getElementById('hourly-rate').value = '0';
@@ -1070,21 +1692,15 @@
                 document.getElementById('goal-amount').value = '0';
                 document.getElementById('saved-amount').value = '0';
                 document.getElementById('daily-savings').value = '0';
-                document.getElementById('settings-hourly-rate').value = '0';
-                document.getElementById('settings-daily-hours').value = '0';
-                document.getElementById('ar-toggle').checked = false;
-                
-                // Reset category selection
-                document.querySelectorAll('.category-option').forEach(o => o.classList.remove('selected'));
-                document.querySelector('.category-option[data-category="Food"]').classList.add('selected');
-                state.selectedCategory = "Food";
+                document.getElementById('expense-amount').value = '0';
+                document.getElementById('expense-note').value = '';
                 
                 // Hide results
                 document.getElementById('time-result').style.display = 'none';
                 document.getElementById('savings-goal-card').style.display = 'none';
                 document.getElementById('savings-empty').style.display = 'block';
                 
-                // Clear history and expenses
+                // Clear history
                 document.getElementById('history-list').innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-history"></i>
@@ -1093,34 +1709,33 @@
                     </div>
                 `;
                 
+                // Clear expenses
                 document.getElementById('expenses-list').innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-receipt"></i>
-                        <h3>No Expenses This Week</h3>
-                        <p>Your expenses will appear here once you start tracking them</p>
+                        <h3>No Expenses Yet</h3>
+                        <p>Your logged expenses will appear here</p>
                     </div>
                 `;
                 
-                document.getElementById('category-chart').innerHTML = `
+                // Clear insights
+                document.getElementById('insights-content').innerHTML = `
                     <div class="empty-state">
-                        <i class="fas fa-chart-pie"></i>
-                        <h3>No Category Data</h3>
-                        <p>Expense categories will appear here once you start tracking</p>
-                    </div>
-                `;
-                
-                document.getElementById('insights-container').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-lightbulb"></i>
+                        <i class="fas fa-chart-line"></i>
                         <h3>No Insights Yet</h3>
-                        <p>Your personalized financial insights will appear here once you start using the app</p>
+                        <p>Start logging expenses to get personalized financial insights</p>
                     </div>
                 `;
                 
                 // Reset stats
-                updateStats();
+                document.getElementById('stat-spent').textContent = '$0.00';
+                document.getElementById('stat-hours').textContent = '0';
+                document.getElementById('stat-saved').textContent = '$0.00';
                 
-                // Save cleared state
+                // Reset badges
+                updateBadges();
+                
+                // Save state
                 saveState();
                 
                 // Show toast
@@ -1202,117 +1817,315 @@
             
             // Show result
             document.getElementById('time-result').style.display = 'block';
-        }
-        
-        // Save expense
-        function saveExpense() {
-            const itemName = document.getElementById('item-name').value;
-            const itemCost = parseFloat(document.getElementById('item-cost').value) || 0;
-            const itemNote = document.getElementById('item-note').value;
-            const category = state.selectedCategory;
             
-            if (!itemName || itemCost <= 0) {
-                showToast("Please enter a valid item name and cost");
-                return;
-            }
-            
-            // Calculate time cost
-            const hourlyRate = parseFloat(document.getElementById('hourly-rate').value) || state.hourlyRate;
-            const minutesOfWork = Math.round((itemCost / hourlyRate) * 60);
-            
-            // Add to expenses
-            const expense = {
-                name: itemName,
-                cost: itemCost,
-                category: category,
-                note: itemNote,
-                timeCost: minutesOfWork,
-                date: new Date()
-            };
-            
-            state.expenses.push(expense);
-            
-            // Add to purchases for history
+            // Add to history
             state.purchases.push({
                 name: itemName,
                 cost: itemCost,
                 date: new Date()
             });
             
+            // Update stats and history
+            updateStats();
+            updateHistory();
+            saveState();
+        }
+        
+        // Log expense
+        function logExpense() {
+            const amount = parseFloat(document.getElementById('expense-amount').value) || 0;
+            const category = document.getElementById('expense-category').value;
+            const note = document.getElementById('expense-note').value;
+            
+            if (amount <= 0) {
+                showToast("Please enter a valid expense amount");
+                return;
+            }
+            
+            // Check if this is the first expense
+            const isFirstExpense = state.expenses.length === 0;
+            
+            // Add to expenses
+            const expense = {
+                amount,
+                category,
+                note,
+                date: new Date()
+            };
+            
+            state.expenses.push(expense);
+            
+            // Check for logging streak
+            checkLoggingStreak();
+            
             // Check for badges
-            checkForBadges();
+            checkBadges(isFirstExpense);
+            
+            // Update UI
+            updateExpensesList();
+            updateInsights();
+            updateStats();
             
             // Save state
             saveState();
             
-            // Update UI
-            updateStats();
-            updateHistory();
-            
             // Show toast
-            showToast('Expense saved successfully!');
+            showToast('Expense logged successfully!');
             
-            // If on expenses tab, update it
-            if (document.getElementById('expenses').classList.contains('active')) {
-                updateExpensesUI();
-            }
-            
-            // Reset form
-            document.getElementById('item-name').value = '';
-            document.getElementById('item-cost').value = '0';
-            document.getElementById('item-note').value = '';
-            document.getElementById('time-result').style.display = 'none';
+            // Clear form
+            document.getElementById('expense-amount').value = '0';
+            document.getElementById('expense-note').value = '';
         }
         
-        // Save expense from AR mode
-        function saveExpenseFromAR() {
-            saveExpense();
-            closeAR();
-        }
-        
-        // View in AR
-        function viewInAR() {
-            if (!state.arEnabled) {
-                showToast("Please enable AR mode in settings first");
+        // Check logging streak
+        function checkLoggingStreak() {
+            const today = new Date().toDateString();
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toDateString();
+            
+            if (state.lastLogDate === today) {
+                // Already logged today
                 return;
             }
             
-            const itemName = document.getElementById('item-name').value;
-            const itemCost = parseFloat(document.getElementById('item-cost').value) || 0;
-            
-            if (!itemName || itemCost <= 0) {
-                showToast("Please calculate time cost first");
-                return;
-            }
-            
-            // Calculate time cost
-            const hourlyRate = parseFloat(document.getElementById('hourly-rate').value) || state.hourlyRate;
-            const minutesOfWork = Math.round((itemCost / hourlyRate) * 60);
-            
-            // Format time display
-            let timeDisplay;
-            if (minutesOfWork >= 60) {
-                const hours = Math.floor(minutesOfWork / 60);
-                const minutes = minutesOfWork % 60;
-                timeDisplay = `${hours}h ${minutes}m`;
+            if (state.lastLogDate === yesterdayStr) {
+                // Continuing streak
+                state.logStreak++;
             } else {
-                timeDisplay = `${minutesOfWork}m`;
+                // Broken streak, reset to 1
+                state.logStreak = 1;
             }
             
-            // Update AR display
-            document.getElementById('ar-item-name').textContent = itemName;
-            document.getElementById('ar-time-cost').textContent = timeDisplay;
+            state.lastLogDate = today;
             
-            // Show AR overlay
-            document.getElementById('ar-overlay').classList.add('active');
-            
-            // In a real implementation, we would access the device camera here
-            // For this example, we'll just show a placeholder
+            // Check for consistency badge
+            if (state.logStreak >= 7 && !state.badges.includes('consistency')) {
+                state.badges.push('consistency');
+                showToast('Congratulations! You earned the Consistency Badge!');
+                updateBadges();
+            }
         }
         
-        // Close AR overlay
-        function closeAR() {
-            document.getElementById('ar-overlay').classList.remove('active');
+        // Check for badges
+        function checkBadges(isFirstExpense) {
+            // Starter badge (first expense)
+            if (isFirstExpense && !state.badges.includes('starter')) {
+                state.badges.push('starter');
+                showToast('Congratulations! You earned the Starter Badge!');
+                updateBadges();
+            }
+            
+            // Financial Analyst badge (50 expenses)
+            if (state.expenses.length >= 50 && !state.badges.includes('analyst')) {
+                state.badges.push('analyst');
+                showToast('Congratulations! You earned the Financial Analyst Badge!');
+                updateBadges();
+            }
+            
+            // Check if spending less than earning (frugal badge)
+            const totalSpent = state.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const totalEarned = state.hourlyRate * state.dailyHours * 30; // Approximate monthly
+            if (totalSpent < totalEarned && !state.badges.includes('frugal')) {
+                state.badges.push('frugal');
+                showToast('Congratulations! You earned the Frugal Spender Badge!');
+                updateBadges();
+            }
+        }
+        
+        // Update expenses list
+        function updateExpensesList() {
+            const expensesList = document.getElementById('expenses-list');
+            
+            if (state.expenses.length === 0) {
+                expensesList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <h3>No Expenses Yet</h3>
+                        <p>Your logged expenses will appear here</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            expensesList.innerHTML = '';
+            
+            // Show last 10 expenses
+            state.expenses.slice().reverse().slice(0, 10).forEach(expense => {
+                const date = new Date(expense.date);
+                const hoursNeeded = (expense.amount / state.hourlyRate).toFixed(1);
+                
+                let categoryClass = 'category-other';
+                switch(expense.category) {
+                    case 'food': categoryClass = 'category-food'; break;
+                    case 'transport': categoryClass = 'category-transport'; break;
+                    case 'entertainment': categoryClass = 'category-entertainment'; break;
+                    case 'shopping': categoryClass = 'category-shopping'; break;
+                    case 'utilities': categoryClass = 'category-utilities'; break;
+                }
+                
+                expensesList.innerHTML += `
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-name">${expense.note || expense.category}</div>
+                            <div class="history-date">${formatDate(date)}</div>
+                            <span class="category-badge ${categoryClass}">${expense.category}</span>
+                        </div>
+                        <div class="history-amount" style="color: var(--error);">$${expense.amount.toFixed(2)}</div>
+                    </div>
+                    <div style="font-size: 12px; color: #7a7f9a; margin-top: -10px; margin-bottom: 15px;">
+                        <i class="fas fa-clock"></i> ${hoursNeeded} hours of work
+                    </div>
+                `;
+            });
+        }
+        
+        // Update insights
+        function updateInsights() {
+            const insightsContent = document.getElementById('insights-content');
+            
+            if (state.expenses.length === 0) {
+                insightsContent.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>No Insights Yet</h3>
+                        <p>Start logging expenses to get personalized financial insights</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Calculate category totals
+            const categoryTotals = {};
+            state.expenses.forEach(expense => {
+                if (!categoryTotals[expense.category]) {
+                    categoryTotals[expense.category] = 0;
+                }
+                categoryTotals[expense.category] += expense.amount;
+            });
+            
+            // Find biggest category
+            let biggestCategory = '';
+            let biggestAmount = 0;
+            for (const category in categoryTotals) {
+                if (categoryTotals[category] > biggestAmount) {
+                    biggestAmount = categoryTotals[category];
+                    biggestCategory = category;
+                }
+            }
+            
+            // Calculate time equivalents
+            const biggestCategoryHours = (biggestAmount / state.hourlyRate).toFixed(1);
+            
+            insightsContent.innerHTML = '';
+            
+            // Generate insights based on data
+            if (biggestCategory) {
+                insightsContent.innerHTML += `
+                    <div class="insight-item">
+                        <div class="insight-header">
+                            <div class="insight-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="insight-title">Biggest Expense Category</div>
+                        </div>
+                        <div class="insight-content">
+                            Your biggest expense is <strong>${biggestCategory}</strong> at $${biggestAmount.toFixed(2)}.
+                            That's <strong>${biggestCategoryHours} hours</strong> of work!
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Weekly total insight
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            
+            const weeklyExpenses = state.expenses.filter(expense => {
+                return new Date(expense.date) > oneWeekAgo;
+            });
+            
+            const weeklyTotal = weeklyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const weeklyHours = (weeklyTotal / state.hourlyRate).toFixed(1);
+            
+            insightsContent.innerHTML += `
+                <div class="insight-item">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <i class="fas fa-calendar-week"></i>
+                        </div>
+                        <div class="insight-title">Weekly Spending</div>
+                    </div>
+                    <div class="insight-content">
+                        You've spent <strong>$${weeklyTotal.toFixed(2)}</strong> this week.
+                        That's <strong>${weeklyHours} hours</strong> of your time!
+                    </div>
+                </div>
+            `;
+            
+            // Monthly total insight
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+            
+            const monthlyExpenses = state.expenses.filter(expense => {
+                return new Date(expense.date) > oneMonthAgo;
+            });
+            
+            const monthlyTotal = monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const monthlyHours = (monthlyTotal / state.hourlyRate).toFixed(1);
+            
+            insightsContent.innerHTML += `
+                <div class="insight-item">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="insight-title">Monthly Spending</div>
+                    </div>
+                    <div class="insight-content">
+                        You've spent <strong>$${monthlyTotal.toFixed(2)}</strong> this month.
+                        That's <strong>${monthlyHours} hours</strong> of your time!
+                    </div>
+                </div>
+            `;
+            
+            // Savings vs spending insight
+            const totalSaved = state.currentGoal ? state.currentGoal.saved : 0;
+            
+            if (monthlyTotal > 0) {
+                const savingsRatio = (totalSaved / monthlyTotal).toFixed(1);
+                
+                insightsContent.innerHTML += `
+                    <div class="insight-item">
+                        <div class="insight-header">
+                            <div class="insight-icon">
+                                <i class="fas fa-balance-scale"></i>
+                            </div>
+                            <div class="insight-title">Savings vs Spending</div>
+                        </div>
+                        <div class="insight-content">
+                            You've saved <strong>$${totalSaved.toFixed(2)}</strong> while spending <strong>$${monthlyTotal.toFixed(2)}</strong> this month.
+                            ${savingsRatio > 1 ? 'Great job saving more than you spend!' : 'Try to save more than you spend next month!'}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Update badges display
+        function updateBadges() {
+            const badgesContainer = document.getElementById('badges-container');
+            const badgeElements = badgesContainer.querySelectorAll('.badge');
+            
+            badgeElements.forEach(badge => {
+                const badgeType = badge.getAttribute('data-badge');
+                
+                if (state.badges.includes(badgeType)) {
+                    badge.classList.remove('locked');
+                } else {
+                    badge.classList.add('locked');
+                }
+            });
         }
         
         // Save goal
@@ -1339,16 +2152,20 @@
             // Add to goals if new
             if (!state.goals.some(g => g.name === name)) {
                 state.goals.push({...state.currentGoal});
+                
+                // Check for planner badge (3 goals)
+                if (state.goals.length >= 3 && !state.badges.includes('planner')) {
+                    state.badges.push('planner');
+                    showToast('Congratulations! You earned the Planner Badge!');
+                    updateBadges();
+                }
             }
-            
-            // Check for badges
-            checkForBadges();
-            
-            // Save state
-            saveState();
             
             // Update UI
             updateSavingsGoal();
+            
+            // Save state
+            saveState();
             
             // Show toast
             showToast('Savings goal created!');
@@ -1373,10 +2190,15 @@
             // Prevent saving more than target
             if (state.currentGoal.saved > state.currentGoal.target) {
                 state.currentGoal.saved = state.currentGoal.target;
-                showToast("Congratulations! You've reached your savings goal!");
                 
-                // Check for badges
-                checkForBadges();
+                // Check for saver badge
+                if (!state.badges.includes('saver')) {
+                    state.badges.push('saver');
+                    showToast('Congratulations! You earned the Saver Badge!');
+                    updateBadges();
+                }
+                
+                showToast("Congratulations! You've reached your savings goal!");
             }
             
             // Add to history
@@ -1387,12 +2209,12 @@
                 date: new Date()
             });
             
-            // Save state
-            saveState();
-            
             // Update UI
             updateSavingsGoal();
             updateHistory();
+            
+            // Save state
+            saveState();
             
             // Show toast
             showToast(`Added $${amount} to your savings!`);
@@ -1477,251 +2299,6 @@
             updateStats();
         }
         
-        // Update expenses UI
-        function updateExpensesUI() {
-            const expensesList = document.getElementById('expenses-list');
-            const categoryChart = document.getElementById('category-chart');
-            
-            // Clear current expenses
-            expensesList.innerHTML = '';
-            
-            // Get expenses from this week
-            const oneWeekAgo = new Date();
-            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-            
-            const weeklyExpenses = state.expenses.filter(expense => expense.date >= oneWeekAgo);
-            
-            if (weeklyExpenses.length === 0) {
-                expensesList.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-receipt"></i>
-                        <h3>No Expenses This Week</h3>
-                        <p>Your expenses will appear here once you start tracking them</p>
-                    </div>
-                `;
-            } else {
-                // Sort by date (newest first)
-                weeklyExpenses.sort((a, b) => b.date - a.date);
-                
-                // Add expenses to list
-                weeklyExpenses.forEach(expense => {
-                    const date = new Date(expense.date);
-                    const category = categories.find(c => c.name === expense.category);
-                    
-                    // Format time cost
-                    let timeDisplay;
-                    if (expense.timeCost >= 60) {
-                        const hours = Math.floor(expense.timeCost / 60);
-                        const minutes = expense.timeCost % 60;
-                        timeDisplay = `${hours}h ${minutes}m`;
-                    } else {
-                        timeDisplay = `${expense.timeCost}m`;
-                    }
-                    
-                    expensesList.innerHTML += `
-                        <div class="expense-item">
-                            <div class="expense-info">
-                                <div class="expense-name">${expense.name}</div>
-                                <div class="expense-category">
-                                    <i class="${category.icon}"></i> ${expense.category}
-                                </div>
-                                <div class="expense-time">${timeDisplay} of work</div>
-                            </div>
-                            <div class="expense-amount">$${expense.cost.toFixed(2)}</div>
-                        </div>
-                    `;
-                });
-            }
-            
-            // Update weekly stats
-            const weekTotal = weeklyExpenses.reduce((sum, expense) => sum + expense.cost, 0);
-            const weekTime = weeklyExpenses.reduce((sum, expense) => sum + expense.timeCost, 0);
-            const weekCount = weeklyExpenses.length;
-            
-            document.getElementById('week-total').textContent = `$${weekTotal.toFixed(2)}`;
-            document.getElementById('week-time').textContent = `${Math.round(weekTime/60)}h`;
-            document.getElementById('week-count').textContent = weekCount;
-            
-            // Update category chart
-            const categoryTotals = {};
-            categories.forEach(category => {
-                categoryTotals[category.name] = 0;
-            });
-            
-            weeklyExpenses.forEach(expense => {
-                categoryTotals[expense.category] += expense.cost;
-            });
-            
-            // Create category chart
-            categoryChart.innerHTML = '';
-            
-            for (const category in categoryTotals) {
-                if (categoryTotals[category] > 0) {
-                    const categoryInfo = categories.find(c => c.name === category);
-                    const percentage = (categoryTotals[category] / weekTotal * 100).toFixed(0);
-                    
-                    categoryChart.innerHTML += `
-                        <div style="margin-bottom: 15px;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <i class="${categoryInfo.icon}" style="color: var(--primary);"></i>
-                                    <span style="font-weight: 600;">${category}</span>
-                                </div>
-                                <div>$${categoryTotals[category].toFixed(2)} (${percentage}%)</div>
-                            </div>
-                            <div style="height: 8px; background: #e0e7ff; border-radius: 4px; overflow: hidden;">
-                                <div style="height: 100%; width: ${percentage}%; background: var(--primary); border-radius: 4px;"></div>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-            
-            if (Object.values(categoryTotals).every(total => total === 0)) {
-                categoryChart.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-chart-pie"></i>
-                        <h3>No Category Data</h3>
-                        <p>Expense categories will appear here once you start tracking</p>
-                    </div>
-                `;
-            }
-        }
-        
-        // Generate insights
-        function generateInsights() {
-            const insightsContainer = document.getElementById('insights-container');
-            insightsContainer.innerHTML = '';
-            
-            // If no expenses, show empty state
-            if (state.expenses.length === 0) {
-                insightsContainer.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-lightbulb"></i>
-                        <h3>No Insights Yet</h3>
-                        <p>Your personalized financial insights will appear here once you start using the app</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Get expenses from this month
-            const oneMonthAgo = new Date();
-            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-            
-            const monthlyExpenses = state.expenses.filter(expense => expense.date >= oneMonthAgo);
-            
-            // Calculate monthly totals
-            const monthTotal = monthlyExpenses.reduce((sum, expense) => sum + expense.cost, 0);
-            const monthTime = monthlyExpenses.reduce((sum, expense) => sum + expense.timeCost, 0);
-            const monthCount = monthlyExpenses.length;
-            
-            document.getElementById('month-total').textContent = `$${monthTotal.toFixed(2)}`;
-            document.getElementById('month-time').textContent = `${Math.round(monthTime/60)}h`;
-            document.getElementById('month-count').textContent = monthCount;
-            
-            // Calculate category totals
-            const categoryTotals = {};
-            categories.forEach(category => {
-                categoryTotals[category.name] = 0;
-            });
-            
-            monthlyExpenses.forEach(expense => {
-                categoryTotals[expense.category] += expense.cost;
-            });
-            
-            // Find biggest category
-            let biggestCategory = '';
-            let biggestAmount = 0;
-            
-            for (const category in categoryTotals) {
-                if (categoryTotals[category] > biggestAmount) {
-                    biggestAmount = categoryTotals[category];
-                    biggestCategory = category;
-                }
-            }
-            
-            // Calculate time for biggest category
-            const categoryTime = Math.round((biggestAmount / state.hourlyRate) * 100) / 100;
-            
-            // Generate insights based on data
-            const insights = [];
-            
-            if (biggestCategory && biggestAmount > 0) {
-                insights.push({
-                    title: "Biggest Time Drain",
-                    content: `Your ${biggestCategory} expenses cost you ${categoryTime} hours this month. That's ${(categoryTime/state.dailyHours).toFixed(1)} days of work!`
-                });
-            }
-            
-            // Check for coffee expenses specifically
-            const coffeeExpenses = monthlyExpenses.filter(e => 
-                e.name.toLowerCase().includes('coffee') || 
-                e.name.toLowerCase().includes('cafe') || 
-                e.name.toLowerCase().includes('starbucks')
-            );
-            
-            if (coffeeExpenses.length > 0) {
-                const coffeeTotal = coffeeExpenses.reduce((sum, e) => sum + e.cost, 0);
-                const coffeeTime = (coffeeTotal / state.hourlyRate).toFixed(1);
-                
-                insights.push({
-                    title: "Coffee Habit",
-                    content: `You spent $${coffeeTotal.toFixed(2)} on coffee this month. That's ${coffeeTime} hours of work!`
-                });
-            }
-            
-            // Check for eating out
-            const foodExpenses = monthlyExpenses.filter(e => e.category === 'Food');
-            if (foodExpenses.length > 5) {
-                const foodTotal = foodExpenses.reduce((sum, e) => sum + e.cost, 0);
-                const foodTime = (foodTotal / state.hourlyRate).toFixed(1);
-                
-                insights.push({
-                    title: "Eating Out",
-                    content: `You've eaten out ${foodExpenses.length} times this month, costing $${foodTotal.toFixed(2)} and ${foodTime} hours of work.`
-                });
-            }
-            
-            // Check for savings progress
-            if (state.currentGoal) {
-                const progress = (state.currentGoal.saved / state.currentGoal.target * 100).toFixed(0);
-                
-                insights.push({
-                    title: "Savings Progress",
-                    content: `You're ${progress}% towards your "${state.currentGoal.name}" goal. Keep it up!`
-                });
-            }
-            
-            // Add generic insights if we don't have enough
-            if (insights.length < 2) {
-                insights.push({
-                    title: "Getting Started",
-                    content: "Track more expenses to get personalized insights about your spending habits."
-                });
-            }
-            
-            if (insights.length < 2) {
-                insights.push({
-                    title: "Time is Money",
-                    content: `At $${state.hourlyRate}/hour, every purchase represents time spent working. Think carefully before buying!`
-                });
-            }
-            
-            // Display insights
-            insights.forEach(insight => {
-                insightsContainer.innerHTML += `
-                    <div class="insight-item">
-                        <div class="insight-header">
-                            <i class="fas fa-lightbulb"></i>
-                            <div class="insight-title">${insight.title}</div>
-                        </div>
-                        <div class="insight-content">${insight.content}</div>
-                    </div>
-                `;
-            });
-        }
-        
         // Update history UI
         function updateHistory() {
             const historyList = document.getElementById('history-list');
@@ -1729,7 +2306,7 @@
             // Clear current history
             historyList.innerHTML = '';
             
-            if (state.purchases.length === 0 && state.history.length === 0) {
+            if (state.purchases.length === 0 && state.history.length === 0 && state.expenses.length === 0) {
                 historyList.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-history"></i>
@@ -1740,104 +2317,60 @@
                 return;
             }
             
-            // Combine purchases and history
-            const allHistory = [
-                ...state.purchases.map(p => ({...p, type: 'purchase'})),
-                ...state.history.map(h => ({...h, type: 'savings'}))
-            ];
-            
-            // Sort by date (newest first)
-            allHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            // Add to history list
-            allHistory.forEach(item => {
-                const date = new Date(item.date);
-                
-                if (item.type === 'purchase') {
-                    historyList.innerHTML += `
-                        <div class="history-item">
-                            <div class="history-info">
-                                <div class="history-name">${item.name}</div>
-                                <div class="history-date">${formatDate(date)}</div>
-                                <div class="history-type">Purchase</div>
-                            </div>
-                            <div class="history-amount" style="color: var(--error);">$${item.cost.toFixed(2)}</div>
+            // Add purchases to history
+            state.purchases.slice().reverse().forEach(purchase => {
+                const date = new Date(purchase.date);
+                historyList.innerHTML += `
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-name">${purchase.name}</div>
+                            <div class="history-date">${formatDate(date)}</div>
+                            <div class="history-type">Purchase</div>
                         </div>
-                    `;
-                } else {
-                    historyList.innerHTML += `
-                        <div class="history-item">
-                            <div class="history-info">
-                                <div class="history-name">${item.name}</div>
-                                <div class="history-date">${formatDate(date)}</div>
-                                <div class="history-type">Savings</div>
-                            </div>
-                            <div class="history-amount" style="color: var(--success);">+$${item.amount.toFixed(2)}</div>
-                        </div>
-                    `;
-                }
-            });
-        }
-        
-        // Update badges UI
-        function updateBadgesUI() {
-            const badgesContainer = document.getElementById('badges-container');
-            badgesContainer.innerHTML = '';
-            
-            availableBadges.forEach(badge => {
-                const earned = state.badges.includes(badge.id);
-                
-                badgesContainer.innerHTML += `
-                    <div class="badge ${earned ? 'earned' : ''}">
-                        <div class="badge-icon">
-                            <i class="${badge.icon}"></i>
-                        </div>
-                        <div class="badge-name">${badge.name}</div>
-                        <div class="badge-desc">${badge.description}</div>
+                        <div class="history-amount" style="color: var(--error);">$${purchase.cost.toFixed(2)}</div>
                     </div>
                 `;
             });
-        }
-        
-        // Check for new badges
-        function checkForBadges() {
-            // First expense badge
-            if (state.expenses.length >= 1 && !state.badges.includes('first_expense')) {
-                state.badges.push('first_expense');
-                showToast('Earned badge: Starter!');
-            }
             
-            // First goal badge
-            if (state.currentGoal && state.currentGoal.saved >= state.currentGoal.target && !state.badges.includes('first_goal')) {
-                state.badges.push('first_goal');
-                showToast('Earned badge: Saver!');
-            }
+            // Add savings to history
+            state.history.slice().reverse().forEach(history => {
+                const date = new Date(history.date);
+                historyList.innerHTML += `
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-name">${history.name}</div>
+                            <div class="history-date">${formatDate(date)}</div>
+                            <div class="history-type">Savings</div>
+                        </div>
+                        <div class="history-amount" style="color: var(--success);">+$${history.amount.toFixed(2)}</div>
+                    </div>
+                `;
+            });
             
-            // 7-day streak badge (simplified)
-            if (state.expenses.length >= 7 && !state.badges.includes('streak_7')) {
-                state.badges.push('streak_7');
-                showToast('Earned badge: Consistency!');
-            }
-            
-            // $100 savings badge
-            if (state.currentGoal && state.currentGoal.saved >= 100 && !state.badges.includes('savings_100')) {
-                state.badges.push('savings_100');
-                showToast('Earned badge: Investor!');
-            }
-            
-            // 10 expenses badge
-            if (state.expenses.length >= 10 && !state.badges.includes('expense_10')) {
-                state.badges.push('expense_10');
-                showToast('Earned badge: Tracker!');
-            }
-            
-            // Save state if badges were updated
-            saveState();
-            
-            // Update badges UI if settings is open
-            if (document.getElementById('settings-panel').classList.contains('active')) {
-                updateBadgesUI();
-            }
+            // Add expenses to history
+            state.expenses.slice().reverse().forEach(expense => {
+                const date = new Date(expense.date);
+                
+                let categoryClass = 'category-other';
+                switch(expense.category) {
+                    case 'food': categoryClass = 'category-food'; break;
+                    case 'transport': categoryClass = 'category-transport'; break;
+                    case 'entertainment': categoryClass = 'category-entertainment'; break;
+                    case 'shopping': categoryClass = 'category-shopping'; break;
+                    case 'utilities': categoryClass = 'category-utilities'; break;
+                }
+                
+                historyList.innerHTML += `
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-name">${expense.note || expense.category}</div>
+                            <div class="history-date">${formatDate(date)}</div>
+                            <span class="category-badge ${categoryClass}">${expense.category}</span>
+                        </div>
+                        <div class="history-amount" style="color: var(--error);">$${expense.amount.toFixed(2)}</div>
+                    </div>
+                `;
+            });
         }
         
         // Format date for display
@@ -1871,25 +2404,18 @@
             }
             
             updateHistory();
-            
-            // Update expenses if on that tab
-            if (document.getElementById('expenses').classList.contains('active')) {
-                updateExpensesUI();
-            }
-            
-            // Update insights if on that tab
-            if (document.getElementById('insights').classList.contains('active')) {
-                generateInsights();
-            }
+            updateExpensesList();
+            updateInsights();
+            updateBadges();
         }
         
         // Update stats
         function updateStats() {
             // Calculate spent today
             const today = new Date().toDateString();
-            const spentToday = state.purchases
-                .filter(p => new Date(p.date).toDateString() === today)
-                .reduce((sum, p) => sum + p.cost, 0)
+            const spentToday = state.expenses
+                .filter(e => new Date(e.date).toDateString() === today)
+                .reduce((sum, e) => sum + e.amount, 0)
                 .toFixed(2);
             
             // Hours worked - in a real app this would be user input
