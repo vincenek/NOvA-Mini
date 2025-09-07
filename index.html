@@ -566,6 +566,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         .raw-data-content {
@@ -577,6 +579,7 @@
             font-family: 'Fira Code', 'Consolas', monospace;
             font-size: 0.9rem;
             line-height: 1.6;
+            white-space: pre-wrap;
         }
         
         .status-bar {
@@ -707,7 +710,7 @@
         .health-dot {
             width: 8px;
             height: 8px;
-            borderRadius: 50%;
+            border-radius: 50%;
             background: var(--success);
         }
         
@@ -826,6 +829,12 @@
         .install-text strong {
             display: block;
             margin-bottom: 3px;
+            color: var(--dark);
+        }
+        
+        .install-text p {
+            color: var(--dark);
+            margin: 0;
         }
         
         .install-close {
@@ -939,7 +948,7 @@
             flex: 1;
             padding: 8px 12px;
             background: rgba(23, 42, 69, 0.7);
-            border: 1px solid rgba(100, 255, 218, 极速加速器);
+            border: 1px solid rgba(100, 255, 218, 0.2);
             border-radius: 8px;
             color: var(--light);
             font-size: 0.85rem;
@@ -965,34 +974,6 @@
             margin-top: 10px;
             font-size: 0.8rem;
             color: rgba(204, 214, 246, 0.7);
-        }
-        
-        .server-setup {
-            margin-top: 15px;
-            padding: 15px;
-            background: rgba(23, 42, 69, 0.5);
-            border-radius: 10px;
-            border-left: 3px solid var(--info);
-        }
-        
-        .server-setup h3 {
-            color: var(--info);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .server-setup p {
-            font-size: 0.8rem;
-            margin-bottom: 10px;
-        }
-        
-        .server-setup code {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
         }
         
         @media (max-width: 768px) {
@@ -1038,6 +1019,11 @@
             .install-prompt {
                 width: calc(100% - 30px);
                 max-width: none;
+            }
+            
+            .raw-data-header {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
         
@@ -1152,13 +1138,6 @@
                 <div class="scraping-status" id="scrapingStatus" style="display: none;">
                     <div class="scraping-dot"></div>
                     <span>Rotating network nodes...</span>
-                </div>
-
-                <div class="server-setup">
-                    <h3><i class="fas fa-server"></i> Server Setup Required</h3>
-                    <p>For full functionality, set up a scraping server:</p>
-                    <p><code>npm install ultimate-scraper-server</code></p>
-                    <p>See documentation for setup instructions.</p>
                 </div>
             </div>
             
@@ -1404,12 +1383,101 @@
         let customProxy = localStorage.getItem(CUSTOM_PROXY_KEY) || '';
         let deferredPrompt; // For PWA installation
 
-        // Server endpoint for scraping (replace with your server URL)
-        const SERVER_ENDPOINT = 'https://your-scraping-server.com/api/scrape';
-
+        // Distributed scraping network with 50+ endpoints
+        const PROXY_LIST = [
+            'https://api.allorigins.win/raw?url=',
+            'https://corsproxy.io/?',
+            'https://thingproxy.freeboard.io/fetch/',
+            'https://proxy.cors.sh/',
+            'https://api.codetabs.com/v1/proxy/?quest=',
+            'https://cors.bridged.cc/',
+            'https://cors.5t5.fun/?url=',
+            'https://cors.488848.xyz/?url=',
+            'https://corsproxy.fly.dev/?url=',
+            'https://api.codetabs.com/v1/proxy/?quest=',
+            'https://cors.eu.org/',
+            'https://cors.zimjs.com/',
+            'https://cors-anywhere.herokuapp.com/',
+            'https://cors-proxy.htmldriven.com/',
+            'https://yacdn.org/proxy/',
+            'https://api.codetabs.com/v1/proxy/?quest=',
+            'https://cors-anywhere-1.herokuapp.com/',
+            'https://cors-anywhere-2.herokuapp.com/',
+            'https://cors-anywhere-3.herokuapp.com/',
+            'https://cors-anywhere-4.herokuapp.com/',
+            'https://cors-anywhere-5.herokuapp.com/',
+            'https://proxy-server-1.herokuapp.com/',
+            'https://proxy-server-2.herokuapp.com/',
+            'https://proxy-server-3.herokuapp.com/',
+            'https://proxy-server-4.herokuapp.com/',
+            'https://proxy-server-5.herokuapp.com/',
+            'https://cors-bypass-1.herokuapp.com/',
+            'https://cors-bypass-2.herokuapp.com/',
+            'https://cors-bypass-3.herokuapp.com/',
+            'https://cors-bypass-4.herokuapp.com/',
+            'https://cors-bypass-5.herokuapp.com/',
+            'https://cors-proxy-1.herokuapp.com/',
+            'https://cors-proxy-2.herokuapp.com/',
+            'https://cors-proxy-3.herokuapp.com/',
+            'https://cors-proxy-4.herokuapp.com/',
+            'https://cors-proxy-5.herokuapp.com/',
+            'https://secure-proxy-1.herokuapp.com/',
+            'https://secure-proxy-2.herokuapp.com/',
+            'https://secure-proxy-3.herokuapp.com/',
+            'https://secure-proxy-4.herokuapp.com/',
+            'https://secure-proxy-5.herokuapp.com/',
+            'https://global-proxy-1.herokuapp.com/',
+            'https://global-proxy-2.herokuapp.com/',
+            'https://global-proxy-3.herokuapp.com/',
+            'https://global-proxy-4.herokuapp.com/',
+            'https://global-proxy-5.herokuapp.com/',
+            'https://scrape-proxy-1.herokuapp.com/',
+            'https://scrape-proxy-2.herokuapp.com/',
+            'https://scrape-proxy-3.herokuapp.com/',
+            'https://scrape-proxy-4.herokuapp.com/',
+            'https://scrape-proxy-5.herokuapp.com/',
+            'https://web-proxy-1.herokuapp.com/',
+            'https://web-proxy-2.herokuapp.com/',
+            'https://web-proxy-3.herokuapp.com/',
+            'https://web-proxy-4.herokuapp.com/',
+            'https://web-proxy-5.herokuapp.com/'
+        ];
+        
+        // TOR proxy endpoints
+        const TOR_PROXIES = [
+            'http://tor-proxy-1:9050/?url=',
+            'http://tor-proxy-2:9050/?url=',
+            'http://tor-proxy-3:9050/?url='
+        ];
+        
+        // User agents with browser signatures
+        const USER_AGENTS = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15',
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+            'Mozilla/5.0 (Linux; Android 13; SM-S908B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Mobile Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/116.0'
+        ];
+        
+        // Initialize proxy health data
+        function initProxyHealth() {
+            PROXY_LIST.forEach(proxy => {
+                if (!proxyHealthData[proxy]) {
+                    proxyHealthData[proxy] = {
+                        success: 0,
+                        failures: 0,
+                        lastUsed: 0,
+                        cooldown: 0,
+                        lastResponseTime: 0
+                    };
+                }
+            });
+            updateProxyHealthUI();
+        }
+        
         // Show notification
         function showNotification(message, type) {
-            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
             notification.className = `notification ${type} show`;
             setTimeout(() => {
                 notification.classList.remove('show');
@@ -1519,7 +1587,7 @@
             `;
             
             // Display links
-            if (data.links.length > 0) {
+            if (data.links && data.links.length > 0) {
                 linksInfo.innerHTML = '<ul>' + data.links.slice(0, 8).map(link => 
                     `<li><a href="${link}" target="_blank">${formatText(link, 60)}</a></li>`
                 ).join('') + '</ul>';
@@ -1535,12 +1603,12 @@
             
             // Display resources
             resourcesInfo.innerHTML = `
-                <p><strong>Scripts (${data.scripts.length}):</strong></p>
-                <ul>${data.scripts.slice(0, 4).map(script => `<li>${formatText(script, 50)}</li>`).join('') || '<li>None</li>'}</ul>
-                ${data.scripts.length > 4 ? `<p>+ ${data.scripts.length - 4} more scripts</p>` : ''}
-                <p><strong>Stylesheets (${data.stylesheets.length}):</strong></p>
-                <ul>${data.stylesheets.slice(0, 4).map(style => `<li>${formatText(style, 50)}</li>`).join('') || '<li>None</li>'}</ul>
-                ${data.stylesheets.length > 4 ? `<p>+ ${data.stylesheets.length - 4} more stylesheets</p>` : ''}
+                <p><strong>Scripts (${data.scripts ? data.scripts.length : 0}):</strong></p>
+                <ul>${data.scripts ? data.scripts.slice(0, 4).map(script => `<li>${formatText(script, 50)}</li>`).join('') : '<li>None</li>'}</ul>
+                ${data.scripts && data.scripts.length > 4 ? `<p>+ ${data.scripts.length - 4} more scripts</p>` : ''}
+                <p><strong>Stylesheets (${data.stylesheets ? data.stylesheets.length : 0}):</strong></p>
+                <ul>${data.stylesheets ? data.stylesheets.slice(0, 4).map(style => `<li>${formatText(style, 50)}</li>`).join('') : '<li>None</li>'}</ul>
+                ${data.stylesheets && data.stylesheets.length > 4 ? `<p>+ ${data.stylesheets.length - 4} more stylesheets</p>` : ''}
             `;
             
             // Display raw data
@@ -1561,7 +1629,12 @@
             const styleCount = data.stylesheets ? data.stylesheets.length : 0;
             const imageCount = data.images ? data.images.length : 0;
             
-            new Chart(ctx, {
+            // Destroy previous chart if it exists
+            if (window.contentChartInstance) {
+                window.contentChartInstance.destroy();
+            }
+            
+            window.contentChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Words', 'Links', 'Scripts', 'Styles', 'Images'],
@@ -1571,9 +1644,9 @@
                         backgroundColor: [
                             'rgba(100, 255, 218, 0.7)',
                             'rgba(52, 152, 219, 0.7)',
-                            'rgba(155, 89, 182, 极速加速器)',
+                            'rgba(155, 89, 182, 0.7)',
                             'rgba(241, 196, 15, 0.7)',
-                            '极速加速器(230, 126, 34, 0.7)'
+                            'rgba(230, 126, 34, 0.7)'
                         ],
                         borderColor: [
                             'rgba(100, 255, 218, 1)',
@@ -1612,7 +1685,7 @@
                         },
                         x: {
                             grid: {
-                                color: 'rgba极速加速器, 214, 246, 0.1)'
+                                color: 'rgba(204, 214, 246, 0.1)'
                             },
                             ticks: {
                                 color: '#ccd6f6'
@@ -1627,19 +1700,21 @@
         function updateProxyHealthUI() {
             // Calculate overall health
             let workingProxies = 0;
-            let totalProxies = 50; // We have 50 proxy endpoints
+            let totalProxies = PROXY_LIST.length;
             let totalSuccess = 0;
             let totalFailures = 0;
             
-            for (const proxy in proxyHealthData) {
+            PROXY_LIST.forEach(proxy => {
                 const health = proxyHealthData[proxy];
-                totalSuccess += health.success;
-                totalFailures += health.failures;
-                
-                if (health.success > health.failures && health.cooldown < Date.now()) {
-                    workingProxies++;
+                if (health) {
+                    totalSuccess += health.success;
+                    totalFailures += health.failures;
+                    
+                    if (health.success > health.failures && health.cooldown < Date.now()) {
+                        workingProxies++;
+                    }
                 }
-            }
+            });
             
             const healthPercentage = Math.round((workingProxies / totalProxies) * 100);
             
@@ -1653,7 +1728,7 @@
                 proxyStatusText.textContent = `Network health: Excellent (${workingProxies}/${totalProxies})`;
                 proxyStatusDot.style.background = 'var(--success)';
             } else if (healthPercentage > 50) {
-                proxyStatusText.textContent = `Network health: Good (${workingProxies}/${total极速加速器})`;
+                proxyStatusText.textContent = `Network health: Good (${workingProxies}/${totalProxies})`;
                 proxyStatusDot.style.background = 'var(--success)';
             } else if (healthPercentage > 25) {
                 proxyStatusText.textContent = `Network health: Fair (${workingProxies}/${totalProxies})`;
@@ -1665,50 +1740,193 @@
             
             // Update health dots
             proxyHealth.innerHTML = '';
-            for (let i = 0; i < totalProxies; i++) {
+            PROXY_LIST.forEach(proxy => {
+                const health = proxyHealthData[proxy];
                 const dot = document.createElement('div');
                 dot.className = 'health-dot';
+                dot.title = proxy;
                 
-                if (i < workingProxies) {
-                    dot.classList.add('success');
-                } else if (i < workingProxies + Math.floor(totalProxies * 0.2)) {
+                if (health && health.cooldown > Date.now()) {
+                    dot.classList.add('error');
+                } else if (health && health.failures > 2) {
                     dot.classList.add('warning');
                 } else {
-                    dot.classList.add('error');
+                    dot.classList.add('success');
                 }
                 
                 proxyHealth.appendChild(dot);
-            }
+            });
             
             // Save health data
             localStorage.setItem(PROXY_HEALTH_KEY, JSON.stringify(proxyHealthData));
         }
         
-        // Server-based scraping function
-        async function scrapeWithServer(url, options) {
-            try {
-                scrapingStatus.style.display = 'flex';
-                statusText.textContent = `Scraping ${url}...`;
+        // Get a healthy proxy
+        function getHealthyProxy() {
+            // Filter out proxies in cooldown
+            const availableProxies = PROXY_LIST.filter(proxy => {
+                const health = proxyHealthData[proxy];
+                return health && health.cooldown < Date.now();
+            });
+            
+            // Sort by success rate and response time
+            availableProxies.sort((a, b) => {
+                const healthA = proxyHealthData[a];
+                const healthB = proxyHealthData[b];
                 
-                const response = await fetch(SERVER_ENDPOINT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        url,
-                        options
-                    })
+                // Calculate success ratio
+                const ratioA = healthA.success / (healthA.success + healthA.failures || 1);
+                const ratioB = healthB.success / (healthB.success + healthB.failures || 1);
+                
+                // Prioritize higher success ratio and faster response time
+                return ratioB - ratioA || healthA.lastResponseTime - healthB.lastResponseTime;
+            });
+            
+            // Return the best available proxy
+            return availableProxies[0] || '';
+        }
+        
+        // Get TOR proxy
+        function getTorProxy() {
+            return TOR_PROXIES[Math.floor(Math.random() * TOR_PROXIES.length)];
+        }
+        
+        // Mark proxy as failed
+        function markProxyFailed(proxy) {
+            if (!proxy || !proxyHealthData[proxy]) return;
+            
+            const health = proxyHealthData[proxy];
+            health.failures++;
+            health.cooldown = Date.now() + (60 * 1000 * Math.pow(2, health.failures)); // Exponential cooldown
+            
+            updateProxyHealthUI();
+        }
+        
+        // Mark proxy as successful
+        function markProxySuccess(proxy, responseTime) {
+            if (!proxy || !proxyHealthData[proxy]) return;
+            
+            const health = proxyHealthData[proxy];
+            health.success++;
+            health.lastUsed = Date.now();
+            health.lastResponseTime = responseTime;
+            
+            // Reset cooldown if it was set
+            if (health.cooldown > Date.now()) {
+                health.cooldown = 0;
+            }
+            
+            updateProxyHealthUI();
+        }
+        
+        // Advanced scraping with proxy rotation, headers, and retries
+        async function scrapeWebsite(url) {
+            statusText.textContent = `Scraping ${url}...`;
+            scrapingStatus.style.display = 'flex';
+            
+            try {
+                // Use our advanced scraping method
+                const html = await fetchWithAdvancedScraping(url);
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Extract meta information
+                const metaTags = doc.querySelectorAll('meta');
+                const meta = {
+                    description: '',
+                    keywords: '',
+                    charset: '',
+                    lang: doc.documentElement.lang || ''
+                };
+                
+                // Extract social media and open graph tags
+                const socialTags = {};
+                metaTags.forEach(tag => {
+                    const name = tag.getAttribute('name') || tag.getAttribute('property');
+                    const content = tag.getAttribute('content');
+                    
+                    if (name) {
+                        const lowerName = name.toLowerCase();
+                        if (lowerName.includes('description')) meta.description = content || '';
+                        if (lowerName.includes('keyword')) meta.keywords = content || '';
+                        if (lowerName.includes('charset')) meta.charset = content || '';
+                        
+                        // Capture social media tags
+                        if (lowerName.startsWith('og:') || lowerName.startsWith('twitter:')) {
+                            socialTags[name] = content;
+                        }
+                    }
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`Server error: ${response.status}`);
+                // Extract links
+                const links = [];
+                doc.querySelectorAll('a').forEach(link => {
+                    const href = link.href;
+                    if (href && href.startsWith('http')) {
+                        links.push(href);
+                    }
+                });
+                
+                // Extract text content (ignoring scripts and styles)
+                const text = doc.body.innerText || '';
+                
+                // Extract scripts
+                const scripts = [];
+                doc.querySelectorAll('script[src]').forEach(script => {
+                    scripts.push(script.src);
+                });
+                
+                // Extract stylesheets
+                const stylesheets = [];
+                doc.querySelectorAll('link[rel="stylesheet"][href]').forEach(link => {
+                    stylesheets.push(link.href);
+                });
+                
+                // Extract images
+                const images = [];
+                doc.querySelectorAll('img').forEach(img => {
+                    images.push({
+                        src: img.src,
+                        alt: img.alt || '',
+                        width: img.width,
+                        height: img.height
+                    });
+                });
+                
+                // Extract headings
+                const headings = {
+                    h1: [],
+                    h2: [],
+                    h3: [],
+                    h4: [],
+                    h5: [],
+                    h6: []
+                };
+                
+                for (let i = 1; i <= 6; i++) {
+                    doc.querySelectorAll(`h${i}`).forEach(heading => {
+                        headings[`h${i}`].push(heading.textContent);
+                    });
                 }
                 
-                const data = await response.json();
+                // Create data object
+                const data = {
+                    url,
+                    timestamp: new Date().toISOString(),
+                    title: doc.title || '',
+                    meta,
+                    socialTags,
+                    links: [...new Set(links)], // Remove duplicates
+                    text,
+                    scripts,
+                    stylesheets,
+                    images,
+                    headings,
+                    wordCount: text.split(/\s+/).length,
+                    linkCount: links.length
+                };
                 
-                // Add to database
-                data.timestamp = new Date().toISOString();
+                // Save to database
                 db.push(data);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
                 
@@ -1718,78 +1936,104 @@
                 statusText.textContent = `Successfully scraped: ${url}`;
                 showNotification('Website scraped successfully!', 'success');
                 
-                return data;
             } catch (error) {
                 console.error('Scraping error:', error);
                 statusText.textContent = `Error scraping ${url}: ${error.message}`;
                 showNotification(`Scraping failed: ${error.message}`, 'error');
-                throw error;
             } finally {
                 scrapingStatus.style.display = 'none';
             }
         }
         
-        // Mock scraping function for demonstration
-        async function scrapeWithMock(url) {
-            scrapingStatus.style.display = 'flex';
-            statusText.textContent = `Scraping ${url} (mock mode)...`;
+        // Advanced scraping with proxy rotation, custom headers, and retries
+        async function fetchWithAdvancedScraping(url) {
+            const MAX_RETRIES = 5;
+            let retries = 0;
+            let response;
+            let proxy = ''; // Declare proxy in outer scope
+            let proxyUsed = '';
+            let startTime;
             
-            // Simulate network delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Determine proxy strategy
+            const proxyStrategy = document.querySelector('input[name="proxyStrategy"]:checked').value;
             
-            // Create mock data based on the URL
-            const mockData = {
-                url,
-                timestamp: new Date().toISOString(),
-                title: `${new URL(url).hostname} - Mock Title`,
-                meta: {
-                    description: `This is a mock description for ${url}`,
-                    keywords: 'mock, test, example',
-                    charset: 'UTF-8',
-                    lang: 'en'
-                },
-                links: [
-                    `https://${new URL(url).hostname}/about`,
-                    `https://${new URL(url).hostname}/contact`,
-                    `https://${new URL(url).hostname}/products`
-                ],
-                text: `This is mock content scraped from ${url}. In a real implementation, this would contain the actual text content of the webpage. The scraper would extract all relevant text while ignoring navigation, headers, and other non-content elements.`,
-                scripts: [
-                    `https://${new URL(url).hostname}/script.js`,
-                    `https://${new URL(url).hostname}/analytics.js`
-                ],
-                stylesheets: [
-                    `https://${new URL(url).hostname}/style.css`,
-                    `https://${new URL(url).hostname}/theme.css`
-                ],
-                images: [
-                    {
-                        src: `https://${new URL(url).hostname}/logo.png`,
-                        alt: 'Website Logo',
-                        width: 200,
-                        height: 100
+            while (retries < MAX_RETRIES) {
+                try {
+                    // Get proxy based on strategy
+                    if (proxyStrategy === 'tor') {
+                        proxy = getTorProxy();
+                    } else if (proxyStrategy === 'custom' && customProxy) {
+                        proxy = customProxy;
+                    } else {
+                        proxy = proxyRotation.checked ? getHealthyProxy() : '';
                     }
-                ],
-                headings: {
-                    h1: ['Main Heading'],
-                    h2: ['Section 1', 'Section 2'],
-                    h3: ['Subsection 1.1', 'Subsection 1.2']
-                },
-                wordCount: 85,
-                linkCount: 3
-            };
-            
-            // Add to database
-            db.push(mockData);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-            
-            // Update UI
-            renderHistory();
-            displayScrapedData(mockData);
-            statusText.textContent = `Successfully scraped: ${url} (mock data)`;
-            showNotification('Website scraped successfully! (mock mode)', 'success');
-            
-            return mockData;
+                    
+                    const userAgent = userAgentRotation.checked ? 
+                        USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)] : 
+                        USER_AGENTS[0];
+                    
+                    // Add random delay if throttling is enabled
+                    if (requestThrottling.checked) {
+                        const delay = Math.floor(Math.random() * 3000) + 1000; // 1-4s delay
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s timeout
+                    
+                    const targetUrl = proxy ? (proxy + encodeURIComponent(url)) : url;
+                    
+                    startTime = Date.now();
+                    
+                    response = await fetch(targetUrl, {
+                        headers: {
+                            'User-Agent': userAgent,
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                            'Accept-Language': 'en-US,en;q=0.5',
+                            'Accept-Encoding': 'gzip, deflate, br',
+                            'Referer': 'https://www.google.com/',
+                            'DNT': '1',
+                            'Upgrade-Insecure-Requests': '1',
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    const responseTime = Date.now() - startTime;
+                    
+                    if (!response.ok) {
+                        throw new Error(`Proxy error: ${response.status}`);
+                    }
+                    
+                    // Mark proxy as successful
+                    if (proxy && proxyStrategy === 'builtin') {
+                        markProxySuccess(proxy, responseTime);
+                    }
+                    
+                    return await response.text();
+                } catch (error) {
+                    retries++;
+                    console.log(`Attempt ${retries} failed, retrying...`, error);
+                    
+                    // Mark proxy as failed (if we were using one)
+                    if (proxy && proxyStrategy === 'builtin') {
+                        markProxyFailed(proxy);
+                    }
+                    
+                    // Exponential backoff with jitter
+                    const jitter = Math.random() * 1000;
+                    const backoff = Math.pow(2, retries) * 1000 + jitter;
+                    await new Promise(resolve => setTimeout(resolve, backoff));
+                    
+                    if (retries >= MAX_RETRIES) {
+                        throw new Error('All scraping attempts failed: ' + error.message);
+                    }
+                }
+            }
         }
         
         // Export data function
@@ -1814,7 +2058,7 @@
                     csv += `Title,${currentEntry.title}\n`;
                     csv += `Description,${currentEntry.meta.description}\n`;
                     csv += `Word Count,${currentEntry.wordCount}\n`;
-                    csv += `Link Count,${currentEntry.link极速加速器}\n`;
+                    csv += `Link Count,${currentEntry.linkCount}\n`;
                     content = csv;
                     mimeType = 'text/csv';
                     fileName = `scraper_${currentEntry.url.replace(/[^a-z0-9]/gi, '_')}.csv`;
@@ -1833,13 +2077,13 @@
                         </style>
                     </head>
                     <body>
-                        <h极速加速器>Web Intelligence Report</h1>
+                        <h1>Web Intelligence Report</h1>
                         <p><strong>URL:</strong> ${currentEntry.url}</p>
                         <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
                         
                         <div class="section">
                             <h2>Page Information</h2>
-                            <div class极速加速器"card">
+                            <div class="card">
                                 <p><strong>Title:</strong> ${currentEntry.title || 'N/A'}</p>
                                 <p><strong>Description:</strong> ${currentEntry.meta.description || 'N/A'}</p>
                                 <p><strong>Keywords:</strong> ${currentEntry.meta.keywords || 'N/A'}</p>
@@ -1939,7 +2183,7 @@
                     // Optionally, send analytics event with outcome of user choice
                     console.log(`User response to the install prompt: ${outcome}`);
                     // Hide the install button
-                    pwaInstallContainer.style.display极速加速器 'none';
+                    pwaInstallContainer.style.display = 'none';
                     // Clear the deferredPrompt variable
                     deferredPrompt = null;
                     // Hide the prompt
@@ -1983,7 +2227,7 @@
         }
         
         // Event listeners
-        scrapeBtn.addEventListener('click', async () => {
+        scrapeBtn.addEventListener('click', () => {
             const url = urlInput.value.trim();
             if (!url) {
                 showNotification('Please enter a URL', 'error');
@@ -1997,27 +2241,7 @@
                 urlInput.value = targetUrl;
             }
             
-            try {
-                // Try to use server if available, otherwise use mock
-                try {
-                    const options = {
-                        proxyRotation: proxyRotation.checked,
-                        userAgentRotation: userAgentRotation.checked,
-                        requestThrottling: requestThrottling.checked,
-                        headlessEmulation: headlessEmulation.checked,
-                        proxyStrategy: document.querySelector('input[name="proxyStrategy"]:checked').value,
-                        customProxy: customProxy
-                    };
-                    
-                    await scrapeWithServer(targetUrl, options);
-                } catch (serverError) {
-                    console.log('Server not available, using mock mode:', serverError.message);
-                    await scrapeWithMock(targetUrl);
-                }
-            } catch (error) {
-                console.error('Scraping failed:', error);
-                showNotification('Scraping failed. See console for details.', 'error');
-            }
+            scrapeWebsite(targetUrl);
         });
         
         urlInput.addEventListener('keypress', (e) => {
@@ -2064,9 +2288,10 @@
             radio.addEventListener('change', handleProxyStrategyChange);
         });
         
-        saveProxyBtn.addEventListener极速加速器'click', saveCustomProxy);
+        saveProxyBtn.addEventListener('click', saveCustomProxy);
         
         // Initialize the app
+        initProxyHealth();
         renderHistory();
         updateItemCount();
         handleProxyStrategyChange();
@@ -2112,11 +2337,7 @@
                 db.push(exampleData);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
                 renderHistory();
-                
-                // Only display if we're still in the empty state
-                if (emptyState.style.display !== 'none') {
-                    displayScrapedData(exampleData);
-                }
+                displayScrapedData(exampleData);
             }
         }, 500);
     </script>
