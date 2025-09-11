@@ -360,6 +360,62 @@
             background: var(--success);
         }
         
+        .simulation-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-item input {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .protection-level {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            padding: 10px;
+            background: var(--light);
+            border-radius: 8px;
+        }
+        
+        .level-item {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .level-item.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .comparison {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            gap: 20px;
+        }
+        
+        .comparison-item {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background: var(--light);
+        }
+        
         @media (max-width: 768px) {
             .data-grid, .features-grid {
                 grid-template-columns: 1fr;
@@ -377,6 +433,14 @@
                 flex: 1;
                 min-width: 50%;
                 text-align: center;
+            }
+            
+            .comparison {
+                flex-direction: column;
+            }
+            
+            .simulation-checkboxes {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -432,32 +496,78 @@
         <div class="tab-content" id="simulation-tab">
             <div class="card">
                 <h2 class="card-title"><i class="fas fa-vial"></i> Privacy Protection Simulation</h2>
-                <p>Simulate how different privacy protection techniques would affect your browser fingerprint. See which methods are most effective for your specific configuration.</p>
+                <p>Simulate how different privacy protection techniques would affect your browser fingerprint. Select the measures you want to simulate and see how they impact your trackability.</p>
                 
-                <div class="data-grid">
-                    <div class="data-item">
-                        <div class="data-label">VPN Protection</div>
-                        <div class="data-value">Simulates hiding your IP address</div>
+                <div class="simulation-checkboxes">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="vpn" checked>
+                        <label for="vpn">VPN (IP Address Masking)</label>
                     </div>
-                    <div class="data-item">
-                        <div class="data-label">Canvas Fingerprinting Defense</div>
-                        <div class="data-value">Simulates blocking canvas fingerprinting</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="canvas" checked>
+                        <label for="canvas">Canvas Fingerprinting Defense</label>
                     </div>
-                    <div class="data-item">
-                        <div class="data-label">Font Masking</div>
-                        <div class="data-value">Simulates hiding your unique font list</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="fonts" checked>
+                        <label for="fonts">Font Masking</label>
                     </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="webrtc" checked>
+                        <label for="webrtc">WebRTC Leak Protection</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="timezone" checked>
+                        <label for="timezone">Timezone Masking</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="webgl" checked>
+                        <label for="webgl">WebGL Fingerprinting Protection</label>
+                    </div>
+                </div>
+                
+                <div class="protection-level">
+                    <div class="level-item active" data-level="basic">Basic Protection</div>
+                    <div class="level-item" data-level="balanced">Balanced</div>
+                    <div class="level-item" data-level="maximum">Maximum Privacy</div>
                 </div>
                 
                 <button id="simulate-btn" class="btn btn-block btn-purple">Run Privacy Simulation</button>
                 
                 <div class="simulation-result" id="simulation-result" style="display: none;">
                     <h3><i class="fas fa-chart-line"></i> Simulation Results</h3>
-                    <p>Based on your current fingerprint, implementing these privacy measures would reduce your uniqueness score from <span id="original-score">76%</span> to <span id="new-score">42%</span>.</p>
-                    <div class="risk-meter">
-                        <div class="risk-level risk-medium" style="width: 42%;"></div>
+                    
+                    <div class="comparison">
+                        <div class="comparison-item">
+                            <h4>Current Fingerprint</h4>
+                            <div class="privacy-score" style="font-size: 2rem;" id="original-score">76%</div>
+                            <div class="risk-meter">
+                                <div class="risk-level risk-high" style="width: 76%;"></div>
+                            </div>
+                            <p>Highly unique and easily trackable</p>
+                        </div>
+                        
+                        <div class="comparison-item">
+                            <h4>With Protection</h4>
+                            <div class="privacy-score" style="font-size: 2rem;" id="new-score">42%</div>
+                            <div class="risk-meter">
+                                <div class="risk-level risk-medium" style="width: 42%;"></div>
+                            </div>
+                            <p>Less unique and harder to track</p>
+                        </div>
                     </div>
-                    <p>This would make your browser blend in with <span id="similar-users">28%</span> more of the browsing population, significantly reducing your trackability.</p>
+                    
+                    <div class="data-item">
+                        <div class="data-label">Estimated Privacy Improvement</div>
+                        <div class="data-value">Your browser would blend in with <span id="similar-users">28%</span> more of the browsing population, significantly reducing your trackability.</div>
+                    </div>
+                    
+                    <h4>Recommended Tools for This Level of Protection:</h4>
+                    <ul class="tracker-list">
+                        <li>Privacy Badger Extension (EFF) <span class="tracker-risk risk-medium-bg">Free</span></li>
+                        <li>CanvasBlocker Extension <span class="tracker-risk risk-low-bg">Free</span></li>
+                        <li>uBlock Origin <span class="tracker-risk risk-low-bg">Free</span></li>
+                        <li>NordVPN <span class="tracker-risk risk-high-bg">Paid</span></li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -495,6 +605,11 @@
                         <span class="tracker-risk risk-medium-bg">Medium Risk</span>
                     </li>
                 </ul>
+                
+                <div class="data-item">
+                    <div class="data-label">Search Trackers</div>
+                    <input type="text" placeholder="Enter domain name" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-top: 10px;">
+                </div>
                 
                 <button class="btn btn-block btn-disabled">View Complete Database (Coming Soon)</button>
             </div>
@@ -548,8 +663,8 @@
                     <p>We're actively developing these advanced features. To get early access when they're ready, submit your email address below.</p>
                     
                     <div style="margin-top: 15px; display: flex; gap: 10px;">
-                        <input type="email" placeholder="Your email address" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                        <button class="btn">Notify Me</button>
+                        <input type="email" id="email-input" placeholder="Your email address" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                        <button class="btn" id="notify-btn">Notify Me</button>
                     </div>
                 </div>
             </div>
@@ -599,6 +714,11 @@
             const simulationResult = document.getElementById('simulation-result');
             const tabs = document.querySelectorAll('.tab');
             const tabContents = document.querySelectorAll('.tab-content');
+            const levelItems = document.querySelectorAll('.level-item');
+            const notifyBtn = document.getElementById('notify-btn');
+            const emailInput = document.getElementById('email-input');
+            
+            let currentUniquenessScore = 0;
             
             // Tab switching functionality
             tabs.forEach(tab => {
@@ -612,6 +732,30 @@
                     // Activate current tab
                     tab.classList.add('active');
                     document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+            
+            // Protection level selection
+            levelItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    levelItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    // Auto-select appropriate checkboxes based on level
+                    const level = item.getAttribute('data-level');
+                    const checkboxes = document.querySelectorAll('.simulation-checkboxes input');
+                    
+                    if (level === 'basic') {
+                        checkboxes[0].checked = true;  // VPN
+                        checkboxes[2].checked = false; // Fonts
+                        checkboxes[3].checked = false; // WebRTC
+                        checkboxes[5].checked = false; // WebGL
+                    } else if (level === 'balanced') {
+                        checkboxes.forEach(cb => cb.checked = true);
+                        checkboxes[5].checked = false; // WebGL
+                    } else if (level === 'maximum') {
+                        checkboxes.forEach(cb => cb.checked = true);
+                    }
                 });
             });
             
@@ -634,16 +778,46 @@
                 simulateBtn.disabled = true;
                 simulateBtn.textContent = 'Simulating...';
                 
+                // Count selected protections
+                const selectedProtections = document.querySelectorAll('.simulation-checkboxes input:checked').length;
+                
                 setTimeout(() => {
                     simulationResult.style.display = 'block';
                     simulateBtn.textContent = 'Simulation Complete';
                     
-                    // Set some random results for demonstration
-                    document.getElementById('original-score').textContent = '76%';
-                    document.getElementById('new-score').textContent = '42%';
-                    document.getElementById('similar-users').textContent = '28%';
+                    // Calculate new score based on selected protections
+                    const protectionFactor = selectedProtections / 6; // 6 is total number of protections
+                    const newScore = Math.max(10, Math.min(95, Math.round(currentUniquenessScore * (1 - protectionFactor * 0.6))));
+                    
+                    // Update simulation results
+                    document.getElementById('original-score').textContent = `${currentUniquenessScore}%`;
+                    document.getElementById('new-score').textContent = `${newScore}%`;
+                    document.getElementById('similar-users').textContent = `${Math.round((currentUniquenessScore - newScore) / 100 * 75)}%`;
+                    
+                    // Update risk meters
+                    document.querySelectorAll('.risk-level.risk-high').forEach(el => {
+                        el.style.width = `${currentUniquenessScore}%`;
+                    });
+                    document.querySelectorAll('.risk-level.risk-medium').forEach(el => {
+                        el.style.width = `${newScore}%`;
+                    });
                 }, 1000);
             });
+            
+            // Notify button functionality
+            notifyBtn.addEventListener('click', function() {
+                if (emailInput.value && isValidEmail(emailInput.value)) {
+                    alert(`Thank you! We'll notify you at ${emailInput.value} when advanced features are available.`);
+                    emailInput.value = '';
+                } else {
+                    alert('Please enter a valid email address.');
+                }
+            });
+            
+            function isValidEmail(email) {
+                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return re.test(email);
+            }
             
             function runFingerprintAnalysis() {
                 // Collect various browser data points
@@ -776,17 +950,17 @@
                 fingerprintHash.textContent = data.hash;
                 
                 // Calculate a uniqueness score (simulated)
-                const uniquenessScore = Math.min(95, Math.floor(data.hash.length * 4 + 30));
-                privacyScore.textContent = `${uniquenessScore}%`;
+                currentUniquenessScore = Math.min(95, Math.floor(data.hash.length * 4 + 30));
+                privacyScore.textContent = `${currentUniquenessScore}%`;
                 
                 // Set risk level
                 let riskClass = 'risk-low';
                 let riskWidth = 30;
                 
-                if (uniquenessScore > 70) {
+                if (currentUniquenessScore > 70) {
                     riskClass = 'risk-high';
                     riskWidth = 90;
-                } else if (uniquenessScore > 40) {
+                } else if (currentUniquenessScore > 40) {
                     riskClass = 'risk-medium';
                     riskWidth = 60;
                 }
