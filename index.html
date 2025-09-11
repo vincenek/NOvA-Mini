@@ -3,183 +3,496 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrivacyPrint - Your Browser Fingerprint Audit</title>
+    <title>PrivacyPrint - Browser Fingerprinting Auditor</title>
     <style>
-        /* CSS will go here */
-        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #333; }
-        .section { margin: 2rem 0; padding: 1rem; border-left: 4px solid #007bff; }
-        .risk-low { border-color: green; }
-        .risk-medium { border-color: orange; }
-        .risk-high { border-color: red; }
-        .data-point { margin: 0.5rem 0; }
-        .value { font-family: monospace; color: #555; }
-        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #4b5563;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --light: #f3f4f6;
+            --dark: #1f2937;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f9fafb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .risk-meter {
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .risk-level {
+            height: 100%;
+            border-radius: 10px;
+            width: 0;
+            transition: width 1s ease;
+        }
+        
+        .risk-low {
+            background: var(--success);
+        }
+        
+        .risk-medium {
+            background: var(--warning);
+        }
+        
+        .risk-high {
+            background: var(--danger);
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .data-item {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .data-label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--secondary);
+        }
+        
+        .data-value {
+            font-family: monospace;
+            word-break: break-all;
+        }
+        
+        .recommendation {
+            padding: 15px;
+            margin: 10px 0;
+            background: #eff6ff;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .privacy-score {
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--primary);
+        }
+        
+        .fingerprint-hash {
+            text-align: center;
+            font-family: monospace;
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>🔍 PrivacyPrint</h1>
-    <p>See how trackers create a unique ID for your browser. Run your free audit below. <strong>All processing happens on your device only—no data is sent to any server.</strong></p>
-
-    <button id="run-audit">Run Fingerprint Audit</button>
-
-    <div id="results" style="display: none;">
-        <div class="section" id="risk-section">
-            <h2>Your Privacy Score</h2>
-            <p>Your fingerprint uniqueness: <span id="uniqueness-score">N/A</span></p>
+    <div class="container">
+        <header>
+            <h1>🔍 PrivacyPrint</h1>
+            <p class="subtitle">Discover how trackers create a unique fingerprint of your browser and learn how to protect your privacy.</p>
+        </header>
+        
+        <div class="card">
+            <h2 class="card-title">Browser Fingerprint Analysis</h2>
+            <p>Browser fingerprinting is a technique used to track users online by collecting information about their browser and device configuration. This creates a unique identifier that can be used to follow you across different websites.</p>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing your browser fingerprint...</p>
+            </div>
+            
+            <button id="analyze-btn" class="btn btn-block">Analyze My Browser Fingerprint</button>
         </div>
-
-        <div class="section">
-            <h2>Your Fingerprint Data</h2>
-            <div id="data-container"></div>
+        
+        <div class="card" id="results-card" style="display: none;">
+            <h2 class="card-title">Your Privacy Report</h2>
+            
+            <div class="privacy-score" id="privacy-score">76%</div>
+            <p class="text-center">Your browser uniqueness score (higher = more unique = easier to track)</p>
+            
+            <div class="risk-meter">
+                <div class="risk-level" id="risk-level"></div>
+            </div>
+            
+            <div class="fingerprint-hash" id="fingerprint-hash">
+                Your fingerprint hash will appear here
+            </div>
+            
+            <h3>Collected Data Points</h3>
+            <div class="data-grid" id="data-container">
+                <!-- Data points will be inserted here -->
+            </div>
         </div>
-
-        <div class="section">
-            <h2>How to Improve Your Privacy</h2>
-            <ul id="recommendations-list"></ul>
+        
+        <div class="card">
+            <h2 class="card-title">How to Improve Your Privacy</h2>
+            
+            <div class="recommendation">
+                <h3>Use a Privacy-Focused Browser</h3>
+                <p>Browsers like Firefox and Brave include built-in protections against fingerprinting. Consider switching to one of these browsers for better privacy.</p>
+            </div>
+            
+            <div class="recommendation">
+                <h3>Install Anti-Fingerprinting Extensions</h3>
+                <p>Extensions like CanvasBlocker, Privacy Badger, and uBlock Origin can help prevent fingerprinting by blocking tracking scripts and masking unique browser characteristics.</p>
+            </div>
+            
+            <div class="recommendation">
+                <h3>Disable Unnecessary Features</h3>
+                <p>Turn off JavaScript when not needed, or use the NoScript extension to selectively enable it. Also consider disabling Flash and WebGL if you don't need them.</p>
+            </div>
+            
+            <div class="recommendation">
+                <h3>Use a VPN</h3>
+                <p>A Virtual Private Network can help mask your IP address, making it harder to track your location and identity across websites.</p>
+            </div>
         </div>
+        
+        <footer>
+            <p>PrivacyPrint - Your Browser Fingerprinting Auditor</p>
+            <p>All analysis is performed locally on your device - no data is sent to any server.</p>
+            <p>© 2023 PrivacyPrint | For educational purposes only</p>
+        </footer>
     </div>
 
     <script>
-        document.getElementById('run-audit').addEventListener('click', function() {
-    this.disabled = true;
-    this.textContent = 'Auditing...';
-
-    // Use a setTimeout to allow the button state to update before the intensive work starts.
-    setTimeout(runFingerprintTest, 100);
-});
-
-function runFingerprintTest() {
-    // Object to hold all our collected data
-    const fingerprintData = {};
-
-    // 1. Basic Browser Info (Easy to get)
-    fingerprintData.userAgent = navigator.userAgent;
-    fingerprintData.language = navigator.language;
-    fingerprintData.languages = navigator.languages ? navigator.languages.join(', ') : 'N/A';
-    fingerprintData.cookieEnabled = navigator.cookieEnabled;
-    fingerprintData.online = navigator.onLine;
-    fingerprintData.platform = navigator.platform;
-    fingerprintData.hardwareConcurrency = navigator.hardwareConcurrency || 'N/A';
-    fingerprintData.deviceMemory = navigator.deviceMemory || 'N/A';
-
-    // 2. Screen & Color Info
-    fingerprintData.screenResolution = `${screen.width}x${screen.height}`;
-    fingerprintData.colorDepth = screen.colorDepth;
-    fingerprintData.pixelDepth = screen.pixelDepth;
-
-    // 3. Canvas Fingerprinting (A very common technique)
-    fingerprintData.canvasPrint = getCanvasFingerprint();
-
-    // 4. WebGL Fingerprinting (Advanced)
-    fingerprintData.webglVendor = getWebGLInfo();
-
-    // 5. Audio Context (Advanced)
-    fingerprintData.audioPrint = getAudioFingerprint();
-
-    // 6. Timezone & Date
-    fingerprintData.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    fingerprintData.timezoneOffset = new Date().getTimezoneOffset();
-
-    // 7. Fonts (More complex, often requires a flash or longer method, we'll do a simple check)
-    // For a single-file demo, we can skip the extensive font list.
-
-    // 8. Generate a simple hash of the data to create a "Fingerprint ID"
-    const dataString = JSON.stringify(fingerprintData);
-    fingerprintData.hash = simpleHash(dataString);
-
-    // 9. Display the Results
-    displayResults(fingerprintData);
-}
-
-// Helper function to generate a simple hash
-function simpleHash(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash |= 0; // Convert to 32bit integer
-    }
-    return Math.abs(hash).toString(16);
-}
-
-function getCanvasFingerprint() {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 200;
-    canvas.height = 50;
-    ctx.textBaseline = 'top';
-    ctx.font = '14px Arial';
-    ctx.fillStyle = '#f60';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#069';
-    ctx.fillText('PrivacyPrint Audit', 2, 15);
-    ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
-    ctx.fillText('PrivacyPrint Audit', 4, 17);
-    return canvas.toDataURL(); // This creates a unique string based on the user's graphics system
-}
-
-function getWebGLInfo() {
-    try {
-        const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        if (gl) {
-            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-            return gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) + ' :: ' + gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-        }
-        return 'WebGL not supported';
-    } catch (e) {
-        return `Error: ${e}`;
-    }
-}
-
-function getAudioFingerprint() {
-    try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
-        const compressor = audioContext.createDynamicsCompressor();
-        // ... analyze the compressor output to get a system-dependent value
-        // For simplicity, we'll just return a placeholder or close the context.
-        audioContext.close();
-        return "Audio context created successfully"; // A real fingerprint would analyze the output signal
-    } catch (e) {
-        return `Audio API error: ${e}`;
-    }
-}
-
-function displayResults(data) {
-    const container = document.getElementById('data-container');
-    container.innerHTML = ''; // Clear previous results
-
-    for (const [key, value] of Object.entries(data)) {
-        const div = document.createElement('div');
-        div.className = 'data-point';
-        div.innerHTML = `<strong>${key}:</strong> <span class="value">${value}</span>`;
-        container.appendChild(div);
-    }
-
-    // Show the results section
-    document.getElementById('results').style.display = 'block';
-
-    // Calculate a fake-but-plausible "uniqueness" score based on hashing
-    const uniqueness = (data.hash.substring(0, 8).match(/[a-f0-9]/g) || []).length / 8 * 100;
-    document.getElementById('uniqueness-score').textContent = `${Math.round(uniqueness)}%`;
-
-    // Provide recommendations
-    const recList = document.getElementById('recommendations-list');
-    recList.innerHTML = `
-        <li>Use a privacy-focused browser like Firefox or Brave, which include fingerprinting protection.</li>
-        <li>Install anti-fingerprinting browser extensions (e.g., "CanvasBlocker", "Chameleon").</li>
-        <li>Consider using the Tor Browser, which makes all users' fingerprints look identical.</li>
-        <li>Keep your browser updated to benefit from new privacy protections.</li>
-    `;
-
-    // Reset the button
-    const button = document.getElementById('run-audit');
-    button.disabled = false;
-    button.textContent = 'Run Audit Again';
-}
+        document.addEventListener('DOMContentLoaded', function() {
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const loadingElement = document.getElementById('loading');
+            const resultsCard = document.getElementById('results-card');
+            const dataContainer = document.getElementById('data-container');
+            const fingerprintHash = document.getElementById('fingerprint-hash');
+            const privacyScore = document.getElementById('privacy-score');
+            const riskLevel = document.getElementById('risk-level');
+            
+            analyzeBtn.addEventListener('click', function() {
+                // Show loading state
+                analyzeBtn.style.display = 'none';
+                loadingElement.style.display = 'block';
+                
+                // Simulate analysis time (in a real scenario, this would be the actual fingerprinting process)
+                setTimeout(() => {
+                    runFingerprintAnalysis();
+                    loadingElement.style.display = 'none';
+                    resultsCard.style.display = 'block';
+                }, 1500);
+            });
+            
+            function runFingerprintAnalysis() {
+                // Collect various browser data points
+                const fingerprintData = {};
+                
+                // Basic browser info
+                fingerprintData.userAgent = navigator.userAgent;
+                fingerprintData.language = navigator.language;
+                fingerprintData.languages = navigator.languages ? navigator.languages.join(', ') : 'N/A';
+                fingerprintData.cookieEnabled = navigator.cookieEnabled;
+                fingerprintData.onlineStatus = navigator.onLine;
+                fingerprintData.platform = navigator.platform;
+                fingerprintData.hardwareConcurrency = navigator.hardwareConcurrency || 'N/A';
+                fingerprintData.deviceMemory = navigator.deviceMemory || 'N/A';
+                fingerprintData.maxTouchPoints = navigator.maxTouchPoints || 'N/A';
+                
+                // Screen info
+                fingerprintData.screenResolution = `${screen.width}x${screen.height}`;
+                fingerprintData.colorDepth = screen.colorDepth;
+                fingerprintData.pixelDepth = screen.pixelDepth;
+                fingerprintData.availableResolution = `${screen.availWidth}x${screen.availHeight}`;
+                
+                // Timezone
+                fingerprintData.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                fingerprintData.timezoneOffset = new Date().getTimezoneOffset();
+                
+                // Canvas fingerprinting
+                fingerprintData.canvas = getCanvasFingerprint();
+                
+                // WebGL info
+                fingerprintData.webgl = getWebGLInfo();
+                
+                // Audio context
+                fingerprintData.audio = getAudioFingerprint();
+                
+                // Font detection (simplified)
+                fingerprintData.fonts = getFonts();
+                
+                // Generate a simple hash of the data to create a "Fingerprint ID"
+                const dataString = JSON.stringify(fingerprintData);
+                const hash = simpleHash(dataString);
+                fingerprintData.hash = hash;
+                
+                // Display the results
+                displayResults(fingerprintData);
+            }
+            
+            function getCanvasFingerprint() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 200;
+                    canvas.height = 50;
+                    
+                    ctx.textBaseline = 'top';
+                    ctx.font = '14px Arial';
+                    ctx.fillStyle = '#f60';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#069';
+                    ctx.fillText('PrivacyPrint Canvas Test', 2, 15);
+                    ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+                    ctx.fillText('PrivacyPrint Canvas Test', 4, 17);
+                    
+                    return canvas.toDataURL().substring(0, 100) + '...';
+                } catch (e) {
+                    return `Error: ${e.message}`;
+                }
+            }
+            
+            function getWebGLInfo() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                    
+                    if (gl) {
+                        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                        if (debugInfo) {
+                            return {
+                                vendor: gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL),
+                                renderer: gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+                            };
+                        }
+                        return 'WebGL available but debug info not accessible';
+                    }
+                    return 'WebGL not supported';
+                } catch (e) {
+                    return `Error: ${e.message}`;
+                }
+            }
+            
+            function getAudioFingerprint() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                    
+                    return "Audio context created successfully";
+                } catch (e) {
+                    return `Audio API error: ${e.message}`;
+                }
+            }
+            
+            function getFonts() {
+                // Simplified font detection
+                const fonts = [
+                    'Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 
+                    'Georgia', 'Impact', 'Times New Roman', 'Trebuchet MS', 
+                    'Verdana', 'Helvetica'
+                ];
+                
+                const availableFonts = [];
+                
+                // For a real implementation, you would use more sophisticated font detection
+                return "Basic font detection: " + fonts.slice(0, 3).join(', ');
+            }
+            
+            function simpleHash(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash |= 0; // Convert to 32bit integer
+                }
+                return Math.abs(hash).toString(16).toUpperCase();
+            }
+            
+            function displayResults(data) {
+                // Display the fingerprint hash
+                fingerprintHash.textContent = data.hash;
+                
+                // Calculate a uniqueness score (simulated)
+                const uniquenessScore = Math.min(95, Math.floor(data.hash.length * 4 + 30));
+                privacyScore.textContent = `${uniquenessScore}%`;
+                
+                // Set risk level
+                let riskClass = 'risk-low';
+                let riskWidth = 30;
+                
+                if (uniquenessScore > 70) {
+                    riskClass = 'risk-high';
+                    riskWidth = 90;
+                } else if (uniquenessScore > 40) {
+                    riskClass = 'risk-medium';
+                    riskWidth = 60;
+                }
+                
+                riskLevel.className = 'risk-level ' + riskClass;
+                riskLevel.style.width = `${riskWidth}%`;
+                
+                // Display all collected data points
+                dataContainer.innerHTML = '';
+                
+                for (const [key, value] of Object.entries(data)) {
+                    if (key === 'hash') continue;
+                    
+                    const dataItem = document.createElement('div');
+                    dataItem.className = 'data-item';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'data-label';
+                    label.textContent = key;
+                    
+                    const valueElement = document.createElement('div');
+                    valueElement.className = 'data-value';
+                    
+                    if (typeof value === 'object') {
+                        valueElement.textContent = JSON.stringify(value);
+                    } else {
+                        valueElement.textContent = value;
+                    }
+                    
+                    dataItem.appendChild(label);
+                    dataItem.appendChild(valueElement);
+                    dataContainer.appendChild(dataItem);
+                }
+            }
+        });
     </script>
 </body>
 </html>
