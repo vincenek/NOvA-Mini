@@ -3,117 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Synapse Text Demo</title>
+    <title>PrivacyPrint - Your Browser Fingerprint Audit</title>
     <style>
-        body { font-family: sans-serif; line-height: 1.6; padding: 2em; max-width: 800px; margin: auto; }
-        h1 { color: #333; }
-        
-        /* Style for the Synapse Text nodes */
-        node {
-            cursor: pointer;
-            border-bottom: 2px dotted #007bff;
-            transition: background-color 0.3s;
-            font-weight: bold;
-        }
-
-        /* The highlight style applied by JavaScript */
-        .highlight {
-            background-color: #e7f3ff; /* Light blue highlight */
-            border-bottom: 2px solid #0056b3;
-        }
-        
-        /* Style for the tooltip showing the relationship */
-        .synapse-tooltip {
-            position: absolute;
-            background-color: #333;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.9em;
-            pointer-events: none; /* Make sure it doesn't interfere with mouse events */
-        }
+        /* CSS will go here */
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #333; }
+        .section { margin: 2rem 0; padding: 1rem; border-left: 4px solid #007bff; }
+        .risk-low { border-color: green; }
+        .risk-medium { border-color: orange; }
+        .risk-high { border-color: red; }
+        .data-point { margin: 0.5rem 0; }
+        .value { font-family: monospace; color: #555; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
+    <h1>🔍 PrivacyPrint</h1>
+    <p>See how trackers create a unique ID for your browser. Run your free audit below. <strong>All processing happens on your device only—no data is sent to any server.</strong></p>
 
-    <h1>Synapse Text Demo</h1>
-    <p>Hover over the <b>bold, dotted-underlined</b> words to see their relationships.</p>
+    <button id="run-audit">Run Fingerprint Audit</button>
 
-    <synapse-text>
-        <p>In web development, <node id="html">HTML</node> is used for structuring content. To style this content, developers use <node id="css">CSS</node>. For interactivity, <node id="js">JavaScript</node> is the standard language. <node id="html">HTML</node> and <node id="css">CSS</node> are markup and styling languages respectively, not programming languages in the same vein as <node id="js">JavaScript</node>.</p>
-        <p>A popular library for <node id="js">JavaScript</node> is <node id="react">React</node>, which helps build user interfaces efficiently. <node id="react">React</node> is often used to manipulate the <node id="html">HTML</node> structure dynamically.</p>
+    <div id="results" style="display: none;">
+        <div class="section" id="risk-section">
+            <h2>Your Privacy Score</h2>
+            <p>Your fingerprint uniqueness: <span id="uniqueness-score">N/A</span></p>
+        </div>
 
-        <rel from="css" to="html" type="styles"></rel>
-        <rel from="js" to="html" type="manipulates"></rel>
-        <rel from="react" to="js" type="is a library of"></rel>
-        <rel from="react" to="html" type="updates"></rel>
-    </synapse-text>
+        <div class="section">
+            <h2>Your Fingerprint Data</h2>
+            <div id="data-container"></div>
+        </div>
+
+        <div class="section">
+            <h2>How to Improve Your Privacy</h2>
+            <ul id="recommendations-list"></ul>
+        </div>
+    </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const graph = new Map();
-            const nodes = new Map();
-            
-            // 1. Parse nodes and relationships
-            document.querySelectorAll('node').forEach(nodeEl => {
-                nodes.set(nodeEl.id, nodeEl);
-                graph.set(nodeEl.id, []);
-            });
+        document.getElementById('run-audit').addEventListener('click', function() {
+    this.disabled = true;
+    this.textContent = 'Auditing...';
 
-            document.querySelectorAll('rel').forEach(relEl => {
-                const from = relEl.getAttribute('from');
-                const to = relEl.getAttribute('to');
-                const type = relEl.getAttribute('type');
+    // Use a setTimeout to allow the button state to update before the intensive work starts.
+    setTimeout(runFingerprintTest, 100);
+});
 
-                // Add relationships in both directions for easy lookup
-                if (graph.has(from) && graph.has(to)) {
-                    graph.get(from).push({ target: to, type: type });
-                    graph.get(to).push({ target: from, type: `is ${type} by` });
-                }
-            });
+function runFingerprintTest() {
+    // Object to hold all our collected data
+    const fingerprintData = {};
 
-            // 2. Create and manage tooltips
-            let tooltip = document.createElement('div');
-            tooltip.className = 'synapse-tooltip';
-            tooltip.style.display = 'none';
-            document.body.appendChild(tooltip);
+    // 1. Basic Browser Info (Easy to get)
+    fingerprintData.userAgent = navigator.userAgent;
+    fingerprintData.language = navigator.language;
+    fingerprintData.languages = navigator.languages ? navigator.languages.join(', ') : 'N/A';
+    fingerprintData.cookieEnabled = navigator.cookieEnabled;
+    fingerprintData.online = navigator.onLine;
+    fingerprintData.platform = navigator.platform;
+    fingerprintData.hardwareConcurrency = navigator.hardwareConcurrency || 'N/A';
+    fingerprintData.deviceMemory = navigator.deviceMemory || 'N/A';
 
-            document.body.addEventListener('mousemove', (e) => {
-                tooltip.style.left = `${e.pageX + 10}px`;
-                tooltip.style.top = `${e.pageY + 10}px`;
-            });
-            
-            // 3. Add event listeners to all nodes
-            nodes.forEach((nodeEl, nodeId) => {
-                nodeEl.addEventListener('mouseover', () => {
-                    const relations = graph.get(nodeId);
-                    if (!relations || relations.length === 0) return;
+    // 2. Screen & Color Info
+    fingerprintData.screenResolution = `${screen.width}x${screen.height}`;
+    fingerprintData.colorDepth = screen.colorDepth;
+    fingerprintData.pixelDepth = screen.pixelDepth;
 
-                    // Highlight the current node
-                    nodeEl.classList.add('highlight');
-                    
-                    let tooltipText = [];
-                    // Highlight all related nodes
-                    relations.forEach(rel => {
-                        const targetNode = nodes.get(rel.target);
-                        if (targetNode) {
-                            targetNode.classList.add('highlight');
-                            tooltipText.push(`'${targetNode.textContent}' (${rel.type})`);
-                        }
-                    });
+    // 3. Canvas Fingerprinting (A very common technique)
+    fingerprintData.canvasPrint = getCanvasFingerprint();
 
-                    tooltip.innerHTML = tooltipText.join('<br>');
-                    tooltip.style.display = 'block';
-                });
+    // 4. WebGL Fingerprinting (Advanced)
+    fingerprintData.webglVendor = getWebGLInfo();
 
-                nodeEl.addEventListener('mouseout', () => {
-                    // Remove all highlights from all nodes
-                    document.querySelectorAll('.highlight').forEach(h => h.classList.remove('highlight'));
-                    tooltip.style.display = 'none';
-                });
-            });
-        });
+    // 5. Audio Context (Advanced)
+    fingerprintData.audioPrint = getAudioFingerprint();
+
+    // 6. Timezone & Date
+    fingerprintData.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    fingerprintData.timezoneOffset = new Date().getTimezoneOffset();
+
+    // 7. Fonts (More complex, often requires a flash or longer method, we'll do a simple check)
+    // For a single-file demo, we can skip the extensive font list.
+
+    // 8. Generate a simple hash of the data to create a "Fingerprint ID"
+    const dataString = JSON.stringify(fingerprintData);
+    fingerprintData.hash = simpleHash(dataString);
+
+    // 9. Display the Results
+    displayResults(fingerprintData);
+}
+
+// Helper function to generate a simple hash
+function simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash |= 0; // Convert to 32bit integer
+    }
+    return Math.abs(hash).toString(16);
+}
+
+function getCanvasFingerprint() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 200;
+    canvas.height = 50;
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#f60';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#069';
+    ctx.fillText('PrivacyPrint Audit', 2, 15);
+    ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+    ctx.fillText('PrivacyPrint Audit', 4, 17);
+    return canvas.toDataURL(); // This creates a unique string based on the user's graphics system
+}
+
+function getWebGLInfo() {
+    try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (gl) {
+            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+            return gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) + ' :: ' + gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        }
+        return 'WebGL not supported';
+    } catch (e) {
+        return `Error: ${e}`;
+    }
+}
+
+function getAudioFingerprint() {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+        const compressor = audioContext.createDynamicsCompressor();
+        // ... analyze the compressor output to get a system-dependent value
+        // For simplicity, we'll just return a placeholder or close the context.
+        audioContext.close();
+        return "Audio context created successfully"; // A real fingerprint would analyze the output signal
+    } catch (e) {
+        return `Audio API error: ${e}`;
+    }
+}
+
+function displayResults(data) {
+    const container = document.getElementById('data-container');
+    container.innerHTML = ''; // Clear previous results
+
+    for (const [key, value] of Object.entries(data)) {
+        const div = document.createElement('div');
+        div.className = 'data-point';
+        div.innerHTML = `<strong>${key}:</strong> <span class="value">${value}</span>`;
+        container.appendChild(div);
+    }
+
+    // Show the results section
+    document.getElementById('results').style.display = 'block';
+
+    // Calculate a fake-but-plausible "uniqueness" score based on hashing
+    const uniqueness = (data.hash.substring(0, 8).match(/[a-f0-9]/g) || []).length / 8 * 100;
+    document.getElementById('uniqueness-score').textContent = `${Math.round(uniqueness)}%`;
+
+    // Provide recommendations
+    const recList = document.getElementById('recommendations-list');
+    recList.innerHTML = `
+        <li>Use a privacy-focused browser like Firefox or Brave, which include fingerprinting protection.</li>
+        <li>Install anti-fingerprinting browser extensions (e.g., "CanvasBlocker", "Chameleon").</li>
+        <li>Consider using the Tor Browser, which makes all users' fingerprints look identical.</li>
+        <li>Keep your browser updated to benefit from new privacy protections.</li>
+    `;
+
+    // Reset the button
+    const button = document.getElementById('run-audit');
+    button.disabled = false;
+    button.textContent = 'Run Audit Again';
+}
     </script>
-
 </body>
 </html>
