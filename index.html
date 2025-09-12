@@ -3,1169 +3,811 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChronoCapsule - Digital Time Capsules</title>
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-
-    <!-- iOS Support -->
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <meta name="apple-mobile-web-app-status-bar" content="#2563eb">
-
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#2563eb">
-   
-    <script src="https://js.paystack.co/v1/inline.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>Clipboard AI - Your Intelligent File Assistant</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2c3e50;
-            --secondary: #8a6552;
-            --accent: #16a085;
-            --light: #ecf0f1;
-            --dark: #2c3e50;
-            --premium: #f39c12;
-            --success: #27ae60;
-            --error: #e74c3c;
-            --gradient-start: #2c3e50;
-            --gradient-end: #4ca1af;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --text-primary: #2c3e50;
-            --text-secondary: #7f8c8d;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            --transition: all 0.3s ease;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #10b981;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+            --success: #059669;
+            --warning: #f59e0b;
+            --error: #ef4444;
         }
         
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-            color: var(--text-primary);
-            line-height: 1.6;
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
             min-height: 100vh;
-            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            padding: 20px;
+            color: var(--dark);
         }
         
         .container {
             width: 100%;
             max-width: 1200px;
-            background: var(--card-bg);
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
         
         header {
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            color: white;
-            padding: 25px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .logo-container {
-            position: relative;
-            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
         
         .logo {
-            font-size: 3.5rem;
-            display: inline-block;
-            background: white;
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            line-height: 90px;
-            color: var(--accent);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        h1 {
-            font-size: 2.8rem;
-            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
             font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-        
-        .tagline {
-            font-style: italic;
-            opacity: 0.9;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            font-weight: 300;
-        }
-        
-        .user-status {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px 18px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
-        
-        .premium-badge {
-            background: var(--premium);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            margin-left: 8px;
-            font-weight: 600;
-        }
-        
-        .tab-bar {
-            display: flex;
-            background: var(--secondary);
-            padding: 0;
-            border-bottom: 3px solid rgba(0, 0, 0, 0.1);
-            position: relative;
-            z-index: 10;
-        }
-        
-        .tab {
-            padding: 20px 25px;
-            color: white;
-            cursor: pointer;
-            flex: 1;
-            text-align: center;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .tab:hover {
-            background: rgba(0, 0, 0, 0.1);
-        }
-        
-        .tab.active {
-            background: var(--primary);
-            box-shadow: inset 0 -4px 0 var(--accent);
-        }
-        
-        .content {
-            padding: 40px;
-            min-height: 500px;
-        }
-        
-        .screen {
-            display: none;
-            animation: fadeIn 0.5s;
-        }
-        
-        .screen.active {
-            display: block;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 12px;
-            font-weight: 600;
+            font-size: 24px;
             color: var(--primary);
-            font-size: 1.1rem;
         }
         
-        textarea, input[type="date"], input[type="text"], input[type="email"] {
-            width: 100%;
-            padding: 16px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-family: inherit;
-            font-size: 1rem;
-            transition: var(--transition);
-            background: white;
+        .logo i {
+            font-size: 28px;
         }
         
-        textarea:focus, input:focus {
-            border-color: var(--accent);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(22, 160, 133, 0.2);
+        nav {
+            display: flex;
+            gap: 20px;
         }
         
-        textarea {
-            min-height: 200px;
-            resize: vertical;
-            line-height: 1.6;
-        }
-        
-        button {
-            padding: 16px 32px;
-            background: var(--secondary);
-            color: white;
+        nav button {
+            background: none;
             border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1.1rem;
             font-weight: 600;
-            transition: var(--transition);
-            display: inline-flex;
+            font-size: 16px;
+            color: var(--dark);
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        nav button:hover {
+            background: #f3f4f6;
+            color: var(--primary);
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 20px;
+        }
+        
+        .upload-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            height: fit-content;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
             align-items: center;
-            justify-content: center;
             gap: 10px;
         }
         
-        button:hover {
-            background: var(--primary);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        .premium-btn {
-            background: var(--premium);
-        }
-        
-        .premium-btn:hover {
-            background: #e67e22;
-        }
-        
-        .success-btn {
-            background: var(--success);
-        }
-        
-        .capsule-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 30px;
-            margin-top: 30px;
-        }
-        
-        .capsule-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            border-left: 5px solid var(--secondary);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .capsule-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-        }
-        
-        .capsule-date {
-            color: var(--accent);
-            font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 1.1rem;
+        .drop-zone {
+            border: 2px dashed var(--gray);
+            border-radius: 12px;
+            padding: 40px 20px;
             display: flex;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .drop-zone:hover {
+            border-color: var(--primary);
+            background: #f9fafb;
+        }
+        
+        .drop-zone i {
+            font-size: 48px;
+            color: var(--primary);
+        }
+        
+        .drop-zone p {
+            text-align: center;
+            color: var(--gray);
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .actions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .action-group {
+            display: flex;
+            flex-direction: column;
             gap: 8px;
         }
         
-        .capsule-message {
-            margin-bottom: 20px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            line-height: 1.6;
-            color: var(--text-secondary);
+        .action-group-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--dark);
         }
         
-        .capsule-actions {
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .action-btn:hover {
+            background: #e5e7eb;
+        }
+        
+        .action-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .process-btn {
+            margin-top: 10px;
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .process-btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .results-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .file-preview {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .preview-header {
             display: flex;
             justify-content: space-between;
-            gap: 10px;
+            align-items: center;
+            margin-bottom: 16px;
         }
         
-        .capsule-image-preview {
+        .preview-content {
+            max-height: 300px;
+            overflow: auto;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 12px;
+        }
+        
+        .preview-content img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        
+        .preview-content textarea {
             width: 100%;
             height: 200px;
-            object-fit: cover;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            display: none;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            resize: none;
+            font-family: monospace;
+        }
+        
+        .ai-output {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .output-content {
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 12px;
+            min-height: 200px;
+            max-height: 400px;
+            overflow: auto;
+        }
+        
+        .output-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        .output-btn {
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .output-btn:hover {
+            background: #e5e7eb;
+        }
+        
+        .output-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .output-btn.primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .api-key-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+        }
+        
+        .api-key-form {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .api-key-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .save-api-key {
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .save-api-key:hover {
+            background: var(--primary-dark);
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        
+        .file-info i {
+            color: var(--primary);
         }
         
         .notification {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
-            padding: 20px 25px;
-            background: var(--accent);
-            color: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-            transform: translateY(120px);
-            opacity: 0;
-            transition: var(--transition);
-            z-index: 1000;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            background: white;
+            border-left: 4px solid var(--success);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             gap: 12px;
-            max-width: 400px;
+            transform: translateX(100%);
+            transition: transform 0.3s;
+            z-index: 1000;
         }
         
         .notification.show {
-            transform: translateY(0);
-            opacity: 1;
+            transform: translateX(0);
         }
         
-        .premium-feature {
-            border: 2px dashed var(--premium);
-            padding: 25px;
-            border-radius: 12px;
-            margin: 30px 0;
-            background: rgba(243, 156, 18, 0.08);
+        .notification i {
+            font-size: 24px;
+            color: var(--success);
         }
         
-        .premium-label {
-            background: var(--premium);
-            color: white;
-            padding: 5px 12px;
-            border-radius: 5px;
-            font-size: 0.9rem;
-            margin-left: 10px;
-            font-weight: 600;
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(99, 102, 241, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
         }
         
-        .feature-list {
-            margin: 20px 0;
-            padding-left: 20px;
-        }
-        
-        .feature-list li {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
         footer {
-            text-align: center;
-            padding: 25px;
-            background: var(--light);
-            color: var(--dark);
             margin-top: 40px;
-        }
-        
-        .payment-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-        
-        .payment-content {
-            background: white;
-            padding: 35px;
-            border-radius: 18px;
-            width: 90%;
-            max-width: 500px;
             text-align: center;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-            position: relative;
+            color: var(--gray);
+            padding: 20px;
         }
         
-        .payment-content h3 {
-            margin-bottom: 20px;
-            color: var(--primary);
-            font-size: 1.8rem;
-        }
-        
-        .payment-options {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .close-modal {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 1.8rem;
-            cursor: pointer;
-            color: #999;
-            transition: var(--transition);
-        }
-        
-        .close-modal:hover {
-            color: var(--error);
-            transform: rotate(90deg);
-        }
-        
-        .capsule-counter {
-            background: var(--accent);
-            color: white;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 0.9rem;
-            margin-left: 10px;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        @media (max-width: 768px) {
-            .capsule-list {
+        @media (max-width: 900px) {
+            .main-content {
                 grid-template-columns: 1fr;
             }
             
-            .tab-bar {
-                flex-direction: column;
-            }
-            
-            .tab {
-                padding: 15px;
-            }
-            
-            .content {
-                padding: 25px;
-            }
-            
             header {
-                padding: 20px 15px;
+                flex-direction: column;
+                gap: 16px;
             }
             
-            h1 {
-                font-size: 2.2rem;
-            }
-            
-            .user-status {
-                position: relative;
-                top: 0;
-                right: 0;
+            nav {
+                width: 100%;
                 justify-content: center;
-                margin-top: 15px;
             }
-        }
-        
-        .floating-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 70px;
-            height: 70px;
-            background: var(--accent);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            z-index: 900;
-            animation: pulse 2s infinite;
-            font-size: 1.8rem;
-            transition: var(--transition);
-        }
-        
-        .floating-btn:hover {
-            animation: none;
-            transform: scale(1.1);
-        }
-        
-        .capsule-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: var(--error);
-            color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-secondary);
-        }
-        
-        .empty-state i {
-            font-size: 4rem;
-            color: #ddd;
-            margin-bottom: 20px;
-        }
-        
-        .empty-state p {
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-        }
-        
-        .progress-bar {
-            height: 6px;
-            background: #eee;
-            border-radius: 3px;
-            margin: 15px 0;
-            overflow: hidden;
-        }
-        
-        .progress {
-            height: 100%;
-            background: var(--accent);
-            border-radius: 3px;
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-        
-        .capsule-stats {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 30px;
-            padding: 20px;
-            background: rgba(236, 240, 241, 0.5);
-            border-radius: 12px;
-        }
-        
-        .stat {
-            text-align: center;
-            flex: 1;
-        }
-        
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--accent);
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-        
-        .save-notice {
-            background: rgba(22, 160, 133, 0.1);
-            border-left: 4px solid var(--accent);
-            padding: 15px;
-            border-radius: 4px;
-            margin: 20px 0;
-            font-size: 0.9rem;
-        }
-        
-        .save-notice i {
-            color: var(--accent);
-            margin-right: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <div class="logo-container">
-                <div class="logo">🕰️</div>
+            <div class="logo">
+                <i class="fas fa-clipboard"></i>
+                <span>Clipboard AI</span>
             </div>
-            <h1>ChronoCapsule</h1>
-            <p class="tagline">Send messages to your future self</p>
-            <div class="user-status">
-                <span id="user-type">Free Account</span>
-                <span class="premium-badge" id="premium-badge" style="display: none;">PREMIUM</span>
-            </div>
+            <nav>
+                <button><i class="fas fa-home"></i> Home</button>
+                <button><i class="fas fa-cog"></i> Settings</button>
+                <button><i class="fas fa-question-circle"></i> Help</button>
+            </nav>
         </header>
         
-        <div class="tab-bar">
-            <div class="tab active" data-tab="create">
-                <i class="fas fa-plus-circle"></i> Create Capsule
-            </div>
-            <div class="tab" data-tab="capsules">
-                <i class="fas fa-capsules"></i> My Capsules <span class="capsule-counter" id="capsule-counter">0</span>
-            </div>
-            <div class="tab" data-tab="premium">
-                <i class="fas fa-crown"></i> Go Premium
-            </div>
-        </div>
-        
-        <div class="content">
-            <!-- Create Capsule Screen -->
-            <div class="screen active" id="create-screen">
-                <h2>Create a New Time Capsule</h2>
+        <div class="main-content">
+            <div class="upload-section">
+                <h2 class="section-title"><i class="fas fa-upload"></i> Upload File</h2>
                 
-                <div class="save-notice">
-                    <i class="fas fa-info-circle"></i>
-                    <strong>Important:</strong> Remember to save this HTML file to your computer after creating your capsules to preserve them.
+                <div class="drop-zone" id="dropZone">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Drag & Drop Your File Here</h3>
+                    <p>Supported files: Text, PDF, Images, Audio</p>
+                    <p>or</p>
+                    <button class="process-btn">Select File</button>
+                    <input type="file" id="fileInput" class="file-input">
                 </div>
                 
-                <div class="form-group">
-                    <label for="message"><i class="fas fa-envelope-open-text"></i> Your Message</label>
-                    <textarea id="message" placeholder="Write your message here..."></textarea>
+                <div class="file-info" id="fileInfo" style="display: none;">
+                    <i class="fas fa-file"></i>
+                    <span>No file selected</span>
                 </div>
                 
-                <div class="form-group">
-                    <label for="unlock-date"><i class="fas fa-calendar-alt"></i> Unlock Date</label>
-                    <input type="date" id="unlock-date" required>
-                </div>
-                
-                <div class="premium-feature" id="image-upload-section">
-                    <h3><i class="fas fa-image"></i> Add Image <span class="premium-label">PREMIUM</span></h3>
-                    <input type="file" id="image-upload" accept="image/*" disabled>
-                    <img id="image-preview" class="capsule-image-preview" src="" alt="Image preview">
-                    <p class="small">Upgrade to Premium to add images to your capsules</p>
-                </div>
-                
-                <button id="create-btn">
-                    <i class="fas fa-time-capsule"></i> Create Time Capsule
-                </button>
-            </div>
-            
-            <!-- My Capsules Screen -->
-            <div class="screen" id="capsules-screen">
-                <h2>Your Time Capsules</h2>
-                
-                <div class="save-notice">
-                    <i class="fas fa-info-circle"></i>
-                    Your capsules are stored in this browser. Save this HTML file to keep them safe.
-                </div>
-                
-                <div class="capsule-stats">
-                    <div class="stat">
-                        <div class="stat-number" id="total-capsules">0</div>
-                        <div class="stat-label">Total Capsules</div>
+                <div class="actions-container">
+                    <div class="action-group">
+                        <h3 class="action-group-title">Text Actions</h3>
+                        <div class="action-buttons">
+                            <button class="action-btn" data-action="summarize"><i class="fas fa-compress"></i> Summarize</button>
+                            <button class="action-btn" data-action="translate"><i class="fas fa-language"></i> Translate</button>
+                            <button class="action-btn" data-action="explain"><i class="fas fa-lightbulb"></i> Explain</button>
+                        </div>
                     </div>
-                    <div class="stat">
-                        <div class="stat-number" id="unlocked-capsules">0</div>
-                        <div class="stat-label">Unlocked</div>
+                    
+                    <div class="action-group">
+                        <h3 class="action-group-title">Image Actions</h3>
+                        <div class="action-buttons">
+                            <button class="action-btn" data-action="describe"><i class="fas fa-comment"></i> Describe</button>
+                            <button class="action-btn" data-action="enhance"><i class="fas fa-magic"></i> Enhance</button>
+                            <button class="action-btn" data-action="extract"><i class="fas fa-qrcode"></i> Extract Text</button>
+                        </div>
                     </div>
-                    <div class="stat">
-                        <div class="stat-number" id="locked-capsules">0</div>
-                        <div class="stat-label">Locked</div>
+                    
+                    <div class="action-group">
+                        <h3 class="action-group-title">Audio Actions</h3>
+                        <div class="action-buttons">
+                            <button class="action-btn" data-action="transcribe"><i class="fas fa-keyboard"></i> Transcribe</button>
+                            <button class="action-btn" data-action="summarize_audio"><i class="fas fa-compress"></i> Summarize</button>
+                        </div>
                     </div>
-                </div>
-                
-                <div id="no-capsules-message" class="empty-state">
-                    <i class="fas fa-inbox"></i>
-                    <p>You haven't created any time capsules yet.</p>
-                    <button onclick="showTab('create')">
-                        <i class="fas fa-plus"></i> Create Your First Capsule
+                    
+                    <button class="process-btn" id="processBtn">
+                        <i class="fas fa-cogs"></i> Process File
                     </button>
-                </div>
-                <div class="capsule-list" id="capsule-list">
-                    <!-- Capsules will be added here dynamically -->
                 </div>
             </div>
             
-            <!-- Premium Screen -->
-            <div class="screen" id="premium-screen">
-                <h2>Go Premium</h2>
-                <div class="premium-feature">
-                    <h3><i class="fas fa-crown"></i> Unlock All Features</h3>
-                    <p>Upgrade to Premium for just $9.99 and get access to exclusive features:</p>
-                    
-                    <ul class="feature-list">
-                        <li><i class="fas fa-check-circle"></i> Add images to your time capsules</li>
-                        <li><i class="fas fa-check-circle"></i> Create unlimited capsules (free version limited to 5)</li>
-                        <li><i class="fas fa-check-circle"></i> Export capsules as beautiful PDF keepsakes</li>
-                        <li><i class="fas fa-check-circle"></i> Priority notification system</li>
-                        <li><i class="fas fa-check-circle"></i> Custom capsule themes and designs</li>
-                    </ul>
-                    
-                    <button class="premium-btn" id="upgrade-btn">
-                        <i class="fas fa-crown"></i> Upgrade Now - $9.99
-                    </button>
+            <div class="results-section">
+                <div class="file-preview">
+                    <div class="preview-header">
+                        <h2 class="section-title"><i class="fas fa-file"></i> File Preview</h2>
+                        <button class="output-btn" id="clearBtn"><i class="fas fa-trash"></i> Clear</button>
+                    </div>
+                    <div class="preview-content" id="previewContent">
+                        <p style="text-align: center; color: var(--gray); padding: 40px;">
+                            File content will be displayed here after upload
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="ai-output">
+                    <div class="output-header">
+                        <h2 class="section-title"><i class="fas fa-robot"></i> AI Output</h2>
+                        <button class="output-btn" id="copyBtn"><i class="fas fa-copy"></i> Copy</button>
+                    </div>
+                    <div class="output-content" id="outputContent">
+                        <p style="text-align: center; color: var(--gray); padding: 40px;">
+                            AI results will appear here after processing
+                        </p>
+                    </div>
+                    <div class="output-actions">
+                        <button class="output-btn"><i class="fas fa-download"></i> Export</button>
+                        <button class="output-btn primary"><i class="fas fa-share"></i> Share</button>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <footer>
-            <p>ChronoCapsule &copy; 2023 - Your messages are stored locally on your device</p>
-        </footer>
+        <div class="api-key-section">
+            <h2 class="section-title"><i class="fas fa-key"></i> API Key Setup</h2>
+            <p style="margin: 12px 0; color: var(--gray);">
+                To use Clipboard AI, you need to provide your OpenAI API key. Your key is stored locally and never sent to our servers.
+            </p>
+            <div class="api-key-form">
+                <input type="password" class="api-key-input" id="apiKeyInput" placeholder="Enter your OpenAI API key">
+                <button class="save-api-key" id="saveApiKey">Save Key</button>
+            </div>
+        </div>
     </div>
     
     <div class="notification" id="notification">
-        <i class="fas fa-bell"></i>
-        <span id="notification-text">A time capsule is ready to be opened!</span>
-    </div>
-
-    <div class="floating-btn" id="notifications-btn">
-        <i class="fas fa-bell"></i>
-        <div class="capsule-count" id="notification-count">0</div>
-    </div>
-
-    <div class="payment-modal" id="payment-modal">
-        <div class="payment-content">
-            <span class="close-modal" id="close-modal">&times;</span>
-            <h3>Upgrade to Premium</h3>
-            <p>Enter your email address to proceed with payment</p>
-            
-            <div class="form-group">
-                <input type="email" id="customer-email" placeholder="Your email address" required>
-            </div>
-            
-            <button class="success-btn" id="paystack-btn">
-                <i class="fas fa-credit-card"></i> Pay with Paystack
-            </button>
+        <i class="fas fa-check-circle"></i>
+        <div>
+            <h4>Success!</h4>
+            <p>Your file has been processed successfully.</p>
         </div>
     </div>
+    
+    <footer>
+        <p>© 2023 Clipboard AI. All rights reserved.</p>
+        <p>This tool uses AI APIs for processing. Your data is processed on your device and never stored on our servers.</p>
+    </footer>
 
     <script>
-        // Initialize the jsPDF library
-        const { jsPDF } = window.jspdf;
-        
-        // Paystack test public key - REPLACE WITH YOUR LIVE KEY FOR PRODUCTION
-        const paystackPublicKey = 'pk_test_1f759a668641f37cd1b315c1d9cfa5c01ec2f202';
-        
         document.addEventListener('DOMContentLoaded', function() {
             // Elements
-            const tabs = document.querySelectorAll('.tab');
-            const screens = document.querySelectorAll('.screen');
-            const createBtn = document.getElementById('create-btn');
-            const upgradeBtn = document.getElementById('upgrade-btn');
-            const capsuleList = document.getElementById('capsule-list');
-            const noCapsulesMessage = document.getElementById('no-capsules-message');
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const fileInfo = document.getElementById('fileInfo');
+            const previewContent = document.getElementById('previewContent');
+            const outputContent = document.getElementById('outputContent');
+            const processBtn = document.getElementById('processBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const saveApiKey = document.getElementById('saveApiKey');
             const notification = document.getElementById('notification');
-            const notificationText = document.getElementById('notification-text');
-            const notificationCount = document.getElementById('notification-count');
-            const notificationsBtn = document.getElementById('notifications-btn');
-            const paymentModal = document.getElementById('payment-modal');
-            const closeModal = document.getElementById('close-modal');
-            const paystackBtn = document.getElementById('paystack-btn');
-            const customerEmail = document.getElementById('customer-email');
-            const userType = document.getElementById('user-type');
-            const premiumBadge = document.getElementById('premium-badge');
-            const capsuleCounter = document.getElementById('capsule-counter');
-            const imageUpload = document.getElementById('image-upload');
-            const imagePreview = document.getElementById('image-preview');
-            const totalCapsules = document.getElementById('total-capsules');
-            const unlockedCapsules = document.getElementById('unlocked-capsules');
-            const lockedCapsules = document.getElementById('locked-capsules');
             
-            // State
-            let capsules = JSON.parse(localStorage.getItem('capsules')) || [];
-            let isPremium = localStorage.getItem('isPremium') === 'true';
-            let unopenedCapsules = 0;
+            let currentFile = null;
+            let currentFileType = null;
             
-            // Initialize
-            updateUserStatus();
-            checkCapsulesStatus();
-            renderCapsules();
-            updateStats();
-            setupTabNavigation();
-            
-            // Set minimum date to tomorrow
-            const dateInput = document.getElementById('unlock-date');
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            dateInput.min = tomorrow.toISOString().split('T')[0];
-            
-            // Event Listeners
-            createBtn.addEventListener('click', createCapsule);
-            upgradeBtn.addEventListener('click', showPaymentModal);
-            closeModal.addEventListener('click', hidePaymentModal);
-            paystackBtn.addEventListener('click', processPayment);
-            notificationsBtn.addEventListener('click', showNotifications);
-            imageUpload.addEventListener('change', handleImageUpload);
-            
-            // Check for capsules that need to be opened
-            setInterval(checkCapsulesStatus, 60000); // Check every minute
-            
-            // Tab Navigation
-            function setupTabNavigation() {
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', function() {
-                        const tabName = this.getAttribute('data-tab');
-                        
-                        // Update active tab
-                        tabs.forEach(t => t.classList.remove('active'));
-                        this.classList.add('active');
-                        
-                        // Show corresponding screen
-                        screens.forEach(screen => {
-                            screen.classList.remove('active');
-                            if (screen.id === `${tabName}-screen`) {
-                                screen.classList.add('active');
-                            }
-                        });
-                        
-                        // If viewing capsules, refresh the list
-                        if (tabName === 'capsules') {
-                            renderCapsules();
-                            updateStats();
-                        }
-                    });
-                });
+            // Load API key from localStorage if available
+            const savedApiKey = localStorage.getItem('clipboardAI_apiKey');
+            if (savedApiKey) {
+                apiKeyInput.value = savedApiKey;
             }
             
-            // Create a new capsule
-            function createCapsule() {
-                const message = document.getElementById('message').value;
-                const unlockDate = document.getElementById('unlock-date').value;
+            // Setup drop zone
+            dropZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'var(--primary)';
+                dropZone.style.backgroundColor = '#f9fafb';
+            });
+            
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.style.borderColor = 'var(--gray)';
+                dropZone.style.backgroundColor = 'transparent';
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'var(--gray)';
+                dropZone.style.backgroundColor = 'transparent';
                 
-                if (!message || !unlockDate) {
-                    showNotification('Please write a message and select an unlock date.', 'error');
-                    return;
+                if (e.dataTransfer.files.length) {
+                    handleFile(e.dataTransfer.files[0]);
                 }
-                
-                // Check free version limit
-                if (!isPremium && capsules.length >= 5) {
-                    showNotification('Free version is limited to 5 capsules. Upgrade to Premium for unlimited capsules.', 'error');
-                    showTab('premium');
-                    return;
+            });
+            
+            // Process button
+            processBtn.addEventListener('click', processFile);
+            
+            // Clear button
+            clearBtn.addEventListener('click', clearAll);
+            
+            // Copy button
+            copyBtn.addEventListener('click', copyOutput);
+            
+            // Save API key
+            saveApiKey.addEventListener('click', () => {
+                const key = apiKeyInput.value.trim();
+                if (key) {
+                    localStorage.setItem('clipboardAI_apiKey', key);
+                    showNotification('API key saved successfully!');
+                } else {
+                    showNotification('Please enter a valid API key', 'error');
                 }
-                
-                const capsule = {
-                    id: Date.now(),
-                    message: message,
-                    unlockDate: unlockDate,
-                    created: new Date().toISOString(),
-                    isOpened: false,
-                    hasImage: false,
-                    imageData: null
-                };
-                
-                // Handle image if uploaded and user is premium
-                if (isPremium && imagePreview.style.display === 'block') {
-                    capsule.hasImage = true;
-                    capsule.imageData = imagePreview.src;
+            });
+            
+            // Handle file selection
+            function handleFileSelect(e) {
+                if (e.target.files.length) {
+                    handleFile(e.target.files[0]);
                 }
-                
-                capsules.push(capsule);
-                saveCapsules();
-                
-                showNotification('Capsule created successfully! Remember to save this HTML file to your computer.');
-                document.getElementById('message').value = '';
-                document.getElementById('unlock-date').value = '';
-                imagePreview.style.display = 'none';
-                imagePreview.src = '';
-                
-                renderCapsules();
-                updateStats();
             }
             
-            // Render capsules list
-            function renderCapsules() {
-                capsuleList.innerHTML = '';
-                capsuleCounter.textContent = capsules.length;
+            // Process the selected file
+            function handleFile(file) {
+                currentFile = file;
+                const fileSize = (file.size / 1024 / 1024).toFixed(2); // MB
                 
-                if (capsules.length === 0) {
-                    noCapsulesMessage.style.display = 'block';
-                    return;
+                fileInfo.style.display = 'flex';
+                fileInfo.querySelector('span').textContent = `${file.name} (${fileSize} MB)`;
+                
+                // Determine file type
+                if (file.type.startsWith('image/')) {
+                    currentFileType = 'image';
+                } else if (file.type.startsWith('audio/')) {
+                    currentFileType = 'audio';
+                } else if (file.type === 'application/pdf') {
+                    currentFileType = 'pdf';
+                } else if (file.type.startsWith('text/')) {
+                    currentFileType = 'text';
+                } else {
+                    currentFileType = 'unknown';
                 }
                 
-                noCapsulesMessage.style.display = 'none';
-                
-                capsules.forEach(capsule => {
-                    const card = document.createElement('div');
-                    card.className = 'capsule-card';
-                    
-                    const date = new Date(capsule.unlockDate).toLocaleDateString();
-                    const isUnlocked = new Date() >= new Date(capsule.unlockDate);
-                    const createdDate = new Date(capsule.created).toLocaleDateString();
-                    
-                    card.innerHTML = `
-                        <div class="capsule-date"><i class="fas fa-calendar"></i> Unlocks on: ${date}</div>
-                        <div style="font-size: 0.9rem; color: #95a5a6; margin-bottom: 10px;">Created: ${createdDate}</div>
-                        ${capsule.hasImage ? `<img src="${capsule.imageData}" class="capsule-image-preview" style="display: block;">` : ''}
-                        <div class="capsule-message">${capsule.message}</div>
-                        <div class="progress-bar">
-                            <div class="progress" style="width: ${isUnlocked ? '100' : '0'}%"></div>
-                        </div>
-                        <div class="capsule-actions">
-                            <button class="view-capsule" data-id="${capsule.id}">
-                                <i class="fas ${isUnlocked ? 'fa-envelope-open' : 'fa-envelope'}"></i> 
-                                ${isUnlocked ? 'View Message' : 'Not Ready Yet'}
-                            </button>
-                            <button class="delete-capsule" data-id="${capsule.id}">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
+                // Show preview based on file type
+                if (currentFileType === 'image') {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewContent.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    };
+                    reader.readAsDataURL(file);
+                } else if (currentFileType === 'text') {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewContent.innerHTML = `<textarea readonly>${e.target.result}</textarea>`;
+                    };
+                    reader.readAsText(file);
+                } else {
+                    previewContent.innerHTML = `
+                        <div style="text-align: center; padding: 30px;">
+                            <i class="fas fa-file" style="font-size: 48px; color: var(--primary); margin-bottom: 16px;"></i>
+                            <p>Preview not available for ${currentFileType} files</p>
                         </div>
                     `;
-                    
-                    capsuleList.appendChild(card);
-                });
-                
-                // Add event listeners to the buttons
-                document.querySelectorAll('.view-capsule').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const id = parseInt(this.getAttribute('data-id'));
-                        viewCapsule(id);
-                    });
-                });
-                
-                document.querySelectorAll('.delete-capsule').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const id = parseInt(this.getAttribute('data-id'));
-                        deleteCapsule(id);
-                    });
-                });
+                }
             }
             
-            // Update statistics
-            function updateStats() {
-                totalCapsules.textContent = capsules.length;
+            // Process the file with AI
+            function processFile() {
+                const apiKey = localStorage.getItem('clipboardAI_apiKey');
                 
-                const unlocked = capsules.filter(capsule => {
-                    return new Date() >= new Date(capsule.unlockDate);
-                }).length;
-                
-                unlockedCapsules.textContent = unlocked;
-                lockedCapsules.textContent = capsules.length - unlocked;
-            }
-            
-            // View capsule message
-            function viewCapsule(id) {
-                const capsule = capsules.find(c => c.id === id);
-                if (!capsule) return;
-                
-                const today = new Date();
-                const unlockDate = new Date(capsule.unlockDate);
-                
-                if (today < unlockDate) {
-                    showNotification('This capsule is not ready to be opened yet.', 'error');
+                if (!apiKey) {
+                    showNotification('Please enter your API key first', 'error');
                     return;
                 }
                 
-                // Create a beautiful modal to display the message
-                const messageHtml = `
-                    <div style="padding: 30px; text-align: center; max-width: 500px;">
-                        <div style="font-size: 4rem; margin-bottom: 20px;">🕰️</div>
-                        <h2 style="color: var(--accent); margin-bottom: 20px; font-size: 2rem;">Your Time Capsule</h2>
-                        <p style="font-style: italic; margin-bottom: 20px; color: #7f8c8d;">Created on: ${new Date(capsule.created).toLocaleDateString()}</p>
-                        ${capsule.hasImage ? `<img src="${capsule.imageData}" style="max-width: 100%; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">` : ''}
-                        <div style="background: #f9f9f9; padding: 25px; border-radius: 12px; margin-bottom: 25px; text-align: left;">
-                            <p style="font-size: 1.2rem; line-height: 1.6; color: #2c3e50;">${capsule.message}</p>
-                        </div>
-                        <button onclick="this.parentElement.parentElement.close()" style="padding: 12px 25px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem;">Close</button>
+                if (!currentFile) {
+                    showNotification('Please select a file first', 'error');
+                    return;
+                }
+                
+                // Show loading state
+                outputContent.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <div class="loading" style="margin: 0 auto;"></div>
+                        <p style="margin-top: 16px;">Processing your file with AI...</p>
                     </div>
                 `;
                 
-                const dialog = document.createElement('dialog');
-                dialog.style.border = 'none';
-                dialog.style.borderRadius = '15px';
-                dialog.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.2)';
-                dialog.style.maxWidth = '90%';
-                dialog.innerHTML = messageHtml;
-                
-                document.body.appendChild(dialog);
-                dialog.showModal();
-                
-                // Mark as opened
-                if (!capsule.isOpened) {
-                    capsule.isOpened = true;
-                    capsule.openedDate = today.toISOString();
-                    saveCapsules();
-                    checkCapsulesStatus(); // Update notification count
-                    updateStats();
-                }
-            }
-            
-            // Delete capsule
-            function deleteCapsule(id) {
-                if (confirm('Are you sure you want to delete this time capsule?')) {
-                    capsules = capsules.filter(c => c.id !== id);
-                    saveCapsules();
-                    renderCapsules();
-                    updateStats();
-                    showNotification('Capsule deleted successfully.');
-                }
-            }
-            
-            // Check if any capsules are ready to be opened
-            function checkCapsulesStatus() {
-                const today = new Date();
-                unopenedCapsules = 0;
-                
-                capsules.forEach(capsule => {
-                    const unlockDate = new Date(capsule.unlockDate);
-                    if (today >= unlockDate && !capsule.isOpened) {
-                        unopenedCapsules++;
-                    }
-                });
-                
-                if (unopenedCapsules > 0) {
-                    notificationCount.textContent = unopenedCapsules;
-                    notificationCount.style.display = 'flex';
+                // Simulate AI processing (in a real app, you would call the API here)
+                setTimeout(() => {
+                    let result = '';
                     
-                    // If browser supports notifications
-                    if ('Notification' in window && Notification.permission === 'granted') {
-                        new Notification('ChronoCapsule', {
-                            body: `You have ${unopenedCapsules} time capsules ready to be opened!`,
-                            icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjMTZhMDg1IiBkPSJNMjU2IDhDMTE5IDggOCAxMTkgOCAyNTZzMTExIDI0OCAyNDggMjQ4IDI0OC0xMTEgMjQ4LTI0OFMzOTMgOCAyNTYgOHptMCA0NDhjLTExMC41IDAtMjAwLTg5LjUtMjAwLTIwMFMxNDUuNSA1NiAyNTYgNTZzMjAwIDg5LjUgMjAwIDIwMC04OS41IDIwMC0yMDAgMjAwem02LjctMTQwaC0xMy4xYy0zLjMgMTguMi0xOS4yIDMyLTM4LjYgMzJzLTM1LjMtMTMuOC0zOC42LTMySDI0OS4zYy0zLjMgMTguMi0xOS4yIDMyLTM4LjYgMzJzLTM1LjMtMTMuOC0zOC42LTMySDExNS43YzMuNi0yMCAyMC4yLTM1LjUgNDAuMy0zNS41aDcuM2MxLjEgMCAxLjktMS4xIDEuNi0yLjJsLTYuNy0yOS4zYy0uNS0yLjItMi4yLTMuOC00LjQtMy44SDIwNGM0LjQgMCA4LTMuNiA4LTh2LTE2YzAtNC40LTMuNi04LTgtOEgxNTJjLTQuNCAwLTggMy42LTggOHYxNmMwIDQuNCAzLjYgOCA4IDhoMzUuNmwtNi43IDI5LjNjLS4zIDEuMS41IDIuMiAxLjYgMi4yaDcuM2MyMC4xIDAgMzYuNyAxNS41IDQwLjMgMzUuNXoiLz48L3N2Zz4='
-                        });
+                    if (currentFileType === 'text') {
+                        result = `
+                            <h3>Summary</h3>
+                            <p>This document appears to be a text file containing information about AI and its applications. The text discusses how AI can be used to process various types of files and extract meaningful insights from them.</p>
+                            
+                            <h3>Key Points</h3>
+                            <ul>
+                                <li>AI can process text, images, audio, and other file types</li>
+                                <li>The technology enables automatic summarization and translation</li>
+                                <li>AI tools can enhance productivity and creativity</li>
+                            </ul>
+                            
+                            <h3>Sentiment</h3>
+                            <p>Positive - The text expresses optimism about AI capabilities</p>
+                        `;
+                    } else if (currentFileType === 'image') {
+                        result = `
+                            <h3>Image Description</h3>
+                            <p>This image appears to be a screenshot of a modern AI application interface. It shows a clean layout with a file upload section, processing options, and a results area.</p>
+                            
+                            <h3>Key Elements</h3>
+                            <ul>
+                                <li>Modern UI with blue and white color scheme</li>
+                                <li>Drag-and-drop file upload area</li>
+                                <li>Multiple processing options for different file types</li>
+                                <li>Clean result display with formatting options</li>
+                            </ul>
+                            
+                            <h3>Estimated Context</h3>
+                            <p>This is likely a demonstration interface for an AI-powered file processing tool similar to Clipboard AI.</p>
+                        `;
+                    } else if (currentFileType === 'audio') {
+                        result = `
+                            <h3>Transcription</h3>
+                            <p>Hello, this is a demonstration of the AI audio processing capabilities. This tool can transcribe audio files, summarize conversations, and extract key information from recordings.</p>
+                            
+                            <h3>Summary</h3>
+                            <p>The speaker is demonstrating an AI tool that processes audio files. They explain that the tool can transcribe, summarize, and extract information from audio recordings.</p>
+                            
+                            <h3>Key Topics</h3>
+                            <ul>
+                                <li>AI audio processing</li>
+                                <li>Transcription capabilities</li>
+                                <li>Information extraction</li>
+                            </ul>
+                        `;
+                    } else {
+                        result = `
+                            <h3>Analysis Complete</h3>
+                            <p>The AI has successfully processed your ${currentFileType} file. While specific content analysis is limited for this file type, the system has successfully read and interpreted the file metadata and structure.</p>
+                            
+                            <h3>Recommended Actions</h3>
+                            <ul>
+                                <li>Convert to a more AI-friendly format for deeper analysis</li>
+                                <li>Use specialized tools for this specific file type</li>
+                                <li>Consider extracting text content if possible</li>
+                            </ul>
+                        `;
                     }
-                } else {
-                    notificationCount.style.display = 'none';
-                }
+                    
+                    outputContent.innerHTML = result;
+                    showNotification('File processed successfully!');
+                }, 2000);
+            }
+            
+            // Clear all selections
+            function clearAll() {
+                currentFile = null;
+                currentFileType = null;
+                fileInput.value = '';
+                fileInfo.style.display = 'none';
+                previewContent.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 40px;">File content will be displayed here after upload</p>';
+                outputContent.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 40px;">AI results will appear here after processing</p>';
+            }
+            
+            // Copy output to clipboard
+            function copyOutput() {
+                const textToCopy = outputContent.textContent;
+                
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showNotification('Output copied to clipboard!');
+                }).catch(err => {
+                    showNotification('Failed to copy output', 'error');
+                });
             }
             
             // Show notification
             function showNotification(message, type = 'success') {
-                notificationText.textContent = message;
-                notification.style.background = type === 'success' ? 'var(--success)' : 'var(--error)';
+                const icon = notification.querySelector('i');
+                const title = notification.querySelector('h4');
+                const text = notification.querySelector('p');
+                
+                if (type === 'success') {
+                    icon.className = 'fas fa-check-circle';
+                    icon.style.color = 'var(--success)';
+                    title.textContent = 'Success!';
+                } else {
+                    icon.className = 'fas fa-exclamation-circle';
+                    icon.style.color = 'var(--error)';
+                    title.textContent = 'Error!';
+                }
+                
+                text.textContent = message;
+                
                 notification.classList.add('show');
                 
                 setTimeout(() => {
                     notification.classList.remove('show');
-                }, 5000);
-            }
-            
-            // Show payment modal
-            function showPaymentModal() {
-                paymentModal.style.display = 'flex';
-            }
-            
-            // Hide payment modal
-            function hidePaymentModal() {
-                paymentModal.style.display = 'none';
-            }
-            
-            // Process payment with Paystack
-            function processPayment() {
-                const email = customerEmail.value;
-                
-                if (!email) {
-                    showNotification('Please enter your email address.', 'error');
-                    return;
-                }
-                
-                const handler = PaystackPop.setup({
-                    key: paystackPublicKey,
-                    email: email,
-                    amount: 99900, // $9.99 in kobo
-                    currency: 'NGN',
-                    ref: 'CHRONO-' + Math.floor((Math.random() * 1000000000) + 1),
-                    onClose: function() {
-                        showNotification('Payment was not completed.', 'error');
-                    },
-                    callback: function(response) {
-                        // Verify payment on your server (not implemented in this frontend example)
-                        // For demo purposes, we'll assume the payment was successful
-                        upgradeToPremium();
-                        hidePaymentModal();
-                    }
-                });
-                
-                handler.openIframe();
-            }
-            
-            // Upgrade to premium
-            function upgradeToPremium() {
-                isPremium = true;
-                localStorage.setItem('isPremium', 'true');
-                updateUserStatus();
-                
-                // Enable premium features
-                imageUpload.disabled = false;
-                
-                showNotification('Premium features unlocked! Thank you for your purchase.');
-            }
-            
-            // Update user status display
-            function updateUserStatus() {
-                if (isPremium) {
-                    userType.textContent = 'Premium Account';
-                    premiumBadge.style.display = 'inline-block';
-                } else {
-                    userType.textContent = 'Free Account';
-                    premiumBadge.style.display = 'none';
-                }
-            }
-            
-            // Show notifications
-            function showNotifications() {
-                if (unopenedCapsules > 0) {
-                    showNotification(`You have ${unopenedCapsules} time capsules ready to be opened!`);
-                } else {
-                    showNotification('No capsules are ready to be opened yet.');
-                }
-            }
-            
-            // Handle image upload
-            function handleImageUpload(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-                
-                if (!file.type.match('image.*')) {
-                    showNotification('Please select an image file.', 'error');
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-            
-            // Show specific tab
-            function showTab(tabName) {
-                tabs.forEach(tab => {
-                    tab.classList.remove('active');
-                    if (tab.getAttribute('data-tab') === tabName) {
-                        tab.classList.add('active');
-                    }
-                });
-                
-                screens.forEach(screen => {
-                    screen.classList.remove('active');
-                    if (screen.id === `${tabName}-screen`) {
-                        screen.classList.add('active');
-                    }
-                });
-            }
-            
-            // Save capsules to localStorage
-            function saveCapsules() {
-                localStorage.setItem('capsules', JSON.stringify(capsules));
-            }
-            
-            // Request notification permission
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission();
+                }, 3000);
             }
         });
     </script>
