@@ -293,7 +293,7 @@
             text-decoration: underline;
         }
 
-        /* Demo Content */
+        /* Document Content */
         .document-content {
             padding: 3rem;
             line-height: 1.8;
@@ -319,6 +319,67 @@
         .signature-placeholder {
             color: var(--gray-500);
             font-style: italic;
+            min-height: 50px;
+        }
+
+        /* Annotation Styles */
+        .annotation {
+            position: absolute;
+            background-color: rgba(255, 244, 184, 0.8);
+            border: 1px solid rgba(255, 204, 0, 0.5);
+            border-radius: 3px;
+            padding: 8px 12px;
+            font-size: 14px;
+            z-index: 10;
+            cursor: move;
+            max-width: 250px;
+        }
+
+        .signature-box {
+            position: absolute;
+            border: 1px dashed var(--primary);
+            border-radius: 4px;
+            padding: 8px;
+            background: rgba(37, 99, 235, 0.05);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .signature-box:hover {
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .signature-img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+            background: var(--gray-100);
+        }
+
+        .toolbar-btn {
+            padding: 0.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--gray-300);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .toolbar-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
         }
 
         /* Responsive Design */
@@ -347,23 +408,44 @@
             }
         }
 
-        /* Demo annotations */
-        .annotation {
-            position: absolute;
-            background-color: rgba(255, 244, 184, 0.8);
-            border: 1px solid rgba(255, 204, 0, 0.5);
-            border-radius: 3px;
-            padding: 2px 4px;
-            font-size: 14px;
-            z-index: 10;
+        /* Color Picker */
+        .color-picker {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
         }
 
-        .signature-box {
-            position: absolute;
-            border: 1px dashed var(--primary);
-            border-radius: 4px;
-            padding: 8px;
-            background: rgba(37, 99, 235, 0.05);
+        .color-option {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .color-option.active {
+            border-color: var(--dark);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: var(--dark);
+            color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
@@ -375,11 +457,11 @@
                 <span>DocuSign Canvas</span>
             </div>
             <div class="nav-buttons">
-                <button class="btn btn-outline">
+                <button class="btn btn-outline" id="help-btn">
                     <i class="fas fa-question-circle"></i> Help
                 </button>
-                <button class="btn btn-primary">
-                    <i class="fas fa-user"></i> Account
+                <button class="btn btn-primary" id="save-btn">
+                    <i class="fas fa-save"></i> Save
                 </button>
             </div>
         </header>
@@ -388,16 +470,16 @@
             <aside class="sidebar">
                 <div class="sidebar-section">
                     <h3 class="sidebar-heading">Document Tools</h3>
-                    <button class="tool-btn active">
+                    <button class="tool-btn active" data-tool="highlight">
                         <i class="fas fa-highlighter"></i> Highlight Text
                     </button>
-                    <button class="tool-btn">
+                    <button class="tool-btn" data-tool="comment">
                         <i class="fas fa-comment"></i> Add Comment
                     </button>
-                    <button class="tool-btn">
+                    <button class="tool-btn" data-tool="text">
                         <i class="fas fa-font"></i> Add Text
                     </button>
-                    <button class="tool-btn">
+                    <button class="tool-btn" data-tool="checkbox">
                         <i class="fas fa-check-square"></i> Checkbox
                     </button>
                 </div>
@@ -407,30 +489,67 @@
                     <button class="tool-btn" id="sign-btn">
                         <i class="fas fa-signature"></i> Add Signature
                     </button>
-                    <button class="tool-btn">
+                    <button class="tool-btn" id="initial-btn">
                         <i class="fas fa-edit"></i> Add Initials
                     </button>
                     <button class="tool-btn">
                         <i class="fas fa-stamp"></i> Add Stamp
                     </button>
+
+                    <div class="color-picker">
+                        <div class="color-option active" style="background-color: #000000;" data-color="#000000"></div>
+                        <div class="color-option" style="background-color: #2563eb;" data-color="#2563eb"></div>
+                        <div class="color-option" style="background-color: #dc2626;" data-color="#dc2626"></div>
+                        <div class="color-option" style="background-color: #16a34a;" data-color="#16a34a"></div>
+                    </div>
                 </div>
 
                 <div class="sidebar-section">
                     <h3 class="sidebar-heading">Collaborate</h3>
-                    <button class="tool-btn">
+                    <button class="tool-btn" id="share-btn">
                         <i class="fas fa-share"></i> Share Document
                     </button>
                     <button class="tool-btn">
                         <i class="fas fa-users"></i> Manage Access
                     </button>
-                    <button class="tool-btn">
+                    <button class="tool-btn" id="history-btn">
                         <i class="fas fa-history"></i> Version History
                     </button>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="sidebar-heading">Document Info</h3>
+                    <div style="font-size: 0.875rem; color: var(--gray-600);">
+                        <p>Created: <span id="created-date">Today</span></p>
+                        <p>Last modified: <span id="modified-date">Just now</span></p>
+                        <p>Status: <span style="color: var(--success);">Draft</span></p>
+                    </div>
                 </div>
             </aside>
 
             <main class="document-area">
-                <div class="document-container">
+                <div class="toolbar">
+                    <button class="toolbar-btn active" title="Cursor">
+                        <i class="fas fa-mouse-pointer"></i>
+                    </button>
+                    <button class="toolbar-btn" title="Pan">
+                        <i class="fas fa-hand-paper"></i>
+                    </button>
+                    <button class="toolbar-btn" title="Zoom In">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button class="toolbar-btn" title="Zoom Out">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <button class="toolbar-btn" title="Fit to Width">
+                        <i class="fas fa-arrows-alt-h"></i>
+                    </button>
+                    <button class="toolbar-btn" title="Fit to Page">
+                        <i class="fas fa-arrows-alt-v"></i>
+                    </button>
+                </div>
+
+                <div class="document-container" id="doc-container">
                     <div class="document-content">
                         <h1 class="document-title">PARTNERSHIP AGREEMENT</h1>
                         
@@ -467,31 +586,27 @@
                         <div style="margin-top: 3rem;">
                             <div class="signature-line">
                                 <p>Partner A Signature</p>
-                                <div class="signature-placeholder">[Signature will appear here]</div>
+                                <div class="signature-placeholder" id="signature-placeholder-1">[Click to add signature]</div>
                             </div>
                             
                             <div class="signature-line" style="margin-top: 2rem;">
                                 <p>Partner B Signature</p>
-                                <div class="signature-placeholder">[Signature will appear here]</div>
+                                <div class="signature-placeholder" id="signature-placeholder-2">[Click to add signature]</div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Demo annotations -->
-                    <div class="annotation" style="top: 420px; left: 120px;">Should this be 60/40?</div>
-                    <div class="annotation" style="top: 480px; left: 380px;">We agreed on equal contribution</div>
-                    <div class="signature-box" style="top: 1020px; left: 120px; width: 250px; height: 60px;"></div>
-                    <div class="signature-box" style="top: 1190px; left: 120px; width: 250px; height: 60px;"></div>
+                    <!-- Annotations will be added here dynamically -->
                 </div>
                 
                 <div class="document-actions">
-                    <button class="btn btn-outline">
+                    <button class="btn btn-outline" id="download-btn">
                         <i class="fas fa-download"></i> Download
                     </button>
-                    <button class="btn btn-outline">
+                    <button class="btn btn-outline" id="share-doc-btn">
                         <i class="fas fa-share"></i> Share
                     </button>
-                    <button class="btn btn-success">
+                    <button class="btn btn-success" id="finalize-btn">
                         <i class="fas fa-check-circle"></i> Finalize
                     </button>
                 </div>
@@ -527,10 +642,13 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" id="cancel-signature">Cancel</button>
-                <button class="btn btn-primary" id="save-signature">Save Signature</button>
+                <button class="btn btn-primary" id="save-signature">Apply Signature</button>
             </div>
         </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -543,56 +661,109 @@
             const saveSignature = document.getElementById('save-signature');
             const canvas = document.getElementById('signature-pad');
             const ctx = canvas.getContext('2d');
+            const docContainer = document.getElementById('doc-container');
+            const toast = document.getElementById('toast');
+            const saveBtn = document.getElementById('save-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const finalizeBtn = document.getElementById('finalize-btn');
+            const signaturePlaceholders = document.querySelectorAll('.signature-placeholder');
             
-            // Signature drawing variables
+            // State
             let isDrawing = false;
             let lastX = 0;
             let lastY = 0;
+            let currentTool = 'highlight';
+            let currentColor = '#000000';
+            let signatures = {};
+            let annotations = [];
             
             // Set canvas style
             ctx.lineWidth = 2;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
-            ctx.strokeStyle = '#000';
+            ctx.strokeStyle = currentColor;
             
-            // Open signature modal
-            signBtn.addEventListener('click', () => {
-                signatureModal.style.display = 'flex';
-                clearCanvas();
-            });
+            // Initialize
+            setCurrentDate();
+            setupEventListeners();
+            setupSignatureCanvas();
             
-            // Close modal events
-            const closeModal = () => {
-                signatureModal.style.display = 'none';
-            };
-            
-            modalClose.addEventListener('click', closeModal);
-            cancelSignature.addEventListener('click', closeModal);
-            
-            // Clear signature canvas
-            clearSignature.addEventListener('click', clearCanvas);
-            
-            function clearCanvas() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            function setCurrentDate() {
+                const now = new Date();
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('created-date').textContent = now.toLocaleDateString('en-US', options);
+                document.getElementById('modified-date').textContent = 'Just now';
             }
             
-            // Save signature
-            saveSignature.addEventListener('click', () => {
-                // In a real app, this would save the signature and add it to the document
-                alert('Signature saved successfully!');
-                closeModal();
-            });
+            function setupEventListeners() {
+                // Signature modal
+                signBtn.addEventListener('click', openSignatureModal);
+                modalClose.addEventListener('click', closeSignatureModal);
+                cancelSignature.addEventListener('click', closeSignatureModal);
+                clearSignature.addEventListener('click', clearSignatureCanvas);
+                saveSignature.addEventListener('click', saveSignatureHandler);
+                
+                // Tool buttons
+                const toolButtons = document.querySelectorAll('.tool-btn');
+                toolButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        toolButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        currentTool = button.dataset.tool;
+                        showToast(`Selected: ${button.textContent.trim()}`);
+                    });
+                });
+                
+                // Color options
+                const colorOptions = document.querySelectorAll('.color-option');
+                colorOptions.forEach(option => {
+                    option.addEventListener('click', () => {
+                        colorOptions.forEach(opt => opt.classList.remove('active'));
+                        option.classList.add('active');
+                        currentColor = option.dataset.color;
+                        ctx.strokeStyle = currentColor;
+                    });
+                });
+                
+                // Signature placeholders
+                signaturePlaceholders.forEach((placeholder, index) => {
+                    placeholder.addEventListener('click', () => {
+                        openSignatureModal();
+                        // Store which signature placeholder we're updating
+                        signatureModal.dataset.target = `signature-${index + 1}`;
+                    });
+                });
+                
+                // Action buttons
+                saveBtn.addEventListener('click', saveDocument);
+                downloadBtn.addEventListener('click', downloadDocument);
+                finalizeBtn.addEventListener('click', finalizeDocument);
+            }
             
-            // Signature drawing functionality
-            canvas.addEventListener('mousedown', startDrawing);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stopDrawing);
-            canvas.addEventListener('mouseout', stopDrawing);
+            function setupSignatureCanvas() {
+                canvas.addEventListener('mousedown', startDrawing);
+                canvas.addEventListener('mousemove', draw);
+                canvas.addEventListener('mouseup', stopDrawing);
+                canvas.addEventListener('mouseout', stopDrawing);
+                
+                // Touch events for mobile devices
+                canvas.addEventListener('touchstart', handleTouchStart);
+                canvas.addEventListener('touchmove', handleTouchMove);
+                canvas.addEventListener('touchend', handleTouchEnd);
+            }
             
-            // Touch events for mobile devices
-            canvas.addEventListener('touchstart', handleTouchStart);
-            canvas.addEventListener('touchmove', handleTouchMove);
-            canvas.addEventListener('touchend', handleTouchEnd);
+            function openSignatureModal() {
+                signatureModal.style.display = 'flex';
+                clearSignatureCanvas();
+            }
+            
+            function closeSignatureModal() {
+                signatureModal.style.display = 'none';
+            }
+            
+            function clearSignatureCanvas() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
             
             function startDrawing(e) {
                 isDrawing = true;
@@ -614,13 +785,15 @@
                 isDrawing = false;
             }
             
-            // Touch handlers
             function handleTouchStart(e) {
                 e.preventDefault();
                 const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
                 const mouseEvent = new MouseEvent('mousedown', {
                     clientX: touch.clientX,
-                    clientY: touch.clientY
+                    clientY: touch.clientY,
+                    offsetX: touch.clientX - rect.left,
+                    offsetY: touch.clientY - rect.top
                 });
                 canvas.dispatchEvent(mouseEvent);
             }
@@ -628,9 +801,12 @@
             function handleTouchMove(e) {
                 e.preventDefault();
                 const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
                 const mouseEvent = new MouseEvent('mousemove', {
                     clientX: touch.clientX,
-                    clientY: touch.clientY
+                    clientY: touch.clientY,
+                    offsetX: touch.clientX - rect.left,
+                    offsetY: touch.clientY - rect.top
                 });
                 canvas.dispatchEvent(mouseEvent);
             }
@@ -641,66 +817,139 @@
                 canvas.dispatchEvent(mouseEvent);
             }
             
-            // Tool buttons functionality
-            const toolButtons = document.querySelectorAll('.tool-btn');
-            
-            toolButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    // Remove active class from all buttons
-                    toolButtons.forEach(btn => btn.classList.remove('active'));
-                    
-                    // Add active class to clicked button
-                    button.classList.add('active');
-                    
-                    // Show appropriate tooltip/instruction
-                    const toolName = button.textContent.trim();
-                    showTooltip(`Selected: ${toolName}`);
-                });
-            });
-            
-            function showTooltip(message) {
-                // Create tooltip element if it doesn't exist
-                let tooltip = document.getElementById('tooltip');
+            function saveSignatureHandler() {
+                const signatureDataURL = canvas.toDataURL();
+                const target = signatureModal.dataset.target || 'signature-1';
                 
-                if (!tooltip) {
-                    tooltip = document.createElement('div');
-                    tooltip.id = 'tooltip';
-                    tooltip.style.position = 'fixed';
-                    tooltip.style.bottom = '20px';
-                    tooltip.style.right = '20px';
-                    tooltip.style.padding = '10px 15px';
-                    tooltip.style.background = 'var(--dark)';
-                    tooltip.style.color = 'white';
-                    tooltip.style.borderRadius = 'var(--radius)';
-                    tooltip.style.boxShadow = 'var(--shadow-md)';
-                    tooltip.style.zIndex = '1000';
-                    document.body.appendChild(tooltip);
+                // Save signature
+                signatures[target] = signatureDataURL;
+                
+                // Update the placeholder
+                if (signatureModal.dataset.target) {
+                    const placeholder = document.getElementById(`signature-placeholder-${target.split('-')[1]}`);
+                    placeholder.innerHTML = `<img src="${signatureDataURL}" class="signature-img" alt="Signature">`;
+                    placeholder.style.color = 'var(--gray-800)';
+                    placeholder.style.fontStyle = 'normal';
                 }
                 
-                tooltip.textContent = message;
-                
-                // Auto hide after 2 seconds
-                setTimeout(() => {
-                    tooltip.style.opacity = '0';
-                    tooltip.style.transition = 'opacity 0.5s';
-                    
-                    setTimeout(() => {
-                        if (tooltip.parentNode) {
-                            tooltip.parentNode.removeChild(tooltip);
-                        }
-                    }, 500);
-                }, 2000);
+                showToast('Signature added successfully!');
+                closeSignatureModal();
             }
             
-            // Demo functionality for the document
-            const signatureBoxes = document.querySelectorAll('.signature-box');
+            function saveDocument() {
+                // In a real app, this would save to IndexedDB or local storage
+                showToast('Document saved successfully');
+                
+                // Update modified date
+                document.getElementById('modified-date').textContent = new Date().toLocaleTimeString();
+            }
             
-            signatureBoxes.forEach(box => {
-                box.addEventListener('click', () => {
-                    signatureModal.style.display = 'flex';
-                    clearCanvas();
+            function downloadDocument() {
+                showToast('Preparing document for download...');
+                
+                // In a real app, this would generate a PDF
+                setTimeout(() => {
+                    showToast('Document downloaded successfully');
+                }, 1500);
+            }
+            
+            function finalizeDocument() {
+                // Check if all signatures are added
+                const allSigned = Object.keys(signatures).length >= 2;
+                
+                if (allSigned) {
+                    showToast('Document finalized and sent for signing!', 'success');
+                    
+                    // Update status
+                    const statusEl = document.querySelector('[class*="sidebar-section"] div p:last-child span');
+                    statusEl.textContent = 'Pending';
+                    statusEl.style.color = 'var(--warning)';
+                    
+                    // Disable editing
+                    const tools = document.querySelectorAll('.tool-btn, .toolbar-btn');
+                    tools.forEach(tool => {
+                        tool.disabled = true;
+                        tool.style.opacity = '0.6';
+                        tool.style.cursor = 'not-allowed';
+                    });
+                    
+                    finalizeBtn.disabled = true;
+                    finalizeBtn.style.opacity = '0.6';
+                    finalizeBtn.textContent = ' Finalized';
+                    finalizeBtn.innerHTML = '<i class="fas fa-check-circle"></i> Finalized';
+                } else {
+                    showToast('Please add all required signatures before finalizing', 'error');
+                }
+            }
+            
+            function showToast(message, type = 'default') {
+                toast.textContent = message;
+                toast.className = 'toast show';
+                
+                if (type === 'error') {
+                    toast.style.background = 'var(--danger)';
+                } else if (type === 'success') {
+                    toast.style.background = 'var(--success)';
+                } else {
+                    toast.style.background = 'var(--dark)';
+                }
+                
+                setTimeout(() => {
+                    toast.className = 'toast';
+                }, 3000);
+            }
+            
+            // Add some demo annotations
+            setTimeout(() => {
+                addDemoAnnotations();
+            }, 1000);
+            
+            function addDemoAnnotations() {
+                // Demo highlight
+                const highlight = document.createElement('div');
+                highlight.className = 'annotation';
+                highlight.innerHTML = 'Should this be 60/40?';
+                highlight.style.top = '420px';
+                highlight.style.left = '120px';
+                highlight.style.backgroundColor = 'rgba(255, 244, 184, 0.8)';
+                docContainer.appendChild(highlight);
+                annotations.push(highlight);
+                
+                // Demo comment
+                const comment = document.createElement('div');
+                comment.className = 'annotation';
+                comment.innerHTML = 'We agreed on equal contribution';
+                comment.style.top = '480px';
+                comment.style.left = '380px';
+                comment.style.backgroundColor = 'rgba(173, 216, 230, 0.8)';
+                docContainer.appendChild(comment);
+                annotations.push(comment);
+                
+                // Demo signature boxes
+                const signatureBox1 = document.createElement('div');
+                signatureBox1.className = 'signature-box';
+                signatureBox1.style.top = '1020px';
+                signatureBox1.style.left = '120px';
+                signatureBox1.style.width = '250px';
+                signatureBox1.style.height = '60px';
+                signatureBox1.addEventListener('click', () => {
+                    openSignatureModal();
+                    signatureModal.dataset.target = 'signature-1';
                 });
-            });
+                docContainer.appendChild(signatureBox1);
+                
+                const signatureBox2 = document.createElement('div');
+                signatureBox2.className = 'signature-box';
+                signatureBox2.style.top = '1190px';
+                signatureBox2.style.left = '120px';
+                signatureBox2.style.width = '250px';
+                signatureBox2.style.height = '60px';
+                signatureBox2.addEventListener('click', () => {
+                    openSignatureModal();
+                    signatureModal.dataset.target = 'signature-2';
+                });
+                docContainer.appendChild(signatureBox2);
+            }
         });
     </script>
 </body>
