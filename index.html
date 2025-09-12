@@ -16,6 +16,7 @@
             --success: #059669;
             --warning: #f59e0b;
             --error: #ef4444;
+            --sidebar-width: 250px;
         }
         
         * {
@@ -29,15 +30,63 @@
             background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
             color: var(--dark);
         }
         
-        .container {
-            width: 100%;
-            max-width: 1200px;
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--dark);
+            color: white;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 24px;
+            color: white;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .logo i {
+            font-size: 28px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: var(--gray);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -47,48 +96,48 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px;
+            padding: 10px 20px;
             background: white;
             border-radius: 16px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
         
-        .logo {
+        .user-actions {
             display: flex;
+            gap: 16px;
             align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 24px;
-            color: var(--primary);
         }
         
-        .logo i {
-            font-size: 28px;
-        }
-        
-        nav {
-            display: flex;
-            gap: 20px;
-        }
-        
-        nav button {
-            background: none;
-            border: none;
-            font-weight: 600;
-            font-size: 16px;
-            color: var(--dark);
-            cursor: pointer;
+        .upgrade-btn {
             padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
             border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
             transition: all 0.2s;
         }
         
-        nav button:hover {
-            background: #f3f4f6;
-            color: var(--primary);
+        .upgrade-btn:hover {
+            background: var(--primary-dark);
         }
         
-        .main-content {
+        .user-profile {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .dashboard {
             display: grid;
             grid-template-columns: 1fr 1.5fr;
             gap: 20px;
@@ -214,6 +263,11 @@
             background: var(--primary-dark);
         }
         
+        .process-btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+        
         .results-section {
             display: flex;
             flex-direction: column;
@@ -320,7 +374,6 @@
             border-radius: 16px;
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            margin-top: 20px;
         }
         
         .api-key-form {
@@ -382,6 +435,14 @@
             z-index: 1000;
         }
         
+        .notification.error {
+            border-left-color: var(--error);
+        }
+        
+        .notification.warning {
+            border-left-color: var(--warning);
+        }
+        
         .notification.show {
             transform: translateX(0);
         }
@@ -389,6 +450,14 @@
         .notification i {
             font-size: 24px;
             color: var(--success);
+        }
+        
+        .notification.error i {
+            color: var(--error);
+        }
+        
+        .notification.warning i {
+            color: var(--warning);
         }
         
         .loading {
@@ -405,6 +474,93 @@
             to { transform: rotate(360deg); }
         }
         
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .settings-group {
+            margin-bottom: 20px;
+        }
+        
+        .settings-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .settings-select, .settings-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .help-section {
+            margin-bottom: 20px;
+        }
+        
+        .help-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .help-content {
+            color: var(--gray);
+            line-height: 1.6;
+        }
+        
         footer {
             margin-top: 40px;
             text-align: center;
@@ -413,7 +569,20 @@
         }
         
         @media (max-width: 900px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
             .main-content {
+                margin-left: 0;
+            }
+            
+            .dashboard {
                 grid-template-columns: 1fr;
             }
             
@@ -422,28 +591,103 @@
                 gap: 16px;
             }
             
-            nav {
-                width: 100%;
+            .menu-toggle {
+                display: block;
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 101;
+                background: var(--primary);
+                color: white;
+                width: 40px;
+                height: 40px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
                 justify-content: center;
+                cursor: pointer;
             }
+        }
+        
+        .menu-toggle {
+            display: none;
+        }
+        
+        .usage-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fas fa-clipboard"></i>
+            <span>Clipboard AI</span>
+        </div>
+        
+        <div class="nav-item active" data-section="dashboard">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </div>
+        
+        <div class="nav-item" data-section="settings">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </div>
+        
+        <div class="nav-item" data-section="help">
+            <i class="fas fa-question-circle"></i>
+            <span>Help & Support</span>
+        </div>
+        
+        <div class="nav-item">
+            <i class="fas fa-history"></i>
+            <span>History</span>
+        </div>
+        
+        <div class="nav-item">
+            <i class="fas fa-star"></i>
+            <span>Upgrade to Pro</span>
+        </div>
+    </div>
+    
+    <div class="main-content">
         <header>
-            <div class="logo">
-                <i class="fas fa-clipboard"></i>
-                <span>Clipboard AI</span>
+            <h1>Dashboard</h1>
+            <div class="user-actions">
+                <button class="upgrade-btn">Upgrade to Pro</button>
+                <div class="user-profile">JD</div>
             </div>
-            <nav>
-                <button><i class="fas fa-home"></i> Home</button>
-                <button><i class="fas fa-cog"></i> Settings</button>
-                <button><i class="fas fa-question-circle"></i> Help</button>
-            </nav>
         </header>
         
-        <div class="main-content">
+        <div class="dashboard" id="dashboardSection">
             <div class="upload-section">
                 <h2 class="section-title"><i class="fas fa-upload"></i> Upload File</h2>
                 
@@ -488,7 +732,7 @@
                         </div>
                     </div>
                     
-                    <button class="process-btn" id="processBtn">
+                    <button class="process-btn" id="processBtn" disabled>
                         <i class="fas fa-cogs"></i> Process File
                     </button>
                 </div>
@@ -522,6 +766,21 @@
                         <button class="output-btn primary"><i class="fas fa-share"></i> Share</button>
                     </div>
                 </div>
+                
+                <div class="usage-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="filesProcessed">0</div>
+                        <div class="stat-label">Files Processed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="apiCalls">0</div>
+                        <div class="stat-label">API Calls Made</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="timeSaved">0</div>
+                        <div class="stat-label">Hours Saved</div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -535,6 +794,105 @@
                 <button class="save-api-key" id="saveApiKey">Save Key</button>
             </div>
         </div>
+        
+        <footer>
+            <p>© 2023 Clipboard AI. All rights reserved.</p>
+            <p>This tool uses AI APIs for processing. Your data is processed on your device and never stored on our servers.</p>
+        </footer>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Settings</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label">AI Model</label>
+                <select class="settings-select" id="aiModel">
+                    <option value="gpt-4">GPT-4 (Most capable)</option>
+                    <option value="gpt-3.5-turbo" selected>GPT-3.5 Turbo (Faster & cheaper)</option>
+                    <option value="claude-2">Claude 2 (Long context)</option>
+                </select>
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label">Output Language</label>
+                <select class="settings-select" id="outputLanguage">
+                    <option value="en" selected>English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="zh">Chinese</option>
+                    <option value="ja">Japanese</option>
+                </select>
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label">Theme</label>
+                <select class="settings-select" id="theme">
+                    <option value="light" selected>Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="auto">Auto (System)</option>
+                </select>
+            </div>
+            
+            <div class="settings-group">
+                <label class="settings-label">Max File Size (MB)</label>
+                <input type="number" class="settings-input" id="maxFileSize" value="25" min="5" max="100">
+            </div>
+            
+            <button class="process-btn" id="saveSettings">Save Settings</button>
+        </div>
+    </div>
+    
+    <!-- Help Modal -->
+    <div class="modal" id="helpModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Help & Support</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            
+            <div class="help-section">
+                <h3 class="help-title">Getting Started</h3>
+                <div class="help-content">
+                    <p>1. Add your OpenAI API key in the API Key Setup section</p>
+                    <p>2. Drag and drop a file or click to select one</p>
+                    <p>3. Choose an action based on your file type</p>
+                    <p>4. Click "Process File" to generate AI results</p>
+                </div>
+            </div>
+            
+            <div class="help-section">
+                <h3 class="help-title">Supported File Types</h3>
+                <div class="help-content">
+                    <p><strong>Text:</strong> .txt, .docx, .pdf (text extraction)</p>
+                    <p><strong>Images:</strong> .jpg, .png, .gif, .webp</p>
+                    <p><strong>Audio:</strong> .mp3, .wav, .m4a (transcription)</p>
+                </div>
+            </div>
+            
+            <div class="help-section">
+                <h3 class="help-title">Troubleshooting</h3>
+                <div class="help-content">
+                    <p><strong>API errors:</strong> Check your API key and billing status</p>
+                    <p><strong>File upload issues:</strong> Ensure file size is under 25MB</p>
+                    <p><strong>Processing failures:</strong> Try a different action or file format</p>
+                </div>
+            </div>
+            
+            <div class="help-section">
+                <h3 class="help-title">Need More Help?</h3>
+                <div class="help-content">
+                    <p>Contact our support team at support@clipboardai.com</p>
+                    <p>Join our community forum for tips and discussions</p>
+                    <p>Check out our documentation for advanced usage</p>
+                </div>
+            </div>
+        </div>
     </div>
     
     <div class="notification" id="notification">
@@ -544,15 +902,17 @@
             <p>Your file has been processed successfully.</p>
         </div>
     </div>
-    
-    <footer>
-        <p>© 2023 Clipboard AI. All rights reserved.</p>
-        <p>This tool uses AI APIs for processing. Your data is processed on your device and never stored on our servers.</p>
-    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Elements
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menuToggle');
+            const navItems = document.querySelectorAll('.nav-item');
+            const dashboardSection = document.getElementById('dashboardSection');
+            const settingsModal = document.getElementById('settingsModal');
+            const helpModal = document.getElementById('helpModal');
+            const closeModalButtons = document.querySelectorAll('.close-modal');
             const dropZone = document.getElementById('dropZone');
             const fileInput = document.getElementById('fileInput');
             const fileInfo = document.getElementById('fileInfo');
@@ -564,15 +924,71 @@
             const apiKeyInput = document.getElementById('apiKeyInput');
             const saveApiKey = document.getElementById('saveApiKey');
             const notification = document.getElementById('notification');
+            const saveSettings = document.getElementById('saveSettings');
+            const filesProcessed = document.getElementById('filesProcessed');
+            const apiCalls = document.getElementById('apiCalls');
+            const timeSaved = document.getElementById('timeSaved');
             
             let currentFile = null;
             let currentFileType = null;
+            let currentAction = null;
+            let usageData = {
+                filesProcessed: 0,
+                apiCalls: 0,
+                timeSaved: 0
+            };
             
-            // Load API key from localStorage if available
-            const savedApiKey = localStorage.getItem('clipboardAI_apiKey');
-            if (savedApiKey) {
-                apiKeyInput.value = savedApiKey;
-            }
+            // Load saved data
+            loadSavedData();
+            
+            // Menu toggle for mobile
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+            
+            // Navigation
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const section = item.dataset.section;
+                    
+                    if (section === 'settings') {
+                        settingsModal.classList.add('show');
+                    } else if (section === 'help') {
+                        helpModal.classList.add('show');
+                    } else if (section === 'dashboard') {
+                        // Already on dashboard
+                    }
+                    
+                    // Update active nav item
+                    navItems.forEach(navItem => navItem.classList.remove('active'));
+                    item.classList.add('active');
+                });
+            });
+            
+            // Close modals
+            closeModalButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    settingsModal.classList.remove('show');
+                    helpModal.classList.remove('show');
+                });
+            });
+            
+            // Save settings
+            saveSettings.addEventListener('click', () => {
+                const settings = {
+                    aiModel: document.getElementById('aiModel').value,
+                    outputLanguage: document.getElementById('outputLanguage').value,
+                    theme: document.getElementById('theme').value,
+                    maxFileSize: document.getElementById('maxFileSize').value
+                };
+                
+                localStorage.setItem('clipboardAI_settings', JSON.stringify(settings));
+                showNotification('Settings saved successfully!');
+                
+                setTimeout(() => {
+                    settingsModal.classList.remove('show');
+                }, 1500);
+            });
             
             // Setup drop zone
             dropZone.addEventListener('click', () => {
@@ -602,6 +1018,16 @@
                 }
             });
             
+            // Action buttons
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentAction = btn.dataset.action;
+                    updateProcessButtonState();
+                });
+            });
+            
             // Process button
             processBtn.addEventListener('click', processFile);
             
@@ -617,6 +1043,7 @@
                 if (key) {
                     localStorage.setItem('clipboardAI_apiKey', key);
                     showNotification('API key saved successfully!');
+                    updateProcessButtonState();
                 } else {
                     showNotification('Please enter a valid API key', 'error');
                 }
@@ -631,6 +1058,14 @@
             
             // Process the selected file
             function handleFile(file) {
+                const settings = JSON.parse(localStorage.getItem('clipboardAI_settings') || '{}');
+                const maxSize = settings.maxFileSize || 25;
+                
+                if (file.size > maxSize * 1024 * 1024) {
+                    showNotification(`File size exceeds ${maxSize}MB limit`, 'error');
+                    return;
+                }
+                
                 currentFile = file;
                 const fileSize = (file.size / 1024 / 1024).toFixed(2); // MB
                 
@@ -671,6 +1106,8 @@
                         </div>
                     `;
                 }
+                
+                updateProcessButtonState();
             }
             
             // Process the file with AI
@@ -684,6 +1121,11 @@
                 
                 if (!currentFile) {
                     showNotification('Please select a file first', 'error');
+                    return;
+                }
+                
+                if (!currentAction) {
+                    showNotification('Please select an action first', 'error');
                     return;
                 }
                 
@@ -760,6 +1202,15 @@
                     }
                     
                     outputContent.innerHTML = result;
+                    
+                    // Update usage stats
+                    usageData.filesProcessed++;
+                    usageData.apiCalls++;
+                    usageData.timeSaved += 2; // Assuming 2 hours saved per file
+                    
+                    updateUsageStats();
+                    saveUsageData();
+                    
                     showNotification('File processed successfully!');
                 }, 2000);
             }
@@ -768,10 +1219,13 @@
             function clearAll() {
                 currentFile = null;
                 currentFileType = null;
+                currentAction = null;
                 fileInput.value = '';
                 fileInfo.style.display = 'none';
+                document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
                 previewContent.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 40px;">File content will be displayed here after upload</p>';
                 outputContent.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 40px;">AI results will appear here after processing</p>';
+                updateProcessButtonState();
             }
             
             // Copy output to clipboard
@@ -791,14 +1245,19 @@
                 const title = notification.querySelector('h4');
                 const text = notification.querySelector('p');
                 
+                notification.className = 'notification';
+                
                 if (type === 'success') {
                     icon.className = 'fas fa-check-circle';
-                    icon.style.color = 'var(--success)';
                     title.textContent = 'Success!';
-                } else {
+                } else if (type === 'error') {
                     icon.className = 'fas fa-exclamation-circle';
-                    icon.style.color = 'var(--error)';
                     title.textContent = 'Error!';
+                    notification.classList.add('error');
+                } else {
+                    icon.className = 'fas fa-info-circle';
+                    title.textContent = 'Info!';
+                    notification.classList.add('warning');
                 }
                 
                 text.textContent = message;
@@ -808,6 +1267,55 @@
                 setTimeout(() => {
                     notification.classList.remove('show');
                 }, 3000);
+            }
+            
+            // Update process button state
+            function updateProcessButtonState() {
+                const apiKey = localStorage.getItem('clipboardAI_apiKey');
+                
+                if (currentFile && currentAction && apiKey) {
+                    processBtn.disabled = false;
+                } else {
+                    processBtn.disabled = true;
+                }
+            }
+            
+            // Load saved data
+            function loadSavedData() {
+                // Load API key
+                const savedApiKey = localStorage.getItem('clipboardAI_apiKey');
+                if (savedApiKey) {
+                    apiKeyInput.value = savedApiKey;
+                }
+                
+                // Load settings
+                const savedSettings = localStorage.getItem('clipboardAI_settings');
+                if (savedSettings) {
+                    const settings = JSON.parse(savedSettings);
+                    document.getElementById('aiModel').value = settings.aiModel || 'gpt-3.5-turbo';
+                    document.getElementById('outputLanguage').value = settings.outputLanguage || 'en';
+                    document.getElementById('theme').value = settings.theme || 'light';
+                    document.getElementById('maxFileSize').value = settings.maxFileSize || 25;
+                }
+                
+                // Load usage data
+                const savedUsageData = localStorage.getItem('clipboardAI_usage');
+                if (savedUsageData) {
+                    usageData = JSON.parse(savedUsageData);
+                    updateUsageStats();
+                }
+            }
+            
+            // Update usage stats
+            function updateUsageStats() {
+                filesProcessed.textContent = usageData.filesProcessed;
+                apiCalls.textContent = usageData.apiCalls;
+                timeSaved.textContent = usageData.timeSaved;
+            }
+            
+            // Save usage data
+            function saveUsageData() {
+                localStorage.setItem('clipboardAI_usage', JSON.stringify(usageData));
             }
         });
     </script>
