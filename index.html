@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecureSign - Browser-Based Document Signing</title>
+    <title>DocuSign Canvas - Client-Side Document Signing</title>
     <style>
         * {
             margin: 0;
@@ -239,6 +239,16 @@
             display: none;
         }
         
+        #signature-image {
+            position: absolute;
+            bottom: 150px;
+            right: 50px;
+            display: none;
+            border: 1px solid #cbd5e0;
+            background: white;
+            padding: 5px;
+        }
+        
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
@@ -256,10 +266,10 @@
     <div class="container">
         <header>
             <div class="logo">
-                <div class="logo-icon">SS</div>
+                <div class="logo-icon">DC</div>
                 <div>
-                    <div class="logo-text">SecureSign</div>
-                    <div class="tagline">Browser-Based Document Signing</div>
+                    <div class="logo-text">DocuSign Canvas</div>
+                    <div class="tagline">100% Client-Side Document Signing</div>
                 </div>
             </div>
         </header>
@@ -267,27 +277,28 @@
         <div class="main-content">
             <div class="tools-panel">
                 <h3 class="tools-title">Document Tools</h3>
-                <button class="tool-btn" onclick="openTool('sign')">
+                <button class="tool-btn" onclick="openSignaturePad()">
                     <span>✍️</span> Add Signature
                 </button>
-                <button class="tool-btn" onclick="openTool('text')">
+                <button class="tool-btn" onclick="addTextField()">
                     <span>📝</span> Add Text
                 </button>
-                <button class="tool-btn" onclick="openTool('date')">
+                <button class="tool-btn" onclick="addDateStamp()">
                     <span>📅</span> Add Date
                 </button>
-                <button class="tool-btn" onclick="openTool('initial')">
+                <button class="tool-btn" onclick="addInitials()">
                     <span>🔏</span> Add Initials
                 </button>
-                <button class="tool-btn" onclick="clearSignature()">
+                <button class="tool-btn" onclick="clearDocument()">
                     <span>🗑️</span> Clear All
                 </button>
             </div>
             
             <div class="document-view">
-                <div class="document-container">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmN2ZhIiAvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNDAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiMzNzQwNDYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPkNvbnRyYWN0IEFncmVlbWVudDwvdGV4dD4KICA8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjNzE4MDk2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj5UaGlzIGlzIGEgc2FtcGxlIGRvY3VtZW50IHByZXZpZXc8L3RleHQ+Cjwvc3ZnPg==" alt="Document Preview" class="document-preview">
+                <div class="document-container" id="doc-container">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmN2ZhIiAvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNDAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiMzNzQwNDYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPkNvbnRyYWN0IEFncmVlbWVudDwvdGV4dD4KICA8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjNzE4MDk2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj5UaGlzIGlzIGEgc2FtcGxlIGRvY3VtZW50IHByZXZpZXc8L3RleHQ+Cjwvc3ZnPg==" alt="Document Preview" class="document-preview" id="doc-preview">
                     <div class="signed-stamp" id="signed-stamp">Signed</div>
+                    <img id="signature-image" alt="Signature">
                     <div class="signature-pad" id="signature-pad">
                         <div class="pad-header">
                             <h3>Draw Your Signature</h3>
@@ -303,7 +314,7 @@
                 
                 <div class="document-actions">
                     <button class="action-btn primary-btn" onclick="downloadDocument()">Download Signed Document</button>
-                    <button class="action-btn secondary-btn" onclick="newDocument()">New Document</button>
+                    <button class="action-btn secondary-btn" onclick="uploadDocument()">Upload Document</button>
                 </div>
             </div>
         </div>
@@ -335,52 +346,153 @@
         ctx.strokeStyle = '#2c6bed';
         
         // Signature pad functions
-        function openTool(tool) {
-            if (tool === 'sign') {
-                document.getElementById('signature-pad').style.display = 'block';
-            } else {
-                alert(`${tool} tool would be activated here. This is a functional signature demo.`);
-            }
+        function openSignaturePad() {
+            document.getElementById('signature-pad').style.display = 'block';
+            document.getElementById('status').textContent = 'Drawing signature';
         }
         
         function closeSignaturePad() {
             document.getElementById('signature-pad').style.display = 'none';
+            document.getElementById('status').textContent = 'Ready';
         }
         
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('status').textContent = 'Canvas cleared';
         }
         
         function saveSignature() {
-            // In a real app, this would save the signature to the document
-            document.getElementById('signed-stamp').style.display = 'block';
-            document.getElementById('status').textContent = 'Document signed';
-            closeSignaturePad();
+            // Convert canvas to data URL
+            const dataURL = canvas.toDataURL('image/png');
             
-            // Show success message
-            alert('Signature added successfully! Click "Download Signed Document" to save.');
+            // Display the signature on the document
+            const signatureImg = document.getElementById('signature-image');
+            signatureImg.src = dataURL;
+            signatureImg.style.display = 'block';
+            signatureImg.style.width = '150px';
+            
+            // Show signed stamp
+            document.getElementById('signed-stamp').style.display = 'block';
+            document.getElementById('status').textContent = 'Signature added to document';
+            closeSignaturePad();
         }
         
-        function clearSignature() {
+        function addTextField() {
+            const text = prompt('Enter text to add to the document:');
+            if (text) {
+                const textElement = document.createElement('div');
+                textElement.textContent = text;
+                textElement.style.position = 'absolute';
+                textElement.style.top = '50%';
+                textElement.style.left = '50%';
+                textElement.style.transform = 'translate(-50%, -50%)';
+                textElement.style.padding = '10px';
+                textElement.style.background = 'rgba(255, 255, 255, 0.9)';
+                textElement.style.border = '1px solid #2c6bed';
+                textElement.style.borderRadius = '5px';
+                textElement.style.zIndex = '10';
+                
+                document.getElementById('doc-container').appendChild(textElement);
+                document.getElementById('status').textContent = 'Text added to document';
+            }
+        }
+        
+        function addDateStamp() {
+            const date = new Date();
+            const dateString = date.toLocaleDateString();
+            
+            const dateElement = document.createElement('div');
+            dateElement.textContent = `Signed on: ${dateString}`;
+            dateElement.style.position = 'absolute';
+            dateElement.style.bottom = '70px';
+            dateElement.style.left = '50px';
+            dateElement.style.padding = '8px 15px';
+            dateElement.style.background = 'rgba(44, 107, 237, 0.9)';
+            dateElement.style.color = 'white';
+            dateElement.style.borderRadius = '5px';
+            dateElement.style.fontWeight = 'bold';
+            dateElement.style.zIndex = '10';
+            
+            document.getElementById('doc-container').appendChild(dateElement);
+            document.getElementById('status').textContent = 'Date stamp added';
+        }
+        
+        function addInitials() {
+            const initials = prompt('Enter your initials:');
+            if (initials) {
+                const initialsElement = document.createElement('div');
+                initialsElement.textContent = initials;
+                initialsElement.style.position = 'absolute';
+                initialsElement.style.bottom = '120px';
+                initialsElement.style.right = '50px';
+                initialsElement.style.padding = '8px 15px';
+                initialsElement.style.background = 'rgba(255, 255, 255, 0.9)';
+                initialsElement.style.border = '2px solid #2c6bed';
+                initialsElement.style.borderRadius = '5px';
+                initialsElement.style.fontWeight = 'bold';
+                initialsElement.style.zIndex = '10';
+                
+                document.getElementById('doc-container').appendChild(initialsElement);
+                document.getElementById('status').textContent = 'Initials added to document';
+            }
+        }
+        
+        function clearDocument() {
+            // Clear signature
             clearCanvas();
+            document.getElementById('signature-image').style.display = 'none';
             document.getElementById('signed-stamp').style.display = 'none';
-            document.getElementById('status').textContent = 'Cleared all signatures';
+            
+            // Remove all added elements
+            const container = document.getElementById('doc-container');
+            const elements = container.querySelectorAll('div');
+            elements.forEach(el => {
+                if (el.id !== 'signature-pad' && el.id !== 'signed-stamp') {
+                    el.remove();
+                }
+            });
+            
+            document.getElementById('status').textContent = 'Document cleared';
         }
         
         function downloadDocument() {
             document.getElementById('status').textContent = 'Preparing download...';
             
-            // Simulate download preparation
-            setTimeout(() => {
-                alert('In a real application, this would download the signed PDF document. This demo shows the complete workflow except the actual PDF generation.');
-                document.getElementById('status').textContent = 'Download ready';
-            }, 1500);
+            // Use html2canvas to capture the document container
+            html2canvas(document.getElementById('doc-container')).then(canvas => {
+                // Convert canvas to data URL
+                const dataURL = canvas.toDataURL('image/png');
+                
+                // Create a temporary link for downloading
+                const link = document.createElement('a');
+                link.download = 'signed-document.png';
+                link.href = dataURL;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                document.getElementById('status').textContent = 'Document downloaded';
+            });
         }
         
-        function newDocument() {
-            clearCanvas();
-            document.getElementById('signed-stamp').style.display = 'none';
-            document.getElementById('status').textContent = 'New document loaded';
+        function uploadDocument() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('doc-preview').src = e.target.result;
+                        document.getElementById('status').textContent = 'Document uploaded';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            
+            input.click();
         }
         
         // Canvas drawing functionality
@@ -418,6 +530,7 @@
         function handleTouchStart(e) {
             e.preventDefault();
             const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
             const mouseEvent = new MouseEvent('mousedown', {
                 clientX: touch.clientX,
                 clientY: touch.clientY
@@ -441,7 +554,7 @@
             canvas.dispatchEvent(mouseEvent);
         }
         
-        // Initialize with a sample signature
+        // Initialize with a sample signature hint
         window.onload = function() {
             // Draw a sample signature hint
             setTimeout(() => {
@@ -452,5 +565,8 @@
             }, 500);
         };
     </script>
+    
+    <!-- Include html2canvas library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>
