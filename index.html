@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DocuSign Canvas - Client-Side Document Signing</title>
+    <title>SecureSign - Client-Side Document Signing</title>
     <style>
         * {
             margin: 0;
@@ -247,6 +247,18 @@
             border: 1px solid #cbd5e0;
             background: white;
             padding: 5px;
+            width: 150px;
+        }
+        
+        .text-element {
+            position: absolute;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #2c6bed;
+            border-radius: 5px;
+            z-index: 10;
+            cursor: move;
+            user-select: none;
         }
         
         @media (max-width: 768px) {
@@ -259,6 +271,12 @@
                 border-right: none;
                 border-bottom: 1px solid #e2e8f0;
             }
+            
+            .signature-pad {
+                width: 250px;
+                right: 20px;
+                bottom: 20px;
+            }
         }
     </style>
 </head>
@@ -266,10 +284,10 @@
     <div class="container">
         <header>
             <div class="logo">
-                <div class="logo-icon">DC</div>
+                <div class="logo-icon">SS</div>
                 <div>
-                    <div class="logo-text">DocuSign Canvas</div>
-                    <div class="tagline">100% Client-Side Document Signing</div>
+                    <div class="logo-text">SecureSign</div>
+                    <div class="tagline">Client-Side Document Signing</div>
                 </div>
             </div>
         </header>
@@ -345,6 +363,29 @@
         ctx.lineJoin = 'round';
         ctx.strokeStyle = '#2c6bed';
         
+        // Store elements for drag functionality
+        let currentDraggable = null;
+        let offsetX, offsetY;
+        
+        // Initialize with a sample signature hint
+        window.onload = function() {
+            // Draw a sample signature hint
+            setTimeout(() => {
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#cbd5e0';
+                ctx.textAlign = 'center';
+                ctx.fillText('Draw your signature here', canvas.width/2, canvas.height/2);
+            }, 500);
+            
+            // Make elements draggable
+            document.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchstart', startDrag);
+            document.addEventListener('touchmove', drag);
+            document.addEventListener('touchend', stopDrag);
+        };
+        
         // Signature pad functions
         function openSignaturePad() {
             document.getElementById('signature-pad').style.display = 'block';
@@ -369,7 +410,9 @@
             const signatureImg = document.getElementById('signature-image');
             signatureImg.src = dataURL;
             signatureImg.style.display = 'block';
-            signatureImg.style.width = '150px';
+            
+            // Make signature draggable
+            signatureImg.classList.add('draggable');
             
             // Show signed stamp
             document.getElementById('signed-stamp').style.display = 'block';
@@ -382,15 +425,12 @@
             if (text) {
                 const textElement = document.createElement('div');
                 textElement.textContent = text;
-                textElement.style.position = 'absolute';
+                textElement.classList.add('text-element');
                 textElement.style.top = '50%';
                 textElement.style.left = '50%';
-                textElement.style.transform = 'translate(-50%, -50%)';
-                textElement.style.padding = '10px';
-                textElement.style.background = 'rgba(255, 255, 255, 0.9)';
-                textElement.style.border = '1px solid #2c6bed';
-                textElement.style.borderRadius = '5px';
-                textElement.style.zIndex = '10';
+                
+                // Make text draggable
+                textElement.classList.add('draggable');
                 
                 document.getElementById('doc-container').appendChild(textElement);
                 document.getElementById('status').textContent = 'Text added to document';
@@ -403,15 +443,15 @@
             
             const dateElement = document.createElement('div');
             dateElement.textContent = `Signed on: ${dateString}`;
-            dateElement.style.position = 'absolute';
+            dateElement.classList.add('text-element');
             dateElement.style.bottom = '70px';
             dateElement.style.left = '50px';
-            dateElement.style.padding = '8px 15px';
             dateElement.style.background = 'rgba(44, 107, 237, 0.9)';
             dateElement.style.color = 'white';
-            dateElement.style.borderRadius = '5px';
             dateElement.style.fontWeight = 'bold';
-            dateElement.style.zIndex = '10';
+            
+            // Make date stamp draggable
+            dateElement.classList.add('draggable');
             
             document.getElementById('doc-container').appendChild(dateElement);
             document.getElementById('status').textContent = 'Date stamp added';
@@ -422,15 +462,13 @@
             if (initials) {
                 const initialsElement = document.createElement('div');
                 initialsElement.textContent = initials;
-                initialsElement.style.position = 'absolute';
+                initialsElement.classList.add('text-element');
                 initialsElement.style.bottom = '120px';
                 initialsElement.style.right = '50px';
-                initialsElement.style.padding = '8px 15px';
-                initialsElement.style.background = 'rgba(255, 255, 255, 0.9)';
-                initialsElement.style.border = '2px solid #2c6bed';
-                initialsElement.style.borderRadius = '5px';
                 initialsElement.style.fontWeight = 'bold';
-                initialsElement.style.zIndex = '10';
+                
+                // Make initials draggable
+                initialsElement.classList.add('draggable');
                 
                 document.getElementById('doc-container').appendChild(initialsElement);
                 document.getElementById('status').textContent = 'Initials added to document';
@@ -445,7 +483,7 @@
             
             // Remove all added elements
             const container = document.getElementById('doc-container');
-            const elements = container.querySelectorAll('div');
+            const elements = container.querySelectorAll('.text-element, .draggable');
             elements.forEach(el => {
                 if (el.id !== 'signature-pad' && el.id !== 'signed-stamp') {
                     el.remove();
@@ -458,21 +496,55 @@
         function downloadDocument() {
             document.getElementById('status').textContent = 'Preparing download...';
             
-            // Use html2canvas to capture the document container
-            html2canvas(document.getElementById('doc-container')).then(canvas => {
-                // Convert canvas to data URL
-                const dataURL = canvas.toDataURL('image/png');
-                
-                // Create a temporary link for downloading
-                const link = document.createElement('a');
-                link.download = 'signed-document.png';
-                link.href = dataURL;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                document.getElementById('status').textContent = 'Document downloaded';
+            // Create a canvas to capture the document container
+            const container = document.getElementById('doc-container');
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            // Set canvas dimensions
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+            
+            // Draw white background
+            context.fillStyle = 'white';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw document preview
+            const img = document.getElementById('doc-preview');
+            context.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            // Draw signature if exists
+            const signature = document.getElementById('signature-image');
+            if (signature.style.display !== 'none') {
+                const sigImg = new Image();
+                sigImg.src = signature.src;
+                context.drawImage(sigImg, 
+                    parseInt(signature.style.right), 
+                    parseInt(signature.style.bottom), 
+                    signature.offsetWidth, 
+                    signature.offsetHeight);
+            }
+            
+            // Draw text elements
+            const textElements = document.querySelectorAll('.text-element');
+            textElements.forEach(el => {
+                context.font = '16px Arial';
+                context.fillStyle = window.getComputedStyle(el).color;
+                context.fillText(el.textContent, parseInt(el.style.left), parseInt(el.style.top));
             });
+            
+            // Convert canvas to data URL
+            const dataURL = canvas.toDataURL('image/png');
+            
+            // Create a temporary link for downloading
+            const link = document.createElement('a');
+            link.download = 'signed-document.png';
+            link.href = dataURL;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            document.getElementById('status').textContent = 'Document downloaded';
         }
         
         function uploadDocument() {
@@ -533,7 +605,9 @@
             const rect = canvas.getBoundingClientRect();
             const mouseEvent = new MouseEvent('mousedown', {
                 clientX: touch.clientX,
-                clientY: touch.clientY
+                clientY: touch.clientY,
+                offsetX: touch.clientX - rect.left,
+                offsetY: touch.clientY - rect.top
             });
             canvas.dispatchEvent(mouseEvent);
         }
@@ -541,9 +615,12 @@
         function handleTouchMove(e) {
             e.preventDefault();
             const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
             const mouseEvent = new MouseEvent('mousemove', {
                 clientX: touch.clientX,
-                clientY: touch.clientY
+                clientY: touch.clientY,
+                offsetX: touch.clientX - rect.left,
+                offsetY: touch.clientY - rect.top
             });
             canvas.dispatchEvent(mouseEvent);
         }
@@ -554,19 +631,60 @@
             canvas.dispatchEvent(mouseEvent);
         }
         
-        // Initialize with a sample signature hint
-        window.onload = function() {
-            // Draw a sample signature hint
-            setTimeout(() => {
-                ctx.font = '16px Arial';
-                ctx.fillStyle = '#cbd5e0';
-                ctx.textAlign = 'center';
-                ctx.fillText('Draw your signature here', canvas.width/2, canvas.height/2);
-            }, 500);
-        };
+        // Draggable elements functionality
+        function startDrag(e) {
+            // Check if the target is draggable
+            if (e.target.classList.contains('draggable')) {
+                currentDraggable = e.target;
+                
+                // Calculate initial offset
+                const rect = currentDraggable.getBoundingClientRect();
+                
+                if (e.type === 'mousedown') {
+                    offsetX = e.clientX - rect.left;
+                    offsetY = e.clientY - rect.top;
+                } else if (e.type === 'touchstart') {
+                    offsetX = e.touches[0].clientX - rect.left;
+                    offsetY = e.touches[0].clientY - rect.top;
+                }
+                
+                // Prevent default behavior for touch events
+                if (e.type === 'touchstart') {
+                    e.preventDefault();
+                }
+            }
+        }
+        
+        function drag(e) {
+            if (currentDraggable) {
+                let clientX, clientY;
+                
+                if (e.type === 'mousemove') {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                } else if (e.type === 'touchmove') {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                }
+                
+                // Calculate new position
+                const container = document.getElementById('doc-container');
+                const containerRect = container.getBoundingClientRect();
+                
+                // Calculate position relative to container
+                const x = clientX - containerRect.left - offsetX;
+                const y = clientY - containerRect.top - offsetY;
+                
+                // Set new position
+                currentDraggable.style.left = `${x}px`;
+                currentDraggable.style.top = `${y}px`;
+            }
+        }
+        
+        function stopDrag() {
+            currentDraggable = null;
+        }
     </script>
-    
-    <!-- Include html2canvas library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>
