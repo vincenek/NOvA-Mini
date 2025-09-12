@@ -3,8 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecureSign - Client-Side Document Signing</title>
+    <title>MindMap AI - Visual Thinking Assistant</title>
     <style>
+        :root {
+            --primary: #4a6bff;
+            --secondary: #ff6b8b;
+            --accent: #3dd68c;
+            --background: #f8f9fa;
+            --text: #2d3748;
+            --light: #ffffff;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -13,252 +23,281 @@
         }
         
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: #2d3748;
-            line-height: 1.6;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            background-color: var(--background);
+            color: var(--text);
+            height: 100vh;
             overflow: hidden;
         }
         
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
         header {
-            background: #2c6bed;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            padding: 20px 30px;
+            padding: 1rem;
+            box-shadow: 0 4px 6px var(--shadow);
+            z-index: 10;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
         .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
             display: flex;
             align-items: center;
-            gap: 15px;
         }
         
         .logo-icon {
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 24px;
-            color: #2c6bed;
-        }
-        
-        .logo-text {
-            font-size: 28px;
-            font-weight: 700;
-        }
-        
-        .tagline {
-            font-size: 16px;
-            opacity: 0.9;
+            margin-right: 10px;
+            font-size: 2rem;
         }
         
         .main-content {
             display: flex;
-            min-height: 500px;
+            flex: 1;
+            overflow: hidden;
         }
         
-        .tools-panel {
-            width: 250px;
-            background: #f8f9fa;
-            padding: 25px;
-            border-right: 1px solid #e2e8f0;
+        .sidebar {
+            width: 300px;
+            background-color: var(--light);
+            padding: 1.5rem;
+            box-shadow: 2px 0 5px var(--shadow);
+            overflow-y: auto;
+            z-index: 5;
         }
         
-        .tools-title {
-            font-size: 18px;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #2c6bed;
+        .tools {
+            margin-bottom: 2rem;
         }
         
         .tool-btn {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            display: block;
             width: 100%;
-            padding: 12px 15px;
+            padding: 10px;
             margin-bottom: 10px;
-            background: white;
-            border: 1px solid #e2e8f0;
+            background-color: var(--light);
+            border: 2px solid var(--primary);
             border-radius: 8px;
+            color: var(--primary);
+            font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
+            transition: all 0.3s ease;
         }
         
         .tool-btn:hover {
-            background: #2c6bed;
+            background-color: var(--primary);
             color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         
-        .document-view {
+        .ai-suggestions {
+            background-color: #f0f4ff;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+        
+        .ai-suggestions h3 {
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .suggestion {
+            background-color: var(--light);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px var(--shadow);
+            cursor: pointer;
+        }
+        
+        .suggestion:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow);
+        }
+        
+        .canvas-container {
             flex: 1;
-            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            background: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d0d7de' fill-opacity='0.3' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        #mindmap {
+            width: 5000px;
+            height: 5000px;
+            transform-origin: 0 0;
+            position: relative;
+        }
+        
+        .node {
+            position: absolute;
+            min-width: 120px;
+            padding: 12px;
+            background-color: var(--light);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow);
+            cursor: move;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+        
+        .node:hover {
+            box-shadow: 0 6px 12px var(--shadow);
+        }
+        
+        .node-center {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            z-index: 2;
+        }
+        
+        .node-topic {
+            background-color: #e3f2fd;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .node-subtopic {
+            background-color: var(--light);
+            border-left: 4px solid var(--accent);
+        }
+        
+        .node-idea {
+            background-color: #fce4ec;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .connector {
+            position: absolute;
+            background-color: #b0b0b0;
+            transform-origin: 0 0;
+            z-index: 1;
+        }
+        
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
             display: flex;
             flex-direction: column;
+            gap: 10px;
+            z-index: 5;
         }
         
-        .document-container {
-            flex: 1;
-            background: #f8f9fa;
-            border: 2px dashed #cbd5e0;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: auto;
-        }
-        
-        .document-actions {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .action-btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--light);
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px var(--shadow);
+            font-size: 1.2rem;
             cursor: pointer;
-            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
-        .primary-btn {
-            background: #2c6bed;
-            color: white;
+        .zoom-btn:hover {
+            background-color: #f0f0f0;
         }
         
-        .primary-btn:hover {
-            background: #1a56c7;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        }
-        
-        .secondary-btn {
-            background: #e2e8f0;
-            color: #4a5568;
-        }
-        
-        .secondary-btn:hover {
-            background: #cbd5e0;
-        }
-        
-        .signature-pad {
+        .ai-assistant {
             position: absolute;
-            bottom: 30px;
-            right: 30px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-            padding: 20px;
-            width: 300px;
-            z-index: 100;
-            display: none;
+            bottom: 20px;
+            left: 20px;
+            background-color: var(--light);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px var(--shadow);
+            cursor: pointer;
+            z-index: 5;
+            animation: pulse 2s infinite;
         }
         
-        .pad-header {
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .ai-icon {
+            font-size: 24px;
+            color: var(--primary);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: var(--light);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 15px;
+            align-items: center;
+            margin-bottom: 1.5rem;
         }
         
         .close-btn {
             background: none;
             border: none;
-            font-size: 20px;
+            font-size: 1.5rem;
             cursor: pointer;
-            color: #718096;
         }
         
-        #signature-canvas {
-            border: 1px solid #cbd5e0;
-            border-radius: 5px;
+        textarea {
             width: 100%;
-            height: 150px;
-            background: #f8f9fa;
-            cursor: crosshair;
+            height: 120px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: none;
+            margin-bottom: 1rem;
         }
         
-        .pad-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
-        }
-        
-        .status-bar {
-            background: #f8f9fa;
-            padding: 15px 30px;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: #718096;
-        }
-        
-        .privacy-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .document-preview {
-            max-width: 100%;
-            max-height: 400px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .signed-stamp {
-            position: absolute;
-            bottom: 100px;
-            right: 50px;
-            padding: 10px 20px;
-            background: #2c6bed;
+        .generate-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            border-radius: 5px;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
             font-weight: bold;
-            display: none;
-        }
-        
-        #signature-image {
-            position: absolute;
-            bottom: 150px;
-            right: 50px;
-            display: none;
-            border: 1px solid #cbd5e0;
-            background: white;
-            padding: 5px;
-            width: 150px;
-        }
-        
-        .text-element {
-            position: absolute;
-            padding: 8px 15px;
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #2c6bed;
-            border-radius: 5px;
-            z-index: 10;
-            cursor: move;
-            user-select: none;
         }
         
         @media (max-width: 768px) {
@@ -266,16 +305,23 @@
                 flex-direction: column;
             }
             
-            .tools-panel {
+            .sidebar {
                 width: 100%;
-                border-right: none;
-                border-bottom: 1px solid #e2e8f0;
+                height: 200px;
+                overflow-x: auto;
+                display: flex;
+                flex-direction: column;
             }
             
-            .signature-pad {
-                width: 250px;
-                right: 20px;
-                bottom: 20px;
+            .tools {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 1rem;
+            }
+            
+            .tool-btn {
+                width: auto;
+                margin-bottom: 0;
             }
         }
     </style>
@@ -283,408 +329,222 @@
 <body>
     <div class="container">
         <header>
-            <div class="logo">
-                <div class="logo-icon">SS</div>
-                <div>
-                    <div class="logo-text">SecureSign</div>
-                    <div class="tagline">Client-Side Document Signing</div>
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🧠</span>
+                    <span>MindMap AI</span>
+                </div>
+                <div class="header-actions">
+                    <button class="tool-btn">Save</button>
                 </div>
             </div>
         </header>
         
         <div class="main-content">
-            <div class="tools-panel">
-                <h3 class="tools-title">Document Tools</h3>
-                <button class="tool-btn" onclick="openSignaturePad()">
-                    <span>✍️</span> Add Signature
-                </button>
-                <button class="tool-btn" onclick="addTextField()">
-                    <span>📝</span> Add Text
-                </button>
-                <button class="tool-btn" onclick="addDateStamp()">
-                    <span>📅</span> Add Date
-                </button>
-                <button class="tool-btn" onclick="addInitials()">
-                    <span>🔏</span> Add Initials
-                </button>
-                <button class="tool-btn" onclick="clearDocument()">
-                    <span>🗑️</span> Clear All
-                </button>
+            <div class="sidebar">
+                <div class="tools">
+                    <button class="tool-btn" onclick="addNode('topic')">Add Topic</button>
+                    <button class="tool-btn" onclick="addNode('subtopic')">Add Subtopic</button>
+                    <button class="tool-btn" onclick="addNode('idea')">Add Idea</button>
+                    <button class="tool-btn" onclick="clearCanvas()">Clear Canvas</button>
+                </div>
+                
+                <div class="ai-suggestions">
+                    <h3>AI Suggestions</h3>
+                    <div class="suggestion" onclick="applySuggestion('Consider adding a timeline for your project')">Consider adding a timeline for your project</div>
+                    <div class="suggestion" onclick="applySuggestion('Have you thought about potential risks?')">Have you thought about potential risks?</div>
+                    <div class="suggestion" onclick="applySuggestion('What resources would you need for this?')">What resources would you need for this?</div>
+                </div>
             </div>
             
-            <div class="document-view">
-                <div class="document-container" id="doc-container">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmN2ZhIiAvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNDAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiMzNzQwNDYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPkNvbnRyYWN0IEFncmVlbWVudDwvdGV4dD4KICA8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjNzE4MDk2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj5UaGlzIGlzIGEgc2FtcGxlIGRvY3VtZW50IHByZXZpZXc8L3RleHQ+Cjwvc3ZnPg==" alt="Document Preview" class="document-preview" id="doc-preview">
-                    <div class="signed-stamp" id="signed-stamp">Signed</div>
-                    <img id="signature-image" alt="Signature">
-                    <div class="signature-pad" id="signature-pad">
-                        <div class="pad-header">
-                            <h3>Draw Your Signature</h3>
-                            <button class="close-btn" onclick="closeSignaturePad()">&times;</button>
-                        </div>
-                        <canvas id="signature-canvas"></canvas>
-                        <div class="pad-actions">
-                            <button class="secondary-btn" onclick="clearCanvas()">Clear</button>
-                            <button class="primary-btn" onclick="saveSignature()">Save Signature</button>
-                        </div>
+            <div class="canvas-container">
+                <div id="mindmap">
+                    <div class="node node-center" style="top: 2500px; left: 2500px;" onclick="editNode(this)">
+                        My Awesome Idea
                     </div>
                 </div>
                 
-                <div class="document-actions">
-                    <button class="action-btn primary-btn" onclick="downloadDocument()">Download Signed Document</button>
-                    <button class="action-btn secondary-btn" onclick="uploadDocument()">Upload Document</button>
+                <div class="zoom-controls">
+                    <button class="zoom-btn" onclick="zoomIn()">+</button>
+                    <button class="zoom-btn" onclick="zoomOut()">-</button>
+                </div>
+                
+                <div class="ai-assistant" onclick="openAIModal()">
+                    <div class="ai-icon">AI</div>
                 </div>
             </div>
         </div>
-        
-        <div class="status-bar">
-            <div class="privacy-indicator">
-                <span>🔒</span> <span>100% Client-Side - Your documents never leave your computer</span>
+    </div>
+    
+    <div class="modal" id="aiModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>AI Assistant</h2>
+                <button class="close-btn" onclick="closeAIModal()">&times;</button>
             </div>
-            <div>Status: <span id="status">Ready</span></div>
+            <p>Ask for ideas, suggestions, or improvements for your mind map:</p>
+            <textarea placeholder="E.g., 'Generate ideas for a marketing strategy'"></textarea>
+            <button class="generate-btn" onclick="generateIdeas()">Generate Ideas</button>
         </div>
     </div>
 
     <script>
-        // Initialize the signature canvas
-        const canvas = document.getElementById('signature-canvas');
-        const ctx = canvas.getContext('2d');
-        let isDrawing = false;
-        let lastX = 0;
-        let lastY = 0;
+        let scale = 1;
+        let isDragging = false;
+        let startX, startY, scrollLeft, scrollTop;
+        const canvas = document.querySelector('.canvas-container');
+        const mindmap = document.getElementById('mindmap');
         
-        // Set canvas size
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
+        // Initialize canvas event listeners
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.pageX - canvas.offsetLeft;
+            startY = e.pageY - canvas.offsetTop;
+            scrollLeft = canvas.scrollLeft;
+            scrollTop = canvas.scrollTop;
+            canvas.style.cursor = 'grabbing';
+        });
         
-        // Set canvas style
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.strokeStyle = '#2c6bed';
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+        });
         
-        // Store elements for drag functionality
-        let currentDraggable = null;
-        let offsetX, offsetY;
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+            canvas.style.cursor = 'grab';
+        });
         
-        // Initialize with a sample signature hint
-        window.onload = function() {
-            // Draw a sample signature hint
-            setTimeout(() => {
-                ctx.font = '16px Arial';
-                ctx.fillStyle = '#cbd5e0';
-                ctx.textAlign = 'center';
-                ctx.fillText('Draw your signature here', canvas.width/2, canvas.height/2);
-            }, 500);
-            
-            // Make elements draggable
-            document.addEventListener('mousedown', startDrag);
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', stopDrag);
-            document.addEventListener('touchstart', startDrag);
-            document.addEventListener('touchmove', drag);
-            document.addEventListener('touchend', stopDrag);
-        };
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            const x = e.pageX - canvas.offsetLeft;
+            const y = e.pageY - canvas.offsetTop;
+            const walkX = (x - startX) * 2;
+            const walkY = (y - startY) * 2;
+            canvas.scrollLeft = scrollLeft - walkX;
+            canvas.scrollTop = scrollTop - walkY;
+        });
         
-        // Signature pad functions
-        function openSignaturePad() {
-            document.getElementById('signature-pad').style.display = 'block';
-            document.getElementById('status').textContent = 'Drawing signature';
+        // Zoom functionality
+        function zoomIn() {
+            scale += 0.1;
+            updateTransform();
         }
         
-        function closeSignaturePad() {
-            document.getElementById('signature-pad').style.display = 'none';
-            document.getElementById('status').textContent = 'Ready';
+        function zoomOut() {
+            scale = Math.max(0.5, scale - 0.1);
+            updateTransform();
+        }
+        
+        function updateTransform() {
+            mindmap.style.transform = `scale(${scale})`;
+        }
+        
+        // Node management
+        function addNode(type) {
+            const newNode = document.createElement('div');
+            newNode.className = `node node-${type}`;
+            newNode.style.top = `${Math.random() * 100 + 2400}px`;
+            newNode.style.left = `${Math.random() * 100 + 2400}px`;
+            newNode.setAttribute('contenteditable', 'true');
+            newNode.innerHTML = type.charAt(0).toUpperCase() + type.slice(1);
+            newNode.addEventListener('dblclick', function() { this.remove(); });
+            
+            mindmap.appendChild(newNode);
+            makeDraggable(newNode);
+        }
+        
+        function makeDraggable(element) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            
+            element.onmousedown = dragMouseDown;
+            
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // get the mouse cursor position at startup
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // call a function whenever the cursor moves
+                document.onmousemove = elementDrag;
+            }
+            
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // calculate the new cursor position
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // set the element's new position
+                element.style.top = (element.offsetTop - pos2) + "px";
+                element.style.left = (element.offsetLeft - pos1) + "px";
+            }
+            
+            function closeDragElement() {
+                // stop moving when mouse button is released
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+        
+        function editNode(node) {
+            const newText = prompt('Edit node text:', node.innerText);
+            if (newText !== null) {
+                node.innerText = newText;
+            }
         }
         
         function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            document.getElementById('status').textContent = 'Canvas cleared';
-        }
-        
-        function saveSignature() {
-            // Convert canvas to data URL
-            const dataURL = canvas.toDataURL('image/png');
-            
-            // Display the signature on the document
-            const signatureImg = document.getElementById('signature-image');
-            signatureImg.src = dataURL;
-            signatureImg.style.display = 'block';
-            
-            // Make signature draggable
-            signatureImg.classList.add('draggable');
-            
-            // Show signed stamp
-            document.getElementById('signed-stamp').style.display = 'block';
-            document.getElementById('status').textContent = 'Signature added to document';
-            closeSignaturePad();
-        }
-        
-        function addTextField() {
-            const text = prompt('Enter text to add to the document:');
-            if (text) {
-                const textElement = document.createElement('div');
-                textElement.textContent = text;
-                textElement.classList.add('text-element');
-                textElement.style.top = '50%';
-                textElement.style.left = '50%';
-                
-                // Make text draggable
-                textElement.classList.add('draggable');
-                
-                document.getElementById('doc-container').appendChild(textElement);
-                document.getElementById('status').textContent = 'Text added to document';
+            if (confirm('Are you sure you want to clear the canvas? This cannot be undone.')) {
+                const nodes = document.querySelectorAll('.node:not(.node-center)');
+                nodes.forEach(node => node.remove());
             }
         }
         
-        function addDateStamp() {
-            const date = new Date();
-            const dateString = date.toLocaleDateString();
-            
-            const dateElement = document.createElement('div');
-            dateElement.textContent = `Signed on: ${dateString}`;
-            dateElement.classList.add('text-element');
-            dateElement.style.bottom = '70px';
-            dateElement.style.left = '50px';
-            dateElement.style.background = 'rgba(44, 107, 237, 0.9)';
-            dateElement.style.color = 'white';
-            dateElement.style.fontWeight = 'bold';
-            
-            // Make date stamp draggable
-            dateElement.classList.add('draggable');
-            
-            document.getElementById('doc-container').appendChild(dateElement);
-            document.getElementById('status').textContent = 'Date stamp added';
+        function applySuggestion(suggestion) {
+            alert(`Suggestion applied: ${suggestion}`);
+            addNode('idea');
         }
         
-        function addInitials() {
-            const initials = prompt('Enter your initials:');
-            if (initials) {
-                const initialsElement = document.createElement('div');
-                initialsElement.textContent = initials;
-                initialsElement.classList.add('text-element');
-                initialsElement.style.bottom = '120px';
-                initialsElement.style.right = '50px';
-                initialsElement.style.fontWeight = 'bold';
+        function openAIModal() {
+            document.getElementById('aiModal').style.display = 'flex';
+        }
+        
+        function closeAIModal() {
+            document.getElementById('aiModal').style.display = 'none';
+        }
+        
+        function generateIdeas() {
+            alert('AI is generating ideas based on your mind map...');
+            // In a real implementation, this would connect to an AI API
+            setTimeout(() => {
+                const suggestions = [
+                    "Consider adding a budget section",
+                    "What about potential partners for this project?",
+                    "Have you thought about scalability?",
+                    "You might want to add a competitor analysis"
+                ];
                 
-                // Make initials draggable
-                initialsElement.classList.add('draggable');
+                const suggestionsContainer = document.querySelector('.ai-suggestions');
+                suggestionsContainer.innerHTML = '<h3>AI Suggestions</h3>';
                 
-                document.getElementById('doc-container').appendChild(initialsElement);
-                document.getElementById('status').textContent = 'Initials added to document';
-            }
-        }
-        
-        function clearDocument() {
-            // Clear signature
-            clearCanvas();
-            document.getElementById('signature-image').style.display = 'none';
-            document.getElementById('signed-stamp').style.display = 'none';
-            
-            // Remove all added elements
-            const container = document.getElementById('doc-container');
-            const elements = container.querySelectorAll('.text-element, .draggable');
-            elements.forEach(el => {
-                if (el.id !== 'signature-pad' && el.id !== 'signed-stamp') {
-                    el.remove();
-                }
-            });
-            
-            document.getElementById('status').textContent = 'Document cleared';
-        }
-        
-        function downloadDocument() {
-            document.getElementById('status').textContent = 'Preparing download...';
-            
-            // Create a canvas to capture the document container
-            const container = document.getElementById('doc-container');
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            
-            // Set canvas dimensions
-            canvas.width = container.offsetWidth;
-            canvas.height = container.offsetHeight;
-            
-            // Draw white background
-            context.fillStyle = 'white';
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw document preview
-            const img = document.getElementById('doc-preview');
-            context.drawImage(img, 0, 0, canvas.width, canvas.height);
-            
-            // Draw signature if exists
-            const signature = document.getElementById('signature-image');
-            if (signature.style.display !== 'none') {
-                const sigImg = new Image();
-                sigImg.src = signature.src;
-                context.drawImage(sigImg, 
-                    parseInt(signature.style.right), 
-                    parseInt(signature.style.bottom), 
-                    signature.offsetWidth, 
-                    signature.offsetHeight);
-            }
-            
-            // Draw text elements
-            const textElements = document.querySelectorAll('.text-element');
-            textElements.forEach(el => {
-                context.font = '16px Arial';
-                context.fillStyle = window.getComputedStyle(el).color;
-                context.fillText(el.textContent, parseInt(el.style.left), parseInt(el.style.top));
-            });
-            
-            // Convert canvas to data URL
-            const dataURL = canvas.toDataURL('image/png');
-            
-            // Create a temporary link for downloading
-            const link = document.createElement('a');
-            link.download = 'signed-document.png';
-            link.href = dataURL;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            document.getElementById('status').textContent = 'Document downloaded';
-        }
-        
-        function uploadDocument() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            
-            input.onchange = function(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        document.getElementById('doc-preview').src = e.target.result;
-                        document.getElementById('status').textContent = 'Document uploaded';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-            
-            input.click();
-        }
-        
-        // Canvas drawing functionality
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
-        
-        // Touch events for mobile devices
-        canvas.addEventListener('touchstart', handleTouchStart);
-        canvas.addEventListener('touchmove', handleTouchMove);
-        canvas.addEventListener('touchend', handleTouchEnd);
-        
-        function startDrawing(e) {
-            isDrawing = true;
-            [lastX, lastY] = [e.offsetX, e.offsetY];
-        }
-        
-        function draw(e) {
-            if (!isDrawing) return;
-            
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(e.offsetX, e.offsetY);
-            ctx.stroke();
-            
-            [lastX, lastY] = [e.offsetX, e.offsetY];
-        }
-        
-        function stopDrawing() {
-            isDrawing = false;
-        }
-        
-        // Touch handlers
-        function handleTouchStart(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = canvas.getBoundingClientRect();
-            const mouseEvent = new MouseEvent('mousedown', {
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-                offsetX: touch.clientX - rect.left,
-                offsetY: touch.clientY - rect.top
-            });
-            canvas.dispatchEvent(mouseEvent);
-        }
-        
-        function handleTouchMove(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = canvas.getBoundingClientRect();
-            const mouseEvent = new MouseEvent('mousemove', {
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-                offsetX: touch.clientX - rect.left,
-                offsetY: touch.clientY - rect.top
-            });
-            canvas.dispatchEvent(mouseEvent);
-        }
-        
-        function handleTouchEnd(e) {
-            e.preventDefault();
-            const mouseEvent = new MouseEvent('mouseup');
-            canvas.dispatchEvent(mouseEvent);
-        }
-        
-        // Draggable elements functionality
-        function startDrag(e) {
-            // Check if the target is draggable
-            if (e.target.classList.contains('draggable')) {
-                currentDraggable = e.target;
+                suggestions.forEach(suggestion => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion';
+                    div.textContent = suggestion;
+                    div.onclick = function() { applySuggestion(suggestion); };
+                    suggestionsContainer.appendChild(div);
+                });
                 
-                // Calculate initial offset
-                const rect = currentDraggable.getBoundingClientRect();
-                
-                if (e.type === 'mousedown') {
-                    offsetX = e.clientX - rect.left;
-                    offsetY = e.clientY - rect.top;
-                } else if (e.type === 'touchstart') {
-                    offsetX = e.touches[0].clientX - rect.left;
-                    offsetY = e.touches[0].clientY - rect.top;
-                }
-                
-                // Prevent default behavior for touch events
-                if (e.type === 'touchstart') {
-                    e.preventDefault();
-                }
-            }
+                closeAIModal();
+            }, 1500);
         }
         
-        function drag(e) {
-            if (currentDraggable) {
-                let clientX, clientY;
-                
-                if (e.type === 'mousemove') {
-                    clientX = e.clientX;
-                    clientY = e.clientY;
-                } else if (e.type === 'touchmove') {
-                    clientX = e.touches[0].clientX;
-                    clientY = e.touches[0].clientY;
-                    e.preventDefault();
-                }
-                
-                // Calculate new position
-                const container = document.getElementById('doc-container');
-                const containerRect = container.getBoundingClientRect();
-                
-                // Calculate position relative to container
-                const x = clientX - containerRect.left - offsetX;
-                const y = clientY - containerRect.top - offsetY;
-                
-                // Set new position
-                currentDraggable.style.left = `${x}px`;
-                currentDraggable.style.top = `${y}px`;
-            }
-        }
-        
-        function stopDrag() {
-            currentDraggable = null;
-        }
+        // Make all existing nodes draggable
+        document.querySelectorAll('.node').forEach(makeDraggable);
     </script>
 </body>
 </html>
