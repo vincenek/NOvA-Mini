@@ -263,6 +263,28 @@
             opacity: 0.9;
             transform: translateY(-2px);
         }
+        
+        .nukeit-toolbar {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 10000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nukeit-toolbar button {
+            padding: 8px 15px;
+        }
+        
+        .nukeit-highlight {
+            outline: 2px dashed red !important;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -273,9 +295,10 @@
         </header>
         
         <div class="bookmarklet">
-            <a href="javascript:(function(){var script=document.createElement('script');script.src='https://example.com/nukeit.js';document.body.appendChild(script);})();">
+            <a id="nukeit-bookmarklet" href="javascript:(function(){var script=document.createElement('script');script.src='https://cdn.jsdelivr.net/gh/yourusername/nukeit@main/nukeit.js';document.body.appendChild(script);})();">
                 Drag me to your bookmarks bar!
             </a>
+            <p><small>Right-click and select "Copy Link Address" if you can't drag it</small></p>
         </div>
         
         <div class="main-content">
@@ -380,6 +403,192 @@
     </div>
 
     <script>
+        // NukeIt Core Functionality
+        const NukeIt = (function() {
+            let isActive = false;
+            let nukedElements = [];
+            
+            // Function to generate a CSS selector for an element
+            function generateSelector(el) {
+                if (el.id) {
+                    return '#' + el.id;
+                }
+                
+                let path = [];
+                while (el && el.nodeType === Node.ELEMENT_NODE) {
+                    let selector = el.nodeName.toLowerCase();
+                    
+                    if (el.className && typeof el.className === 'string') {
+                        selector += '.' + el.className.trim().split(/\s+/).join('.');
+                    }
+                    
+                    // Check if the selector is unique
+                    if (document.querySelectorAll(selector).length === 1) {
+                        path.unshift(selector);
+                        break;
+                    }
+                    
+                    let sibling = el;
+                    let nth = 1;
+                    while (sibling = sibling.previousElementSibling) {
+                        if (sibling.nodeName.toLowerCase() === selector) {
+                            nth++;
+                        }
+                    }
+                    
+                    if (nth !== 1) {
+                        selector += ':nth-of-type(' + nth + ')';
+                    }
+                    
+                    path.unshift(selector);
+                    el = el.parentNode;
+                }
+                
+                return path.join(' > ');
+            }
+            
+            // Function to activate NukeIt mode
+            function activate() {
+                if (isActive) return;
+                isActive = true;
+                
+                // Add highlight style to the page
+                const style = document.createElement('style');
+                style.id = 'nukeit-styles';
+                style.textContent = `
+                    .nukeit-highlight {
+                        outline: 2px dashed red !important;
+                        cursor: pointer;
+                    }
+                    .nukeit-removed {
+                        animation: nukeit-vanish 0.5s forwards;
+                    }
+                    @keyframes nukeit-vanish {
+                        to {
+                            opacity: 0;
+                            transform: scale(0);
+                            height: 0;
+                            padding: 0;
+                            margin: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // Create and add toolbar
+                const toolbar = document.createElement('div');
+                toolbar.id = 'nukeit-toolbar';
+                toolbar.className = 'nukeit-toolbar';
+                toolbar.innerHTML = `
+                    <button id="nukeit-done">Done</button>
+                    <button id="nukeit-reset">Reset Page</button>
+                `;
+                document.body.appendChild(toolbar);
+                
+                // Add event listeners
+                document.addEventListener('mouseover', handleMouseOver);
+                document.addEventListener('mouseout', handleMouseOut);
+                document.addEventListener('click', handleClick);
+                
+                // Add toolbar event listeners
+                document.getElementById('nukeit-done').addEventListener('click', deactivate);
+                document.getElementById('nukeit-reset').addEventListener('click', resetPage);
+                
+                // Load previously nuked elements for this page
+                loadNukedElements();
+            }
+            
+            // Function to deactivate NukeIt mode
+            function deactivate() {
+                if (!isActive) return;
+                isActive = false;
+                
+                // Remove styles
+                const styles = document.getElementById('nukeit-styles');
+                if (styles) styles.remove();
+                
+                // Remove toolbar
+                const toolbar = document.getElementById('nukeit-toolbar');
+                if (toolbar) toolbar.remove();
+                
+                // Remove event listeners
+                document.removeEventListener('mouseover', handleMouseOver);
+                document.removeEventListener('mouseout', handleMouseOut);
+                document.removeEventListener('click', handleClick);
+            }
+            
+            // Function to reset the page to its original state
+            function resetPage() {
+                const url = window.location.href;
+                localStorage.removeItem(`nukeit-${url}`);
+                location.reload();
+            }
+            
+            // Function to handle mouseover events
+            function handleMouseOver(e) {
+                e.target.classList.add('nukeit-highlight');
+            }
+            
+            // Function to handle mouseout events
+            function handleMouseOut(e) {
+                e.target.classList.remove('nukeit-highlight');
+            }
+            
+            // Function to handle click events
+            function handleClick(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const element = e.target;
+                element.classList.add('nukeit-removed');
+                
+                // Generate selector and save
+                const selector = generateSelector(element);
+                const url = window.location.href;
+                
+                // Get existing nuked elements for this page
+                const key = `nukeit-${url}`;
+                let nuked = JSON.parse(localStorage.getItem(key) || '[]');
+                
+                // Add new selector if not already present
+                if (!nuked.includes(selector)) {
+                    nuked.push(selector);
+                    localStorage.setItem(key, JSON.stringify(nuked));
+                }
+                
+                // Remove element after animation
+                setTimeout(() => {
+                    element.remove();
+                }, 500);
+            }
+            
+            // Function to load previously nuked elements
+            function loadNukedElements() {
+                const url = window.location.href;
+                const key = `nukeit-${url}`;
+                const nuked = JSON.parse(localStorage.getItem(key) || '[]');
+                
+                nuked.forEach(selector => {
+                    try {
+                        const elements = document.querySelectorAll(selector);
+                        elements.forEach(el => {
+                            el.style.display = 'none';
+                        });
+                    } catch (e) {
+                        console.error('Error applying nukeit selector:', e);
+                    }
+                });
+            }
+            
+            // Public API
+            return {
+                activate,
+                deactivate,
+                resetPage
+            };
+        })();
+
+        // Demo functionality
         document.addEventListener('DOMContentLoaded', function() {
             const activateBtn = document.getElementById('activate-btn');
             const doneBtn = document.getElementById('done-btn');
@@ -392,7 +601,7 @@
             // Store original HTML to reset later
             const originalContent = demoContent.innerHTML;
             
-            // Activate NukeIt mode
+            // Activate NukeIt mode for demo
             activateBtn.addEventListener('click', function() {
                 nukeMode = true;
                 demoContent.classList.add('nuke-mode');
@@ -406,7 +615,7 @@
                 });
             });
             
-            // Deactivate NukeIt mode
+            // Deactivate NukeIt mode for demo
             doneBtn.addEventListener('click', function() {
                 nukeMode = false;
                 demoContent.classList.remove('nuke-mode');
@@ -418,9 +627,6 @@
                 elements.forEach(element => {
                     element.removeEventListener('click', handleElementClick);
                 });
-                
-                // In a real implementation, save nuked elements to local storage
-                console.log('Elements to be removed on next visit:', nukedElements);
             });
             
             // Reset demo
@@ -436,14 +642,14 @@
                 }
             });
             
-            // Handle element click in NukeIt mode
+            // Handle element click in demo mode
             function handleElementClick(e) {
                 if (!nukeMode) return;
                 
                 const element = e.currentTarget;
                 element.classList.add('nuked');
                 
-                // Store the element ID for persistence (in real usage, would use CSS selectors)
+                // Store the element ID for persistence
                 nukedElements.push(element.id);
                 
                 // Remove element after animation completes
@@ -452,14 +658,14 @@
                 }, 500);
             }
             
-            // Simulate loading saved removals (in a real implementation, this would use local storage)
-            const savedRemovals = ['ad-element']; // Example of previously removed element
-            savedRemovals.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.style.display = 'none';
-                }
-            });
+            // Make NukeIt globally available for the bookmarklet
+            window.NukeIt = NukeIt;
+            
+            // Auto-activate if URL parameter is present
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('nukeit') === 'true') {
+                NukeIt.activate();
+            }
         });
     </script>
 </body>
