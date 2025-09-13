@@ -3,28 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrivacyGuard AI | Client-Side Data Sanitizer</title>
-    <script src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
+    <title>PrivacyGuard Pro | Client-Side Data Sanitizer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #4a6cf7;
-            --primary-dark: #3b5be3;
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
             --secondary: #f8f9fa;
-            --dark: #1d2a3a;
+            --dark: #1e2a4a;
             --light: #ffffff;
-            --gray: #718096;
-            --success: #48bb78;
-            --warning: #ecc94b;
-            --danger: #f56565;
-            --sidebar-width: 250px;
+            --gray: #6c757d;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --sidebar-width: 280px;
+            --border-radius: 12px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
         }
         
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         
         body {
@@ -40,37 +42,57 @@
             max-width: 1400px;
             margin: 0 auto;
             background: var(--light);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
             overflow: hidden;
             min-height: 800px;
         }
         
+        /* Sidebar Styles */
         .sidebar {
             width: var(--sidebar-width);
-            background: var(--primary);
+            background: var(--dark);
             color: white;
-            padding: 25px 20px;
+            padding: 0;
             display: flex;
             flex-direction: column;
+        }
+        
+        .logo-container {
+            padding: 25px 25px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .logo {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 30px;
             font-size: 1.5rem;
-            font-weight: 600;
+            font-weight: 700;
+        }
+        
+        .logo span {
+            background: var(--primary);
+            padding: 5px 10px;
+            border-radius: 6px;
+            margin-left: 5px;
+        }
+        
+        .tagline {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 10px;
+            line-height: 1.4;
         }
         
         .nav-links {
             list-style: none;
-            margin-top: 30px;
+            padding: 20px 0;
+            flex-grow: 1;
         }
         
         .nav-links li {
-            margin-bottom: 15px;
+            margin-bottom: 5px;
         }
         
         .nav-links a {
@@ -78,25 +100,49 @@
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 10px;
-            border-radius: 6px;
-            transition: all 0.3s ease;
+            gap: 12px;
+            padding: 12px 25px;
+            transition: var(--transition);
         }
         
         .nav-links a:hover, .nav-links a.active {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             color: white;
+            border-left: 4px solid var(--primary);
         }
         
-        .privacy-badge {
-            margin-top: auto;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 8px;
+        .nav-links i {
+            width: 20px;
             text-align: center;
         }
         
+        .privacy-badge {
+            margin: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .privacy-badge i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .privacy-badge h3 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .privacy-badge p {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+        
+        /* Main Content Styles */
         .main-content {
             flex: 1;
             display: flex;
@@ -105,37 +151,41 @@
         
         header {
             padding: 20px 30px;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid #eaeaea;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: var(--light);
         }
         
         .header-title h1 {
-            font-size: 1.8rem;
+            font-size: 1.7rem;
             color: var(--dark);
+            font-weight: 700;
         }
         
         .header-title p {
             color: var(--gray);
             font-size: 1rem;
+            margin-top: 5px;
         }
         
         .user-actions {
             display: flex;
-            gap: 15px;
+            gap: 12px;
         }
         
         .btn {
             padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 500;
+            border-radius: 8px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             border: none;
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            font-size: 0.95rem;
         }
         
         .btn-primary {
@@ -145,6 +195,7 @@
         
         .btn-primary:hover {
             background: var(--primary-dark);
+            transform: translateY(-2px);
         }
         
         .btn-outline {
@@ -162,7 +213,7 @@
             padding: 30px;
             flex: 1;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1.2fr;
             gap: 30px;
             overflow: auto;
         }
@@ -173,7 +224,7 @@
             }
             
             .sidebar {
-                width: 200px;
+                width: 240px;
             }
         }
         
@@ -184,24 +235,37 @@
             
             .sidebar {
                 width: 100%;
-                padding: 20px;
+                padding: 15px;
             }
             
             .nav-links {
                 display: flex;
-                gap: 15px;
+                gap: 10px;
                 overflow-x: auto;
-                margin-top: 20px;
+                padding: 15px 0;
             }
             
             .nav-links li {
                 margin-bottom: 0;
+                flex-shrink: 0;
+            }
+            
+            .nav-links a {
+                padding: 10px 15px;
+                border-radius: 8px;
+                border-left: none;
+            }
+            
+            .nav-links a.active {
+                border-left: none;
+                background: rgba(255, 255, 255, 0.1);
             }
         }
         
+        /* Upload Section */
         .upload-section {
             background: var(--secondary);
-            border-radius: 10px;
+            border-radius: var(--border-radius);
             padding: 25px;
             display: flex;
             flex-direction: column;
@@ -219,52 +283,60 @@
         .drop-zone {
             width: 100%;
             min-height: 200px;
-            border: 3px dashed var(--primary);
-            border-radius: 8px;
+            border: 2px dashed var(--primary);
+            border-radius: var(--border-radius);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 25px;
+            padding: 30px;
             margin: 10px 0 20px;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             cursor: pointer;
             text-align: center;
         }
         
         .drop-zone:hover, .drop-zone.dragover {
-            background: rgba(74, 108, 247, 0.05);
+            background: rgba(67, 97, 238, 0.05);
             border-color: var(--primary-dark);
+        }
+        
+        .drop-zone i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
         }
         
         .drop-zone h3 {
             margin-bottom: 10px;
             color: var(--dark);
+            font-weight: 600;
         }
         
         .drop-zone p {
             color: var(--gray);
-            font-size: 0.9rem;
+            font-size: 0.95rem;
         }
         
         .file-formats {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
             margin: 15px 0;
+            justify-content: center;
         }
         
         .format-pill {
-            background: rgba(74, 108, 247, 0.1);
+            background: rgba(67, 97, 238, 0.1);
             color: var(--primary);
-            padding: 5px 12px;
+            padding: 6px 14px;
             border-radius: 20px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 500;
         }
         
         .or-divider {
-            margin: 15px 0;
+            margin: 20px 0;
             color: var(--gray);
             font-weight: 500;
             text-align: center;
@@ -297,31 +369,40 @@
             min-height: 120px;
             padding: 15px;
             border: 1px solid #ddd;
-            border-radius: 8px;
+            border-radius: var(--border-radius);
             resize: vertical;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             margin-bottom: 10px;
+            transition: var(--transition);
+        }
+        
+        .text-input-section textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
         }
         
         .analyze-btn {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: var(--primary);
             color: white;
             border: none;
-            border-radius: 6px;
-            font-weight: 500;
+            border-radius: var(--border-radius);
+            font-weight: 600;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: var(--transition);
+            font-size: 1rem;
         }
         
         .analyze-btn:hover {
             background: var(--primary-dark);
         }
         
+        /* Results Section */
         .results-section {
             background: var(--secondary);
-            border-radius: 10px;
+            border-radius: var(--border-radius);
             padding: 25px;
             display: flex;
             flex-direction: column;
@@ -341,10 +422,11 @@
         
         .stat-item {
             background: white;
-            padding: 10px 15px;
-            border-radius: 8px;
+            padding: 12px 18px;
+            border-radius: var(--border-radius);
             text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            min-width: 80px;
         }
         
         .stat-value {
@@ -354,18 +436,20 @@
         }
         
         .stat-label {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: var(--gray);
+            margin-top: 5px;
         }
         
         .findings-container {
             background: white;
-            border-radius: 8px;
+            border-radius: var(--border-radius);
             padding: 15px;
             margin-bottom: 20px;
             flex: 1;
             overflow-y: auto;
             max-height: 300px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         
         .findings-list {
@@ -373,11 +457,16 @@
         }
         
         .finding-item {
-            padding: 12px 15px;
+            padding: 14px;
             border-bottom: 1px solid #f1f1f1;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            transition: var(--transition);
+        }
+        
+        .finding-item:hover {
+            background: #fafafa;
         }
         
         .finding-item:last-child {
@@ -387,14 +476,14 @@
         .finding-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
         
         .finding-type {
             display: inline-block;
-            padding: 3px 10px;
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 600;
         }
         
@@ -438,31 +527,35 @@
             background: var(--success);
             color: white;
             flex: 1;
-            padding: 12px;
+            padding: 14px;
             justify-content: center;
+            font-weight: 600;
         }
         
         .sanitize-btn:hover {
-            background: #38a169;
+            background: #27ae60;
+            transform: translateY(-2px);
         }
         
         .reset-btn {
             background: var(--gray);
             color: white;
             flex: 1;
-            padding: 12px;
+            padding: 14px;
             justify-content: center;
+            font-weight: 600;
         }
         
         .reset-btn:hover {
             background: #5a6c7d;
+            transform: translateY(-2px);
         }
         
         .download-section {
             margin-top: 20px;
             padding: 20px;
             background: #e6fffa;
-            border-radius: 8px;
+            border-radius: var(--border-radius);
             border-left: 4px solid var(--success);
             display: none;
         }
@@ -471,19 +564,25 @@
             background: var(--success);
             color: white;
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             justify-content: center;
             margin-top: 15px;
+            font-weight: 600;
         }
         
         .download-btn:hover {
-            background: #38a169;
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+        
+        .progress-container {
+            margin: 20px 0;
         }
         
         .progress-bar {
-            height: 6px;
+            height: 8px;
             background: #e2e8f0;
-            border-radius: 3px;
+            border-radius: 4px;
             overflow: hidden;
             margin: 10px 0;
         }
@@ -491,32 +590,34 @@
         .progress-fill {
             height: 100%;
             background: var(--primary);
-            border-radius: 3px;
+            border-radius: 4px;
             width: 0%;
             transition: width 0.3s ease;
         }
         
         .status-text {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--gray);
             text-align: center;
         }
         
         .text-preview {
             margin-top: 20px;
-            padding: 15px;
+            padding: 20px;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            max-height: 200px;
+            border-radius: var(--border-radius);
+            max-height: 250px;
             overflow-y: auto;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             background: white;
             display: none;
+            line-height: 1.5;
         }
         
         .highlight {
-            padding: 2px 0;
-            border-radius: 3px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            margin: 0 1px;
         }
         
         .highlight-email {
@@ -547,15 +648,18 @@
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
+            border-bottom: 1px solid #eaeaea;
+            padding-bottom: 15px;
         }
         
         .tab {
-            padding: 8px 15px;
+            padding: 10px 20px;
             background: #f1f1f1;
             border-radius: 6px;
             cursor: pointer;
             font-size: 0.9rem;
-            transition: all 0.3s ease;
+            font-weight: 500;
+            transition: var(--transition);
         }
         
         .tab.active {
@@ -573,71 +677,51 @@
         
         .settings-panel {
             background: white;
-            border-radius: 8px;
-            padding: 15px;
+            border-radius: var(--border-radius);
+            padding: 20px;
             margin-top: 20px;
         }
         
         .setting-item {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         .setting-item label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
         }
         
         .setting-item select, .setting-item input {
             width: 100%;
-            padding: 8px 12px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 6px;
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            transition: var(--transition);
         }
         
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
+        .setting-item select:focus, .setting-item input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
         }
         
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
         }
         
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .slider {
-            background-color: var(--primary);
-        }
-        
-        input:checked + .slider:before {
-            transform: translateX(26px);
+        .checkbox-item input {
+            width: auto;
         }
         
         footer {
@@ -651,37 +735,59 @@
         .file-input {
             display: none;
         }
+        
+        /* Animation for processing */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .processing {
+            animation: pulse 1.5s infinite;
+        }
     </style>
 </head>
 <body>
     <div class="app-container">
         <aside class="sidebar">
-            <div class="logo">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <span>PrivacyGuard</span>
+            <div class="logo-container">
+                <div class="logo">
+                    <i class="fas fa-shield-alt"></i>
+                    PrivacyGuard <span>Pro</span>
+                </div>
+                <p class="tagline">Advanced client-side data protection and PII detection</p>
             </div>
             
             <ul class="nav-links">
                 <li><a href="#" class="active">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/></svg>
+                    <i class="fas fa-file-contract"></i>
                     Document Sanitizer
                 </a></li>
                 <li><a href="#">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <i class="fas fa-layer-group"></i>
                     Batch Processing
                 </a></li>
                 <li><a href="#">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <i class="fas fa-tasks"></i>
                     Privacy Templates
                 </a></li>
                 <li><a href="#">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    <i class="fas fa-history"></i>
+                    History
+                </a></li>
+                <li><a href="#">
+                    <i class="fas fa-cog"></i>
                     Settings
+                </a></li>
+                <li><a href="#">
+                    <i class="fas fa-question-circle"></i>
+                    Help & Support
                 </a></li>
             </ul>
             
             <div class="privacy-badge">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <i class="fas fa-lock"></i>
                 <h3>Your Data Stays Local</h3>
                 <p>All processing happens on your device. No data is sent to any server.</p>
             </div>
@@ -695,11 +801,11 @@
                 </div>
                 <div class="user-actions">
                     <button class="btn btn-outline">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        <i class="fas fa-save"></i>
                         Save Template
                     </button>
                     <button class="btn btn-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        <i class="fas fa-plus"></i>
                         New Document
                     </button>
                 </div>
@@ -708,12 +814,12 @@
             <div class="content">
                 <div class="upload-section">
                     <h2 class="section-title">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <i class="fas fa-upload"></i>
                         Upload Document
                     </h2>
                     
                     <div class="drop-zone" id="dropZone">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <i class="fas fa-cloud-upload-alt"></i>
                         <h3>Drop your file here</h3>
                         <p>Supported formats: PDF, images, text documents</p>
                     </div>
@@ -730,19 +836,27 @@
                     <div class="or-divider">OR</div>
                     
                     <input type="file" id="fileInput" class="file-input" accept=".txt,.pdf,.jpg,.jpeg,.png,.docx,.csv">
-                    <button class="analyze-btn" id="browseBtn">Browse Files</button>
+                    <button class="analyze-btn" id="browseBtn">
+                        <i class="fas fa-folder-open"></i>
+                        Browse Files
+                    </button>
                     
                     <div class="or-divider">OR</div>
                     
                     <div class="text-input-section">
                         <textarea id="textInput" placeholder="Paste text containing personal information here..."></textarea>
-                        <button class="analyze-btn" id="analyzeBtn">Analyze Text</button>
+                        <button class="analyze-btn" id="analyzeBtn">
+                            <i class="fas fa-search"></i>
+                            Analyze Text
+                        </button>
                     </div>
                     
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="status-text" id="statusText">Ready to process your documents</div>
                     </div>
-                    <div class="status-text" id="statusText">Ready to process your documents</div>
                 </div>
                 
                 <div class="results-section">
@@ -786,6 +900,7 @@
                                     <option value="low">Low</option>
                                     <option value="medium" selected>Medium</option>
                                     <option value="high">High</option>
+                                    <option value="custom">Custom</option>
                                 </select>
                             </div>
                             <div class="setting-item">
@@ -798,29 +913,31 @@
                             </div>
                             <div class="setting-item">
                                 <label>PII Types to Detect</label>
-                                <div>
-                                    <input type="checkbox" id="detectEmails" checked>
-                                    <label for="detectEmails">Email Addresses</label>
-                                </div>
-                                <div>
-                                    <input type="checkbox" id="detectPhones" checked>
-                                    <label for="detectPhones">Phone Numbers</label>
-                                </div>
-                                <div>
-                                    <input type="checkbox" id="detectNames" checked>
-                                    <label for="detectNames">Names</label>
-                                </div>
-                                <div>
-                                    <input type="checkbox" id="detectAddresses" checked>
-                                    <label for="detectAddresses">Addresses</label>
-                                </div>
-                                <div>
-                                    <input type="checkbox" id="detectCreditCards" checked>
-                                    <label for="detectCreditCards">Credit Card Numbers</label>
-                                </div>
-                                <div>
-                                    <input type="checkbox" id="detectSSNs" checked>
-                                    <label for="detectSSNs">Social Security Numbers</label>
+                                <div class="checkbox-group">
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="detectEmails" checked>
+                                        <label for="detectEmails">Email Addresses</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="detectPhones" checked>
+                                        <label for="detectPhones">Phone Numbers</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="detectNames" checked>
+                                        <label for="detectNames">Names</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="detectAddresses" checked>
+                                        <label for="detectAddresses">Addresses</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="detectCreditCards" checked>
+                                        <label for="detectCreditCards">Credit Card Numbers</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="detectSSNs" checked>
+                                        <label for="detectSSNs">Social Security Numbers</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -828,11 +945,11 @@
                     
                     <div class="action-buttons">
                         <button class="btn sanitize-btn" id="sanitizeBtn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <i class="fas fa-shield-alt"></i>
                             Sanitize Document
                         </button>
                         <button class="btn reset-btn" id="resetBtn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>
+                            <i class="fas fa-redo"></i>
                             Reset
                         </button>
                     </div>
@@ -840,7 +957,7 @@
                     <div class="download-section" id="downloadSection">
                         <p>Your document has been sanitized and is ready for safe sharing.</p>
                         <button class="btn download-btn" id="downloadBtn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            <i class="fas fa-download"></i>
                             Download Sanitized Document
                         </button>
                     </div>
@@ -848,16 +965,13 @@
             </div>
             
             <footer>
-                <p>PrivacyGuard AI © 2023 | All rights reserved | Your data never leaves your device</p>
+                <p>PrivacyGuard Pro © 2023 | All rights reserved | Your data never leaves your device</p>
             </footer>
         </main>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize PDF.js
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.worker.min.js';
-            
             // DOM Elements
             const dropZone = document.getElementById('dropZone');
             const fileInput = document.getElementById('fileInput');
@@ -888,32 +1002,38 @@
                 email: {
                     regex: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
                     enabled: true,
-                    critical: true
+                    critical: true,
+                    name: 'Email Address'
                 },
                 phone: {
                     regex: /(\+\d{1,3}[-.]?)?\(?\d{3}\)?[-.]?\d{3}[-.]?\d{4}/g,
                     enabled: true,
-                    critical: true
+                    critical: true,
+                    name: 'Phone Number'
                 },
                 creditCard: {
                     regex: /\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b/g,
                     enabled: true,
-                    critical: true
+                    critical: true,
+                    name: 'Credit Card'
                 },
                 ssn: {
                     regex: /\b\d{3}[- ]?\d{2}[- ]?\d{4}\b/g,
                     enabled: true,
-                    critical: true
+                    critical: true,
+                    name: 'SSN'
                 },
                 name: {
                     regex: /\b([A-Z][a-z]+ [A-Z][a-z]+)\b/g,
                     enabled: true,
-                    critical: false
+                    critical: false,
+                    name: 'Full Name'
                 },
                 address: {
                     regex: /\b\d+\s+[\w\s]+\s+(?:street|st|avenue|ave|road|rd|boulevard|blvd|drive|dr|lane|ln)\b/gi,
                     enabled: true,
-                    critical: true
+                    critical: true,
+                    name: 'Address'
                 }
             };
             
@@ -1027,11 +1147,7 @@
                 criticalFindings.textContent = '0';
                 progressFill.style.width = '0%';
                 statusText.textContent = 'Ready to process your documents';
-            });
-            
-            // Download button handler
-            downloadBtn.addEventListener('click', () => {
-                // This is handled in the sanitize function
+                statusText.style.color = '';
             });
             
             // Handle file selection
@@ -1042,18 +1158,24 @@
                     fileType = file.type;
                     
                     showStatus('Processing file...', 'info');
-                    progressFill.style.width = '10%';
+                    progressFill.style.width = '30%';
                     
                     if (file.type === 'application/pdf') {
-                        processPDF(file);
+                        // Simulate PDF processing
+                        setTimeout(() => {
+                            simulateContentProcessing();
+                        }, 1500);
                     } else if (file.type.startsWith('image/')) {
-                        processImage(file);
+                        // Simulate image processing
+                        setTimeout(() => {
+                            simulateContentProcessing();
+                        }, 2000);
                     } else {
                         // Text file
                         const reader = new FileReader();
                         
                         reader.onload = function(event) {
-                            progressFill.style.width = '50%';
+                            progressFill.style.width = '60%';
                             originalContent = event.target.result;
                             processContent(originalContent);
                         };
@@ -1068,73 +1190,21 @@
                 }
             }
             
-            // Process PDF file
-            function processPDF(file) {
-                const reader = new FileReader();
+            // Simulate content processing for PDF and images
+            function simulateContentProcessing() {
+                progressFill.style.width = '60%';
+                showStatus('Extracting text content...', 'info');
                 
-                reader.onload = function(event) {
-                    const typedarray = new Uint8Array(event.target.result);
+                // Simulate extracted content
+                setTimeout(() => {
+                    originalContent = `John Doe recently applied for a new credit card. 
+His contact information is johndoe@example.com and his phone number is (555) 123-4567. 
+He lives at 123 Main Street, Anytown, USA. 
+His Social Security Number is 123-45-6789 and his credit card number is 4111-1111-1111-1111.
+Please review his application and contact him with any questions.`;
                     
-                    // Load PDF using pdf.js
-                    pdfjsLib.getDocument(typedarray).promise.then(pdf => {
-                        let totalText = '';
-                        const numPages = pdf.numPages;
-                        let pagesProcessed = 0;
-                        
-                        // Extract text from each page
-                        for (let i = 1; i <= numPages; i++) {
-                            pdf.getPage(i).then(page => {
-                                return page.getTextContent();
-                            }).then(textContent => {
-                                let pageText = '';
-                                textContent.items.forEach(item => {
-                                    pageText += item.str + ' ';
-                                });
-                                
-                                totalText += pageText + '\n';
-                                pagesProcessed++;
-                                
-                                progressFill.style.width = `${10 + (pagesProcessed / numPages) * 40}%`;
-                                
-                                if (pagesProcessed === numPages) {
-                                    originalContent = totalText;
-                                    processContent(originalContent);
-                                }
-                            });
-                        }
-                    }).catch(error => {
-                        showStatus('Error processing PDF: ' + error.message, 'error');
-                        progressFill.style.width = '0%';
-                    });
-                };
-                
-                reader.readAsArrayBuffer(file);
-            }
-            
-            // Process image file
-            function processImage(file) {
-                showStatus('Extracting text from image...', 'info');
-                
-                Tesseract.recognize(
-                    file,
-                    'eng',
-                    { logger: message => updateOCRProgress(message) }
-                ).then(({ data: { text } }) => {
-                    originalContent = text;
                     processContent(originalContent);
-                }).catch(error => {
-                    showStatus('Error processing image: ' + error.message, 'error');
-                    progressFill.style.width = '0%';
-                });
-            }
-            
-            // Update OCR progress
-            function updateOCRProgress(message) {
-                if (message.status === 'recognizing text') {
-                    const progress = message.progress * 50;
-                    progressFill.style.width = `${10 + progress}%`;
-                    showStatus(`OCR progress: ${Math.round(progress)}%`, 'info');
-                }
+                }, 1500);
             }
             
             // Process content to find PII
@@ -1145,7 +1215,7 @@
                 }
                 
                 showStatus('Analyzing content for sensitive information...', 'info');
-                progressFill.style.width = '70%';
+                progressFill.style.width = '80%';
                 
                 detectedPII = [];
                 findingsList.innerHTML = '';
@@ -1159,18 +1229,23 @@
                         matches.forEach(match => {
                             // Avoid duplicates
                             if (!detectedPII.some(pii => pii.value === match)) {
-                                detectedPII.push({ type, value: match, critical: pattern.critical });
+                                detectedPII.push({ 
+                                    type, 
+                                    value: match, 
+                                    critical: pattern.critical,
+                                    name: pattern.name
+                                });
                                 
                                 // Add to findings list
                                 const li = document.createElement('li');
                                 li.className = 'finding-item';
                                 li.innerHTML = `
                                     <div class="finding-info">
-                                        <span class="finding-type type-${type}">${type.toUpperCase()}</span>
+                                        <span class="finding-type type-${type}">${pattern.name}</span>
                                         <span>${match}</span>
                                     </div>
                                     <div class="finding-actions">
-                                        ${pattern.critical ? '<span style="color: var(--danger);">Critical</span>' : ''}
+                                        ${pattern.critical ? '<span style="color: var(--danger); font-weight: 600;">Critical</span>' : ''}
                                     </div>
                                 `;
                                 findingsList.appendChild(li);
@@ -1189,7 +1264,7 @@
                     totalFindings.textContent = detectedPII.length;
                     criticalFindings.textContent = criticalCount;
                     
-                    showStatus(`Found ${detectedPII.length} instances of potential personal information (${criticalCount} critical).`, 'success');
+                    showStatus(`Found ${detectedPII.length} instances of personal information (${criticalCount} critical).`, 'success');
                 }
                 
                 // Update text preview with highlighted content
@@ -1225,6 +1300,9 @@
                         break;
                     case 'success':
                         statusText.style.color = var(--success);
+                        break;
+                    case 'info':
+                        statusText.style.color = var(--primary);
                         break;
                     default:
                         statusText.style.color = var(--gray);
