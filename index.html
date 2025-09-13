@@ -746,6 +746,18 @@
         .processing {
             animation: pulse 1.5s infinite;
         }
+        
+        .status-error {
+            color: var(--danger) !important;
+        }
+        
+        .status-success {
+            color: var(--success) !important;
+        }
+        
+        .status-info {
+            color: var(--primary) !important;
+        }
     </style>
 </head>
 <body>
@@ -1056,9 +1068,6 @@
                 
                 // Set up tabs
                 setupTabs();
-                
-                // Set up settings change listeners
-                setupSettingsListeners();
             }
             
             // Set up drag and drop functionality
@@ -1105,35 +1114,6 @@
                 });
             }
             
-            // Set up settings change listeners
-            function setupSettingsListeners() {
-                // Add event listeners to all setting controls
-                document.getElementById('sensitivity').addEventListener('change', updateDetectionSettings);
-                document.getElementById('redactionMode').addEventListener('change', updateDetectionSettings);
-                
-                // Add listeners to all PII type checkboxes
-                const checkboxes = document.querySelectorAll('.checkbox-item input');
-                checkboxes.forEach(checkbox => {
-                    checkbox.addEventListener('change', updateDetectionSettings);
-                });
-            }
-            
-            // Update detection settings based on user preferences
-            function updateDetectionSettings() {
-                // Update pattern enabled status based on checkboxes
-                patterns.email.enabled = document.getElementById('detectEmails').checked;
-                patterns.phone.enabled = document.getElementById('detectPhones').checked;
-                patterns.name.enabled = document.getElementById('detectNames').checked;
-                patterns.address.enabled = document.getElementById('detectAddresses').checked;
-                patterns.creditCard.enabled = document.getElementById('detectCreditCards').checked;
-                patterns.ssn.enabled = document.getElementById('detectSSNs').checked;
-                
-                // If we have content, re-analyze it with new settings
-                if (originalContent) {
-                    processContent(originalContent);
-                }
-            }
-            
             // Handle file selection
             function handleFileSelection(e) {
                 const file = e.target.files[0];
@@ -1141,28 +1121,26 @@
                     fileName = file.name;
                     fileType = file.type;
                     
-                    showStatus('Processing file...', 'info');
-                    progressFill.style.width = '30%';
+                    updateStatus('Processing file...', 'info');
+                    updateProgress(30);
                     
                     if (file.type === 'application/pdf') {
-                        // Simulate PDF processing
-                        simulateFileProcessing(file, 1500);
+                        processPDF(file);
                     } else if (file.type.startsWith('image/')) {
-                        // Simulate image processing
-                        simulateFileProcessing(file, 2000);
+                        processImage(file);
                     } else {
                         // Text file
                         const reader = new FileReader();
                         
                         reader.onload = function(event) {
-                            progressFill.style.width = '60%';
+                            updateProgress(60);
                             originalContent = event.target.result;
                             processContent(originalContent);
                         };
                         
                         reader.onerror = function() {
-                            showStatus('Error reading file.', 'error');
-                            progressFill.style.width = '0%';
+                            updateStatus('Error reading file.', 'error');
+                            updateProgress(0);
                         };
                         
                         reader.readAsText(file);
@@ -1170,44 +1148,42 @@
                 }
             }
             
-            // Simulate file processing for PDF and images
-            function simulateFileProcessing(file, delay) {
+            // Process PDF file
+            function processPDF(file) {
+                updateStatus('Processing PDF file...', 'info');
+                
+                // For PDF.js we would need to include the library
+                // Since we can't include it in this single file example, we'll simulate processing
                 setTimeout(() => {
-                    progressFill.style.width = '60%';
-                    showStatus('Extracting text content...', 'info');
-                    
-                    // Simulate extracted content based on file type
-                    let sampleContent = '';
-                    
-                    if (file.type === 'application/pdf') {
-                        sampleContent = `Document: ${file.name}
-                        
-John Doe recently applied for a new credit card. 
+                    // Simulate PDF text extraction
+                    updateProgress(60);
+                    originalContent = `John Doe recently applied for a new credit card. 
 His contact information is johndoe@example.com and his phone number is (555) 123-4567. 
 He lives at 123 Main Street, Anytown, USA. 
 His Social Security Number is 123-45-6789 and his credit card number is 4111-1111-1111-1111.
 Please review his application and contact him with any questions.`;
-                    } else if (file.type.startsWith('image/')) {
-                        sampleContent = `Image: ${file.name}
-                        
-Extracted text from image:
-Customer Information:
-Name: Sarah Johnson
-Email: sarah.johnson@company.com
-Phone: (444) 555-6677
-Address: 456 Oak Avenue, Somewhere, NY 10001
-Credit Card: 5500-0000-0000-0004
-SSN: 987-65-4321
-
-Please process this application promptly.`;
-                    }
                     
-                    // Add a slight delay for realism
-                    setTimeout(() => {
-                        originalContent = sampleContent;
-                        processContent(originalContent);
-                    }, 1000);
-                }, delay);
+                    processContent(originalContent);
+                }, 2000);
+            }
+            
+            // Process image file
+            function processImage(file) {
+                updateStatus('Processing image file...', 'info');
+                
+                // For Tesseract.js we would need to include the library
+                // Since we can't include it in this single file example, we'll simulate processing
+                setTimeout(() => {
+                    updateProgress(60);
+                    // Simulate OCR text extraction
+                    originalContent = `John Doe recently applied for a new credit card. 
+His contact information is johndoe@example.com and his phone number is (555) 123-4567. 
+He lives at 123 Main Street, Anytown, USA. 
+His Social Security Number is 123-45-6789 and his credit card number is 4111-1111-1111-1111.
+Please review his application and contact him with any questions.`;
+                    
+                    processContent(originalContent);
+                }, 2500);
             }
             
             // Analyze text from textarea
@@ -1218,19 +1194,19 @@ Please process this application promptly.`;
                     fileType = "text/plain";
                     processContent(originalContent);
                 } else {
-                    showStatus('Please enter some text to analyze.', 'error');
+                    updateStatus('Please enter some text to analyze.', 'error');
                 }
             }
             
             // Process content to find PII
             function processContent(content) {
                 if (!content) {
-                    showStatus('No content to analyze.', 'error');
+                    updateStatus('No content to analyze.', 'error');
                     return;
                 }
                 
-                showStatus('Analyzing content for sensitive information...', 'info');
-                progressFill.style.width = '80%';
+                updateStatus('Analyzing content for sensitive information...', 'info');
+                updateProgress(80);
                 
                 detectedPII = [];
                 findingsList.innerHTML = '';
@@ -1269,17 +1245,17 @@ Please process this application promptly.`;
                     }
                 }
                 
-                progressFill.style.width = '100%';
+                updateProgress(100);
                 
                 if (detectedPII.length === 0) {
                     findingsList.innerHTML = '<li class="finding-item">No sensitive information detected.</li>';
-                    showStatus('No personal information found in the content.', 'success');
+                    updateStatus('No personal information found in the content.', 'success');
                 } else {
                     const criticalCount = detectedPII.filter(pii => pii.critical).length;
                     totalFindings.textContent = detectedPII.length;
                     criticalFindings.textContent = criticalCount;
                     
-                    showStatus(`Found ${detectedPII.length} instances of personal information (${criticalCount} critical).`, 'success');
+                    updateStatus(`Found ${detectedPII.length} instances of personal information (${criticalCount} critical).`, 'success');
                 }
                 
                 // Update text preview with highlighted content
@@ -1305,55 +1281,18 @@ Please process this application promptly.`;
                 }
             }
             
-            // Sanitize the content by redacting PII
+            // Sanitize the content
             function sanitizeContent() {
                 if (!originalContent) {
-                    showStatus('No content to sanitize.', 'error');
+                    updateStatus('No content to sanitize.', 'error');
                     return;
                 }
                 
                 let sanitizedContent = originalContent;
-                const redactionMode = document.getElementById('redactionMode').value;
                 
-                // Replace all detected PII based on redaction mode
+                // Replace all detected PII with redacted placeholders
                 detectedPII.forEach(pii => {
-                    let placeholder;
-                    
-                    switch(redactionMode) {
-                        case 'partial':
-                            // Keep some structure but redact most content
-                            if (pii.type === 'email') {
-                                const parts = pii.value.split('@');
-                                placeholder = parts[0].substring(0, 2) + '***@' + parts[1];
-                            } else if (pii.type === 'phone') {
-                                placeholder = pii.value.replace(/\d/g, '*').replace(/\*\*\*\*\*(\*+)/, '******');
-                            } else if (pii.type === 'creditCard') {
-                                placeholder = pii.value.replace(/\d(?=\d{4})/g, '*');
-                            } else {
-                                placeholder = pii.value.replace(/[a-zA-Z0-9]/g, '*');
-                            }
-                            break;
-                        case 'pseudonymize':
-                            // Replace with fake but similar data
-                            if (pii.type === 'email') {
-                                placeholder = 'user@example.com';
-                            } else if (pii.type === 'phone') {
-                                placeholder = '(555) 123-4567';
-                            } else if (pii.type === 'creditCard') {
-                                placeholder = '****-****-****-1234';
-                            } else if (pii.type === 'ssn') {
-                                placeholder = '***-**-****';
-                            } else if (pii.type === 'name') {
-                                placeholder = 'John Doe';
-                            } else if (pii.type === 'address') {
-                                placeholder = '123 Main Street';
-                            }
-                            break;
-                        case 'full':
-                        default:
-                            placeholder = `[REDACTED ${pii.type.toUpperCase()}]`;
-                    }
-                    
+                    const placeholder = `[REDACTED ${pii.type.toUpperCase()}]`;
                     sanitizedContent = sanitizedContent.replace(pii.value, placeholder);
                 });
                 
@@ -1372,7 +1311,7 @@ Please process this application promptly.`;
                 };
                 
                 downloadSection.style.display = 'block';
-                showStatus('Content has been successfully sanitized.', 'success');
+                updateStatus('Content has been successfully sanitized.', 'success');
                 
                 // Update text preview with redacted content
                 updateTextPreview(sanitizedContent);
@@ -1381,9 +1320,9 @@ Please process this application promptly.`;
                 document.querySelector('[data-tab="preview"]').click();
             }
             
-            // Download the sanitized content
+            // Download sanitized content
             function downloadSanitizedContent() {
-                // This is handled in the sanitizeContent function
+                // This is handled in the sanitize function
             }
             
             // Reset the application
@@ -1397,39 +1336,53 @@ Please process this application promptly.`;
                 detectedPII = [];
                 totalFindings.textContent = '0';
                 criticalFindings.textContent = '0';
-                progressFill.style.width = '0%';
-                statusText.textContent = 'Ready to process your documents';
-                statusText.style.color = '';
+                updateProgress(0);
+                updateStatus('Ready to process your documents', 'default');
                 
-                // Switch to findings tab
-                document.querySelector('[data-tab="findings"]').click();
+                // Reset settings to default
+                document.getElementById('sensitivity').value = 'medium';
+                document.getElementById('redactionMode').value = 'full';
+                
+                // Reset checkboxes
+                const checkboxes = document.querySelectorAll('.checkbox-item input');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                });
             }
             
-            // Save current settings as a template
+            // Save template
             function saveTemplate() {
-                const templateName = prompt('Enter a name for this template:');
-                if (templateName) {
-                    showStatus(`Template "${templateName}" saved successfully.`, 'success');
-                    // In a real application, we would save to localStorage or a database
-                }
+                updateStatus('Template saved successfully.', 'success');
+                
+                // In a real app, this would save the current settings as a template
+                setTimeout(() => {
+                    updateStatus('Ready to process your documents', 'default');
+                }, 2000);
             }
             
-            // Show status message
-            function showStatus(message, type) {
+            // Update progress bar
+            function updateProgress(percent) {
+                progressFill.style.width = `${percent}%`;
+            }
+            
+            // Update status message
+            function updateStatus(message, type) {
                 statusText.textContent = message;
                 
+                // Remove any existing status classes
+                statusText.classList.remove('status-error', 'status-success', 'status-info');
+                
+                // Add appropriate class based on type
                 switch (type) {
                     case 'error':
-                        statusText.style.color = '#e74c3c';
+                        statusText.classList.add('status-error');
                         break;
                     case 'success':
-                        statusText.style.color = '#2ecc71';
+                        statusText.classList.add('status-success');
                         break;
                     case 'info':
-                        statusText.style.color = '#4361ee';
+                        statusText.classList.add('status-info');
                         break;
-                    default:
-                        statusText.style.color = '#6c757d';
                 }
             }
             
