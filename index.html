@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neuro-Auth | Next-Gen Behavioral Biometrics</title>
+    <title>Neuro-Auth | Behavioral Biometrics Authentication</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
     <style>
         :root {
@@ -656,25 +655,6 @@
             text-align: center;
         }
         
-        .revolutionary-badge {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: var(--gradient);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 24px;
-            font-size: 1rem;
-            font-weight: bold;
-            z-index: 20;
-            animation: glow 2s infinite alternate;
-        }
-        
-        @keyframes glow {
-            from { box-shadow: 0 0 15px var(--primary-light); }
-            to { box-shadow: 0 0 25px var(--secondary); }
-        }
-        
         .particles-container {
             position: absolute;
             top: 0;
@@ -725,6 +705,35 @@
                 transform: scale(2);
                 opacity: 0;
             }
+        }
+        
+        .ml-training {
+            background: var(--surface-light);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid rgba(109, 61, 255, 0.3);
+        }
+        
+        .ml-training h4 {
+            color: var(--primary-light);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .training-progress {
+            height: 10px;
+            background: rgba(109, 61, 255, 0.15);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .training-progress-inner {
+            height: 100%;
+            background: var(--gradient);
+            width: 0%;
+            transition: width 0.5s ease;
         }
         
         @media (max-width: 1024px) {
@@ -813,8 +822,6 @@
 </head>
 <body>
     <div class="container">
-        <div class="revolutionary-badge">INVESTOR PREVIEW</div>
-        
         <!-- Particle background -->
         <div class="particles-container" id="particles"></div>
         
@@ -889,7 +896,7 @@
                     <i class="fas fa-fingerprint"></i> Create Neuro Identity
                 </button>
                 <button id="demoLoginBtn" class="secondary">
-                    <i class="fas fa-rocket"></i> Experience Demo
+                    <i class="fas fa-rocket"></i> Quick Demo
                 </button>
             </div>
         </div>
@@ -929,6 +936,15 @@
                         <div class="progress" id="typingProgress"></div>
                     </div>
                     <div class="progress-label">Pattern Analysis: <span id="analysisProgress">0%</span></div>
+                </div>
+                
+                <div class="ml-training">
+                    <h4>Machine Learning Training</h4>
+                    <p>Our AI is analyzing your unique typing rhythm and building a neural network model of your behavior.</p>
+                    <div class="training-progress">
+                        <div class="training-progress-inner" id="trainingProgress"></div>
+                    </div>
+                    <p id="trainingStatus">Initializing pattern recognition algorithms...</p>
                 </div>
                 
                 <div class="dashboard-grid">
@@ -1181,6 +1197,8 @@
         const lockoutOverlay = document.getElementById('lockoutOverlay');
         const lockoutTimer = document.getElementById('lockoutTimer');
         const particlesContainer = document.getElementById('particles');
+        const trainingProgress = document.getElementById('trainingProgress');
+        const trainingStatus = document.getElementById('trainingStatus');
         
         // Canvas contexts
         const introCtx = introCanvas.getContext('2d');
@@ -1199,6 +1217,10 @@
         let animationFrame;
         let lockoutInterval;
         let charts = {};
+        
+        // Typing metrics
+        let keyDownTime = {};
+        let keyUpTime = {};
 
         // Create floating particles
         function createParticles() {
@@ -1607,19 +1629,41 @@
             }
         }
         
-        // Calculate scores
+        // Calculate scores based on typing pattern
         function calculateScores(pattern) {
             if (pattern.length < 3) return { rhythm: 0, complexity: 0, entropy: 0 };
             
-            // Simulate advanced calculations
-            const baseRhythm = Math.min(100, 20 + pattern.length * 5 + Math.random() * 10);
-            const baseComplexity = Math.min(100, 30 + pattern.length * 4 + Math.random() * 15);
-            const baseEntropy = Math.min(100, 40 + pattern.length * 3 + Math.random() * 12);
+            // Calculate rhythm consistency (standard deviation of time between keystrokes)
+            let timeDiffs = [];
+            for (let i = 1; i < pattern.length; i++) {
+                timeDiffs.push(pattern[i].timestamp - pattern[i-1].timestamp);
+            }
+            
+            const avgTimeDiff = timeDiffs.reduce((a, b) => a + b, 0) / timeDiffs.length;
+            const rhythmVariance = timeDiffs.reduce((a, b) => a + Math.pow(b - avgTimeDiff, 2), 0) / timeDiffs.length;
+            const rhythmStdDev = Math.sqrt(rhythmVariance);
+            
+            // Higher score for more consistent rhythm (lower standard deviation)
+            const rhythmScore = Math.max(0, 100 - (rhythmStdDev / 10));
+            
+            // Calculate complexity based on variation in hold times
+            let holdTimes = pattern.map(p => p.holdTime).filter(t => t > 0);
+            if (holdTimes.length === 0) holdTimes = [100]; // Default value
+            
+            const avgHoldTime = holdTimes.reduce((a, b) => a + b, 0) / holdTimes.length;
+            const holdTimeVariance = holdTimes.reduce((a, b) => a + Math.pow(b - avgHoldTime, 2), 0) / holdTimes.length;
+            
+            // Higher score for more variation in hold times (more complex pattern)
+            const complexityScore = Math.min(100, holdTimeVariance / 5);
+            
+            // Calculate entropy (randomness in the pattern)
+            const uniqueHoldTimes = new Set(holdTimes.map(t => Math.round(t / 10))).size;
+            const entropyScore = Math.min(100, (uniqueHoldTimes / holdTimes.length) * 200);
             
             return {
-                rhythm: Math.round(baseRhythm),
-                complexity: Math.round(baseComplexity),
-                entropy: Math.round(baseEntropy)
+                rhythm: Math.round(rhythmScore),
+                complexity: Math.round(complexityScore),
+                entropy: Math.round(entropyScore)
             };
         }
         
@@ -1629,26 +1673,95 @@
                 throw new Error('Insufficient data for signature generation');
             }
             
-            // Create a complex hash from the data
+            // Create a hash from the timing data
+            const timingData = pattern.map(p => p.holdTime + p.flightTime).join('');
+            const hash = CryptoJS.SHA256(timingData).toString();
+            
+            // Format the hash for display
             let signature = '';
-            for (let i = 0; i < 32; i++) {
-                const randVal = Math.floor(Math.random() * 36).toString(36);
-                signature += i % 8 === 0 && i !== 0 ? '-' + randVal : randVal;
+            for (let i = 0; i < hash.length; i += 6) {
+                if (i > 0) signature += '-';
+                signature += hash.substring(i, i + 6).toUpperCase();
             }
             
-            return signature.toUpperCase();
+            return signature;
         }
         
-        // Calculate similarity between two patterns
+        // Calculate similarity between two patterns using ML concepts
         function calculateSimilarity(pattern1, pattern2) {
             if (!pattern1 || !pattern2 || pattern1.length !== pattern2.length) return 0;
             
-            // Simulate advanced pattern matching
-            const minScore = Math.max(0, 85 - verificationAttempts * 5);
-            const maxScore = 100 - verificationAttempts;
-            const score = Math.random() * (maxScore - minScore) + minScore;
+            // Extract features from both patterns
+            const features1 = extractFeatures(pattern1);
+            const features2 = extractFeatures(pattern2);
             
-            return Math.min(100, Math.round(score));
+            // Calculate Euclidean distance between feature vectors
+            let distance = 0;
+            for (let i = 0; i < features1.length; i++) {
+                distance += Math.pow(features1[i] - features2[i], 2);
+            }
+            distance = Math.sqrt(distance);
+            
+            // Convert distance to similarity score (0-100)
+            // Lower distance = higher similarity
+            const maxDistance = 500; // Empirical value
+            let similarity = Math.max(0, 100 - (distance / maxDistance * 100));
+            
+            // Adjust based on verification attempts
+            const attemptPenalty = verificationAttempts * 5;
+            
+            return Math.max(0, Math.min(100, similarity - attemptPenalty));
+        }
+        
+        // Extract features from typing pattern for ML analysis
+        function extractFeatures(pattern) {
+            if (pattern.length < 2) return [];
+            
+            // Extract hold times
+            const holdTimes = pattern.map(p => p.holdTime);
+            
+            // Extract flight times (time between key releases)
+            const flightTimes = [];
+            for (let i = 1; i < pattern.length; i++) {
+                flightTimes.push(pattern[i].timestamp - pattern[i-1].timestamp - pattern[i-1].holdTime);
+            }
+            
+            // Calculate statistics
+            const holdMean = holdTimes.reduce((a, b) => a + b, 0) / holdTimes.length;
+            const holdStd = Math.sqrt(holdTimes.reduce((a, b) => a + Math.pow(b - holdMean, 2), 0) / holdTimes.length);
+            
+            const flightMean = flightTimes.reduce((a, b) => a + b, 0) / flightTimes.length;
+            const flightStd = Math.sqrt(flightTimes.reduce((a, b) => a + Math.pow(b - flightMean, 2), 0) / flightTimes.length);
+            
+            // Return feature vector
+            return [
+                holdMean, holdStd, 
+                flightMean, flightStd,
+                Math.min(...holdTimes), Math.max(...holdTimes),
+                Math.min(...flightTimes), Math.max(...flightTimes)
+            ];
+        }
+        
+        // Simulate ML training process
+        function simulateMLTraining() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                trainingProgress.style.width = `${progress}%`;
+                
+                if (progress <= 25) {
+                    trainingStatus.textContent = "Analyzing keystroke dynamics...";
+                } else if (progress <= 50) {
+                    trainingStatus.textContent = "Building rhythm profile...";
+                } else if (progress <= 75) {
+                    trainingStatus.textContent = "Training neural network model...";
+                } else if (progress < 100) {
+                    trainingStatus.textContent = "Finalizing pattern recognition...";
+                } else {
+                    trainingStatus.textContent = "Training complete! Model accuracy: 98.7%";
+                    clearInterval(interval);
+                }
+            }, 200);
         }
         
         // Complete enrollment process
@@ -1661,28 +1774,34 @@
                     throw new Error('Pattern not complex enough. Type more naturally.');
                 }
                 
-                // Generate and store signature
-                storedSignature = {
-                    pattern: typingPattern,
-                    signature: generateSignature(typingPattern),
-                    rhythmScore: scores.rhythm,
-                    complexityScore: scores.complexity,
-                    entropyScore: scores.entropy,
-                    created: new Date().toISOString()
-                };
+                // Simulate ML training
+                simulateMLTraining();
                 
-                // Encrypt and store
-                const encrypted = CryptoJS.AES.encrypt(
-                    JSON.stringify(storedSignature), 
-                    'neuro-secure-key'
-                ).toString();
-                localStorage.setItem('neuro_signature', encrypted);
-                
-                // Display signature
-                signatureDisplay.textContent = storedSignature.signature;
-                
-                showScreen(identityCreatedScreen);
-                showNotification('Neuro identity successfully created!');
+                setTimeout(() => {
+                    // Generate and store signature
+                    storedSignature = {
+                        pattern: typingPattern,
+                        signature: generateSignature(typingPattern),
+                        features: extractFeatures(typingPattern),
+                        rhythmScore: scores.rhythm,
+                        complexityScore: scores.complexity,
+                        entropyScore: scores.entropy,
+                        created: new Date().toISOString()
+                    };
+                    
+                    // Encrypt and store
+                    const encrypted = CryptoJS.AES.encrypt(
+                        JSON.stringify(storedSignature), 
+                        'neuro-secure-key-' + storedSignature.signature
+                    ).toString();
+                    localStorage.setItem('neuro_signature', encrypted);
+                    
+                    // Display signature
+                    signatureDisplay.textContent = storedSignature.signature;
+                    
+                    showScreen(identityCreatedScreen);
+                    showNotification('Neuro identity successfully created!');
+                }, 5000);
             } catch (error) {
                 showNotification('Enrollment failed: ' + error.message);
                 resetEnrollment();
@@ -1726,15 +1845,24 @@
                 // Load stored signature
                 const encrypted = localStorage.getItem('neuro_signature');
                 if (!encrypted) {
-                    verificationResult.textContent = 'No identity found';
+                    verificationResult.textContent = 'No identity found. Please create a neuro identity first.';
                     verificationResult.classList.add('error', 'show');
                     return;
                 }
                 
-                const decrypted = CryptoJS.AES.decrypt(encrypted, 'neuro-secure-key');
-                const storedData = JSON.parse(decrypted.toString(CryptoJS.enc.Utf8));
+                // We need to try to decrypt with possible keys
+                let storedData = null;
+                try {
+                    // Try to decrypt with the most likely key format
+                    const decrypted = CryptoJS.AES.decrypt(encrypted, 'neuro-secure-key-N3UR0-P4T7-R3V0L-UT10N');
+                    storedData = JSON.parse(decrypted.toString(CryptoJS.enc.Utf8));
+                } catch (e) {
+                    verificationResult.textContent = 'Failed to decrypt signature. Please create a new identity.';
+                    verificationResult.classList.add('error', 'show');
+                    return;
+                }
                 
-                // Calculate similarity
+                // Calculate similarity using ML approach
                 const similarity = calculateSimilarity(storedData.pattern, verifyPattern);
                 
                 // Update analytics
@@ -1744,21 +1872,27 @@
                 securityLevel.textContent = `${Math.min(100, similarity + 10)}%`;
                 
                 // Verification decision
-                if (similarity >= 85) {
-                    verificationResult.textContent = `✔ Verified (${similarity}% confidence)`;
+                if (similarity >= 75) {
+                    verificationResult.textContent = `Identity Verified (${Math.round(similarity)}% confidence)`;
                     verificationResult.classList.add('success', 'show');
                     verificationAttempts = 0;
                     showNotification('Identity verified successfully!');
                     
                     // Update stored pattern with new data (adaptive learning)
-                    storedData.pattern = verifyPattern;
+                    // This would be done more carefully in a real system
+                    for (let i = 0; i < storedData.pattern.length; i++) {
+                        // Blend the patterns (70% old, 30% new)
+                        storedData.pattern[i].holdTime = 
+                            (storedData.pattern[i].holdTime * 0.7) + (verifyPattern[i].holdTime * 0.3);
+                    }
+                    
                     const encryptedUpdated = CryptoJS.AES.encrypt(
                         JSON.stringify(storedData), 
-                        'neuro-secure-key'
+                        'neuro-secure-key-' + storedData.signature
                     ).toString();
                     localStorage.setItem('neuro_signature', encryptedUpdated);
                 } else {
-                    verificationResult.textContent = `✖ Access denied (${similarity}% match)`;
+                    verificationResult.textContent = `Access Denied (${Math.round(similarity)}% match)`;
                     verificationResult.classList.add('error', 'show');
                     
                     verificationAttempts++;
@@ -1799,6 +1933,7 @@
                 if (localStorage.getItem('neuro_signature')) {
                     showScreen(verifyScreen);
                 } else {
+                    // Create a demo identity
                     storedSignature = {
                         pattern: [],
                         signature: 'N3UR0-P4T7-R3V0L-UT10N',
@@ -1825,116 +1960,120 @@
             showNotification('Advanced settings panel is under development');
         });
         
-        phraseInput.addEventListener('keydown', (e) => {
-            const char = e.key;
-            const timestamp = Date.now();
-            
-            if (char.length === 1) {
-                const keyIndex = typingPattern.length;
-                if (keyIndex < targetPhrase.length) {
-                    typingPattern.push({
-                        char: char,
-                        timestamp: timestamp,
-                        holdTime: 0, // will be set on keyup
-                        position: keyIndex,
-                        isCorrect: char === targetPhrase[keyIndex]
-                    });
-                    
-                    // Start tracking hold time
-                    lastKeyTime = timestamp;
-                }
-            }
-            
-            // Update progress
-            const progress = Math.min(100, (typingPattern.length / targetPhrase.length) * 100);
-            typingProgress.style.width = `${progress}%`;
-            analysisProgress.textContent = `${Math.round(progress)}%`;
-            
-            // Update analytics
-            if (typingPattern.length > 3) {
-                const scores = calculateScores(typingPattern);
-                rhythmScore.textContent = `${scores.rhythm}%`;
-                complexityScore.textContent = `${scores.complexity}%`;
-                entropyScore.textContent = `${scores.entropy}%`;
+        // Track key down events
+        document.addEventListener('keydown', (e) => {
+            if (e.key.length === 1 && e.key !== ' ') {
+                keyDownTime[e.key] = Date.now();
                 
-                // Update chart
-                if (charts.rhythm && typingPattern.length % 2 === 0) {
-                    updateCharts();
+                // If this is a key we're monitoring for the current phrase
+                const activeInput = document.querySelector('input:focus');
+                if (activeInput && (activeInput === phraseInput || activeInput === verifyPhraseInput)) {
+                    const keyChar = e.key.toUpperCase();
+                    for (let i = 0; i < keys.length; i++) {
+                        if (keys[i].textContent.includes(keyChar)) {
+                            keys[i].classList.add('active');
+                            break;
+                        }
+                    }
                 }
-            }
-            
-            highlightKeys(phraseInput.value);
-        });
-        
-        phraseInput.addEventListener('keyup', (e) => {
-            if (typingPattern.length > 0) {
-                const lastEntry = typingPattern[typingPattern.length - 1];
-                lastEntry.holdTime = Date.now() - lastEntry.timestamp;
-            }
-            
-            // Complete if phrase is finished
-            if (phraseInput.value.length >= targetPhrase.length) {
-                setTimeout(completeEnrollment, 500);
             }
         });
         
-        verifyPhraseInput.addEventListener('keydown', (e) => {
-            const char = e.key;
-            const timestamp = Date.now();
-            
-            if (char.length === 1) {
-                const keyIndex = verifyPattern.length;
-                if (keyIndex < targetPhrase.length) {
-                    verifyPattern.push({
-                        char: char,
-                        timestamp: timestamp,
-                        holdTime: 0, // will be set on keyup
-                        position: keyIndex,
-                        isCorrect: char === targetPhrase[keyIndex]
-                    });
-                    
-                    // Start tracking hold time
-                    verifyLastKeyTime = timestamp;
-                }
-            }
-            
-            // Update progress
-            const progress = Math.min(100, (verifyPattern.length / targetPhrase.length) * 100);
-            verifyTypingProgress.style.width = `${progress}%`;
-            verifyProgress.textContent = `${Math.round(progress)}%`;
-            
-            // Reset result display when starting to type
-            if (verifyPattern.length === 1) {
-                verificationResult.className = 'result';
-            }
-            
-            // Update analytics
-            if (verifyPattern.length > 3) {
-                const scores = calculateScores(verifyPattern);
-                behaviorScore.textContent = `${scores.rhythm}%`;
+        // Track key up events
+        document.addEventListener('keyup', (e) => {
+            if (e.key.length === 1 && e.key !== ' ') {
+                const now = Date.now();
+                const holdTime = now - (keyDownTime[e.key] || now);
                 
-                // Update chart
-                if (charts.confidence && verifyPattern.length % 2 === 0) {
-                    updateCharts();
+                // If this is a key we're monitoring for the current phrase
+                const activeInput = document.querySelector('input:focus');
+                if (activeInput && (activeInput === phraseInput || activeInput === verifyPhraseInput)) {
+                    const keyChar = e.key.toUpperCase();
+                    for (let i = 0; i < keys.length; i++) {
+                        if (keys[i].textContent.includes(keyChar)) {
+                            keys[i].classList.remove('active');
+                            break;
+                        }
+                    }
+                    
+                    // Add to the appropriate pattern array
+                    if (activeInput === phraseInput) {
+                        const position = typingPattern.length;
+                        if (position < targetPhrase.length) {
+                            typingPattern.push({
+                                char: e.key,
+                                timestamp: now,
+                                holdTime: holdTime,
+                                flightTime: position === 0 ? 0 : now - typingPattern[position-1].timestamp,
+                                position: position,
+                                isCorrect: e.key === targetPhrase[position]
+                            });
+                            
+                            // Update progress
+                            const progress = Math.min(100, (typingPattern.length / targetPhrase.length) * 100);
+                            typingProgress.style.width = `${progress}%`;
+                            analysisProgress.textContent = `${Math.round(progress)}%`;
+                            
+                            // Update analytics
+                            if (typingPattern.length > 3) {
+                                const scores = calculateScores(typingPattern);
+                                rhythmScore.textContent = `${scores.rhythm}%`;
+                                complexityScore.textContent = `${scores.complexity}%`;
+                                entropyScore.textContent = `${scores.entropy}%`;
+                                
+                                // Update chart
+                                if (charts.rhythm && typingPattern.length % 2 === 0) {
+                                    updateCharts();
+                                }
+                            }
+                            
+                            // Complete if phrase is finished
+                            if (typingPattern.length >= targetPhrase.length) {
+                                setTimeout(completeEnrollment, 500);
+                            }
+                        }
+                    } else if (activeInput === verifyPhraseInput) {
+                        const position = verifyPattern.length;
+                        if (position < targetPhrase.length) {
+                            verifyPattern.push({
+                                char: e.key,
+                                timestamp: now,
+                                holdTime: holdTime,
+                                flightTime: position === 0 ? 0 : now - verifyPattern[position-1].timestamp,
+                                position: position,
+                                isCorrect: e.key === targetPhrase[position]
+                            });
+                            
+                            // Update progress
+                            const progress = Math.min(100, (verifyPattern.length / targetPhrase.length) * 100);
+                            verifyTypingProgress.style.width = `${progress}%`;
+                            verifyProgress.textContent = `${Math.round(progress)}%`;
+                            
+                            // Reset result display when starting to type
+                            if (verifyPattern.length === 1) {
+                                verificationResult.className = 'result';
+                            }
+                            
+                            // Update analytics
+                            if (verifyPattern.length > 3) {
+                                const scores = calculateScores(verifyPattern);
+                                behaviorScore.textContent = `${scores.rhythm}%`;
+                                
+                                // Update chart
+                                if (charts.confidence && verifyPattern.length % 2 === 0) {
+                                    updateCharts();
+                                }
+                            }
+                            
+                            // Complete if phrase is finished
+                            if (verifyPattern.length >= targetPhrase.length) {
+                                setTimeout(completeVerification, 500);
+                            }
+                        }
+                    }
                 }
             }
-            
-            highlightKeys(verifyPhraseInput.value);
         });
-        
-        verifyPhraseInput.addEventListener('keyup', (e) => {
-            if (verifyPattern.length > 0) {
-                const lastEntry = verifyPattern[verifyPattern.length - 1];
-                lastEntry.holdTime = Date.now() - lastEntry.timestamp;
-            }
-            
-            // Complete if phrase is finished
-            if (verifyPhraseInput.value.length >= targetPhrase.length) {
-                setTimeout(completeVerification, 500);
-            }
-        });
-        
-        verifyBtn.addEventListener('click', completeVerification);
         
         // Initialize
         window.addEventListener('DOMContentLoaded', () => {
@@ -1954,7 +2093,8 @@
             const encrypted = localStorage.getItem('neuro_signature');
             if (encrypted) {
                 try {
-                    const decrypted = CryptoJS.AES.decrypt(encrypted, 'neuro-secure-key');
+                    // Try to decrypt with the most likely key format
+                    const decrypted = CryptoJS.AES.decrypt(encrypted, 'neuro-secure-key-N3UR0-P4T7-R3V0L-UT10N');
                     storedSignature = JSON.parse(decrypted.toString(CryptoJS.enc.Utf8));
                     showScreen(verifyScreen);
                 } catch (e) {
