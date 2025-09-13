@@ -800,11 +800,11 @@
                     <p>Remove sensitive information from your documents before sharing</p>
                 </div>
                 <div class="user-actions">
-                    <button class="btn btn-outline">
+                    <button class="btn btn-outline" id="saveTemplateBtn">
                         <i class="fas fa-save"></i>
                         Save Template
                     </button>
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" id="newDocumentBtn">
                         <i class="fas fa-plus"></i>
                         New Document
                     </button>
@@ -990,6 +990,8 @@
             const criticalFindings = document.getElementById('criticalFindings');
             const tabs = document.querySelectorAll('.tab');
             const tabContents = document.querySelectorAll('.tab-content');
+            const saveTemplateBtn = document.getElementById('saveTemplateBtn');
+            const newDocumentBtn = document.getElementById('newDocumentBtn');
             
             // State variables
             let originalContent = '';
@@ -1037,118 +1039,100 @@
                 }
             };
             
-            // Browse button click handler
-            browseBtn.addEventListener('click', () => {
-                fileInput.click();
-            });
-            
-            // File input change handler
-            fileInput.addEventListener('change', handleFileSelection);
-            
-            // Drag and drop handlers
-            dropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                dropZone.classList.add('dragover');
-            });
-            
-            dropZone.addEventListener('dragleave', () => {
-                dropZone.classList.remove('dragover');
-            });
-            
-            dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('dragover');
+            // Initialize the application
+            function init() {
+                // Set up event listeners
+                browseBtn.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', handleFileSelection);
+                analyzeBtn.addEventListener('click', analyzeText);
+                sanitizeBtn.addEventListener('click', sanitizeContent);
+                resetBtn.addEventListener('click', resetApp);
+                downloadBtn.addEventListener('click', downloadSanitizedContent);
+                saveTemplateBtn.addEventListener('click', saveTemplate);
+                newDocumentBtn.addEventListener('click', resetApp);
                 
-                if (e.dataTransfer.files.length) {
-                    handleFileSelection({ target: { files: e.dataTransfer.files } });
-                }
-            });
+                // Set up drag and drop
+                setupDragAndDrop();
+                
+                // Set up tabs
+                setupTabs();
+                
+                // Set up settings change listeners
+                setupSettingsListeners();
+            }
             
-            // Analyze button handler
-            analyzeBtn.addEventListener('click', () => {
-                if (textInput.value.trim()) {
-                    originalContent = textInput.value;
-                    fileName = "pasted-text.txt";
-                    fileType = "text/plain";
-                    processContent(originalContent);
-                } else {
-                    showStatus('Please enter some text to analyze.', 'error');
-                }
-            });
+            // Set up drag and drop functionality
+            function setupDragAndDrop() {
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('dragover');
+                });
+                
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.classList.remove('dragover');
+                });
+                
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                    
+                    if (e.dataTransfer.files.length) {
+                        handleFileSelection({ target: { files: e.dataTransfer.files } });
+                    }
+                });
+                
+                dropZone.addEventListener('click', () => fileInput.click());
+            }
             
-            // Tab switching
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabId = tab.getAttribute('data-tab');
-                    
-                    // Update active tab
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    
-                    // Show corresponding content
-                    tabContents.forEach(content => {
-                        content.classList.remove('active');
-                        if (content.id === `${tabId}Tab`) {
-                            content.classList.add('active');
-                        }
+            // Set up tab functionality
+            function setupTabs() {
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const tabId = tab.getAttribute('data-tab');
+                        
+                        // Update active tab
+                        tabs.forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        
+                        // Show corresponding content
+                        tabContents.forEach(content => {
+                            content.classList.remove('active');
+                            if (content.id === `${tabId}Tab`) {
+                                content.classList.add('active');
+                            }
+                        });
                     });
                 });
-            });
+            }
             
-            // Sanitize button handler
-            sanitizeBtn.addEventListener('click', () => {
-                if (!originalContent) {
-                    showStatus('No content to sanitize.', 'error');
-                    return;
-                }
+            // Set up settings change listeners
+            function setupSettingsListeners() {
+                // Add event listeners to all setting controls
+                document.getElementById('sensitivity').addEventListener('change', updateDetectionSettings);
+                document.getElementById('redactionMode').addEventListener('change', updateDetectionSettings);
                 
-                let sanitizedContent = originalContent;
-                
-                // Replace all detected PII with redacted placeholders
-                detectedPII.forEach(pii => {
-                    const placeholder = `[REDACTED ${pii.type.toUpperCase()}]`;
-                    sanitizedContent = sanitizedContent.replace(pii.value, placeholder);
+                // Add listeners to all PII type checkboxes
+                const checkboxes = document.querySelectorAll('.checkbox-item input');
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', updateDetectionSettings);
                 });
-                
-                // Create download link
-                const blob = new Blob([sanitizedContent], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                
-                downloadBtn.onclick = () => {
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `sanitized-${fileName}`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                };
-                
-                downloadSection.style.display = 'block';
-                showStatus('Content has been successfully sanitized.', 'success');
-                
-                // Update text preview with redacted content
-                updateTextPreview(sanitizedContent);
-                
-                // Switch to preview tab
-                document.querySelector('[data-tab="preview"]').click();
-            });
+            }
             
-            // Reset button handler
-            resetBtn.addEventListener('click', () => {
-                fileInput.value = '';
-                textInput.value = '';
-                findingsList.innerHTML = '<li class="finding-item">No content analyzed yet. Upload a file or paste text to begin.</li>';
-                downloadSection.style.display = 'none';
-                textPreview.style.display = 'none';
-                originalContent = '';
-                detectedPII = [];
-                totalFindings.textContent = '0';
-                criticalFindings.textContent = '0';
-                progressFill.style.width = '0%';
-                statusText.textContent = 'Ready to process your documents';
-                statusText.style.color = '';
-            });
+            // Update detection settings based on user preferences
+            function updateDetectionSettings() {
+                // Update pattern enabled status based on checkboxes
+                patterns.email.enabled = document.getElementById('detectEmails').checked;
+                patterns.phone.enabled = document.getElementById('detectPhones').checked;
+                patterns.name.enabled = document.getElementById('detectNames').checked;
+                patterns.address.enabled = document.getElementById('detectAddresses').checked;
+                patterns.creditCard.enabled = document.getElementById('detectCreditCards').checked;
+                patterns.ssn.enabled = document.getElementById('detectSSNs').checked;
+                
+                // If we have content, re-analyze it with new settings
+                if (originalContent) {
+                    processContent(originalContent);
+                }
+            }
             
             // Handle file selection
             function handleFileSelection(e) {
@@ -1162,14 +1146,10 @@
                     
                     if (file.type === 'application/pdf') {
                         // Simulate PDF processing
-                        setTimeout(() => {
-                            simulateContentProcessing();
-                        }, 1500);
+                        simulateFileProcessing(file, 1500);
                     } else if (file.type.startsWith('image/')) {
                         // Simulate image processing
-                        setTimeout(() => {
-                            simulateContentProcessing();
-                        }, 2000);
+                        simulateFileProcessing(file, 2000);
                     } else {
                         // Text file
                         const reader = new FileReader();
@@ -1190,21 +1170,56 @@
                 }
             }
             
-            // Simulate content processing for PDF and images
-            function simulateContentProcessing() {
-                progressFill.style.width = '60%';
-                showStatus('Extracting text content...', 'info');
-                
-                // Simulate extracted content
+            // Simulate file processing for PDF and images
+            function simulateFileProcessing(file, delay) {
                 setTimeout(() => {
-                    originalContent = `John Doe recently applied for a new credit card. 
+                    progressFill.style.width = '60%';
+                    showStatus('Extracting text content...', 'info');
+                    
+                    // Simulate extracted content based on file type
+                    let sampleContent = '';
+                    
+                    if (file.type === 'application/pdf') {
+                        sampleContent = `Document: ${file.name}
+                        
+John Doe recently applied for a new credit card. 
 His contact information is johndoe@example.com and his phone number is (555) 123-4567. 
 He lives at 123 Main Street, Anytown, USA. 
 His Social Security Number is 123-45-6789 and his credit card number is 4111-1111-1111-1111.
 Please review his application and contact him with any questions.`;
+                    } else if (file.type.startsWith('image/')) {
+                        sampleContent = `Image: ${file.name}
+                        
+Extracted text from image:
+Customer Information:
+Name: Sarah Johnson
+Email: sarah.johnson@company.com
+Phone: (444) 555-6677
+Address: 456 Oak Avenue, Somewhere, NY 10001
+Credit Card: 5500-0000-0000-0004
+SSN: 987-65-4321
+
+Please process this application promptly.`;
+                    }
                     
+                    // Add a slight delay for realism
+                    setTimeout(() => {
+                        originalContent = sampleContent;
+                        processContent(originalContent);
+                    }, 1000);
+                }, delay);
+            }
+            
+            // Analyze text from textarea
+            function analyzeText() {
+                if (textInput.value.trim()) {
+                    originalContent = textInput.value;
+                    fileName = "pasted-text.txt";
+                    fileType = "text/plain";
                     processContent(originalContent);
-                }, 1500);
+                } else {
+                    showStatus('Please enter some text to analyze.', 'error');
+                }
             }
             
             // Process content to find PII
@@ -1290,24 +1305,136 @@ Please review his application and contact him with any questions.`;
                 }
             }
             
+            // Sanitize the content by redacting PII
+            function sanitizeContent() {
+                if (!originalContent) {
+                    showStatus('No content to sanitize.', 'error');
+                    return;
+                }
+                
+                let sanitizedContent = originalContent;
+                const redactionMode = document.getElementById('redactionMode').value;
+                
+                // Replace all detected PII based on redaction mode
+                detectedPII.forEach(pii => {
+                    let placeholder;
+                    
+                    switch(redactionMode) {
+                        case 'partial':
+                            // Keep some structure but redact most content
+                            if (pii.type === 'email') {
+                                const parts = pii.value.split('@');
+                                placeholder = parts[0].substring(0, 2) + '***@' + parts[1];
+                            } else if (pii.type === 'phone') {
+                                placeholder = pii.value.replace(/\d/g, '*').replace(/\*\*\*\*\*(\*+)/, '******');
+                            } else if (pii.type === 'creditCard') {
+                                placeholder = pii.value.replace(/\d(?=\d{4})/g, '*');
+                            } else {
+                                placeholder = pii.value.replace(/[a-zA-Z0-9]/g, '*');
+                            }
+                            break;
+                        case 'pseudonymize':
+                            // Replace with fake but similar data
+                            if (pii.type === 'email') {
+                                placeholder = 'user@example.com';
+                            } else if (pii.type === 'phone') {
+                                placeholder = '(555) 123-4567';
+                            } else if (pii.type === 'creditCard') {
+                                placeholder = '****-****-****-1234';
+                            } else if (pii.type === 'ssn') {
+                                placeholder = '***-**-****';
+                            } else if (pii.type === 'name') {
+                                placeholder = 'John Doe';
+                            } else if (pii.type === 'address') {
+                                placeholder = '123 Main Street';
+                            }
+                            break;
+                        case 'full':
+                        default:
+                            placeholder = `[REDACTED ${pii.type.toUpperCase()}]`;
+                    }
+                    
+                    sanitizedContent = sanitizedContent.replace(pii.value, placeholder);
+                });
+                
+                // Create download link
+                const blob = new Blob([sanitizedContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                
+                downloadBtn.onclick = () => {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `sanitized-${fileName}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                };
+                
+                downloadSection.style.display = 'block';
+                showStatus('Content has been successfully sanitized.', 'success');
+                
+                // Update text preview with redacted content
+                updateTextPreview(sanitizedContent);
+                
+                // Switch to preview tab
+                document.querySelector('[data-tab="preview"]').click();
+            }
+            
+            // Download the sanitized content
+            function downloadSanitizedContent() {
+                // This is handled in the sanitizeContent function
+            }
+            
+            // Reset the application
+            function resetApp() {
+                fileInput.value = '';
+                textInput.value = '';
+                findingsList.innerHTML = '<li class="finding-item">No content analyzed yet. Upload a file or paste text to begin.</li>';
+                downloadSection.style.display = 'none';
+                textPreview.style.display = 'none';
+                originalContent = '';
+                detectedPII = [];
+                totalFindings.textContent = '0';
+                criticalFindings.textContent = '0';
+                progressFill.style.width = '0%';
+                statusText.textContent = 'Ready to process your documents';
+                statusText.style.color = '';
+                
+                // Switch to findings tab
+                document.querySelector('[data-tab="findings"]').click();
+            }
+            
+            // Save current settings as a template
+            function saveTemplate() {
+                const templateName = prompt('Enter a name for this template:');
+                if (templateName) {
+                    showStatus(`Template "${templateName}" saved successfully.`, 'success');
+                    // In a real application, we would save to localStorage or a database
+                }
+            }
+            
             // Show status message
             function showStatus(message, type) {
                 statusText.textContent = message;
                 
                 switch (type) {
                     case 'error':
-                        statusText.style.color = var(--danger);
+                        statusText.style.color = '#e74c3c';
                         break;
                     case 'success':
-                        statusText.style.color = var(--success);
+                        statusText.style.color = '#2ecc71';
                         break;
                     case 'info':
-                        statusText.style.color = var(--primary);
+                        statusText.style.color = '#4361ee';
                         break;
                     default:
-                        statusText.style.color = var(--gray);
+                        statusText.style.color = '#6c757d';
                 }
             }
+            
+            // Initialize the application
+            init();
         });
     </script>
 </body>
