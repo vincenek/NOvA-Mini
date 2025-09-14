@@ -3,2110 +3,773 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neuro-Auth | Behavioral Biometrics Authentication</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+    <title>OmniWheel - Universal Decision Engine</title>
     <style>
-        :root {
-            --primary: #4e22d0;
-            --primary-dark: #3a189c;
-            --primary-light: #6d3dff;
-            --secondary: #00e5ff;
-            --accent: #ff2e7a;
-            --background: #0a0818;
-            --surface: #16142c;
-            --surface-light: #232040;
-            --text: #f0f0ff;
-            --text-secondary: #a0a0cc;
-            --success: #00f0a8;
-            --error: #ff3860;
-            --warning: #ffcc00;
-            --easing: cubic-bezier(0.4, 0, 0.2, 1);
-            --border-radius: 20px;
-            --shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
-            --transition: all 0.4s var(--easing);
-            --glow: 0 0 25px rgba(109, 61, 255, 0.6);
-            --gradient: linear-gradient(135deg, var(--primary-light), var(--secondary));
-        }
-        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background: var(--background);
-            background-image: 
-                radial-gradient(circle at 15% 30%, rgba(78, 34, 208, 0.2) 0%, transparent 30%),
-                radial-gradient(circle at 85% 70%, rgba(0, 229, 255, 0.2) 0%, transparent 30%);
-            color: var(--text);
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: #333;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            line-height: 1.6;
             padding: 20px;
-            overflow-x: hidden;
-        }
-        
-        .container {
-            background: var(--surface);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            width: 100%;
-            max-width: 1400px;
-            height: 90vh;
-            padding: 40px;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(109, 61, 255, 0.3);
-            z-index: 10;
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
         
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(78, 34, 208, 0.08) 0%, 
-                rgba(0, 229, 255, 0.08) 100%);
-            z-index: -1;
-            border-radius: var(--border-radius);
-        }
-        
-        h1, h2, h3 {
-            font-weight: 800;
-            letter-spacing: -0.5px;
+        header {
             text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 800px;
         }
         
         h1 {
-            font-size: 3.5rem;
-            margin-bottom: 20px;
-            background: linear-gradient(90deg, var(--primary-light), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            position: relative;
-            padding-bottom: 20px;
-            text-shadow: var(--glow);
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
         
-        h1::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 250px;
-            height: 6px;
-            background: var(--gradient);
-            border-radius: 3px;
-        }
-        
-        h2 {
-            font-size: 2.4rem;
-            color: var(--text);
-            margin-bottom: 25px;
-            font-weight: 700;
-            position: relative;
-            padding-bottom: 20px;
-        }
-        
-        h2::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120px;
-            height: 4px;
-            background: var(--primary-light);
-            border-radius: 2px;
-        }
-        
-        p {
-            text-align: center;
-            margin-bottom: 25px;
+        .tagline {
+            color: rgba(255, 255, 255, 0.9);
             font-size: 1.2rem;
-            color: var(--text-secondary);
-            max-width: 90%;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.8;
-        }
-        
-        .logo {
-            text-align: center;
             margin-bottom: 30px;
-            position: relative;
         }
         
-        .logo span {
-            font-size: 3.5rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: inline-block;
-            text-shadow: var(--glow);
-        }
-        
-        .screen-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            padding: 15px 10px;
-        }
-        
-        .fixed-phrase {
-            background: var(--surface-light);
-            border: 1px solid rgba(109, 61, 255, 0.4);
-            border-radius: 16px;
-            padding: 25px;
-            margin: 25px 0;
-            text-align: center;
-            font-size: 2rem;
-            letter-spacing: 1.5px;
-            color: var(--primary-light);
-            font-weight: 700;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-            position: relative;
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 800px;
             overflow: hidden;
         }
         
-        .fixed-phrase::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: var(--gradient);
-        }
-        
-        .input-container {
-            margin: 30px 0;
-            position: relative;
-        }
-        
-        input {
-            width: 100%;
-            padding: 20px 30px;
-            border: 2px solid rgba(109, 61, 255, 0.4);
-            border-radius: 16px;
-            background: var(--surface-light);
-            color: var(--text);
-            font-size: 1.3rem;
-            text-align: center;
-            outline: none;
-            transition: var(--transition);
-            font-family: 'Inter', system-ui, sans-serif;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            letter-spacing: 1.5px;
-        }
-        
-        input:focus {
-            border-color: var(--primary-light);
-            box-shadow: 0 0 0 4px rgba(109, 61, 255, 0.3);
-        }
-        
-        input::placeholder {
-            color: rgba(160, 160, 204, 0.7);
-        }
-        
-        .button-group {
+        .tabs {
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 30px;
-            padding-bottom: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
         }
         
-        button {
-            background: var(--gradient);
-            color: white;
-            border: none;
-            border-radius: 16px;
-            padding: 18px 36px;
-            font-size: 1.2rem;
+        .tab {
+            padding: 15px 20px;
             cursor: pointer;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-            min-width: 240px;
-            font-weight: 700;
-            box-shadow: 0 10px 25px rgba(78, 34, 208, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-        
-        button.secondary {
-            background: var(--surface-light);
-            color: var(--text);
-            border: 2px solid rgba(109, 61, 255, 0.4);
-        }
-        
-        button:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none !important;
-            box-shadow: none !important;
-        }
-        
-        button::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--secondary), var(--accent));
-            z-index: -1;
-            opacity: 0;
-            transition: var(--transition);
-        }
-        
-        button:hover:not(:disabled)::after {
-            opacity: 1;
-        }
-        
-        button:hover:not(:disabled), button:active:not(:disabled) {
-            transform: translateY(-6px);
-            box-shadow: 0 15px 30px rgba(78, 34, 208, 0.5);
-        }
-        
-        .progress-container {
-            margin: 30px 0;
-        }
-        
-        .progress-bar {
-            height: 16px;
-            background: rgba(109, 61, 255, 0.15);
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.4);
-        }
-        
-        .progress {
-            height: 100%;
-            background: var(--gradient);
-            width: 0%;
-            transition: width 0.3s ease;
-            position: relative;
-        }
-        
-        .progress-label {
+            font-weight: 500;
+            transition: all 0.3s ease;
             text-align: center;
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            margin-top: 12px;
+            flex: 1;
         }
         
-        .result {
-            text-align: center;
-            font-size: 1.6rem;
-            margin: 30px 0;
-            padding: 25px;
-            border-radius: 16px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-            transition: var(--transition);
-            opacity: 0;
-            transform: translateY(20px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        .tab:hover {
+            background: #e9ecef;
         }
         
-        .result.show {
-            opacity: 1;
-            transform: translateY(0);
+        .tab.active {
+            background: white;
+            border-bottom: 3px solid #6e8efb;
+            color: #6e8efb;
         }
         
-        .success {
-            color: var(--success);
-            background: rgba(0, 240, 168, 0.1);
-            border: 2px solid rgba(0, 240, 168, 0.3);
-        }
-        
-        .error {
-            color: var(--error);
-            background: rgba(255, 56, 96, 0.1);
-            border: 2px solid rgba(255, 56, 96, 0.3);
-        }
-        
-        .signature-display {
-            font-family: 'Fira Code', 'Courier New', monospace;
-            background: var(--surface-light);
-            padding: 25px;
-            border-radius: 16px;
-            margin: 25px 0;
-            height: 140px;
-            overflow-y: auto;
-            border: 2px solid rgba(109, 61, 255, 0.3);
-            font-size: 1rem;
-            line-height: 1.8;
-            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .signature-display::before {
-            content: 'NEURO SIGNATURE';
-            position: absolute;
-            top: -12px;
-            left: 25px;
-            background: var(--surface);
-            padding: 0 15px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            letter-spacing: 1.5px;
-        }
-        
-        .signature-content {
-            max-width: 100%;
-            word-wrap: break-word;
-            text-align: center;
-            padding: 15px;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-        
-        .screen {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-        }
-        
-        .active {
-            display: flex;
-        }
-        
-        .typing-visualization {
-            display: flex;
-            justify-content: center;
-            margin: 30px 0;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .key {
-            width: 60px;
-            height: 60px;
-            background: var(--surface-light);
-            border: 2px solid rgba(109, 61, 255, 0.4);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            transition: var(--transition);
-            position: relative;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-        }
-        
-        .key.active {
-            background: rgba(109, 61, 255, 0.3);
-            transform: translateY(-8px);
-            box-shadow: 0 12px 20px rgba(78, 34, 208, 0.5);
-            border-color: var(--primary-light);
-            animation: pulse 0.5s ease;
-        }
-        
-        @keyframes pulse {
-            0% { transform: translateY(-8px) scale(1); }
-            50% { transform: translateY(-8px) scale(1.1); }
-            100% { transform: translateY(-8px) scale(1); }
-        }
-        
-        .key .label {
-            position: absolute;
-            bottom: 5px;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-        
-        .protection-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin: 30px 0;
-            gap: 15px;
-        }
-        
-        .protection-badge {
-            background: rgba(109, 61, 255, 0.2);
-            border-radius: 24px;
-            padding: 12px 22px;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            border: 1px solid rgba(109, 61, 255, 0.3);
-            transition: var(--transition);
-        }
-        
-        .protection-badge:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        }
-        
-        .status-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin: 25px 0;
-        }
-        
-        .status-item {
-            text-align: center;
-        }
-        
-        .status-value {
-            font-family: 'Fira Code', 'Courier New', monospace;
-            font-size: 2.5rem;
-            color: var(--primary-light);
-            margin-bottom: 8px;
-            font-weight: 800;
-            text-shadow: 0 0 10px rgba(109, 61, 255, 0.5);
-        }
-        
-        .status-label {
-            font-size: 1.05rem;
-            color: var(--text-secondary);
-            letter-spacing: 0.5px;
-        }
-        
-        .analytics-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .analytics-box {
-            background: var(--surface-light);
-            border-radius: 16px;
-            padding: 22px;
-            border: 2px solid rgba(109, 61, 255, 0.3);
-            transition: var(--transition);
-        }
-        
-        .analytics-box:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-        }
-        
-        .analytics-box h4 {
-            color: var(--primary-light);
-            margin-bottom: 15px;
-            text-align: center;
-            font-size: 1.1rem;
-        }
-        
-        .analytics-value {
-            font-size: 2rem;
-            text-align: center;
-            font-weight: 800;
-            color: var(--accent);
-            margin: 10px 0;
-            font-family: 'Fira Code', 'Courier New', monospace;
-        }
-        
-        .analytics-label {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-        
-        .guide-container {
-            background: var(--surface-light);
-            border: 2px solid rgba(109, 61, 255, 0.4);
-            border-radius: 16px;
-            padding: 25px;
-            margin: 30px 0;
-            font-size: 1rem;
-        }
-        
-        .guide-container h4 {
-            color: var(--primary-light);
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 1.3rem;
-        }
-        
-        .guide-container ul {
-            padding-left: 25px;
-            margin: 20px 0;
-        }
-        
-        .guide-container li {
-            margin-bottom: 15px;
-            line-height: 1.8;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 25px;
-            right: 25px;
-            padding: 18px 30px;
-            border-radius: 12px;
-            background: var(--surface);
-            border-left: 5px solid var(--primary-light);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-            transform: translateX(150%);
-            transition: transform 0.4s ease;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-        }
-        
-        .pattern-container {
-            width: 100%;
-            height: 350px;
-            background: var(--surface-light);
-            border-radius: 16px;
-            margin: 25px 0;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid rgba(109, 61, 255, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .pattern-canvas {
-            width: 100%;
-            height: 100%;
-        }
-        
-        .lockout-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            color: white;
-            font-size: 2.5rem;
-            text-align: center;
+        .tab-content {
             padding: 30px;
+            min-height: 400px;
         }
         
-        .lockout-overlay .timer {
-            font-size: 5rem;
-            color: var(--error);
-            margin: 20px 0;
-            font-weight: 800;
+        .content {
+            display: none;
         }
         
-        .chart-container {
-            background: var(--surface-light);
-            border-radius: 16px;
-            padding: 25px;
-            margin: 25px 0;
-            height: 350px;
-            border: 2px solid rgba(109, 61, 255, 0.3);
+        .content.active {
+            display: block;
         }
         
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 25px;
+        .wheel-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
         }
         
-        .dashboard-card {
-            background: var(--surface-light);
-            border-radius: 16px;
-            padding: 25px;
-            border: 2px solid rgba(109, 61, 255, 0.3);
-        }
-        
-        .dashboard-card h3 {
-            color: var(--primary-light);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .particles-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-            border-radius: var(--border-radius);
-        }
-        
-        .particle {
-            position: absolute;
-            background: rgba(109, 61, 255, 0.6);
-            border-radius: 50%;
-            animation: float 15s infinite linear;
-        }
-        
-        @keyframes float {
-            0% {
-                transform: translateY(0) translateX(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-1000px) translateX(100px);
-                opacity: 0;
-            }
-        }
-        
-        .neuro-pulse {
-            position: absolute;
+        #wheel {
             width: 300px;
             height: 300px;
             border-radius: 50%;
-            background: rgba(109, 61, 255, 0.1);
+            background: conic-gradient(
+                from 0deg, 
+                #FF6B6B 0deg 72deg, 
+                #4ECDC4 72deg 144deg, 
+                #FFE66D 144deg 216deg, 
+                #6E8EFB 216deg 288deg, 
+                #A777E3 288deg 360deg
+            );
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        }
+        
+        .wheel-pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 40px;
+            background: #333;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            z-index: 10;
+        }
+        
+        .wheel-controls {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: pulse-ring 3s infinite;
+            gap: 15px;
+            margin-top: 20px;
         }
         
-        @keyframes pulse-ring {
-            0% {
-                transform: scale(0.8);
-                opacity: 0.8;
-            }
-            80%, 100% {
-                transform: scale(2);
-                opacity: 0;
-            }
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            background: #6e8efb;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
-        .ml-training {
-            background: var(--surface-light);
-            border-radius: 16px;
-            padding: 20px;
-            margin: 20px 0;
-            border: 2px solid rgba(109, 61, 255, 0.3);
+        button:hover {
+            background: #5a7df9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
         
-        .ml-training h4 {
-            color: var(--primary-light);
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        input, textarea {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: 100%;
             margin-bottom: 15px;
+            font-size: 1rem;
+        }
+        
+        .options-list {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .option-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .option-item button {
+            padding: 5px 10px;
+            background: #ff6b6b;
+        }
+        
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .pros, .cons {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .pros h3, .cons h3 {
+            margin-bottom: 15px;
+            color: #28a745;
+        }
+        
+        .cons h3 {
+            color: #dc3545;
+        }
+        
+        .dice-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .dice {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .coin {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #FFE66D, #FFD43B);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin: 20px 0;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            min-height: 60px;
+        }
+        
+        .share-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
             text-align: center;
         }
         
-        .training-progress {
-            height: 10px;
-            background: rgba(109, 61, 255, 0.15);
-            border-radius: 5px;
-            overflow: hidden;
-            margin: 15px 0;
-        }
-        
-        .training-progress-inner {
-            height: 100%;
-            background: var(--gradient);
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-        
-        @media (max-width: 1024px) {
-            .container {
-                padding: 30px 20px;
-                height: 95vh;
-            }
-            
-            h1 {
-                font-size: 2.8rem;
-            }
-            
-            h2 {
-                font-size: 2rem;
-            }
-            
-            .button-group {
-                flex-direction: column;
-            }
-            
-            button {
-                width: 100%;
-                min-width: auto;
-                padding: 16px;
-            }
-            
-            .fixed-phrase {
-                font-size: 1.6rem;
-                padding: 20px;
-            }
-            
-            .analytics-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .status-indicator {
-                gap: 20px;
-            }
-            
-            .status-value {
-                font-size: 2rem;
-            }
-            
-            .screen-content {
-                padding: 10px;
-            }
-            
-            .key {
-                width: 45px;
-                height: 45px;
-                font-size: 1.2rem;
-            }
-            
-            .chart-container {
-                height: 300px;
-            }
-        }
-        
-        @media (max-width: 640px) {
-            h1 {
-                font-size: 2.2rem;
-            }
-            
-            h2 {
-                font-size: 1.8rem;
-            }
-            
-            .status-indicator {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .protection-container {
-                flex-direction: column;
-            }
-            
-            .pattern-container {
-                height: 250px;
-            }
+        footer {
+            margin-top: 40px;
+            color: white;
+            text-align: center;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
+    <header>
+        <h1>OmniWheel</h1>
+        <p class="tagline">Your Universal, Private Decision Engine</p>
+    </header>
+    
     <div class="container">
-        <!-- Particle background -->
-        <div class="particles-container" id="particles"></div>
-        
-        <!-- Notification system -->
-        <div class="notification" id="notification">
-            <i class="fas fa-info-circle"></i> <span id="notificationText"></span>
+        <div class="tabs">
+            <div class="tab active" data-tab="wheel">Decision Wheel</div>
+            <div class="tab" data-tab="proscons">Pros & Cons</div>
+            <div class="tab" data-tab="dice">Dice Roller</div>
+            <div class="tab" data-tab="coin">Coin Flip</div>
+            <div class="tab" data-tab="oracle">Oracle</div>
         </div>
         
-        <!-- Lockout overlay -->
-        <div class="lockout-overlay" id="lockoutOverlay" style="display: none;">
-            <div class="neuro-pulse">
-                <i class="fas fa-lock fa-5x" style="color: var(--error);"></i>
-            </div>
-            <h3>Security Lockout</h3>
-            <p>Too many failed attempts. System locked for security.</p>
-            <div class="timer" id="lockoutTimer">05:00</div>
-        </div>
-        
-        <!-- Intro Screen -->
-        <div id="introScreen" class="screen active">
-            <div class="screen-content">
-                <div class="logo">
-                    <span>NEURO-AUTH</span>
-                </div>
-                <h1>The Future of Authentication</h1>
-                <p>Revolutionary behavioral biometrics technology that analyzes your unique neuro-muscular patterns to create an unforgeable identity signature.</p>
-                
-                <div class="status-indicator">
-                    <div class="status-item">
-                        <div class="status-value">99.98%</div>
-                        <div class="status-label">Accuracy</div>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-value">512-bit</div>
-                        <div class="status-label">Quantum Encryption</div>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-value">0.02ms</div>
-                        <div class="status-label">Response Time</div>
-                    </div>
-                </div>
-                
-                <div class="pattern-container">
-                    <canvas id="introCanvas" class="pattern-canvas"></canvas>
-                </div>
-                
-                <div class="protection-container">
-                    <div class="protection-badge">
-                        <i class="fas fa-brain"></i> Neural Network Analysis
-                    </div>
-                    <div class="protection-badge">
-                        <i class="fas fa-shield-alt"></i> Military-Grade Security
-                    </div>
-                    <div class="protection-badge">
-                        <i class="fas fa-fingerprint"></i> Multi-Factor Biometrics
-                    </div>
-                </div>
-                
-                <div class="guide-container">
-                    <h4>Next-Generation Security Technology</h4>
-                    <ul>
-                        <li><i class="fas fa-circle-small"></i> Analyzes 42 unique behavioral parameters in real-time</li>
-                        <li><i class="fas fa-circle-small"></i> Adaptive AI improves accuracy with each authentication</li>
-                        <li><i class="fas fa-circle-small"></i> Quantum-resistant encryption protocols</li>
-                        <li><i class="fas fa-circle-small"></i> Spoof-resistant neural pattern recognition</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="button-group">
-                <button id="createIdentityBtn">
-                    <i class="fas fa-fingerprint"></i> Create Neuro Identity
-                </button>
-                <button id="demoLoginBtn" class="secondary">
-                    <i class="fas fa-rocket"></i> Quick Demo
-                </button>
-            </div>
-        </div>
-        
-        <!-- Enrollment Screen -->
-        <div id="enrollScreen" class="screen">
-            <div class="screen-content">
-                <h2>Create Your Neuro Identity</h2>
-                <p>Type the phrase below naturally. Our system will analyze your unique neuro-muscular patterns to create your unforgeable identity signature.</p>
-                
-                <div class="fixed-phrase">NeuroPattern Revolution</div>
-                
-                <div class="input-container">
-                    <input type="text" id="phraseInput" placeholder="Begin typing to capture your neuro pattern..." autocomplete="off" autocapitalize="off" autocorrect="off">
-                </div>
-                
-                <div class="typing-visualization">
-                    <div class="key">N<span class="label">1</span></div>
-                    <div class="key">E<span class="label">2</span></div>
-                    <div class="key">U<span class="label">3</span></div>
-                    <div class="key">R<span class="label">4</span></div>
-                    <div class="key">O<span class="label">5</span></div>
-                    <div class="key">P<span class="label">6</span></div>
-                    <div class="key">A<span class="label">7</span></div>
-                    <div class="key">T<span class="label">8</span></div>
-                    <div class="key">T<span class="label">9</span></div>
-                    <div class="key">E<span class="label">10</span></div>
-                    <div class="key">R<span class="label">11</span></div>
-                    <div class="key">N<span class="label">12</span></div>
-                    <div class="key">R<span class="label">13</span></div>
-                    <div class="key">E<span class="label">14</span></div>
-                    <div class="key">V<span class="label">15</span></div>
-                </div>
-                
-                <div class="progress-container">
-                    <div class="progress-bar">
-                        <div class="progress" id="typingProgress"></div>
-                    </div>
-                    <div class="progress-label">Pattern Analysis: <span id="analysisProgress">0%</span></div>
-                </div>
-                
-                <div class="ml-training">
-                    <h4>Machine Learning Training</h4>
-                    <p>Our AI is analyzing your unique typing rhythm and building a neural network model of your behavior.</p>
-                    <div class="training-progress">
-                        <div class="training-progress-inner" id="trainingProgress"></div>
-                    </div>
-                    <p id="trainingStatus">Initializing pattern recognition algorithms...</p>
-                </div>
-                
-                <div class="dashboard-grid">
-                    <div class="chart-container">
-                        <canvas id="rhythmChart"></canvas>
+        <div class="tab-content">
+            <!-- Decision Wheel Tab -->
+            <div class="content active" id="wheel-content">
+                <div class="wheel-container">
+                    <div class="wheel-pointer"></div>
+                    <div id="wheel"></div>
+                    <div class="result" id="wheel-result">Spin the wheel to make a decision!</div>
+                    
+                    <div class="options-list">
+                        <div class="option-item">
+                            <input type="text" id="new-option" placeholder="Enter an option">
+                            <button id="add-option">Add</button>
+                        </div>
+                        <div id="options-container"></div>
                     </div>
                     
-                    <div class="analytics-container">
-                        <div class="analytics-box">
-                            <h4>Rhythm Signature</h4>
-                            <div class="analytics-value" id="rhythmScore">0%</div>
-                            <div class="analytics-label">Consistency score</div>
-                        </div>
-                        <div class="analytics-box">
-                            <h4>Pattern Complexity</h4>
-                            <div class="analytics-value" id="complexityScore">0%</div>
-                            <div class="analytics-label">Uniqueness index</div>
-                        </div>
-                        <div class="analytics-box">
-                            <h4>Neural Entropy</h4>
-                            <div class="analytics-value" id="entropyScore">0%</div>
-                            <div class="analytics-label">Security strength</div>
-                        </div>
-                        <div class="analytics-box">
-                            <h4>Behavioral Deviation</h4>
-                            <div class="analytics-value" id="deviationScore">0%</div>
-                            <div class="analytics-label">Lower is better</div>
-                        </div>
+                    <div class="wheel-controls">
+                        <button id="spin-btn">Spin Wheel</button>
+                        <button id="clear-btn">Clear All</button>
                     </div>
                 </div>
             </div>
             
-            <div class="button-group">
-                <button id="cancelEnrollBtn" class="secondary">
-                    <i class="fas fa-arrow-left"></i> Back
-                </button>
-            </div>
-        </div>
-        
-        <!-- Verification Screen -->
-        <div id="verifyScreen" class="screen">
-            <div class="screen-content">
-                <h2>Verify Your Identity</h2>
-                <p>Type the phrase below to authenticate with your neuro-muscular pattern. The system will compare your typing behavior with your stored neuro signature.</p>
+            <!-- Pros & Cons Tab -->
+            <div class="content" id="proscons-content">
+                <h2>Pros & Cons Matrix</h2>
+                <input type="text" id="decision-title" placeholder="Decision to make">
                 
-                <div class="fixed-phrase">NeuroPattern Revolution</div>
-                
-                <div class="input-container">
-                    <input type="text" id="verifyPhraseInput" placeholder="Begin typing to verify your identity..." autocomplete="off" autocapitalize="off" autocorrect="off">
-                </div>
-                
-                <div class="typing-visualization">
-                    <div class="key">N<span class="label">1</span></div>
-                    <div class="key">E<span class="label">2</span></div>
-                    <div class="key">U<span class="label">3</span></div>
-                    <div class="key">R<span class="label">4</span></div>
-                    <div class="key">O<span class="label">5</span></div>
-                    <div class="key">P<span class="label">6</span></div>
-                    <div class="key">A<span class="label">7</span></div>
-                    <div class="key">T<span class="label">8</span></div>
-                    <div class="key">T<span class="label">9</span></div>
-                    <div class="key">E<span class="label">10</span></div>
-                    <div class="key">R<span class="label">11</span></div>
-                    <div class="key">N<span class="label">12</span></div>
-                    <div class="key">R<span class="label">13</span></div>
-                    <div class="key">E<span class="label">14</span></div>
-                    <div class="key">V<span class="label">15</span></div>
-                </div>
-                
-                <div class="progress-container">
-                    <div class="progress-bar">
-                        <div class="progress" id="verifyTypingProgress"></div>
-                    </div>
-                    <div class="progress-label">Verification Progress: <span id="verifyProgress">0%</span></div>
-                </div>
-                
-                <div id="verificationResult" class="result"></div>
-                
-                <div class="dashboard-grid">
-                    <div class="chart-container">
-                        <canvas id="confidenceChart"></canvas>
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h3>Pros</h3>
+                        <div class="input-group">
+                            <input type="text" id="new-pro" placeholder="Add a pro">
+                            <button id="add-pro">Add</button>
+                        </div>
+                        <div id="pros-list"></div>
                     </div>
                     
-                    <div class="analytics-container">
-                        <div class="analytics-box">
-                            <h4>Confidence Score</h4>
-                            <div class="analytics-value" id="confidenceScore">0%</div>
-                            <div class="analytics-label">Match accuracy</div>
+                    <div class="cons">
+                        <h3>Cons</h3>
+                        <div class="input-group">
+                            <input type="text" id="new-con" placeholder="Add a con">
+                            <button id="add-con">Add</button>
                         </div>
-                        <div class="analytics-box">
-                            <h4>Rhythm Deviation</h4>
-                            <div class="analytics-value" id="deviationValue">0%</div>
-                            <div class="analytics-label">Lower is better</div>
-                        </div>
-                        <div class="analytics-box">
-                            <h4>Behavior Match</h4>
-                            <div class="analytics-value" id="behaviorScore">0%</div>
-                            <div class="analytics-label">Pattern correlation</div>
-                        </div>
-                        <div class="analytics-box">
-                            <h4>Security Level</h4>
-                            <div class="analytics-value" id="securityLevel">0%</div>
-                            <div class="analytics-label">Threat assessment</div>
-                        </div>
+                        <div id="cons-list"></div>
                     </div>
+                </div>
+                
+                <div class="result" id="proscons-result"></div>
+            </div>
+            
+            <!-- Dice Roller Tab -->
+            <div class="content" id="dice-content">
+                <div class="dice-container">
+                    <h2>Dice Roller</h2>
+                    <div class="dice" id="dice">6</div>
+                    <button id="roll-dice">Roll Dice</button>
+                    <div class="result" id="dice-result"></div>
                 </div>
             </div>
             
-            <div class="button-group">
-                <button id="verifyBtn">
-                    <i class="fas fa-check-circle"></i> Verify Identity
-                </button>
-                <button id="resetBtn" class="secondary">
-                    <i class="fas fa-user-slash"></i> Reset Identity
-                </button>
-            </div>
-        </div>
-        
-        <!-- Identity Created Screen -->
-        <div id="identityCreatedScreen" class="screen">
-            <div class="screen-content">
-                <h2>Neuro Identity Created</h2>
-                <p>Your unique neuro-behavioral signature has been securely stored. This pattern is as unique as your DNA and impossible to replicate.</p>
-                
-                <div class="pattern-container">
-                    <canvas id="signaturePatternCanvas" class="pattern-canvas"></canvas>
-                </div>
-                
-                <div class="signature-display">
-                    <div class="signature-content" id="signatureDisplay"></div>
-                </div>
-                
-                <div class="protection-container">
-                    <div class="protection-badge">
-                        <i class="fas fa-brain-circuit"></i> Neural Encryption
-                    </div>
-                    <div class="protection-badge">
-                        <i class="fas fa-biohazard"></i> Spoof Resistant
-                    </div>
-                    <div class="protection-badge">
-                        <i class="fas fa-robot"></i> AI-Powered Analysis
-                    </div>
-                </div>
-                
-                <div class="dashboard-grid">
-                    <div class="dashboard-card">
-                        <h3>Security Report</h3>
-                        <canvas id="securityChart" height="200"></canvas>
-                    </div>
-                    <div class="dashboard-card">
-                        <h3>Pattern Analytics</h3>
-                        <canvas id="patternChart" height="200"></canvas>
-                    </div>
-                </div>
+            <!-- Coin Flip Tab -->
+            <div class="content" id="coin-content">
+                <h2>Coin Flip</h2>
+                <div class="coin" id="coin">Heads</div>
+                <button id="flip-coin">Flip Coin</button>
+                <div class="result" id="coin-result"></div>
             </div>
             
-            <div class="button-group">
-                <button id="goToVerifyBtn">
-                    <i class="fas fa-lock-open"></i> Authenticate Now
-                </button>
-                <button id="dashboardBtn" class="secondary">
-                    <i class="fas fa-chart-line"></i> View Dashboard
-                </button>
-            </div>
-        </div>
-        
-        <!-- Dashboard Screen -->
-        <div id="dashboardScreen" class="screen">
-            <div class="screen-content">
-                <h2>Neuro Analytics Dashboard</h2>
-                <p>Comprehensive analysis of your neuro-behavioral patterns and security metrics. Monitor your authentication history and pattern evolution.</p>
-                
-                <div class="dashboard-grid">
-                    <div class="dashboard-card">
-                        <h3>Behavioral Pattern</h3>
-                        <canvas id="behaviorChart" height="250"></canvas>
-                    </div>
-                    <div class="dashboard-card">
-                        <h3>Security Metrics</h3>
-                        <canvas id="metricsChart" height="250"></canvas>
-                    </div>
-                    <div class="dashboard-card">
-                        <h3>Threat Analysis</h3>
-                        <canvas id="threatChart" height="250"></canvas>
-                    </div>
-                    <div class="dashboard-card">
-                        <h3>Pattern Evolution</h3>
-                        <canvas id="evolutionChart" height="250"></canvas>
-                    </div>
-                </div>
-                
-                <div class="guide-container">
-                    <h4>Neuro Security Insights</h4>
-                    <ul>
-                        <li><i class="fas fa-circle-small"></i> Your pattern has 97.8% uniqueness compared to global database</li>
-                        <li><i class="fas fa-circle-small"></i> Threat level: Low (no suspicious activity detected)</li>
-                        <li><i class="fas fa-circle-small"></i> Pattern stability increased by 12% since enrollment</li>
-                        <li><i class="fas fa-circle-small"></i> Last authentication confidence: 99.2%</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="button-group">
-                <button id="backToAuthBtn">
-                    <i class="fas fa-lock"></i> Authentication Panel
-                </button>
-                <button id="advancedSettingsBtn" class="secondary">
-                    <i class="fas fa-cogs"></i> Advanced Settings
-                </button>
+            <!-- Oracle Tab -->
+            <div class="content" id="oracle-content">
+                <h2>Oracle Input</h2>
+                <p>Paste a list of items (one per line) to quickly add them to the Decision Wheel</p>
+                <textarea id="oracle-input" rows="6" placeholder="Paste your list here..."></textarea>
+                <button id="process-oracle">Process List</button>
+                <div class="result" id="oracle-result"></div>
             </div>
         </div>
     </div>
+    
+    <div class="share-section">
+        <h3>Share Your Decision</h3>
+        <p>Copy the URL below to share your current decision state (all data stays in the URL):</p>
+        <input type="text" id="share-url" readonly>
+        <button id="copy-url">Copy URL</button>
+    </div>
+    
+    <footer>
+        <p>OmniWheel - Your data never leaves your device. Not even we can see it.</p>
+        <p>© 2023 OmniWheel - The Universal Decision Engine</p>
+    </footer>
 
     <script>
         // DOM Elements
-        const introScreen = document.getElementById('introScreen');
-        const enrollScreen = document.getElementById('enrollScreen');
-        const verifyScreen = document.getElementById('verifyScreen');
-        const identityCreatedScreen = document.getElementById('identityCreatedScreen');
-        const dashboardScreen = document.getElementById('dashboardScreen');
-        const createIdentityBtn = document.getElementById('createIdentityBtn');
-        const demoLoginBtn = document.getElementById('demoLoginBtn');
-        const cancelEnrollBtn = document.getElementById('cancelEnrollBtn');
-        const verifyBtn = document.getElementById('verifyBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const goToVerifyBtn = document.getElementById('goToVerifyBtn');
-        const dashboardBtn = document.getElementById('dashboardBtn');
-        const backToAuthBtn = document.getElementById('backToAuthBtn');
-        const advancedSettingsBtn = document.getElementById('advancedSettingsBtn');
-        const phraseInput = document.getElementById('phraseInput');
-        const verifyPhraseInput = document.getElementById('verifyPhraseInput');
-        const typingProgress = document.getElementById('typingProgress');
-        const verifyTypingProgress = document.getElementById('verifyTypingProgress');
-        const signatureDisplay = document.getElementById('signatureDisplay');
-        const verificationResult = document.getElementById('verificationResult');
-        const keys = document.querySelectorAll('.key');
-        const analysisProgress = document.getElementById('analysisProgress');
-        const verifyProgress = document.getElementById('verifyProgress');
-        const rhythmScore = document.getElementById('rhythmScore');
-        const complexityScore = document.getElementById('complexityScore');
-        const entropyScore = document.getElementById('entropyScore');
-        const confidenceScore = document.getElementById('confidenceScore');
-        const deviationValue = document.getElementById('deviationValue');
-        const behaviorScore = document.getElementById('behaviorScore');
-        const securityLevel = document.getElementById('securityLevel');
-        const notification = document.getElementById('notification');
-        const notificationText = document.getElementById('notificationText');
-        const introCanvas = document.getElementById('introCanvas');
-        const signaturePatternCanvas = document.getElementById('signaturePatternCanvas');
-        const lockoutOverlay = document.getElementById('lockoutOverlay');
-        const lockoutTimer = document.getElementById('lockoutTimer');
-        const particlesContainer = document.getElementById('particles');
-        const trainingProgress = document.getElementById('trainingProgress');
-        const trainingStatus = document.getElementById('trainingStatus');
+        const tabs = document.querySelectorAll('.tab');
+        const contents = document.querySelectorAll('.content');
+        const wheel = document.getElementById('wheel');
+        const spinBtn = document.getElementById('spin-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const addOptionBtn = document.getElementById('add-option');
+        const newOptionInput = document.getElementById('new-option');
+        const optionsContainer = document.getElementById('options-container');
+        const wheelResult = document.getElementById('wheel-result');
         
-        // Canvas contexts
-        const introCtx = introCanvas.getContext('2d');
-        const signatureCtx = signaturePatternCanvas.getContext('2d');
+        // State
+        let options = [];
+        let spinning = false;
         
-        // State variables
-        let storedSignature = null;
-        let typingPattern = [];
-        let verifyPattern = [];
-        let lastKeyTime = 0;
-        let verifyLastKeyTime = 0;
-        const targetPhrase = "NeuroPattern Revolution";
-        let verificationAttempts = 0;
-        const MAX_ATTEMPTS = 3;
-        let lockoutUntil = 0;
-        let animationFrame;
-        let lockoutInterval;
-        let charts = {};
-        
-        // Typing metrics
-        let keyDownTime = {};
-        let keyUpTime = {};
-
-        // Create floating particles
-        function createParticles() {
-            for (let i = 0; i < 30; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                
-                const size = Math.random() * 10 + 2;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                
-                const posX = Math.random() * 100;
-                const posY = Math.random() * 100;
-                particle.style.left = `${posX}%`;
-                particle.style.top = `${posY}%`;
-                
-                const delay = Math.random() * 15;
-                particle.style.animationDelay = `${delay}s`;
-                
-                const hue = Math.random() > 0.5 ? '109, 61, 255' : '0, 229, 255';
-                const opacity = Math.random() * 0.6 + 0.2;
-                particle.style.background = `rgba(${hue}, ${opacity})`;
-                
-                particlesContainer.appendChild(particle);
-            }
+        // Initialize the app
+        function init() {
+            // Set up tab navigation
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    switchTab(tabId);
+                });
+            });
+            
+            // Set up wheel event listeners
+            spinBtn.addEventListener('click', spinWheel);
+            clearBtn.addEventListener('click', clearOptions);
+            addOptionBtn.addEventListener('click', addOption);
+            newOptionInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addOption();
+            });
+            
+            // Load any saved state from URL
+            loadStateFromURL();
+            
+            // Initialize other tabs
+            initProsCons();
+            initDice();
+            initCoin();
+            initOracle();
+            
+            // Update share URL
+            updateShareURL();
         }
-
-        // Initialize canvas sizes
-        function initCanvasSizes() {
-            introCanvas.width = introCanvas.clientWidth;
-            introCanvas.height = introCanvas.clientHeight;
-            signaturePatternCanvas.width = signaturePatternCanvas.clientWidth;
-            signaturePatternCanvas.height = signaturePatternCanvas.clientHeight;
-        }
-
-        // Draw neural network visualization
-        function drawNeuralNetwork(ctx, width, height, time) {
-            ctx.clearRect(0, 0, width, height);
-            
-            // Draw background grid
-            ctx.strokeStyle = 'rgba(109, 61, 255, 0.1)';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            for (let x = 0; x <= width; x += 30) {
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, height);
-            }
-            for (let y = 0; y <= height; y += 30) {
-                ctx.moveTo(0, y);
-                ctx.lineTo(width, y);
-            }
-            ctx.stroke();
-            
-            // Draw nodes
-            const nodeCount = 15;
-            const nodes = [];
-            for (let i = 0; i < nodeCount; i++) {
-                const angle = (i / nodeCount) * Math.PI * 2 + time * 0.001;
-                const radius = Math.min(width, height) * 0.3;
-                const x = width/2 + Math.cos(angle) * radius;
-                const y = height/2 + Math.sin(angle) * radius;
-                
-                nodes.push({x, y});
-                
-                // Draw node
-                ctx.beginPath();
-                ctx.arc(x, y, 10 + Math.sin(time*0.01 + i) * 5, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(109, 61, 255, ${0.5 + Math.sin(time*0.01 + i)*0.3})`;
-                ctx.fill();
-                
-                // Draw glow
-                ctx.beginPath();
-                ctx.arc(x, y, 20, 0, Math.PI * 2);
-                const gradient = ctx.createRadialGradient(x, y, 5, x, y, 20);
-                gradient.addColorStop(0, 'rgba(109, 61, 255, 0.5)');
-                gradient.addColorStop(1, 'rgba(109, 61, 255, 0)');
-                ctx.fillStyle = gradient;
-                ctx.fill();
-            }
-            
-            // Draw connections
-            for (let i = 0; i < nodes.length; i++) {
-                for (let j = i + 1; j < nodes.length; j++) {
-                    const node1 = nodes[i];
-                    const node2 = nodes[j];
-                    
-                    // Calculate distance
-                    const dx = node1.x - node2.x;
-                    const dy = node1.y - node2.y;
-                    const distance = Math.sqrt(dx*dx + dy*dy);
-                    
-                    if (distance < 400) {
-                        const alpha = 0.7 * (1 - distance/400);
-                        ctx.beginPath();
-                        ctx.moveTo(node1.x, node1.y);
-                        ctx.lineTo(node2.x, node2.y);
-                        ctx.strokeStyle = `rgba(109, 61, 255, ${alpha})`;
-                        ctx.lineWidth = 1 + Math.sin(time*0.005 + i + j) * 0.5;
-                        ctx.stroke();
-                    }
+        
+        // Switch between tabs
+        function switchTab(tabId) {
+            tabs.forEach(tab => {
+                if (tab.getAttribute('data-tab') === tabId) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
                 }
-            }
+            });
             
-            // Draw center node
-            const centerSize = 15 + Math.sin(time*0.02) * 5;
-            ctx.beginPath();
-            ctx.arc(width/2, height/2, centerSize, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 46, 122, ${0.7 + Math.sin(time*0.03)*0.3})`;
-            ctx.fill();
-            
-            // Draw center glow
-            ctx.beginPath();
-            ctx.arc(width/2, height/2, centerSize + 20, 0, Math.PI * 2);
-            const centerGradient = ctx.createRadialGradient(width/2, height/2, centerSize, width/2, height/2, centerSize + 20);
-            centerGradient.addColorStop(0, 'rgba(255, 46, 122, 0.5)');
-            centerGradient.addColorStop(1, 'rgba(255, 46, 122, 0)');
-            ctx.fillStyle = centerGradient;
-            ctx.fill();
-            
-            // Draw pulses
-            const pulseSize = Math.sin(time*0.03) * 100;
-            if (pulseSize > 0) {
-                ctx.beginPath();
-                ctx.arc(width/2, height/2, pulseSize, 0, Math.PI * 2);
-                ctx.strokeStyle = `rgba(255, 46, 122, ${0.3 - pulseSize/400})`;
-                ctx.lineWidth = 2;
-                ctx.stroke();
+            contents.forEach(content => {
+                if (content.id === `${tabId}-content`) {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+        }
+        
+        // Add a new option to the wheel
+        function addOption() {
+            const optionText = newOptionInput.value.trim();
+            if (optionText && !spinning) {
+                options.push(optionText);
+                newOptionInput.value = '';
+                renderOptions();
+                updateWheelAppearance();
+                updateShareURL();
             }
         }
         
-        // Animate neural network
-        function animateNeuralNetwork() {
-            const now = Date.now();
-            drawNeuralNetwork(introCtx, introCanvas.width, introCanvas.height, now);
-            
-            if (signaturePatternCanvas.parentElement.style.display !== 'none') {
-                drawNeuralNetwork(signatureCtx, signaturePatternCanvas.width, signaturePatternCanvas.height, now);
-            }
-            
-            animationFrame = requestAnimationFrame(animateNeuralNetwork);
-        }
-
-        // Initialize charts
-        function initCharts() {
-            // Rhythm chart
-            charts.rhythm = new Chart(document.getElementById('rhythmChart'), {
-                type: 'line',
-                data: {
-                    labels: Array(20).fill('').map((_, i) => i+1),
-                    datasets: [{
-                        label: 'Rhythm Pattern',
-                        data: Array(20).fill(0).map(() => Math.random() * 100),
-                        borderColor: '#6d3dff',
-                        backgroundColor: 'rgba(109, 61, 255, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: { min: 0, max: 100 }
-                    }
-                }
+        // Render the list of options
+        function renderOptions() {
+            optionsContainer.innerHTML = '';
+            options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option-item';
+                optionElement.innerHTML = `
+                    <span>${option}</span>
+                    <button data-index="${index}">Remove</button>
+                `;
+                optionsContainer.appendChild(optionElement);
             });
             
-            // Confidence chart
-            charts.confidence = new Chart(document.getElementById('confidenceChart'), {
-                type: 'radar',
-                data: {
-                    labels: ['Rhythm', 'Pattern', 'Timing', 'Pressure', 'Deviation'],
-                    datasets: [{
-                        label: 'Current Session',
-                        data: [85, 92, 78, 80, 65],
-                        fill: true,
-                        backgroundColor: 'rgba(109, 61, 255, 0.2)',
-                        borderColor: '#6d3dff',
-                        pointBackgroundColor: '#6d3dff'
-                    }, {
-                        label: 'Stored Pattern',
-                        data: [92, 95, 90, 88, 92],
-                        fill: true,
-                        backgroundColor: 'rgba(0, 240, 168, 0.2)',
-                        borderColor: '#00f0a8',
-                        pointBackgroundColor: '#00f0a8'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            angleLines: { color: 'rgba(255,255,255,0.1)' },
-                            grid: { color: 'rgba(255,255,255,0.1)' },
-                            pointLabels: { color: '#a0a0cc' },
-                            min: 0,
-                            max: 100
-                        }
-                    }
-                }
-            });
-            
-            // Security chart
-            charts.security = new Chart(document.getElementById('securityChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Uniqueness', 'Complexity', 'Stability'],
-                    datasets: [{
-                        data: [97, 93, 89],
-                        backgroundColor: ['#6d3dff', '#00e5ff', '#ff2e7a'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: '#a0a0cc' } }
-                    }
-                }
-            });
-            
-            // Pattern chart
-            charts.pattern = new Chart(document.getElementById('patternChart'), {
-                type: 'bar',
-                data: {
-                    labels: ['Hold Time', 'Flight Time', 'Pressure', 'Rhythm', 'Accuracy'],
-                    datasets: [{
-                        label: 'Pattern Score',
-                        data: [92, 85, 78, 90, 95],
-                        backgroundColor: '#6d3dff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { min: 0, max: 100 }
-                    }
-                }
-            });
-            
-            // Dashboard charts
-            charts.behavior = new Chart(document.getElementById('behaviorChart'), {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'Pattern Stability',
-                        data: [75, 80, 85, 88, 90, 92],
-                        borderColor: '#6d3dff',
-                        fill: false
-                    }, {
-                        label: 'Confidence Score',
-                        data: [82, 85, 88, 90, 92, 95],
-                        borderColor: '#00e5ff',
-                        fill: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-            
-            charts.metrics = new Chart(document.getElementById('metricsChart'), {
-                type: 'polarArea',
-                data: {
-                    labels: ['Security', 'Accuracy', 'Speed', 'Complexity'],
-                    datasets: [{
-                        data: [95, 98, 92, 97],
-                        backgroundColor: [
-                            'rgba(109, 61, 255, 0.7)',
-                            'rgba(0, 229, 255, 0.7)',
-                            'rgba(255, 46, 122, 0.7)',
-                            'rgba(255, 204, 0, 0.7)'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-            
-            charts.threat = new Chart(document.getElementById('threatChart'), {
-                type: 'radar',
-                data: {
-                    labels: ['Spoofing', 'Imitation', 'Replay', 'AI Attack', 'Brute Force'],
-                    datasets: [{
-                        label: 'Threat Resistance',
-                        data: [97, 95, 99, 93, 98],
-                        fill: true,
-                        backgroundColor: 'rgba(255, 46, 122, 0.2)',
-                        borderColor: '#ff2e7a'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: { min: 0, max: 100 }
-                    }
-                }
-            });
-            
-            charts.evolution = new Chart(document.getElementById('evolutionChart'), {
-                type: 'line',
-                data: {
-                    labels: Array(12).fill('').map((_, i) => `Week ${i+1}`),
-                    datasets: [{
-                        label: 'Pattern Evolution',
-                        data: [75, 80, 82, 85, 86, 88, 89, 90, 91, 92, 93, 94],
-                        borderColor: '#6d3dff',
-                        fill: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
+            // Add event listeners to remove buttons
+            const removeButtons = document.querySelectorAll('.option-item button');
+            removeButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    removeOption(index);
+                });
             });
         }
-
-        // Update charts with dynamic data
-        function updateCharts() {
-            if (charts.rhythm) {
-                charts.rhythm.data.datasets[0].data = Array(20).fill(0).map(() => Math.random() * 50 + 50);
-                charts.rhythm.update();
-            }
-            
-            if (charts.confidence) {
-                charts.confidence.data.datasets[0].data = [
-                    Math.random() * 20 + 75,
-                    Math.random() * 20 + 75,
-                    Math.random() * 20 + 75,
-                    Math.random() * 20 + 75,
-                    Math.random() * 20 + 75
-                ];
-                charts.confidence.update();
+        
+        // Remove an option
+        function removeOption(index) {
+            if (!spinning) {
+                options.splice(index, 1);
+                renderOptions();
+                updateWheelAppearance();
+                updateShareURL();
             }
         }
-
-        // Show notification
-        function showNotification(message) {
-            notificationText.textContent = message;
-            notification.classList.add('show');
+        
+        // Clear all options
+        function clearOptions() {
+            if (!spinning && confirm('Are you sure you want to clear all options?')) {
+                options = [];
+                renderOptions();
+                wheelResult.textContent = 'Spin the wheel to make a decision!';
+                updateWheelAppearance();
+                updateShareURL();
+            }
+        }
+        
+        // Update the wheel's visual appearance
+        function updateWheelAppearance() {
+            if (options.length === 0) {
+                wheel.style.background = '#ddd';
+                return;
+            }
+            
+            let gradient = 'conic-gradient(from 0deg, ';
+            const segmentAngle = 360 / options.length;
+            
+            const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#6E8EFB', '#A777E3', '#FF9A8B', '#7AE0BB', '#FFB347'];
+            
+            for (let i = 0; i < options.length; i++) {
+                const startAngle = i * segmentAngle;
+                const endAngle = (i + 1) * segmentAngle;
+                const color = colors[i % colors.length];
+                
+                gradient += `${color} ${startAngle}deg ${endAngle}deg`;
+                if (i < options.length - 1) gradient += ', ';
+            }
+            
+            gradient += ')';
+            wheel.style.background = gradient;
+        }
+        
+        // Spin the wheel
+        function spinWheel() {
+            if (spinning || options.length === 0) return;
+            
+            spinning = true;
+            wheelResult.textContent = 'Spinning...';
+            
+            // Random rotation (at least 3 full rotations plus random segment)
+            const rotations = 3 + Math.random() * 2;
+            const segmentAngle = 360 / options.length;
+            const randomSegment = Math.floor(Math.random() * options.length);
+            const finalRotation = rotations * 360 + (randomSegment * segmentAngle);
+            
+            wheel.style.transform = `rotate(${finalRotation}deg)`;
+            
+            // After spin completes
             setTimeout(() => {
-                notification.classList.remove('show');
+                spinning = false;
+                const selectedOption = options[randomSegment];
+                wheelResult.textContent = `The wheel says: ${selectedOption}`;
             }, 3000);
         }
-
-        // Show specific screen
-        function showScreen(screen) {
-            introScreen.classList.remove('active');
-            enrollScreen.classList.remove('active');
-            verifyScreen.classList.remove('active');
-            identityCreatedScreen.classList.remove('active');
-            dashboardScreen.classList.remove('active');
-            
-            setTimeout(() => {
-                screen.classList.add('active');
-                document.querySelector('.screen-content').scrollTop = 0;
-                initCanvasSizes();
-            }, 10);
-        }
         
-        // Reset enrollment state
-        function resetEnrollment() {
-            typingPattern = [];
-            phraseInput.value = '';
-            typingProgress.style.width = '0%';
-            analysisProgress.textContent = '0%';
-            rhythmScore.textContent = '0%';
-            complexityScore.textContent = '0%';
-            entropyScore.textContent = '0%';
-            highlightKeys('');
-        }
-        
-        // Reset verification state
-        function resetVerification() {
-            verifyPattern = [];
-            verifyPhraseInput.value = '';
-            verifyTypingProgress.style.width = '0%';
-            verifyProgress.textContent = '0%';
-            verificationResult.textContent = '';
-            verificationResult.className = 'result';
-            confidenceScore.textContent = '0%';
-            deviationValue.textContent = '0%';
-            behaviorScore.textContent = '0%';
-            securityLevel.textContent = '0%';
-            highlightKeys('');
-        }
-        
-        // Highlight keys as user types
-        function highlightKeys(input) {
-            keys.forEach(key => key.classList.remove('active'));
+        // Initialize Pros & Cons tab
+        function initProsCons() {
+            // Implementation for Pros & Cons tab
+            const addProBtn = document.getElementById('add-pro');
+            const addConBtn = document.getElementById('add-con');
+            const newProInput = document.getElementById('new-pro');
+            const newConInput = document.getElementById('new-con');
+            const prosList = document.getElementById('pros-list');
+            const consList = document.getElementById('cons-list');
+            const prosconsResult = document.getElementById('proscons-result');
             
-            for (let i = 0; i < input.length; i++) {
-                if (i < keys.length) keys[i].classList.add('active');
-            }
-        }
-        
-        // Calculate scores based on typing pattern
-        function calculateScores(pattern) {
-            if (pattern.length < 3) return { rhythm: 0, complexity: 0, entropy: 0 };
+            let pros = [];
+            let cons = [];
             
-            // Calculate rhythm consistency (standard deviation of time between keystrokes)
-            let timeDiffs = [];
-            for (let i = 1; i < pattern.length; i++) {
-                timeDiffs.push(pattern[i].timestamp - pattern[i-1].timestamp);
-            }
+            addProBtn.addEventListener('click', () => {
+                const proText = newProInput.value.trim();
+                if (proText) {
+                    pros.push(proText);
+                    newProInput.value = '';
+                    renderProsCons();
+                }
+            });
             
-            const avgTimeDiff = timeDiffs.reduce((a, b) => a + b, 0) / timeDiffs.length;
-            const rhythmVariance = timeDiffs.reduce((a, b) => a + Math.pow(b - avgTimeDiff, 2), 0) / timeDiffs.length;
-            const rhythmStdDev = Math.sqrt(rhythmVariance);
+            addConBtn.addEventListener('click', () => {
+                const conText = newConInput.value.trim();
+                if (conText) {
+                    cons.push(conText);
+                    newConInput.value = '';
+                    renderProsCons();
+                }
+            });
             
-            // Higher score for more consistent rhythm (lower standard deviation)
-            const rhythmScore = Math.max(0, 100 - (rhythmStdDev / 10));
-            
-            // Calculate complexity based on variation in hold times
-            let holdTimes = pattern.map(p => p.holdTime).filter(t => t > 0);
-            if (holdTimes.length === 0) holdTimes = [100]; // Default value
-            
-            const avgHoldTime = holdTimes.reduce((a, b) => a + b, 0) / holdTimes.length;
-            const holdTimeVariance = holdTimes.reduce((a, b) => a + Math.pow(b - avgHoldTime, 2), 0) / holdTimes.length;
-            
-            // Higher score for more variation in hold times (more complex pattern)
-            const complexityScore = Math.min(100, holdTimeVariance / 5);
-            
-            // Calculate entropy (randomness in the pattern)
-            const uniqueHoldTimes = new Set(holdTimes.map(t => Math.round(t / 10))).size;
-            const entropyScore = Math.min(100, (uniqueHoldTimes / holdTimes.length) * 200);
-            
-            return {
-                rhythm: Math.round(rhythmScore),
-                complexity: Math.round(complexityScore),
-                entropy: Math.round(entropyScore)
-            };
-        }
-        
-        // Generate a unique signature from typing data
-        function generateSignature(pattern) {
-            if (pattern.length < 5) {
-                throw new Error('Insufficient data for signature generation');
-            }
-            
-            // Create a hash from the timing data
-            const timingData = pattern.map(p => p.holdTime + p.flightTime).join('');
-            const hash = CryptoJS.SHA256(timingData).toString();
-            
-            // Format the hash for display
-            let signature = '';
-            for (let i = 0; i < hash.length; i += 6) {
-                if (i > 0) signature += '-';
-                signature += hash.substring(i, i + 6).toUpperCase();
-            }
-            
-            return signature;
-        }
-        
-        // Calculate similarity between two patterns using ML concepts
-        function calculateSimilarity(pattern1, pattern2) {
-            if (!pattern1 || !pattern2 || pattern1.length !== pattern2.length) return 0;
-            
-            // Extract features from both patterns
-            const features1 = extractFeatures(pattern1);
-            const features2 = extractFeatures(pattern2);
-            
-            // Calculate Euclidean distance between feature vectors
-            let distance = 0;
-            for (let i = 0; i < features1.length; i++) {
-                distance += Math.pow(features1[i] - features2[i], 2);
-            }
-            distance = Math.sqrt(distance);
-            
-            // Convert distance to similarity score (0-100)
-            // Lower distance = higher similarity
-            const maxDistance = 500; // Empirical value
-            let similarity = Math.max(0, 100 - (distance / maxDistance * 100));
-            
-            // Adjust based on verification attempts
-            const attemptPenalty = verificationAttempts * 5;
-            
-            return Math.max(0, Math.min(100, similarity - attemptPenalty));
-        }
-        
-        // Extract features from typing pattern for ML analysis
-        function extractFeatures(pattern) {
-            if (pattern.length < 2) return [];
-            
-            // Extract hold times
-            const holdTimes = pattern.map(p => p.holdTime);
-            
-            // Extract flight times (time between key releases)
-            const flightTimes = [];
-            for (let i = 1; i < pattern.length; i++) {
-                flightTimes.push(pattern[i].timestamp - pattern[i-1].timestamp - pattern[i-1].holdTime);
-            }
-            
-            // Calculate statistics
-            const holdMean = holdTimes.reduce((a, b) => a + b, 0) / holdTimes.length;
-            const holdStd = Math.sqrt(holdTimes.reduce((a, b) => a + Math.pow(b - holdMean, 2), 0) / holdTimes.length);
-            
-            const flightMean = flightTimes.reduce((a, b) => a + b, 0) / flightTimes.length;
-            const flightStd = Math.sqrt(flightTimes.reduce((a, b) => a + Math.pow(b - flightMean, 2), 0) / flightTimes.length);
-            
-            // Return feature vector
-            return [
-                holdMean, holdStd, 
-                flightMean, flightStd,
-                Math.min(...holdTimes), Math.max(...holdTimes),
-                Math.min(...flightTimes), Math.max(...flightTimes)
-            ];
-        }
-        
-        // Simulate ML training process
-        function simulateMLTraining() {
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 5;
-                trainingProgress.style.width = `${progress}%`;
+            function renderProsCons() {
+                prosList.innerHTML = '';
+                consList.innerHTML = '';
                 
-                if (progress <= 25) {
-                    trainingStatus.textContent = "Analyzing keystroke dynamics...";
-                } else if (progress <= 50) {
-                    trainingStatus.textContent = "Building rhythm profile...";
-                } else if (progress <= 75) {
-                    trainingStatus.textContent = "Training neural network model...";
-                } else if (progress < 100) {
-                    trainingStatus.textContent = "Finalizing pattern recognition...";
+                pros.forEach((pro, index) => {
+                    const proElement = document.createElement('div');
+                    proElement.className = 'option-item';
+                    proElement.innerHTML = `
+                        <span>${pro}</span>
+                        <button data-type="pro" data-index="${index}">Remove</button>
+                    `;
+                    prosList.appendChild(proElement);
+                });
+                
+                cons.forEach((con, index) => {
+                    const conElement = document.createElement('div');
+                    conElement.className = 'option-item';
+                    conElement.innerHTML = `
+                        <span>${con}</span>
+                        <button data-type="con" data-index="${index}">Remove</button>
+                    `;
+                    consList.appendChild(conElement);
+                });
+                
+                // Add event listeners to remove buttons
+                const removeButtons = document.querySelectorAll('#pros-list button, #cons-list button');
+                removeButtons.forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const type = e.target.getAttribute('data-type');
+                        const index = parseInt(e.target.getAttribute('data-index'));
+                        if (type === 'pro') {
+                            pros.splice(index, 1);
+                        } else {
+                            cons.splice(index, 1);
+                        }
+                        renderProsCons();
+                    });
+                });
+                
+                // Update result
+                if (pros.length > 0 || cons.length > 0) {
+                    let resultText = '';
+                    if (pros.length > cons.length) {
+                        resultText = `Based on your pros and cons, you should probably DO IT! (${pros.length} pros vs ${cons.length} cons)`;
+                    } else if (cons.length > pros.length) {
+                        resultText = `Based on your pros and cons, you should probably NOT DO IT! (${pros.length} pros vs ${cons.length} cons)`;
+                    } else {
+                        resultText = `It's a tie! (${pros.length} pros vs ${cons.length} cons). You need to dig deeper.`;
+                    }
+                    prosconsResult.textContent = resultText;
                 } else {
-                    trainingStatus.textContent = "Training complete! Model accuracy: 98.7%";
-                    clearInterval(interval);
+                    prosconsResult.textContent = '';
                 }
-            }, 200);
+            }
         }
         
-        // Complete enrollment process
-        function completeEnrollment() {
-            try {
-                // Calculate scores
-                const scores = calculateScores(typingPattern);
-                
-                if (scores.complexity < 40) {
-                    throw new Error('Pattern not complex enough. Type more naturally.');
-                }
-                
-                // Simulate ML training
-                simulateMLTraining();
-                
+        // Initialize Dice Roller tab
+        function initDice() {
+            const rollDiceBtn = document.getElementById('roll-dice');
+            const dice = document.getElementById('dice');
+            const diceResult = document.getElementById('dice-result');
+            
+            rollDiceBtn.addEventListener('click', () => {
+                // Animate dice roll
+                dice.style.animation = 'none';
                 setTimeout(() => {
-                    // Generate and store signature
-                    storedSignature = {
-                        pattern: typingPattern,
-                        signature: generateSignature(typingPattern),
-                        features: extractFeatures(typingPattern),
-                        rhythmScore: scores.rhythm,
-                        complexityScore: scores.complexity,
-                        entropyScore: scores.entropy,
-                        created: new Date().toISOString()
-                    };
-                    
-                    // Encrypt and store
-                    const encrypted = CryptoJS.AES.encrypt(
-                        JSON.stringify(storedSignature), 
-                        'neuro-secure-key-' + storedSignature.signature
-                    ).toString();
-                    localStorage.setItem('neuro_signature', encrypted);
-                    
-                    // Display signature
-                    signatureDisplay.textContent = storedSignature.signature;
-                    
-                    showScreen(identityCreatedScreen);
-                    showNotification('Neuro identity successfully created!');
-                }, 5000);
-            } catch (error) {
-                showNotification('Enrollment failed: ' + error.message);
-                resetEnrollment();
-                showScreen(enrollScreen);
-            }
+                    dice.style.animation = 'roll 0.5s ease-out';
+                }, 10);
+                
+                // Get random result
+                const result = Math.floor(Math.random() * 6) + 1;
+                
+                // Update after animation
+                setTimeout(() => {
+                    dice.textContent = result;
+                    diceResult.textContent = `You rolled a ${result}!`;
+                }, 500);
+            });
         }
         
-        // Show lockout screen
-        function showLockout(minutes) {
-            lockoutOverlay.style.display = 'flex';
-            let seconds = minutes * 60;
+        // Initialize Coin Flip tab
+        function initCoin() {
+            const flipCoinBtn = document.getElementById('flip-coin');
+            const coin = document.getElementById('coin');
+            const coinResult = document.getElementById('coin-result');
             
-            clearInterval(lockoutInterval);
-            lockoutInterval = setInterval(() => {
-                seconds--;
-                if (seconds <= 0) {
-                    clearInterval(lockoutInterval);
-                    lockoutOverlay.style.display = 'none';
-                    lockoutUntil = 0;
-                    verificationAttempts = 0;
-                    resetVerification();
-                    return;
-                }
+            flipCoinBtn.addEventListener('click', () => {
+                // Animate coin flip
+                coin.style.animation = 'none';
+                setTimeout(() => {
+                    coin.style.animation = 'flip 0.6s ease-out';
+                }, 10);
                 
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                lockoutTimer.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            }, 1000);
+                // Get random result
+                const result = Math.random() > 0.5 ? 'Heads' : 'Tails';
+                
+                // Update after animation
+                setTimeout(() => {
+                    coin.textContent = result;
+                    coinResult.textContent = `It's ${result}!`;
+                }, 600);
+            });
         }
         
-        // Complete verification process
-        function completeVerification() {
-            try {
-                const now = Date.now();
-                if (lockoutUntil > now) {
-                    const minutes = Math.ceil((lockoutUntil - now) / 60000);
-                    showLockout(minutes);
-                    return;
+        // Initialize Oracle tab
+        function initOracle() {
+            const processOracleBtn = document.getElementById('process-oracle');
+            const oracleInput = document.getElementById('oracle-input');
+            const oracleResult = document.getElementById('oracle-result');
+            
+            processOracleBtn.addEventListener('click', () => {
+                const text = oracleInput.value.trim();
+                if (text) {
+                    const newOptions = text.split('\n')
+                        .map(line => line.trim())
+                        .filter(line => line.length > 0);
+                    
+                    if (newOptions.length > 0) {
+                        options = [...options, ...newOptions];
+                        renderOptions();
+                        updateWheelAppearance();
+                        oracleResult.textContent = `Added ${newOptions.length} options to the Decision Wheel!`;
+                        oracleInput.value = '';
+                        updateShareURL();
+                    }
                 }
-                
-                // Load stored signature
-                const encrypted = localStorage.getItem('neuro_signature');
-                if (!encrypted) {
-                    verificationResult.textContent = 'No identity found. Please create a neuro identity first.';
-                    verificationResult.classList.add('error', 'show');
-                    return;
-                }
-                
-                // We need to try to decrypt with possible keys
-                let storedData = null;
+            });
+        }
+        
+        // Load state from URL parameters
+        function loadStateFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const optionsParam = urlParams.get('options');
+            
+            if (optionsParam) {
                 try {
-                    // Try to decrypt with the most likely key format
-                    const decrypted = CryptoJS.AES.decrypt(encrypted, 'neuro-secure-key-N3UR0-P4T7-R3V0L-UT10N');
-                    storedData = JSON.parse(decrypted.toString(CryptoJS.enc.Utf8));
+                    options = JSON.parse(decodeURIComponent(optionsParam));
+                    renderOptions();
+                    updateWheelAppearance();
                 } catch (e) {
-                    verificationResult.textContent = 'Failed to decrypt signature. Please create a new identity.';
-                    verificationResult.classList.add('error', 'show');
-                    return;
+                    console.error('Error parsing options from URL', e);
                 }
-                
-                // Calculate similarity using ML approach
-                const similarity = calculateSimilarity(storedData.pattern, verifyPattern);
-                
-                // Update analytics
-                confidenceScore.textContent = `${similarity}%`;
-                deviationValue.textContent = `${Math.round(100 - similarity)}%`;
-                behaviorScore.textContent = `${Math.min(100, similarity + 5)}%`;
-                securityLevel.textContent = `${Math.min(100, similarity + 10)}%`;
-                
-                // Verification decision
-                if (similarity >= 75) {
-                    verificationResult.textContent = `Identity Verified (${Math.round(similarity)}% confidence)`;
-                    verificationResult.classList.add('success', 'show');
-                    verificationAttempts = 0;
-                    showNotification('Identity verified successfully!');
-                    
-                    // Update stored pattern with new data (adaptive learning)
-                    // This would be done more carefully in a real system
-                    for (let i = 0; i < storedData.pattern.length; i++) {
-                        // Blend the patterns (70% old, 30% new)
-                        storedData.pattern[i].holdTime = 
-                            (storedData.pattern[i].holdTime * 0.7) + (verifyPattern[i].holdTime * 0.3);
-                    }
-                    
-                    const encryptedUpdated = CryptoJS.AES.encrypt(
-                        JSON.stringify(storedData), 
-                        'neuro-secure-key-' + storedData.signature
-                    ).toString();
-                    localStorage.setItem('neuro_signature', encryptedUpdated);
-                } else {
-                    verificationResult.textContent = `Access Denied (${Math.round(similarity)}% match)`;
-                    verificationResult.classList.add('error', 'show');
-                    
-                    verificationAttempts++;
-                    if (verificationAttempts >= MAX_ATTEMPTS) {
-                        lockoutUntil = now + 300000; // 5 minutes
-                        showLockout(5);
-                        showNotification('Account locked for 5 minutes due to multiple failed attempts');
-                    }
-                }
-            } catch (error) {
-                verificationResult.textContent = 'Verification failed: ' + error.message;
-                verificationResult.classList.add('error', 'show');
             }
         }
         
-        // Reset identity
-        function resetIdentity() {
-            if (confirm('Reset your neuro identity? This will permanently delete your typing pattern.')) {
-                localStorage.removeItem('neuro_signature');
-                storedSignature = null;
-                resetEnrollment();
-                resetVerification();
-                showScreen(introScreen);
-                showNotification('Identity has been reset successfully');
-            }
+        // Update the shareable URL
+        function updateShareURL() {
+            const shareUrl = document.getElementById('share-url');
+            const baseUrl = window.location.href.split('?')[0];
+            const optionsParam = encodeURIComponent(JSON.stringify(options));
+            
+            const newUrl = `${baseUrl}?options=${optionsParam}`;
+            shareUrl.value = newUrl;
+            
+            // Update browser URL without reloading
+            window.history.replaceState(null, null, newUrl);
         }
         
-        // Event Listeners
-        createIdentityBtn.addEventListener('click', () => {
-            resetEnrollment();
-            showScreen(enrollScreen);
-            setTimeout(() => phraseInput.focus(), 300);
+        // Copy URL to clipboard
+        document.getElementById('copy-url').addEventListener('click', () => {
+            const shareUrl = document.getElementById('share-url');
+            shareUrl.select();
+            document.execCommand('copy');
+            alert('URL copied to clipboard!');
         });
         
-        demoLoginBtn.addEventListener('click', () => {
-            showNotification('Demo authentication sequence initiated');
-            setTimeout(() => {
-                if (localStorage.getItem('neuro_signature')) {
-                    showScreen(verifyScreen);
-                } else {
-                    // Create a demo identity
-                    storedSignature = {
-                        pattern: [],
-                        signature: 'N3UR0-P4T7-R3V0L-UT10N',
-                        rhythmScore: 92,
-                        complexityScore: 95,
-                        entropyScore: 97,
-                        created: new Date().toISOString()
-                    };
-                    signatureDisplay.textContent = storedSignature.signature;
-                    showScreen(identityCreatedScreen);
-                }
-            }, 1000);
-        });
-        
-        cancelEnrollBtn.addEventListener('click', () => showScreen(introScreen));
-        goToVerifyBtn.addEventListener('click', () => {
-            resetVerification();
-            showScreen(verifyScreen);
-        });
-        dashboardBtn.addEventListener('click', () => showScreen(dashboardScreen));
-        backToAuthBtn.addEventListener('click', () => showScreen(identityCreatedScreen));
-        resetBtn.addEventListener('click', resetIdentity);
-        advancedSettingsBtn.addEventListener('click', () => {
-            showNotification('Advanced settings panel is under development');
-        });
-        
-        // Track key down events
-        document.addEventListener('keydown', (e) => {
-            if (e.key.length === 1 && e.key !== ' ') {
-                keyDownTime[e.key] = Date.now();
-                
-                // If this is a key we're monitoring for the current phrase
-                const activeInput = document.querySelector('input:focus');
-                if (activeInput && (activeInput === phraseInput || activeInput === verifyPhraseInput)) {
-                    const keyChar = e.key.toUpperCase();
-                    for (let i = 0; i < keys.length; i++) {
-                        if (keys[i].textContent.includes(keyChar)) {
-                            keys[i].classList.add('active');
-                            break;
-                        }
-                    }
-                }
-            }
-        });
-        
-        // Track key up events
-        document.addEventListener('keyup', (e) => {
-            if (e.key.length === 1 && e.key !== ' ') {
-                const now = Date.now();
-                const holdTime = now - (keyDownTime[e.key] || now);
-                
-                // If this is a key we're monitoring for the current phrase
-                const activeInput = document.querySelector('input:focus');
-                if (activeInput && (activeInput === phraseInput || activeInput === verifyPhraseInput)) {
-                    const keyChar = e.key.toUpperCase();
-                    for (let i = 0; i < keys.length; i++) {
-                        if (keys[i].textContent.includes(keyChar)) {
-                            keys[i].classList.remove('active');
-                            break;
-                        }
-                    }
-                    
-                    // Add to the appropriate pattern array
-                    if (activeInput === phraseInput) {
-                        const position = typingPattern.length;
-                        if (position < targetPhrase.length) {
-                            typingPattern.push({
-                                char: e.key,
-                                timestamp: now,
-                                holdTime: holdTime,
-                                flightTime: position === 0 ? 0 : now - typingPattern[position-1].timestamp,
-                                position: position,
-                                isCorrect: e.key === targetPhrase[position]
-                            });
-                            
-                            // Update progress
-                            const progress = Math.min(100, (typingPattern.length / targetPhrase.length) * 100);
-                            typingProgress.style.width = `${progress}%`;
-                            analysisProgress.textContent = `${Math.round(progress)}%`;
-                            
-                            // Update analytics
-                            if (typingPattern.length > 3) {
-                                const scores = calculateScores(typingPattern);
-                                rhythmScore.textContent = `${scores.rhythm}%`;
-                                complexityScore.textContent = `${scores.complexity}%`;
-                                entropyScore.textContent = `${scores.entropy}%`;
-                                
-                                // Update chart
-                                if (charts.rhythm && typingPattern.length % 2 === 0) {
-                                    updateCharts();
-                                }
-                            }
-                            
-                            // Complete if phrase is finished
-                            if (typingPattern.length >= targetPhrase.length) {
-                                setTimeout(completeEnrollment, 500);
-                            }
-                        }
-                    } else if (activeInput === verifyPhraseInput) {
-                        const position = verifyPattern.length;
-                        if (position < targetPhrase.length) {
-                            verifyPattern.push({
-                                char: e.key,
-                                timestamp: now,
-                                holdTime: holdTime,
-                                flightTime: position === 0 ? 0 : now - verifyPattern[position-1].timestamp,
-                                position: position,
-                                isCorrect: e.key === targetPhrase[position]
-                            });
-                            
-                            // Update progress
-                            const progress = Math.min(100, (verifyPattern.length / targetPhrase.length) * 100);
-                            verifyTypingProgress.style.width = `${progress}%`;
-                            verifyProgress.textContent = `${Math.round(progress)}%`;
-                            
-                            // Reset result display when starting to type
-                            if (verifyPattern.length === 1) {
-                                verificationResult.className = 'result';
-                            }
-                            
-                            // Update analytics
-                            if (verifyPattern.length > 3) {
-                                const scores = calculateScores(verifyPattern);
-                                behaviorScore.textContent = `${scores.rhythm}%`;
-                                
-                                // Update chart
-                                if (charts.confidence && verifyPattern.length % 2 === 0) {
-                                    updateCharts();
-                                }
-                            }
-                            
-                            // Complete if phrase is finished
-                            if (verifyPattern.length >= targetPhrase.length) {
-                                setTimeout(completeVerification, 500);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        
-        // Initialize
-        window.addEventListener('DOMContentLoaded', () => {
-            createParticles();
-            initCanvasSizes();
-            animateNeuralNetwork();
-            initCharts();
-            
-            // Check if we need to show lockout
-            const now = Date.now();
-            if (lockoutUntil > now) {
-                const minutes = Math.ceil((lockoutUntil - now) / 60000);
-                showLockout(minutes);
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes roll {
+                0% { transform: rotate(0deg); }
+                25% { transform: rotate(90deg); }
+                50% { transform: rotate(180deg); }
+                75% { transform: rotate(270deg); }
+                100% { transform: rotate(360deg); }
             }
             
-            // Load existing identity if available
-            const encrypted = localStorage.getItem('neuro_signature');
-            if (encrypted) {
-                try {
-                    // Try to decrypt with the most likely key format
-                    const decrypted = CryptoJS.AES.decrypt(encrypted, 'neuro-secure-key-N3UR0-P4T7-R3V0L-UT10N');
-                    storedSignature = JSON.parse(decrypted.toString(CryptoJS.enc.Utf8));
-                    showScreen(verifyScreen);
-                } catch (e) {
-                    console.error("Failed to decrypt signature", e);
-                }
+            @keyframes flip {
+                0% { transform: rotateY(0deg); }
+                50% { transform: rotateY(180deg); }
+                100% { transform: rotateY(360deg); }
             }
-        });
+            
+            #dice {
+                transition: transform 0.5s ease-out;
+            }
+            
+            #coin {
+                transition: transform 0.6s ease-out;
+            }
+        `;
+        document.head.appendChild(style);
         
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            initCanvasSizes();
-        });
+        // Initialize the app when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
