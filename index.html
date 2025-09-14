@@ -3,133 +3,700 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fee Finder | See What Your Investments Really Cost</title>
+    <title>Fee Finder | Discover Your Hidden Investment Costs</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 40px auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; }
-        input[type="number"], input[type="range"] { width: 100%; padding: 10px; box-sizing: border-box; }
-        .slider-value { font-weight: bold; color: #2980b9; }
-        button { background-color: #27ae60; color: white; padding: 15px 30px; border: none; border-radius: 6px; font-size: 18px; cursor: pointer; width: 100%; margin-top: 20px; }
-        button:hover { background-color: #219653; }
-        #results { display: none; margin-top: 40px; padding-top: 30px; border-top: 2px solid #eee; }
-        .result-box { text-align: center; padding: 20px; }
-        .loss { background-color: #ffeaea; border: 1px solid #ff6b6b; border-radius: 8px; }
-        .gain { background-color: #eaffea; border: 1px solid #51cf66; border-radius: 8px; }
-        .big-number { font-size: 2.5em; font-weight: bold; margin: 10px 0; }
-        .loss .big-number { color: #e74c3c; }
-        .gain .big-number { color: #27ae60; }
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #16a34a;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --light-gray: #e2e8f0;
+            --border-radius: 12px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 2px solid var(--light-gray);
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .slider-container {
+            margin-top: 10px;
+        }
+
+        .slider-value {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--light-gray);
+            border-radius: 4px;
+            outline: none;
+            margin-top: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background: #15803d;
+        }
+
+        #results {
+            display: none;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 600px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .result-box {
+            padding: 25px;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .loss-box {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+        }
+
+        .savings-box {
+            background: #f0fdf4;
+            border: 2px solid #bbf7d0;
+        }
+
+        .result-label {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .result-amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .loss-amount {
+            color: var(--danger);
+        }
+
+        .savings-amount {
+            color: var(--secondary);
+        }
+
+        .result-description {
+            color: var(--gray);
+        }
+
+        .chart-container {
+            height: 300px;
+            margin: 30px 0;
+        }
+
+        .comparison-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-container {
+                flex-direction: column;
+            }
+        }
+
+        .comparison-item {
+            flex: 1;
+            text-align: center;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            background: var(--light);
+        }
+
+        .comparison-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .comparison-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .comparison-amount {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .comparison-description {
+            color: var(--gray);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .disclaimer {
+            background: #fffbeb;
+            border-left: 4px solid var(--warning);
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 4px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .share-button {
+            padding: 12px 20px;
+            border-radius: 50px;
+            background: var(--light);
+            border: 1px solid var(--light-gray);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .share-button:hover {
+            background: var(--light-gray);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>💰 Fee Finder</h1>
-        <p><strong>You are losing a fortune to investing fees and don't even know it.</strong> See exactly what it's costing you—and what you could have instead.</p>
-
-        <div class="form-group">
-            <label for="initialAmount">Current Portfolio Value ($)</label>
-            <input type="number" id="initialAmount" value="50000">
-        </div>
-
-        <div class="form-group">
-            <label for="monthlyContribution">Monthly Contribution ($)</label>
-            <input type="number" id="monthlyContribution" value="500">
-        </div>
-
-        <div class="form-group">
-            <label for="years">Years Until Retirement</label>
-            <input type="number" id="years" value="30">
-        </div>
-
-        <div class="form-group">
-            <label for="returnRate">Estimated Annual Return: <span id="returnRateValue" class="slider-value">7%</span></label>
-            <input type="range" id="returnRate" min="0" max="15" step="0.1" value="7">
-        </div>
-
-        <div class="form-group">
-            <label for="yourFee">Your Current Fee: <span id="yourFeeValue" class="slider-value">1.0%</span></label>
-            <input type="range" id="yourFee" min="0.1" max="3" step="0.05" value="1.0">
-        </div>
-
-        <div class="form-group">
-            <label for="lowerFee">A Lower Fee Alternative: <span id="lowerFeeValue" class="slider-value">0.15%</span></label>
-            <input type="range" id="lowerFee" min="0.02" max="1" step="0.01" value="0.15">
-        </div>
-
-        <button onclick="calculate()">Reveal The Truth</button>
-
-        <div id="results">
-            <h2>The Cost of Doing Nothing</h2>
-            <div class="result-box loss">
-                <h3>You Will Lose</h3>
-                <div id="feeCost" class="big-number">$0</div>
-                <p>This money vanishes into fees. It's gone forever.</p>
+        <header>
+            <div class="logo">
+                <i class="fas fa-money-bill-wave logo-icon"></i>
+                <h1>Fee Finder</h1>
             </div>
-            <br>
-            <div class="result-box gain">
-                <h3>You Could Keep</h3>
-                <div id="potentialSavings" class="big-number">$0</div>
-                <p>This is your money, working for you. It could be a house, a dream vacation, or years of retirement income.</p>
+            <p class="subtitle">Discover how much you're really paying in investment fees and what it's costing your financial future</p>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <h2><i class="fas fa-calculator"></i> Your Investment Details</h2>
+                <div class="form-group">
+                    <label for="initialAmount">Current Portfolio Value</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-dollar-sign input-icon"></i>
+                        <input type="number" id="initialAmount" value="100000" min="0" step="1000">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="monthlyContribution">Monthly Contribution</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-dollar-sign input-icon"></i>
+                        <input type="number" id="monthlyContribution" value="500" min="0" step="50">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="years">Years Until Retirement</label>
+                    <input type="range" id="years" min="5" max="50" value="30">
+                    <div class="slider-value" id="yearsValue">30 years</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="returnRate">Estimated Annual Return</label>
+                    <input type="range" id="returnRate" min="0" max="15" step="0.1" value="7">
+                    <div class="slider-value" id="returnRateValue">7%</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="yourFee">Your Current Fee Rate</label>
+                    <input type="range" id="yourFee" min="0.1" max="3" step="0.05" value="1.0">
+                    <div class="slider-value" id="yourFeeValue">1.0%</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="lowerFee">Lower Fee Alternative</label>
+                    <input type="range" id="lowerFee" min="0.02" max="1" step="0.01" value="0.15">
+                    <div class="slider-value" id="lowerFeeValue">0.15%</div>
+                </div>
+
+                <button class="btn" id="calculate-btn">
+                    <i class="fas fa-calculator"></i> Calculate Fee Impact
+                </button>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Crunching numbers...</p>
+                </div>
             </div>
-            <br>
-            <button style="background-color: #3498db;" onclick="alert('This would go to a partner page. This is the business model.')">Keep Your Money. See How.</button>
+
+            <div class="card" id="results">
+                <h2><i class="fas fa-chart-line"></i> Your Results</h2>
+                
+                <div class="results-grid">
+                    <div class="result-box loss-box">
+                        <div class="result-label">You Will Lose To Fees</div>
+                        <div class="result-amount loss-amount" id="feeCost">$0</div>
+                        <div class="result-description">This money vanishes into fees</div>
+                    </div>
+                    
+                    <div class="result-box savings-box">
+                        <div class="result-label">You Could Save</div>
+                        <div class="result-amount savings-amount" id="potentialSavings">$0</div>
+                        <div class="result-description">By switching to lower fees</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="resultsChart"></canvas>
+                </div>
+
+                <div class="comparison-container">
+                    <div class="comparison-item">
+                        <i class="fas fa-home comparison-icon" style="color: #3b82f6;"></i>
+                        <div class="comparison-title">With Your Current Fees</div>
+                        <div class="comparison-amount" id="highFeeResult">$0</div>
+                        <div class="comparison-description">Future portfolio value</div>
+                    </div>
+                    
+                    <div class="comparison-item">
+                        <i class="fas fa-home comparison-icon" style="color: #16a34a;"></i>
+                        <i class="fas fa-car comparison-icon" style="color: #16a34a;"></i>
+                        <div class="comparison-title">With Lower Fees</div>
+                        <div class="comparison-amount" id="lowFeeResult">$0</div>
+                        <div class="comparison-description">Future portfolio value</div>
+                    </div>
+                </div>
+
+                <div class="disclaimer">
+                    <p><strong>Note:</strong> This calculator provides estimates only. Actual investment returns and fees may vary. Consider consulting with a financial advisor before making investment decisions.</p>
+                </div>
+
+                <button class="btn btn-secondary" id="action-btn">
+                    <i class="fas fa-rocket"></i> Start Saving Now
+                </button>
+
+                <div class="share-buttons">
+                    <div class="share-button" onclick="shareResults()">
+                        <i class="fas fa-share-alt"></i> Share Results
+                    </div>
+                    <div class="share-button" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print Report
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Fee Finder &copy; 2023 | All calculations are performed locally in your browser for privacy</p>
         </div>
     </div>
 
     <script>
+        // DOM Elements
+        const initialAmount = document.getElementById('initialAmount');
+        const monthlyContribution = document.getElementById('monthlyContribution');
+        const years = document.getElementById('years');
+        const yearsValue = document.getElementById('yearsValue');
+        const returnRate = document.getElementById('returnRate');
+        const returnRateValue = document.getElementById('returnRateValue');
+        const yourFee = document.getElementById('yourFee');
+        const yourFeeValue = document.getElementById('yourFeeValue');
+        const lowerFee = document.getElementById('lowerFee');
+        const lowerFeeValue = document.getElementById('lowerFeeValue');
+        const calculateBtn = document.getElementById('calculate-btn');
+        const resultsSection = document.getElementById('results');
+        const feeCost = document.getElementById('feeCost');
+        const potentialSavings = document.getElementById('potentialSavings');
+        const highFeeResult = document.getElementById('highFeeResult');
+        const lowFeeResult = document.getElementById('lowFeeResult');
+        const loading = document.getElementById('loading');
+        const actionBtn = document.getElementById('action-btn');
+
+        // Initialize slider values
+        yearsValue.textContent = `${years.value} years`;
+        returnRateValue.textContent = `${returnRate.value}%`;
+        yourFeeValue.textContent = `${yourFee.value}%`;
+        lowerFeeValue.textContent = `${lowerFee.value}%`;
+
         // Update slider values in real-time
-        document.getElementById('returnRate').oninput = function() { document.getElementById('returnRateValue').innerHTML = this.value + '%'; };
-        document.getElementById('yourFee').oninput = function() { document.getElementById('yourFeeValue').innerHTML = this.value + '%'; };
-        document.getElementById('lowerFee').oninput = function() { document.getElementById('lowerFeeValue').innerHTML = this.value + '%'; };
+        years.addEventListener('input', () => {
+            yearsValue.textContent = `${years.value} years`;
+        });
 
-        function calculate() {
-            // Get input values
-            const initial = parseFloat(document.getElementById('initialAmount').value);
-            const monthly = parseFloat(document.getElementById('monthlyContribution').value);
-            const years = parseFloat(document.getElementById('years').value);
-            const returnRate = parseFloat(document.getElementById('returnRate').value) / 100;
-            const yourFee = parseFloat(document.getElementById('yourFee').value) / 100;
-            const lowerFee = parseFloat(document.getElementById('lowerFee').value) / 100;
+        returnRate.addEventListener('input', () => {
+            returnRateValue.textContent = `${returnRate.value}%`;
+        });
 
-            // Calculate future values
-            const fvHighFee = futureValue(initial, monthly, years, returnRate, yourFee);
-            const fvLowFee = futureValue(initial, monthly, years, returnRate, lowerFee);
+        yourFee.addEventListener('input', () => {
+            yourFeeValue.textContent = `${yourFee.value}%`;
+        });
 
-            // The cost is the difference
-            const cost = fvLowFee - fvHighFee;
+        lowerFee.addEventListener('input', () => {
+            lowerFeeValue.textContent = `${lowerFee.value}%`;
+        });
 
-            // Format and display the results with commas
-            document.getElementById('feeCost').innerText = formatter.format(cost);
-            document.getElementById('potentialSavings').innerText = formatter.format(fvLowFee - fvHighFee); // Same value, different context
-
-            // Show the results section
-            document.getElementById('results').style.display = 'block';
-
-            // Scroll to results
-            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function futureValue(initial, monthly, years, returnRate, feeRate) {
-            const netRate = returnRate - feeRate;
-            const monthlyRate = netRate / 12;
-            const periods = years * 12;
-            let fv = initial * Math.pow(1 + monthlyRate, periods);
-            // Calculate future value of a series of monthly contributions
-            for (let i = 1; i <= periods; i++) {
-                fv += monthly * Math.pow(1 + monthlyRate, periods - i);
-            }
-            return fv;
-        }
-
-        // Create a number formatter for currency
+        // Format currency
         const formatter = new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD',
             minimumFractionDigits: 0,
             maximumFractionDigits: 0,
         });
+
+        // Calculate future value
+        function futureValue(initial, monthly, years, returnRate, feeRate) {
+            const netRate = (returnRate - feeRate) / 100;
+            const monthlyRate = netRate / 12;
+            const periods = years * 12;
+            
+            // Future value of initial investment
+            let fv = initial * Math.pow(1 + monthlyRate, periods);
+            
+            // Future value of monthly contributions (annuity due)
+            if (monthlyRate !== 0) {
+                fv += monthly * ((Math.pow(1 + monthlyRate, periods) - 1) / monthlyRate) * (1 + monthlyRate);
+            } else {
+                fv += monthly * periods;
+            }
+            
+            return fv;
+        }
+
+        // Calculate results
+        function calculateResults() {
+            // Show loading
+            loading.style.display = 'block';
+            
+            // Use setTimeout to allow the UI to update before calculations
+            setTimeout(() => {
+                // Get input values
+                const initial = parseFloat(initialAmount.value);
+                const monthly = parseFloat(monthlyContribution.value);
+                const yearsVal = parseFloat(years.value);
+                const returnRateVal = parseFloat(returnRate.value);
+                const yourFeeVal = parseFloat(yourFee.value);
+                const lowerFeeVal = parseFloat(lowerFee.value);
+                
+                // Calculate future values
+                const fvHighFee = futureValue(initial, monthly, yearsVal, returnRateVal, yourFeeVal);
+                const fvLowFee = futureValue(initial, monthly, yearsVal, returnRateVal, lowerFeeVal);
+                
+                // The cost is the difference
+                const cost = fvLowFee - fvHighFee;
+                
+                // Format and display the results
+                feeCost.textContent = formatter.format(cost);
+                potentialSavings.textContent = formatter.format(cost);
+                highFeeResult.textContent = formatter.format(fvHighFee);
+                lowFeeResult.textContent = formatter.format(fvLowFee);
+                
+                // Create chart
+                createChart(fvHighFee, fvLowFee);
+                
+                // Show results section
+                resultsSection.style.display = 'block';
+                
+                // Hide loading
+                loading.style.display = 'none';
+                
+                // Scroll to results
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
+            }, 500);
+        }
+
+        // Create results chart
+        function createChart(highFeeValue, lowFeeValue) {
+            const ctx = document.getElementById('resultsChart').getContext('2d');
+            
+            // Destroy previous chart if it exists
+            if (window.resultsChart) {
+                window.resultsChart.destroy();
+            }
+            
+            // Create new chart
+            window.resultsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['High Fee Portfolio', 'Low Fee Portfolio'],
+                    datasets: [{
+                        label: 'Future Value',
+                        data: [highFeeValue, lowFeeValue],
+                        backgroundColor: [
+                            'rgba(220, 38, 38, 0.7)',
+                            'rgba(22, 163, 74, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(220, 38, 38)',
+                            'rgb(22, 163, 74)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatter.format(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 1000000) {
+                                        return '$' + (value/1000000).toFixed(1) + 'M';
+                                    } else if (value >= 1000) {
+                                        return '$' + (value/1000).toFixed(0) + 'K';
+                                    }
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Share results function
+        function shareResults() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Fee Finder Results',
+                    text: `I just discovered that I could save ${potentialSavings.textContent} in investment fees over time! Check out Fee Finder to see how much you can save.`,
+                    url: window.location.href
+                })
+                .catch(error => {
+                    console.log('Error sharing:', error);
+                    alert('Sharing failed. You can copy the URL manually instead.');
+                });
+            } else {
+                alert('Web Share API not supported in your browser. You can copy the URL to share.');
+            }
+        }
+
+        // Event listeners
+        calculateBtn.addEventListener('click', calculateResults);
+        
+        actionBtn.addEventListener('click', () => {
+            alert('In a production version, this would connect you with our partner brokerage services.');
+        });
+
+        // Initialize with a calculation on load
+        window.addEventListener('load', calculateResults);
     </script>
 </body>
 </html>
