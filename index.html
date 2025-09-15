@@ -3,1966 +3,1110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinTrack NG | Complete Finance Tracker</title>
+    <title>Fee Finder | Discover Your Hidden Investment Costs</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-    
-    <!-- Web App Manifest -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2563eb">
-        
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2563eb;
-            --secondary: #4f46e5;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --dark: #1e293b;
-            --light: #f8fafc;
-            --card-bg: #ffffff;
-            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            --nigerian-green: #008751;
-            --nigerian-white: #ffffff;
-            --border-radius: 10px;
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --primary-light: #e6eeff;
+            --secondary: #06d6a0;
+            --secondary-dark: #05bf8e;
+            --dark: #1e2a4a;
+            --light: #ffffff;
+            --gray: #8b9bb4;
+            --gray-light: #f8fafc;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --radius: 16px;
             --transition: all 0.3s ease;
         }
-
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
         }
-
+        
         body {
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-            color: #334155;
+            background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%);
+            color: var(--dark);
+            line-height: 1.6;
             min-height: 100vh;
-            padding: 15px;
-            position: relative;
+            padding: 0;
         }
-
-        .auth-container {
-            max-width: 400px;
-            margin: 50px auto;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 30px;
-            box-shadow: var(--card-shadow);
-            text-align: center;
-        }
-
-        .auth-header {
-            margin-bottom: 25px;
-        }
-
-        .auth-header h1 {
-            font-size: 1.8rem;
-            background: linear-gradient(to right, var(--nigerian-green), var(--primary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-        }
-
-        .auth-logo {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--nigerian-green), var(--primary));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2rem;
-            margin: 0 auto 15px;
-        }
-
-        .auth-tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .auth-tab {
-            flex: 1;
-            padding: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-
-        .auth-tab.active {
-            border-bottom: 3px solid var(--nigerian-green);
-            color: var(--nigerian-green);
-        }
-
-        .auth-form {
-            display: none;
-        }
-
-        .auth-form.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #475569;
-            font-size: 0.9rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            font-size: 1rem;
-            transition: var(--transition);
-            background: #f8fafc;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--nigerian-green);
-            box-shadow: 0 0 0 3px rgba(0, 135, 81, 0.1);
-            background: white;
-        }
-
-        .auth-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(to right, var(--nigerian-green), var(--primary));
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            margin-top: 10px;
-        }
-
-        .auth-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2);
-        }
-
-        .auth-footer {
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: #64748b;
-        }
-
-        .auth-footer a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .auth-error {
-            background-color: #fee2e2;
-            color: var(--danger);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-            display: none;
-        }
-
-        .app-container {
-            display: none;
-        }
-
+        
         .container {
-            max-width: 100%;
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 0 20px;
         }
-
+        
         header {
+            background: var(--light);
+            box-shadow: var(--shadow);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 15px;
-            margin-bottom: 15px;
-            background: var(--nigerian-white);
-            border-radius: var(--border-radius);
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(226, 232, 240, 0.6);
         }
-
+        
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .logo h1 {
-            font-size: 1.4rem;
-            background: linear-gradient(to right, var(--nigerian-green), var(--primary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-        }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--nigerian-green), var(--primary));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.3rem;
-            box-shadow: var(--card-shadow);
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn {
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            border: none;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(to right, var(--nigerian-green), var(--primary));
-            color: white;
-            box-shadow: var(--card-shadow);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--nigerian-green);
-            color: var(--nigerian-green);
-        }
-
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.1);
-        }
-
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition);
-            border: 1px solid rgba(226, 232, 240, 0.6);
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--nigerian-green), var(--primary));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.1rem;
-        }
-
-        .balance-amount {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin: 10px 0;
-            color: var(--dark);
-        }
-
-        .currency-symbol {
-            color: var(--nigerian-green);
-            font-size: 1.4rem;
-        }
-
-        .balance-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .stat {
-            text-align: center;
-            padding: 12px;
-            border-radius: 8px;
-            background: #f8fafc;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
-        }
-
-        .stat-value {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .income-value {
-            color: var(--success);
-        }
-
-        .expense-value {
-            color: var(--danger);
-        }
-
-        .stat-label {
-            font-size: 0.8rem;
-            opacity: 0.8;
-        }
-
-        .transaction-form {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 15px;
-        }
-
-        .form-title {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr;
             gap: 12px;
+            font-weight: 700;
+            font-size: 24px;
+            color: var(--primary);
+            text-decoration: none;
         }
-
-        .btn-submit {
-            background: linear-gradient(to right, var(--nigerian-green), #34d399);
-            color: white;
-            width: 100%;
-            padding: 12px;
-            font-size: 1rem;
-            margin-top: 5px;
-            border-radius: 8px;
-            font-weight: 600;
+        
+        .logo i {
+            font-size: 28px;
         }
-
-        .transaction-list {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--card-shadow);
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .list-header {
+        
+        nav ul {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
+            list-style: none;
+            gap: 32px;
         }
-
-        .filters {
-            display: flex;
-            gap: 8px;
-        }
-
-        .filter-btn {
-            padding: 6px 10px;
-            border-radius: 6px;
-            background: #f1f5f9;
-            border: none;
-            cursor: pointer;
+        
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
             font-weight: 500;
-            font-size: 0.8rem;
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        nav a:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
             transition: var(--transition);
         }
-
-        .filter-btn.active {
-            background: var(--nigerian-green);
-            color: white;
+        
+        nav a:hover {
+            color: var(--primary);
         }
-
-        .filter-btn:hover {
-            background: #e2e8f0;
+        
+        nav a:hover:after {
+            width: 100%;
         }
-
-        .transaction-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
-            transition: var(--transition);
+        
+        .hero {
+            text-align: center;
+            padding: 80px 0 60px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%234361ee" fill-opacity="0.05" x="0" y="0" width="100" height="100" /><path fill="%234361ee" fill-opacity="0.1" d="M0,0 L100,100"></path></svg>');
+            background-size: cover;
         }
-
-        .transaction-item:last-child {
-            border-bottom: none;
-        }
-
-        .transaction-item:hover {
-            background-color: #f8fafc;
-            border-radius: 8px;
-        }
-
-        .transaction-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .transaction-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.1rem;
-        }
-
-        .category-income { background: var(--success); }
-        .category-food { background: #f59e0b; }
-        .category-shopping { background: #8b5cf6; }
-        .category-transport { background: #0ea5e9; }
-        .category-housing { background: #ec4899; }
-        .category-entertainment { background: #f97316; }
-        .category-other { background: #64748b; }
-
-        .transaction-details h3 {
-            font-weight: 600;
-            margin-bottom: 3px;
-            font-size: 0.95rem;
-        }
-
-        .transaction-details p {
-            font-size: 0.8rem;
-            color: #64748b;
-        }
-
-        .transaction-amount {
-            font-weight: 700;
-            font-size: 1rem;
-        }
-
-        .income-amount {
-            color: var(--success);
-        }
-
-        .expense-amount {
-            color: var(--danger);
-        }
-
-        .charts-container {
-            margin-top: 15px;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--card-shadow);
-        }
-
-        .chart-row {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-
-        .chart-card {
-            height: 250px;
-        }
-
-        .chart-title {
-            font-size: 1.1rem;
-            margin-bottom: 15px;
+        
+        .hero h1 {
+            font-size: 3.2rem;
+            margin-bottom: 20px;
             color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-weight: 700;
         }
-
-        .export-section {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--card-shadow);
-            margin-top: 15px;
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 40px;
+            color: var(--gray);
         }
-
-        .export-options {
+        
+        .card {
+            background: var(--light);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 40px;
+            margin-bottom: 40px;
+            transition: var(--transition);
+            border: 1px solid rgba(67, 97, 238, 0.1);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        .calculator {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 15px;
+            gap: 40px;
         }
-
-        .export-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 15px;
-            border-radius: 8px;
-            background: #f8fafc;
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            text-align: center;
+        
+        @media (max-width: 968px) {
+            .calculator {
+                grid-template-columns: 1fr;
+            }
         }
-
-        .export-btn:hover {
-            background: #f1f5f9;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .export-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--nigerian-green), var(--primary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-        }
-
-        .export-btn span {
-            font-weight: 600;
+        
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 24px;
             color: var(--dark);
-            font-size: 0.85rem;
+            position: relative;
+            padding-bottom: 12px;
         }
-
-        .empty-state {
-            text-align: center;
-            padding: 30px 15px;
-            color: #64748b;
-        }
-
-        .empty-state i {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            opacity: 0.3;
-        }
-
-        .notification {
-            position: fixed;
-            bottom: 15px;
-            right: 15px;
-            padding: 12px 18px;
-            background: var(--nigerian-green);
-            color: white;
-            border-radius: 8px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: var(--transition);
-            max-width: 90%;
-            font-size: 0.9rem;
-        }
-
-        .notification.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+        
+        .slider-container {
             display: flex;
             align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            opacity: 0;
-            visibility: hidden;
-            transition: var(--transition);
+            gap: 16px;
+            margin-top: 8px;
         }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-            transform: translateY(-20px);
-            transition: var(--transition);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-overlay.active .modal {
-            transform: translateY(0);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-title {
-            font-size: 1.3rem;
-            color: var(--dark);
-            font-weight: 600;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 1.6rem;
-            cursor: pointer;
-            color: #64748b;
-            transition: var(--transition);
-        }
-
-        .close-modal:hover {
-            color: var(--dark);
-        }
-
-        .modal-body {
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-            line-height: 1.6;
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .modal-btn {
-            padding: 9px 18px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: var(--transition);
-            font-size: 0.9rem;
-        }
-
-        .modal-btn-primary {
-            background: var(--nigerian-green);
-            color: white;
-        }
-
-        .modal-btn-primary:hover {
-            background: #007245;
-        }
-
-        .modal-btn-secondary {
-            background: #f1f5f9;
-            color: var(--dark);
-        }
-
-        .modal-btn-secondary:hover {
-            background: #e2e8f0;
-        }
-
-        .progress-bar {
+        
+        .slider-container input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
             height: 8px;
             background: #e2e8f0;
             border-radius: 4px;
-            overflow: hidden;
-            margin: 12px 0;
+            outline: none;
         }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--success);
-            border-radius: 4px;
-            transition: width 0.5s ease;
-        }
-
-        .reset-section {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .reset-btn {
-            background: #f1f5f9;
-            color: var(--danger);
-            border: 2px solid var(--danger);
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
+        
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
             cursor: pointer;
             transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .reset-btn:hover {
-            background: #fee2e2;
-            transform: translateY(-3px);
-        }
-
-        /* New Features Styling */
-        .feature-card {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 15px;
         }
         
-        .feature-section {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 15px;
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
         }
         
-        .feature-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
+        .slider-value {
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 60px;
+            text-align: right;
+            font-size: 1.1rem;
         }
         
-        .feature-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--nigerian-green), var(--primary));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
-            font-size: 1.1rem;
+            border: none;
+            padding: 18px 32px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
         
-        .feature-title {
-            font-size: 1.1rem;
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3);
+        }
+        
+        .secondary-btn {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
+        }
+        
+        .secondary-btn:hover {
+            box-shadow: 0 10px 20px rgba(6, 214, 160, 0.3);
+        }
+        
+        .results {
+            display: none;
+        }
+        
+        .result-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        @media (max-width: 640px) {
+            .result-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .result-card {
+            padding: 32px;
+            border-radius: var(--radius);
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .result-card.loss {
+            background: linear-gradient(135deg, #fff0f0 0%, #fff8f8 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .result-card.gain {
+            background: linear-gradient(135deg, #f0fff8 0%, #f8fffc 100%);
+            border: 1px solid rgba(6, 214, 160, 0.2);
+        }
+        
+        .result-card h3 {
+            margin-bottom: 16px;
+            font-size: 1.2rem;
+            color: var(--dark);
+        }
+        
+        .result-card .amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+        
+        .result-card.loss .amount {
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .result-card.gain .amount {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .chart-container {
+            height: 350px;
+            margin-top: 40px;
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .comparison-item {
+            padding: 32px;
+            border-radius: var(--radius);
+            background: var(--gray-light);
+            transition: var(--transition);
+        }
+        
+        .comparison-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+        
+        .comparison-item h3 {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid rgba(139, 155, 180, 0.2);
+            color: var(--dark);
+        }
+        
+        .comparison-item ul {
+            list-style: none;
+        }
+        
+        .comparison-item li {
+            padding: 14px 0;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(139, 155, 180, 0.1);
+        }
+        
+        .comparison-item li:last-child {
+            border-bottom: none;
+        }
+        
+        .comparison-item li span:first-child {
+            color: var(--gray);
+        }
+        
+        .comparison-item li span:last-child {
             font-weight: 600;
             color: var(--dark);
         }
         
-        .debt-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+        .faq {
+            margin-top: 60px;
         }
         
-        .debt-card {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 15px;
+        .faq h2 {
             text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.2rem;
+            color: var(--dark);
         }
         
-        .debt-card.owed-to-me {
-            border-left: 4px solid var(--success);
-        }
-        
-        .debt-card.owed-to-others {
-            border-left: 4px solid var(--danger);
-        }
-        
-        .debt-value {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin: 5px 0;
-        }
-        
-        .debt-label {
-            font-size: 0.8rem;
-            color: #64748b;
-        }
-        
-        .sms-import-btn {
-            background: linear-gradient(to right, #0ea5e9, #3b82f6);
-            color: white;
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            margin-top: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .local-insight {
-            background: #f0fdf4;
-            border-left: 4px solid var(--success);
-            padding: 12px;
-            border-radius: 4px;
-            margin-top: 15px;
-            font-size: 0.9rem;
-        }
-        
-        .insight-icon {
-            color: var(--success);
-            margin-right: 5px;
-        }
-        
-        .sync-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .sync-btn {
-            background: #f1f5f9;
-            padding: 12px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border: none;
-            cursor: pointer;
+        .faq-item {
+            margin-bottom: 20px;
+            border-radius: var(--radius);
+            background: var(--light);
+            box-shadow: var(--shadow);
+            overflow: hidden;
             transition: var(--transition);
         }
         
-        .sync-btn:hover {
-            background: #e2e8f0;
+        .faq-item:hover {
+            transform: translateY(-3px);
         }
         
-        .sync-icon {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--nigerian-green), var(--primary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.9rem;
-        }
-        
-        .sync-label {
+        .faq-question {
             font-weight: 600;
-        }
-        
-        .sync-description {
-            font-size: 0.8rem;
-            color: #64748b;
-        }
-
-        .debt-management {
-            margin-top: 20px;
-        }
-
-        .debt-list {
-            margin-top: 15px;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #e2e8f0;
-            border-radius: var(--border-radius);
-        }
-
-        .debt-item {
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
+            padding: 24px;
+            cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .debt-item:last-child {
-            border-bottom: none;
-        }
-
-        .debt-info {
-            flex: 1;
-        }
-
-        .debt-info h4 {
-            font-size: 1rem;
-            margin-bottom: 5px;
-        }
-
-        .debt-info p {
-            font-size: 0.85rem;
-            color: #64748b;
-            margin-bottom: 3px;
-        }
-
-        .debt-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-btn {
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            border: none;
+            background: var(--light);
             transition: var(--transition);
         }
-
-        .pay-btn {
-            background: var(--success);
-            color: white;
+        
+        .faq-question:hover {
+            background: var(--primary-light);
         }
-
-        .history-btn {
+        
+        .faq-answer {
+            padding: 0 24px 24px;
+            color: var(--gray);
+            line-height: 1.8;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 60px 0;
+            margin-top: 80px;
+            color: var(--gray);
+            background: var(--dark);
+        }
+        
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .footer-logo {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--light);
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .footer-links a {
+            color: var(--light);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary-light);
+        }
+        
+        .disclaimer {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            font-size: 14px;
+            color: var(--light);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transform: scale(0.9);
+            animation: modalAppear 0.3s forwards;
+        }
+        
+        @keyframes modalAppear {
+            to {
+                transform: scale(1);
+            }
+        }
+        
+        .modal h2 {
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+        
+        .modal p {
+            margin-bottom: 30px;
+            color: var(--gray);
+        }
+        
+        .close-modal {
             background: var(--primary);
             color: white;
-        }
-
-        .paid-badge {
-            background: var(--success);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
             font-weight: 600;
+            transition: var(--transition);
         }
-
-        .debt-progress {
-            height: 5px;
-            background: #e2e8f0;
-            borderRadius: 3px;
-            overflow: hidden;
-            margin: 8px 0;
+        
+        .close-modal:hover {
+            background: var(--primary-dark);
         }
-
-        .debt-progress-fill {
-            height: 100%;
-            background: var(--success);
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 8px;
+            color: var(--primary);
+            cursor: help;
         }
-
-        .payment-history {
-            margin-top: 15px;
-            max-height: 200px;
-            overflow-y: auto;
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background: var(--dark);
+            color: var(--light);
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+            font-weight: normal;
         }
-
-        .payment-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 0.9rem;
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
         }
-
-        .payment-item:last-child {
-            border-bottom: none;
-        }
-
-        @media (min-width: 576px) {
-            body {
-                padding: 20px;
+        
+        @media (max-width: 768px) {
+            nav ul {
+                gap: 20px;
             }
             
-            .dashboard {
-                grid-template-columns: 1fr 1fr;
+            .hero h1 {
+                font-size: 2.5rem;
             }
             
-            .chart-row {
-                grid-template-columns: 1fr 1fr;
+            .hero p {
+                font-size: 1.1rem;
             }
             
-            header {
-                padding: 15px 20px;
-            }
-            
-            .logo h1 {
-                font-size: 1.6rem;
-            }
-            
-            .btn {
-                padding: 10px 15px;
-                font-size: 0.9rem;
-            }
-            
-            .debt-grid {
-                grid-template-columns: 1fr 1fr;
+            .card {
+                padding: 30px;
             }
         }
-
-        @media (min-width: 768px) {
-            .main-content {
-                flex-direction: row;
-                flex-wrap: wrap;
+        
+        @media (max-width: 480px) {
+            nav ul {
+                display: none;
+            /* In a real app, this would be a mobile menu */
             }
             
-            .left-column {
-                flex: 1;
-                min-width: 0;
+            .hero {
+                padding: 60px 0 40px;
             }
             
-            .right-column {
-                width: 350px;
+            .hero h1 {
+                font-size: 2rem;
             }
             
-            .feature-card {
-                flex-direction: row;
-            }
-            
-            .feature-section {
-                flex: 1;
+            .result-card .amount {
+                font-size: 2rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Authentication Section -->
-    <div id="auth-container" class="auth-container">
-        <div class="auth-header">
-            <div class="auth-logo">
-                <i class="fas fa-wallet"></i>
-            </div>
-            <h1>FinTrack <span style="color: var(--nigerian-green);">NG</span></h1>
-            <p>Your Complete Finance Tracker</p>
-        </div>
-        
-        <div class="auth-tabs">
-            <div class="auth-tab active" id="login-tab">Login</div>
-            <div class="auth-tab" id="signup-tab">Sign Up</div>
-        </div>
-        
-        <div id="auth-error" class="auth-error">
-            <i class="fas fa-exclamation-circle"></i> <span id="error-message"></span>
-        </div>
-        
-        <form id="login-form" class="auth-form active">
-            <div class="form-group">
-                <label for="login-email">Email</label>
-                <input type="email" id="login-email" class="form-control" placeholder="your@email.com" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="login-password">Password</label>
-                <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
-            </div>
-            
-            <button type="submit" class="auth-btn">Login</button>
-            
-            <div class="auth-footer">
-                <p>Don't have an account? <a href="#" id="switch-to-signup">Sign Up</a></p>
-            </div>
-        </form>
-        
-        <form id="signup-form" class="auth-form">
-            <div class="form-group">
-                <label for="signup-name">Full Name</label>
-                <input type="text" id="signup-name" class="form-control" placeholder="John Doe" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="signup-email">Email</label>
-                <input type="email" id="signup-email" class="form-control" placeholder="your@email.com" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="signup-password">Password</label>
-                <input type="password" id="signup-password" class="form-control" placeholder="••••••••" minlength="6" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="signup-confirm">Confirm Password</label>
-                <input type="password" id="signup-confirm" class="form-control" placeholder="••••••••" minlength="6" required>
-            </div>
-            
-            <button type="submit" class="auth-btn">Create Account</button>
-            
-            <div class="auth-footer">
-                <p>Already have an account? <a href="#" id="switch-to-login">Login</a></p>
-            </div>
-        </form>
-    </div>
-    
-    <!-- Main Application (Hidden until authenticated) -->
-    <div id="app-container" class="app-container">
+    <header>
         <div class="container">
-            <header>
-                <div class="logo">
-                    <div class="logo-icon">
-                        <i class="fas fa-wallet"></i>
-                    </div>
-                    <h1>FinTrack <span style="color: var(--nigerian-green);">NG</span></h1>
-                </div>
-                <div class="nav-buttons">
-                    <button class="btn btn-outline" id="syncBtn">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                    <button class="btn btn-primary" id="exportBtn">
-                        <i class="fas fa-download"></i>
-                    </button>
-                    <button class="btn btn-outline" id="logoutBtn">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </header>
-            
-            <!-- New Features Section -->
-            <div class="feature-card">
-                <div class="feature-section">
-                    <div class="feature-header">
-                        <div class="feature-icon">
-                            <i class="fas fa-hand-holding-usd"></i>
-                        </div>
-                        <div class="feature-title">Debt Tracker</div>
-                    </div>
-                    <div class="debt-grid">
-                        <div class="debt-card owed-to-me">
-                            <div class="debt-label">You're Owed</div>
-                            <div class="debt-value">₦<span id="owedToMe">0.00</span></div>
-                            <div class="debt-label" id="owedToMeCount">By 0 people</div>
-                        </div>
-                        <div class="debt-card owed-to-others">
-                            <div class="debt-label">You Owe</div>
-                            <div class="debt-value">₦<span id="owedToOthers">0.00</span></div>
-                            <div class="debt-label" id="owedToOthersCount">To 0 people</div>
-                        </div>
-                    </div>
-                    <button class="btn btn-outline" style="width:100%; margin-top:15px;" id="addDebtBtn">
-                        <i class="fas fa-plus"></i> Add Debt Record
-                    </button>
-                    
-                    <div class="debt-management">
-                        <h4 style="margin-bottom: 10px;">Manage Debts</h4>
-                        <div class="debt-list" id="debtList">
-                            <div class="empty-state" style="padding: 20px;">
-                                <i class="fas fa-exchange-alt"></i>
-                                <h4>No active debts</h4>
-                                <p>Add a debt record to get started</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="feature-section">
-                    <div class="feature-header">
-                        <div class="feature-icon">
-                            <i class="fas fa-comment-alt"></i>
-                        </div>
-                        <div class="feature-title">SMS Import</div>
-                    </div>
-                    <p>Automatically import transactions from your bank SMS alerts</p>
-                    <button class="sms-import-btn" id="smsImportBtn">
-                        <i class="fas fa-sms"></i> Import Bank Transactions
-                    </button>
-                    <div class="local-insight">
-                        <i class="fas fa-lightbulb insight-icon"></i>
-                        <strong>Nigerian Insight:</strong> Save 15 mins daily by automating transaction entry
-                    </div>
-                </div>
-            </div>
-            
-            <div class="main-content">
-                <div class="left-column">
-                    <div class="dashboard">
-                        <!-- Balance Card -->
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">
-                                    <div class="card-icon">
-                                        <i class="fas fa-coins"></i>
-                                    </div>
-                                    Current Balance
-                                </div>
-                            </div>
-                            <div class="balance-amount"><span class="currency-symbol">₦</span> <span id="currentBalance">0.00</span></div>
-                            <div class="balance-stats">
-                                <div class="stat">
-                                    <div class="stat-value income-value" id="totalIncome">₦0.00</div>
-                                    <div class="stat-label">Income</div>
-                                </div>
-                                <div class="stat">
-                                    <div class="stat-value expense-value" id="totalExpense">₦0.00</div>
-                                    <div class="stat-label">Expenses</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Budget Card -->
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">
-                                    <div class="card-icon">
-                                        <i class="fas fa-chart-pie"></i>
-                                    </div>
-                                    Monthly Budget
-                                </div>
-                                <button class="btn btn-outline" id="setBudgetBtn">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </div>
-                            <div class="balance-amount"><span id="usedBudget">₦0.00</span> / <span id="totalBudget">₦0.00</span></div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="budgetProgress"></div>
-                            </div>
-                            <div class="balance-stats">
-                                <div class="stat">
-                                    <div class="stat-value" id="remainingBudget">₦0.00</div>
-                                    <div class="stat-label">Remaining</div>
-                                </div>
-                                <div class="stat">
-                                    <div class="stat-value" id="daysLeft">0 days</div>
-                                    <div class="stat-label">Left</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Transaction Form -->
-                    <div class="transaction-form">
-                        <h2 class="form-title"><i class="fas fa-plus-circle"></i> Add Transaction</h2>
-                        <form id="transactionForm">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="transactionType">Type</label>
-                                    <select id="transactionType" class="form-control">
-                                        <option value="income">Income</option>
-                                        <option value="expense">Expense</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="amount">Amount (₦)</label>
-                                    <input type="number" id="amount" class="form-control" placeholder="0.00" step="0.01" min="0">
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="category">Category</label>
-                                <select id="category" class="form-control">
-                                    <option value="salary">Salary</option>
-                                    <option value="freelance">Freelance</option>
-                                    <option value="investment">Investment</option>
-                                    <option value="food">Food & Dining</option>
-                                    <option value="shopping">Shopping</option>
-                                    <option value="transport">Transport</option>
-                                    <option value="housing">Housing</option>
-                                    <option value="entertainment">Entertainment</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="description">Description</label>
-                                <input type="text" id="description" class="form-control" placeholder="Enter transaction details">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="date">Date</label>
-                                <input type="date" id="date" class="form-control">
-                            </div>
-                            
-                            <button type="submit" class="btn btn-submit">
-                                <i class="fas fa-check-circle"></i> Add Transaction
-                            </button>
-                        </form>
-                    </div>
-                    
-                    <!-- Charts -->
-                    <div class="charts-container">
-                        <h2 class="chart-title"><i class="fas fa-chart-bar"></i> Financial Reports</h2>
-                        <div class="chart-row">
-                            <div class="card chart-card">
-                                <canvas id="spendingChart"></canvas>
-                            </div>
-                            <div class="card chart-card">
-                                <canvas id="incomeChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Sync Options -->
-                    <div class="feature-section">
-                        <div class="feature-header">
-                            <div class="feature-icon">
-                                <i class="fas fa-cloud"></i>
-                            </div>
-                            <div class="feature-title">Cloud Sync</div>
-                        </div>
-                        <p>Backup your data and access from multiple devices</p>
-                        <div class="sync-options">
-                            <button class="sync-btn" id="googleSyncBtn">
-                                <div class="sync-icon">
-                                    <i class="fab fa-google-drive"></i>
-                                </div>
-                                <div>
-                                    <div class="sync-label">Google Drive</div>
-                                    <div class="sync-description">Sync with your Google account</div>
-                                </div>
-                            </button>
-                            <button class="sync-btn" id="smsBackupBtn">
-                                <div class="sync-icon">
-                                    <i class="fas fa-sms"></i>
-                                </div>
-                                <div>
-                                    <div class="sync-label">SMS Backup</div>
-                                    <div class="sync-description">Receive encrypted backup via SMS</div>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Reset Section -->
-                    <div class="reset-section">
-                        <button class="reset-btn" id="resetBtn">
-                            <i class="fas fa-redo"></i> Reset All Data
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Right Column - Transactions -->
-                <div class="right-column">
-                    <div class="transaction-list">
-                        <div class="list-header">
-                            <h2 class="card-title"><i class="fas fa-list"></i> Recent Transactions</h2>
-                            <div class="filters">
-                                <button class="filter-btn active" data-filter="all">All</button>
-                                <button class="filter-btn" data-filter="income">Income</button>
-                                <button class="filter-btn" data-filter="expense">Expense</button>
-                            </div>
-                        </div>
-                        
-                        <div id="transactionsContainer">
-                            <div class="empty-state">
-                                <i class="fas fa-exchange-alt"></i>
-                                <h3>No transactions yet</h3>
-                                <p>Add your first transaction to get started</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="export-section">
-                        <h2 class="card-title"><i class="fas fa-file-export"></i> Export Data</h2>
-                        <p>Download your financial data for backup or analysis</p>
-                        <div class="export-options">
-                            <button class="export-btn" id="exportCsv">
-                                <div class="export-icon">
-                                    <i class="fas fa-file-csv"></i>
-                                </div>
-                                <span>CSV Export</span>
-                            </button>
-                            <button class="export-btn" id="exportPdf">
-                                <div class="export-icon">
-                                    <i class="fas fa-file-pdf"></i>
-                                </div>
-                                <span>PDF Report</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="notification" id="notification">Transaction added successfully!</div>
-
-        <!-- Budget Modal -->
-        <div class="modal-overlay" id="budgetModal">
-            <div class="modal">
-                <div class="modal-header">
-                    <h3 class="modal-title">Set Monthly Budget</h3>
-                    <button class="close-modal" id="closeBudgetModal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="budgetAmount">Budget Amount (₦)</label>
-                        <input type="number" id="budgetAmount" class="form-control" placeholder="Enter amount" min="0" step="1000">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="modal-btn modal-btn-secondary" id="cancelBudget">Cancel</button>
-                    <button class="modal-btn modal-btn-primary" id="saveBudget">Set Budget</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Reset Modal -->
-        <div class="modal-overlay" id="resetModal">
-            <div class="modal">
-                <div class="modal-header">
-                    <h3 class="modal-title">Reset All Data</h3>
-                    <button class="close-modal" id="closeResetModal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to reset all data? This will:</p>
-                    <ul style="padding-left: 20px; margin: 10px 0;">
-                        <li>Clear all transactions</li>
-                        <li>Reset your balance to zero</li>
-                        <li>Reset your budget settings</li>
-                        <li>Clear all debt records</li>
+            <div class="header-content">
+                <a href="#" class="logo">
+                    <i class="fas fa-coins"></i>
+                    <span>Fee Finder</span>
+                </a>
+                <nav>
+                    <ul>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">How It Works</a></li>
+                        <li><a href="#">Resources</a></li>
+                        <li><a href="#">About</a></li>
+                        <li><a href="#">Contact</a></li>
                     </ul>
-                    <p>This action cannot be undone.</p>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Discover Your Hidden Investment Fees</h1>
+            <p>See exactly how much fees are costing you over time—and what you could save with lower-cost alternatives.</p>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="card">
+            <div class="calculator">
+                <div class="inputs">
+                    <h2 class="section-title">Your Investment Profile</h2>
+                    <div class="form-group">
+                        <label for="initialAmount">Current Portfolio Value ($)</label>
+                        <input type="number" id="initialAmount" value="100000" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="monthlyContribution">Monthly Contribution ($)</label>
+                        <input type="number" id="monthlyContribution" value="500" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="years">Years Until Retirement</label>
+                        <input type="number" id="years" value="30" min="1" max="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="returnRate">Estimated Annual Return
+                            <span class="tooltip">
+                                <i class="fas fa-question-circle"></i>
+                                <span class="tooltiptext">Average annual return before fees and inflation</span>
+                            </span>
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="returnRate" min="0" max="15" step="0.1" value="7">
+                            <span id="returnRateValue" class="slider-value">7%</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="yourFee">Your Current Annual Fee
+                            <span class="tooltip">
+                                <i class="fas fa-question-circle"></i>
+                                <span class="tooltiptext">Typical fees range from 0.1% for index funds to over 2% for actively managed funds</span>
+                            </span>
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="yourFee" min="0.1" max="3" step="0.05" value="1.0">
+                            <span id="yourFeeValue" class="slider-value">1.0%</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lowerFee">Lower Fee Alternative
+                            <span class="tooltip">
+                                <i class="fas fa-question-circle"></i>
+                                <span class="tooltiptext">Many index funds and ETFs have fees below 0.2%</span>
+                            </span>
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="lowerFee" min="0.02" max="1" step="0.01" value="0.15">
+                            <span id="lowerFeeValue" class="slider-value">0.15%</span>
+                        </div>
+                    </div>
+                    <button id="calculateBtn">
+                        <i class="fas fa-calculator"></i> Calculate Your Savings
+                    </button>
                 </div>
-                <div class="modal-footer">
-                    <button class="modal-btn modal-btn-secondary" id="cancelReset">Cancel</button>
-                    <button class="modal-btn modal-btn-primary" id="confirmReset" style="background: var(--danger);">Reset Data</button>
+                
+                <div class="results" id="resultsSection">
+                    <h2 class="section-title">Your Potential Savings</h2>
+                    <div class="result-cards">
+                        <div class="result-card loss">
+                            <h3>You Will Lose</h3>
+                            <div id="feeCost" class="amount">$0</div>
+                            <p>This money vanishes into fees</p>
+                        </div>
+                        <div class="result-card gain">
+                            <h3>You Could Save</h3>
+                            <div id="potentialSavings" class="amount">$0</div>
+                            <p>By switching to lower fees</p>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                    
+                    <button class="secondary-btn" id="actionBtn">
+                        <i class="fas fa-rocket"></i> Start Saving Now
+                    </button>
+                    
+                    <div class="disclaimer">
+                        <p><strong>Disclaimer:</strong> This calculator provides estimates only. Actual results may vary based on market conditions and specific investment products. Past performance is not indicative of future results.</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Debt Modal -->
-        <div class="modal-overlay" id="debtModal">
-            <div class="modal">
-                <div class="modal-header">
-                    <h3 class="modal-title">Add Debt Record</h3>
-                    <button class="close-modal" id="closeDebtModal">&times;</button>
+        <div class="card">
+            <div class="comparison">
+                <div class="comparison-item">
+                    <h3>High Fee Scenario (<span id="currentFeeDisplay">1.0%</span>)</h3>
+                    <ul>
+                        <li><span>Total Contributions:</span> <span id="highFeeContributions">$0</span></li>
+                        <li><span>Total Fees Paid:</span> <span id="highFeeTotal">$0</span></li>
+                        <li><span>Final Balance:</span> <span id="highFeeBalance">$0</span></li>
+                        <li><span>Effective Annual Return:</span> <span id="highFeeReturn">0%</span></li>
+                    </ul>
                 </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="debtType">Debt Type</label>
-                        <select id="debtType" class="form-control">
-                            <option value="owedToMe">Owed to Me</option>
-                            <option value="owedToOthers">I Owe</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="debtAmount">Amount (₦)</label>
-                        <input type="number" id="debtAmount" class="form-control" placeholder="0.00" step="0.01" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="debtPerson">Person/Business</label>
-                        <input type="text" id="debtPerson" class="form-control" placeholder="Enter name">
-                    </div>
-                    <div class="form-group">
-                        <label for="debtDescription">Description</label>
-                        <input type="text" id="debtDescription" class="form-control" placeholder="Enter details">
-                    </div>
-                    <div class="form-group">
-                        <label for="debtDate">Date</label>
-                        <input type="date" id="debtDate" class="form-control">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="modal-btn modal-btn-secondary" id="cancelDebt">Cancel</button>
-                    <button class="modal-btn modal-btn-primary" id="saveDebt">Save Debt</button>
+                <div class="comparison-item">
+                    <h3>Low Fee Scenario (<span id="lowFeeDisplay">0.15%</span>)</h3>
+                    <ul>
+                        <li><span>Total Contributions:</span> <span id="lowFeeContributions">$0</span></li>
+                        <li><span>Total Fees Paid:</span> <span id="lowFeeTotal">$0</span></li>
+                        <li><span>Final Balance:</span> <span id="lowFeeBalance">$0</span></li>
+                        <li><span>Effective Annual Return:</span> <span id="lowFeeReturn">0%</span></li>
+                    </ul>
                 </div>
             </div>
         </div>
 
-        <!-- Payment Modal -->
-        <div class="modal-overlay" id="paymentModal">
-            <div class="modal">
-                <div class="modal-header">
-                    <h3 class="modal-title">Record Payment</h3>
-                    <button class="close-modal" id="closePaymentModal">&times;</button>
+        <div class="card faq">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-item">
+                <div class="faq-question">
+                    What are investment fees? <i class="fas fa-chevron-down"></i>
                 </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="paymentAmount">Amount Paid (₦)</label>
-                        <input type="number" id="paymentAmount" class="form-control" placeholder="0.00" step="0.01" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="paymentDate">Date</label>
-                        <input type="date" id="paymentDate" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="paymentNotes">Notes</label>
-                        <input type="text" id="paymentNotes" class="form-control" placeholder="Enter payment details">
-                    </div>
-                    <input type="hidden" id="currentDebtId">
+                <div class="faq-answer">
+                    Investment fees are expenses charged by financial institutions for managing your investments. They can include management fees, expense ratios, advisory fees, and transaction costs. These fees are often expressed as a percentage of your assets under management and can significantly impact your long-term returns.
                 </div>
-                <div class="modal-footer">
-                    <button class="modal-btn modal-btn-secondary" id="cancelPayment">Cancel</button>
-                    <button class="modal-btn modal-btn-primary" id="savePayment">Record Payment</button>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    Why do fees matter so much? <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Fees directly reduce your investment returns. Over time, even a small difference in fees can compound into a significant amount of money due to the power of compound interest. For example, a 1% difference in fees over 30 years could cost you hundreds of thousands of dollars. Lower fees mean more of your money stays invested and grows over time.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    How can I reduce my investment fees? <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    You can reduce fees by choosing low-cost index funds or ETFs, negotiating with your financial advisor, avoiding products with high expense ratios, and being mindful of transaction costs. Many robo-advisors and online platforms now offer low-fee investment options. It's also important to regularly review your investment statements to understand what fees you're paying.
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Payment History Modal -->
-        <div class="modal-overlay" id="historyModal">
-            <div class="modal">
-                <div class="modal-header">
-                    <h3 class="modal-title">Payment History</h3>
-                    <button class="close-modal" id="closeHistoryModal">&times;</button>
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-coins"></i> Fee Finder
                 </div>
-                <div class="modal-body">
-                    <div id="paymentHistoryContent"></div>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Disclaimer</a>
+                    <a href="#">Contact Us</a>
                 </div>
-                <div class="modal-footer">
-                    <button class="modal-btn modal-btn-secondary" id="closeHistory">Close</button>
+                <p>© 2023 Fee Finder. All rights reserved.</p>
+                <div class="disclaimer">
+                    <p>This tool is for educational purposes only. We recommend consulting with a qualified financial advisor before making investment decisions. Investment returns are not guaranteed.</p>
                 </div>
             </div>
+        </div>
+    </footer>
+
+    <div class="modal" id="updateModal">
+        <div class="modal-content">
+            <h2>Coming in Next Update</h2>
+            <p>We're currently working on integrating with financial institutions to help you easily switch to lower-fee investment options. This feature will be available in our next update!</p>
+            <p>In the meantime, we recommend consulting with a financial advisor to discuss lower-fee alternatives for your portfolio.</p>
+            <button class="close-modal" id="closeModal">Got It</button>
         </div>
     </div>
 
     <script>
-        // ==================== FIREBASE SETUP ====================
-        // Replace with your Firebase config
-        const firebaseConfig = {
-          apiKey: "AIzaSyBaGyplhRoKaOmYQ_Db1mtFQ2qhFBT7tGE",
-          authDomain: "fintrack-ng.firebaseapp.com",
-          projectId: "fintrack-ng",
-          storageBucket: "fintrack-ng.firebasestorage.app",
-          messagingSenderId: "847499540611",
-          appId: "1:847499540611:web:ff95ad23e8ba010f2043b6",
-          measurementId: "G-CHBMPK3XZ9"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        
-        // ==================== AUTHENTICATION FUNCTIONS ====================
         // DOM Elements
-        const authContainer = document.getElementById('auth-container');
-        const appContainer = document.getElementById('app-container');
-        const loginTab = document.getElementById('login-tab');
-        const signupTab = document.getElementById('signup-tab');
-        const loginForm = document.getElementById('login-form');
-        const signupForm = document.getElementById('signup-form');
-        const switchToSignup = document.getElementById('switch-to-signup');
-        const switchToLogin = document.getElementById('switch-to-login');
-        const authError = document.getElementById('auth-error');
-        const errorMessage = document.getElementById('error-message');
-        const logoutBtn = document.getElementById('logoutBtn');
+        const returnRateSlider = document.getElementById('returnRate');
+        const returnRateValue = document.getElementById('returnRateValue');
+        const yourFeeSlider = document.getElementById('yourFee');
+        const yourFeeValue = document.getElementById('yourFeeValue');
+        const lowerFeeSlider = document.getElementById('lowerFee');
+        const lowerFeeValue = document.getElementById('lowerFeeValue');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resultsSection = document.getElementById('resultsSection');
+        const feeCostElement = document.getElementById('feeCost');
+        const potentialSavingsElement = document.getElementById('potentialSavings');
+        const currentFeeDisplay = document.getElementById('currentFeeDisplay');
+        const lowFeeDisplay = document.getElementById('lowFeeDisplay');
+        const actionBtn = document.getElementById('actionBtn');
+        const modal = document.getElementById('updateModal');
+        const closeModal = document.getElementById('closeModal');
         
-        // Switch between login/signup forms
-        loginTab.addEventListener('click', () => {
-            loginTab.classList.add('active');
-            signupTab.classList.remove('active');
-            loginForm.classList.add('active');
-            signupForm.classList.remove('active');
-            authError.style.display = 'none';
+        // Comparison elements
+        const highFeeContributions = document.getElementById('highFeeContributions');
+        const highFeeTotal = document.getElementById('highFeeTotal');
+        const highFeeBalance = document.getElementById('highFeeBalance');
+        const highFeeReturn = document.getElementById('highFeeReturn');
+        const lowFeeContributions = document.getElementById('lowFeeContributions');
+        const lowFeeTotal = document.getElementById('lowFeeTotal');
+        const lowFeeBalance = document.getElementById('lowFeeBalance');
+        const lowFeeReturn = document.getElementById('lowFeeReturn');
+        
+        // Chart variable
+        let growthChart;
+        
+        // Initialize slider values
+        returnRateValue.textContent = returnRateSlider.value + '%';
+        yourFeeValue.textContent = yourFeeSlider.value + '%';
+        lowerFeeValue.textContent = lowerFeeSlider.value + '%';
+        
+        // Update slider values when sliders are moved
+        returnRateSlider.addEventListener('input', () => {
+            returnRateValue.textContent = returnRateSlider.value + '%';
         });
         
-        signupTab.addEventListener('click', () => {
-            signupTab.classList.add('active');
-            loginTab.classList.remove('active');
-            signupForm.classList.add('active');
-            loginForm.classList.remove('active');
-            authError.style.display = 'none';
+        yourFeeSlider.addEventListener('input', () => {
+            yourFeeValue.textContent = yourFeeSlider.value + '%';
         });
         
-        switchToSignup.addEventListener('click', (e) => {
-            e.preventDefault();
-            signupTab.click();
+        lowerFeeSlider.addEventListener('input', () => {
+            lowerFeeValue.textContent = lowerFeeSlider.value + '%';
         });
         
-        switchToLogin.addEventListener('click', (e) => {
-            e.preventDefault();
-            loginTab.click();
+        // Calculate button click event
+        calculateBtn.addEventListener('click', () => {
+            calculateResults();
+            resultsSection.style.display = 'block';
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
         });
         
-        // Show authentication error
-        function showAuthError(message) {
-            errorMessage.textContent = message;
-            authError.style.display = 'block';
-        }
-        
-        // Login function
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Signed in
-                    loadUserData(userCredential.user.uid);
-                })
-                .catch((error) => {
-                    showAuthError(error.message);
-                });
+        // Action button click event
+        actionBtn.addEventListener('click', () => {
+            modal.style.display = 'flex';
         });
         
-        // Signup function
-        signupForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = document.getElementById('signup-name').value;
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-            const confirmPassword = document.getElementById('signup-confirm').value;
-            
-            if (password !== confirmPassword) {
-                showAuthError("Passwords don't match");
-                return;
+        // Close modal button
+        closeModal.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        
+        // Close modal if clicked outside content
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
             }
-            
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Signed up
-                    const user = userCredential.user;
-                    
-                    // Save user data to Firestore in the "users" collection
-                    return db.collection('users').doc(user.uid).set({
-                        name: name,
-                        email: email,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        transactions: [],
-                        budget: { total: 0 },
-                        debts: {
-                            owedToMe: [],
-                            owedToOthers: []
-                        }
-                    });
-                })
-                .then(() => {
-                    // Load user data after initialization
-                    loadUserData(auth.currentUser.uid);
-                })
-                .catch((error) => {
-                    showAuthError(error.message);
-                });
         });
         
-        // Logout function
-        logoutBtn.addEventListener('click', () => {
-            auth.signOut().then(() => {
-                authContainer.style.display = 'block';
-                appContainer.style.display = 'none';
+        // FAQ toggle functionality
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const answer = question.nextElementSibling;
+                const icon = question.querySelector('i');
+                
+                if (answer.style.display === 'block') {
+                    answer.style.display = 'none';
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                } else {
+                    answer.style.display = 'block';
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                }
             });
         });
         
-        // Auth state observer
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                // User is signed in
-                authContainer.style.display = 'none';
-                appContainer.style.display = 'block';
-                loadUserData(user.uid);
-            } else {
-                // User is signed out
-                authContainer.style.display = 'block';
-                appContainer.style.display = 'none';
-            }
-        });
-        
-        // ==================== USER DATA FUNCTIONS ====================
-        // Load user data from Firestore
-        function loadUserData(userId) {
-            db.collection('users').doc(userId).get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        const userData = doc.data();
-                        transactions = userData.transactions || [];
-                        budget = userData.budget || { total: 0 };
-                        debts = userData.debts || {
-                            owedToMe: [],
-                            owedToOthers: []
-                        };
-                        
-                        // Update UI
-                        updateBalances();
-                        updateBudgetDisplay();
-                        renderTransactions();
-                        updateDebtDisplay();
-                        renderDebtList();
-                        updateCharts();
-                    } else {
-                        // Initialize data for new user
-                        const user = auth.currentUser;
-                        if (user) {
-                            db.collection('users').doc(userId).set({
-                                name: user.displayName || "User",
-                                email: user.email,
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                transactions: [],
-                                budget: { total: 0 },
-                                debts: {
-                                    owedToMe: [],
-                                    owedToOthers: []
-                                }
-                            });
-                        }
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error loading user data:", error);
-                });
+        // Format currency
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
         }
         
-        // Save user data to Firestore
-        function saveUserData() {
-            if (!auth.currentUser) return;
+        // Format percentage
+        function formatPercentage(value) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'percent',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value);
+        }
+        
+        // Calculate future value with compound interest
+        function calculateFutureValue(initial, monthly, years, returnRate, feeRate) {
+            const monthlyRate = (returnRate - feeRate) / 12;
+            const months = years * 12;
+            let futureValue = initial;
+            let totalFees = 0;
+            let totalContributions = initial;
             
-            const userId = auth.currentUser.uid;
-            const userData = {
-                transactions: transactions,
-                budget: budget,
-                debts: debts,
-                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            for (let i = 0; i < months; i++) {
+                // Add monthly contribution
+                futureValue += monthly;
+                totalContributions += monthly;
+                
+                // Apply monthly growth
+                const monthlyGrowth = futureValue * monthlyRate;
+                futureValue += monthlyGrowth;
+                
+                // Calculate fees for the month
+                const monthlyFee = futureValue * (feeRate / 12);
+                futureValue -= monthlyFee;
+                totalFees += monthlyFee;
+            }
+            
+            return {
+                futureValue: futureValue,
+                totalFees: totalFees,
+                totalContributions: totalContributions
             };
-            
-            // Save to the "users" collection with the user's UID as document ID
-            db.collection('users').doc(userId).set(userData, { merge: true })
-                .catch((error) => {
-                    console.error("Error saving user data:", error);
-                });
         }
         
-        // ==================== APPLICATION CODE ====================
-        // Initialize variables
-        let transactions = [];
-        let budget = { total: 0 };
-        let debts = {
-            owedToMe: [],
-            owedToOthers: []
-        };
+        // Calculate and display results
+        function calculateResults() {
+            // Get input values
+            const initial = parseFloat(document.getElementById('initialAmount').value);
+            const monthly = parseFloat(document.getElementById('monthlyContribution').value);
+            const years = parseFloat(document.getElementById('years').value);
+            const returnRate = parseFloat(returnRateSlider.value) / 100;
+            const yourFee = parseFloat(yourFeeSlider.value) / 100;
+            const lowerFee = parseFloat(lowerFeeSlider.value) / 100;
+            
+            // Update fee displays
+            currentFeeDisplay.textContent = (yourFee * 100).toFixed(2) + '%';
+            lowFeeDisplay.textContent = (lowerFee * 100).toFixed(2) + '%';
+            
+            // Calculate results for both scenarios
+            const highFeeResult = calculateFutureValue(initial, monthly, years, returnRate, yourFee);
+            const lowFeeResult = calculateFutureValue(initial, monthly, years, returnRate, lowerFee);
+            
+            // Calculate the difference
+            const feeCost = highFeeResult.totalFees - lowFeeResult.totalFees;
+            const potentialSavings = lowFeeResult.futureValue - highFeeResult.futureValue;
+            
+            // Update UI with results
+            feeCostElement.textContent = formatCurrency(feeCost);
+            potentialSavingsElement.textContent = formatCurrency(potentialSavings);
+            
+            // Update comparison section
+            highFeeContributions.textContent = formatCurrency(highFeeResult.totalContributions);
+            highFeeTotal.textContent = formatCurrency(highFeeResult.totalFees);
+            highFeeBalance.textContent = formatCurrency(highFeeResult.futureValue);
+            highFeeReturn.textContent = formatPercentage(returnRate - yourFee);
+            
+            lowFeeContributions.textContent = formatCurrency(lowFeeResult.totalContributions);
+            lowFeeTotal.textContent = formatCurrency(lowFeeResult.totalFees);
+            lowFeeBalance.textContent = formatCurrency(lowFeeResult.futureValue);
+            lowFeeReturn.textContent = formatPercentage(returnRate - lowerFee);
+            
+            // Create or update chart
+            createChart(initial, monthly, years, returnRate, yourFee, lowerFee);
+        }
         
-        let currentFilter = 'all';
-        let currentDebtId = null;
-        
-        // DOM Elements
-        const transactionForm = document.getElementById('transactionForm');
-        const transactionsContainer = document.getElementById('transactionsContainer');
-        const currentBalanceEl = document.getElementById('currentBalance');
-        const totalIncomeEl = document.getElementById('totalIncome');
-        const totalExpenseEl = document.getElementById('totalExpense');
-        const usedBudgetEl = document.getElementById('usedBudget');
-        const totalBudgetEl = document.getElementById('totalBudget');
-        const remainingBudgetEl = document.getElementById('remainingBudget');
-        const budgetProgressEl = document.getElementById('budgetProgress');
-        const daysLeftEl = document.getElementById('daysLeft');
-        const notification = document.getElementById('notification');
-        const filterButtons = document.querySelectorAll('.filter-btn');
-        const exportCsvBtn = document.getElementById('exportCsv');
-        const exportPdfBtn = document.getElementById('exportPdf');
-        const setBudgetBtn = document.getElementById('setBudgetBtn');
-        const syncBtn = document.getElementById('syncBtn');
-        const budgetModal = document.getElementById('budgetModal');
-        const closeBudgetModal = document.getElementById('closeBudgetModal');
-        const cancelBudget = document.getElementById('cancelBudget');
-        const saveBudgetBtn = document.getElementById('saveBudget');
-        const budgetAmountInput = document.getElementById('budgetAmount');
-        const resetBtn = document.getElementById('resetBtn');
-        const resetModal = document.getElementById('resetModal');
-        const closeResetModal = document.getElementById('closeResetModal');
-        const cancelReset = document.getElementById('cancelReset');
-        const confirmReset = document.getElementById('confirmReset');
-        const smsImportBtn = document.getElementById('smsImportBtn');
-        const addDebtBtn = document.getElementById('addDebtBtn');
-        const debtModal = document.getElementById('debtModal');
-        const closeDebtModal = document.getElementById('closeDebtModal');
-        const cancelDebt = document.getElementById('cancelDebt');
-        const saveDebtBtn = document.getElementById('saveDebt');
-        const googleSyncBtn = document.getElementById('googleSyncBtn');
-        const owedToMeEl = document.getElementById('owedToMe');
-        const owedToOthersEl = document.getElementById('owedToOthers');
-        const owedToMeCountEl = document.getElementById('owedToMeCount');
-        const owedToOthersCountEl = document.getElementById('owedToOthersCount');
-        const smsBackupBtn = document.getElementById('smsBackupBtn');
-        const debtListEl = document.getElementById('debtList');
-        const paymentModal = document.getElementById('paymentModal');
-        const closePaymentModal = document.getElementById('closePaymentModal');
-        const cancelPayment = document.getElementById('cancelPayment');
-        const savePaymentBtn = document.getElementById('savePayment');
-        const historyModal = document.getElementById('historyModal');
-        const closeHistoryModal = document.getElementById('closeHistoryModal');
-        const closeHistory = document.getElementById('closeHistory');
-        const paymentHistoryContent = document.getElementById('paymentHistoryContent');
-        
-        // Initialize charts
-        let spendingChart, incomeChart;
-        initCharts();
-        
-        // Set today's date as default
-        document.getElementById('date').value = new Date().toISOString().split('T')[0];
-        document.getElementById('debtDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
-        
-        // Event Listeners
-        transactionForm.addEventListener('submit', addTransaction);
-        filterButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = btn.dataset.filter;
-                renderTransactions();
-            });
-        });
-        
-        exportCsvBtn.addEventListener('click', exportToCsv);
-        exportPdfBtn.addEventListener('click', exportToPdf);
-        setBudgetBtn.addEventListener('click', () => budgetModal.classList.add('active'));
-        closeBudgetModal.addEventListener('click', () => budgetModal.classList.remove('active'));
-        cancelBudget.addEventListener('click', () => budgetModal.classList.remove('active'));
-        saveBudgetBtn.addEventListener('click', setBudget);
-        syncBtn.addEventListener('click', () => {
-            saveUserData();
-            showNotification('Data synced to cloud!');
-        });
-        resetBtn.addEventListener('click', () => resetModal.classList.add('active'));
-        closeResetModal.addEventListener('click', () => resetModal.classList.remove('active'));
-        cancelReset.addEventListener('click', () => resetModal.classList.remove('active'));
-        confirmReset.addEventListener('click', resetAllData);
-        smsImportBtn.addEventListener('click', () => showNotification('SMS Import feature coming in the next update!'));
-        addDebtBtn.addEventListener('click', () => debtModal.classList.add('active'));
-        closeDebtModal.addEventListener('click', () => debtModal.classList.remove('active'));
-        cancelDebt.addEventListener('click', () => debtModal.classList.remove('active'));
-        saveDebtBtn.addEventListener('click', addDebt);
-        googleSyncBtn.addEventListener('click', () => showNotification('Google Drive sync coming in the next update!'));
-        smsBackupBtn.addEventListener('click', () => showNotification('SMS Backup feature coming in the next update!'));
-        closePaymentModal.addEventListener('click', () => paymentModal.classList.remove('active'));
-        cancelPayment.addEventListener('click', () => paymentModal.classList.remove('active'));
-        savePaymentBtn.addEventListener('click', recordPayment);
-        closeHistoryModal.addEventListener('click', () => historyModal.classList.remove('active'));
-        closeHistory.addEventListener('click', () => historyModal.classList.remove('active'));
-        
-        // Initialize charts with empty data
-        function initCharts() {
-            const spendingCtx = document.getElementById('spendingChart').getContext('2d');
-            spendingChart = new Chart(spendingCtx, {
-                type: 'doughnut',
+        // Create growth chart
+        function createChart(initial, monthly, years, returnRate, yourFee, lowerFee) {
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            
+            // Generate data points for each year
+            const labels = Array.from({length: years + 1}, (_, i) => `Year ${i}`);
+            
+            const highFeeData = [];
+            const lowFeeData = [];
+            
+            for (let year = 0; year <= years; year++) {
+                const highFeeValue = calculateFutureValue(initial, monthly, year, returnRate, yourFee).futureValue;
+                const lowFeeValue = calculateFutureValue(initial, monthly, year, returnRate, lowerFee).futureValue;
+                
+                highFeeData.push(highFeeValue);
+                lowFeeData.push(lowFeeValue);
+            }
+            
+            // Destroy previous chart if it exists
+            if (growthChart) {
+                growthChart.destroy();
+            }
+            
+            // Create new chart
+            growthChart = new Chart(ctx, {
+                type: 'line',
                 data: {
-                    labels: ['Housing', 'Food', 'Transport', 'Entertainment', 'Shopping', 'Other'],
-                    datasets: [{
-                        data: [0, 0, 0, 0, 0, 0],
-                        backgroundColor: [
-                            '#ec4899', '#f59e0b', '#0ea5e9', '#f97316', '#8b5cf6', '#64748b'
-                        ],
-                        borderWidth: 0
-                    }]
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'High Fee Growth',
+                            data: highFeeData,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            pointHoverRadius: 5
+                        },
+                        {
+                            label: 'Low Fee Growth',
+                            data: lowFeeData,
+                            borderColor: '#06d6a0',
+                            backgroundColor: 'rgba(6, 214, 160, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            pointHoverRadius: 5
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
+                        title: {
+                            display: true,
+                            text: 'Investment Growth Over Time',
+                            font: {
+                                size: 16,
+                                weight: '600'
+                            },
+                            color: '#1e2a4a'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.raw);
+                                }
+                            }
+                        },
                         legend: {
                             position: 'bottom',
                             labels: {
-                                padding: 10,
+                                font: {
+                                    size: 14
+                                },
+                                padding: 20,
                                 usePointStyle: true,
-                                pointStyle: 'circle',
-                                font: {
-                                    size: window.innerWidth < 768 ? 9 : 11
-                                }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.label}: ₦${context.raw.toFixed(2)}`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            
-            const incomeCtx = document.getElementById('incomeChart').getContext('2d');
-            incomeChart = new Chart(incomeCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                    datasets: [{
-                        label: 'Income',
-                        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        backgroundColor: '#10b981',
-                        borderRadius: 6
-                    }, {
-                        label: 'Expenses',
-                        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        backgroundColor: '#ef4444',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                font: {
-                                    size: window.innerWidth < 768 ? 9 : 11
-                                }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ₦${context.raw.toFixed(2)}`;
-                                }
+                                pointStyle: 'circle'
                             }
                         }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                drawBorder: false
-                            },
-                            ticks: {
-                                font: {
-                                    size: window.innerWidth < 768 ? 8 : 10
-                                },
-                                callback: function(value) {
-                                    return '₦' + value;
-                                }
-                            }
-                        },
                         x: {
+                            title: {
+                                display: true,
+                                text: 'Years',
+                                color: '#8b9bb4',
+                                font: {
+                                    size: 14,
+                                    weight: '500'
+                                }
+                            },
                             grid: {
                                 display: false
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Portfolio Value',
+                                color: '#8b9bb4',
+                                font: {
+                                    size: 14,
+                                    weight: '500'
+                                }
                             },
                             ticks: {
-                                font: {
-                                    size: window.innerWidth < 768 ? 8 : 10
+                                callback: function(value) {
+                                    if (value >= 1000000) {
+                                        return '$' + (value/1000000).toFixed(1) + 'M';
+                                    } else if (value >= 1000) {
+                                        return '$' + (value/1000).toFixed(0) + 'K';
+                                    }
+                                    return formatCurrency(value);
                                 }
                             }
                         }
@@ -1971,679 +1115,11 @@
             });
         }
         
-        // Add new transaction
-        function addTransaction(e) {
-            e.preventDefault();
-            
-            const type = document.getElementById('transactionType').value;
-            const amount = parseFloat(document.getElementById('amount').value);
-            const category = document.getElementById('category').value;
-            const description = document.getElementById('description').value;
-            const date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
-            
-            if (!amount || amount <= 0) {
-                showNotification('Please enter a valid amount', 'error');
-                return;
-            }
-            
-            const transaction = {
-                id: Date.now(),
-                type,
-                amount,
-                category,
-                description: description || 'New Transaction',
-                date
-            };
-            
-            transactions.push(transaction);
-            saveUserData();
-            
-            updateBalances();
-            updateBudgetDisplay();
-            renderTransactions();
-            updateCharts();
-            
-            transactionForm.reset();
-            document.getElementById('date').value = new Date().toISOString().split('T')[0];
-            
-            showNotification('Transaction added successfully!');
-        }
-        
-        // Add new debt record
-        function addDebt() {
-            const type = document.getElementById('debtType').value;
-            const amount = parseFloat(document.getElementById('debtAmount').value);
-            const person = document.getElementById('debtPerson').value;
-            const description = document.getElementById('debtDescription').value;
-            const date = document.getElementById('debtDate').value || new Date().toISOString().split('T')[0];
-            
-            if (!amount || amount <= 0) {
-                showNotification('Please enter a valid amount', 'error');
-                return;
-            }
-            
-            if (!person) {
-                showNotification('Please enter a person or business name', 'error');
-                return;
-            }
-            
-            const debt = {
-                id: Date.now(),
-                type,
-                amount,
-                originalAmount: amount,
-                person,
-                description: description || 'Debt Record',
-                date,
-                payments: []
-            };
-            
-            if (type === 'owedToMe') {
-                debts.owedToMe.push(debt);
-            } else {
-                debts.owedToOthers.push(debt);
-            }
-            
-            saveUserData();
-            updateDebtDisplay();
-            renderDebtList();
-            debtModal.classList.remove('active');
-            
-            // Reset form
-            document.getElementById('debtAmount').value = '';
-            document.getElementById('debtPerson').value = '';
-            document.getElementById('debtDescription').value = '';
-            document.getElementById('debtDate').value = new Date().toISOString().split('T')[0];
-            
-            showNotification('Debt record added successfully!');
-        }
-        
-        // Record payment for a debt
-        function recordPayment() {
-            const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
-            const paymentDate = document.getElementById('paymentDate').value || new Date().toISOString().split('T')[0];
-            const paymentNotes = document.getElementById('paymentNotes').value;
-            const debtId = parseInt(document.getElementById('currentDebtId').value);
-            
-            if (!paymentAmount || paymentAmount <= 0) {
-                showNotification('Please enter a valid payment amount', 'error');
-                return;
-            }
-            
-            // Find the debt
-            let debt = null;
-            let debtType = null;
-            
-            // Check owedToMe
-            for (let i = 0; i < debts.owedToMe.length; i++) {
-                if (debts.owedToMe[i].id === debtId) {
-                    debt = debts.owedToMe[i];
-                    debtType = 'owedToMe';
-                    break;
-                }
-            }
-            
-            // If not found, check owedToOthers
-            if (!debt) {
-                for (let i = 0; i < debts.owedToOthers.length; i++) {
-                    if (debts.owedToOthers[i].id === debtId) {
-                        debt = debts.owedToOthers[i];
-                        debtType = 'owedToOthers';
-                        break;
-                    }
-                }
-            }
-            
-            if (!debt) {
-                showNotification('Debt not found', 'error');
-                return;
-            }
-            
-            // Add payment
-            debt.payments.push({
-                amount: paymentAmount,
-                date: paymentDate,
-                notes: paymentNotes
-            });
-            
-            // Update debt amount
-            debt.amount -= paymentAmount;
-            
-            // If debt is fully paid, round to zero to avoid negative values
-            if (debt.amount < 0) {
-                debt.amount = 0;
-            }
-            
-            saveUserData();
-            updateDebtDisplay();
-            renderDebtList();
-            paymentModal.classList.remove('active');
-            
-            // Reset form
-            document.getElementById('paymentAmount').value = '';
-            document.getElementById('paymentNotes').value = '';
-            document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
-            
-            showNotification('Payment recorded successfully!');
-        }
-        
-        // Update debt display
-        function updateDebtDisplay() {
-            // Calculate totals for owedToMe (only unpaid debts)
-            const owedToMeTotal = debts.owedToMe.reduce((sum, debt) => {
-                return sum + debt.amount;
-            }, 0);
-            
-            // Calculate totals for owedToOthers (only unpaid debts)
-            const owedToOthersTotal = debts.owedToOthers.reduce((sum, debt) => {
-                return sum + debt.amount;
-            }, 0);
-            
-            // Update UI
-            owedToMeEl.textContent = owedToMeTotal.toFixed(2);
-            owedToOthersEl.textContent = owedToOthersTotal.toFixed(2);
-            
-            // Count only active debts
-            const activeOwedToMe = debts.owedToMe.filter(d => d.amount > 0).length;
-            const activeOwedToOthers = debts.owedToOthers.filter(d => d.amount > 0).length;
-            
-            owedToMeCountEl.textContent = `By ${activeOwedToMe} ${activeOwedToMe === 1 ? 'person' : 'people'}`;
-            owedToOthersCountEl.textContent = `To ${activeOwedToOthers} ${activeOwedToOthers === 1 ? 'person' : 'people'}`;
-        }
-        
-        // Render debt list
-        function renderDebtList() {
-            // Get all active debts (owedToMe and owedToOthers with amount > 0)
-            const activeDebts = [
-                ...debts.owedToMe.filter(d => d.amount > 0),
-                ...debts.owedToOthers.filter(d => d.amount > 0)
-            ];
-            
-            if (activeDebts.length === 0) {
-                debtListEl.innerHTML = `
-                    <div class="empty-state" style="padding: 20px;">
-                        <i class="fas fa-exchange-alt"></i>
-                        <h4>No active debts</h4>
-                        <p>Add a debt record to get started</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            debtListEl.innerHTML = '';
-            
-            activeDebts.forEach(debt => {
-                const debtItem = document.createElement('div');
-                debtItem.className = 'debt-item';
-                
-                // Calculate progress
-                const paidAmount = debt.originalAmount - debt.amount;
-                const progress = (paidAmount / debt.originalAmount) * 100;
-                
-                debtItem.innerHTML = `
-                    <div class="debt-info">
-                        <h4>${debt.type === 'owedToMe' ? 'Owed to You' : 'You Owe'}: ${debt.person}</h4>
-                        <p>Original: ₦${debt.originalAmount.toFixed(2)} | Remaining: ₦${debt.amount.toFixed(2)}</p>
-                        <div class="debt-progress">
-                            <div class="debt-progress-fill" style="width: ${progress}%"></div>
-                        </div>
-                        <p>Date: ${formatDate(debt.date)}</p>
-                    </div>
-                    <div class="debt-actions">
-                        <button class="action-btn pay-btn" data-id="${debt.id}">
-                            <i class="fas fa-money-bill-wave"></i>
-                        </button>
-                        <button class="action-btn history-btn" data-id="${debt.id}">
-                            <i class="fas fa-history"></i>
-                        </button>
-                    </div>
-                `;
-                
-                debtListEl.appendChild(debtItem);
-            });
-            
-            // Add event listeners to the new buttons
-            document.querySelectorAll('.pay-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const debtId = parseInt(e.currentTarget.dataset.id);
-                    openPaymentModal(debtId);
-                });
-            });
-            
-            document.querySelectorAll('.history-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const debtId = parseInt(e.currentTarget.dataset.id);
-                    showPaymentHistory(debtId);
-                });
-            });
-        }
-        
-        // Open payment modal
-        function openPaymentModal(debtId) {
-            document.getElementById('currentDebtId').value = debtId;
-            paymentModal.classList.add('active');
-        }
-        
-        // Show payment history
-        function showPaymentHistory(debtId) {
-            // Find the debt
-            let debt = null;
-            
-            // Check owedToMe
-            for (let i = 0; i < debts.owedToMe.length; i++) {
-                if (debts.owedToMe[i].id === debtId) {
-                    debt = debts.owedToMe[i];
-                    break;
-                }
-            }
-            
-            // If not found, check owedToOthers
-            if (!debt) {
-                for (let i = 0; i < debts.owedToOthers.length; i++) {
-                    if (debts.owedToOthers[i].id === debtId) {
-                        debt = debts.owedToOthers[i];
-                        break;
-                    }
-                }
-            }
-            
-            if (!debt) {
-                showNotification('Debt not found', 'error');
-                return;
-            }
-            
-            paymentHistoryContent.innerHTML = `
-                <h4>${debt.type === 'owedToMe' ? 'Owed to You' : 'You Owe'}: ${debt.person}</h4>
-                <p>Original Amount: ₦${debt.originalAmount.toFixed(2)}</p>
-                <p>Remaining: ₦${debt.amount.toFixed(2)}</p>
-                
-                <div class="payment-history">
-                    <h5 style="margin-top: 15px;">Payment History</h5>
-                    ${debt.payments.length > 0 ? `
-                        ${debt.payments.map(payment => `
-                            <div class="payment-item">
-                                <div>${formatDate(payment.date)}</div>
-                                <div>₦${payment.amount.toFixed(2)}</div>
-                            </div>
-                        `).join('')}
-                    ` : `
-                        <div class="empty-state" style="padding: 15px;">
-                            <p>No payments recorded yet</p>
-                        </div>
-                    `}
-                </div>
-            `;
-            
-            historyModal.classList.add('active');
-        }
-        
-        // Render transactions based on filter
-        function renderTransactions() {
-            if (transactions.length === 0) {
-                transactionsContainer.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exchange-alt"></i>
-                        <h3>No transactions yet</h3>
-                        <p>Add your first transaction to get started</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            const filteredTransactions = transactions.filter(t => {
-                if (currentFilter === 'all') return true;
-                return t.type === currentFilter;
-            });
-            
-            if (filteredTransactions.length === 0) {
-                transactionsContainer.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-search"></i>
-                        <h3>No ${currentFilter} transactions</h3>
-                        <p>Try changing your filter</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            transactionsContainer.innerHTML = '';
-            
-            filteredTransactions.slice().reverse().forEach(transaction => {
-                const transactionItem = document.createElement('div');
-                transactionItem.className = 'transaction-item';
-                
-                // Determine icon and color based on category
-                let iconClass, iconBg, iconName;
-                
-                switch(transaction.category) {
-                    case 'salary':
-                        iconClass = 'category-income';
-                        iconBg = 'category-income';
-                        iconName = 'fas fa-money-check';
-                        break;
-                    case 'freelance':
-                        iconClass = 'category-income';
-                        iconBg = 'category-income';
-                        iconName = 'fas fa-laptop';
-                        break;
-                    case 'investment':
-                        iconClass = 'category-income';
-                        iconBg = 'category-income';
-                        iconName = 'fas fa-chart-line';
-                        break;
-                    case 'food':
-                        iconClass = 'category-food';
-                        iconBg = 'category-food';
-                        iconName = 'fas fa-utensils';
-                        break;
-                    case 'shopping':
-                        iconClass = 'category-shopping';
-                        iconBg = 'category-shopping';
-                        iconName = 'fas fa-shopping-bag';
-                        break;
-                    case 'transport':
-                        iconClass = 'category-transport';
-                        iconBg = 'category-transport';
-                        iconName = 'fas fa-car';
-                        break;
-                    case 'housing':
-                        iconClass = 'category-housing';
-                        iconBg = 'category-housing';
-                        iconName = 'fas fa-home';
-                        break;
-                    case 'entertainment':
-                        iconClass = 'category-entertainment';
-                        iconBg = 'category-entertainment';
-                        iconName = 'fas fa-gamepad';
-                        break;
-                    default:
-                        iconClass = 'category-other';
-                        iconBg = 'category-other';
-                        iconName = 'fas fa-question';
-                }
-                
-                transactionItem.innerHTML = `
-                    <div class="transaction-info">
-                        <div class="transaction-icon ${iconBg}">
-                            <i class="${iconName}"></i>
-                        </div>
-                        <div class="transaction-details">
-                            <h3>${transaction.description}</h3>
-                            <p>${formatDate(transaction.date)} • ${formatCategory(transaction.category)}</p>
-                        </div>
-                    </div>
-                    <div class="transaction-amount ${transaction.type === 'income' ? 'income-amount' : 'expense-amount'}">
-                        ${transaction.type === 'income' ? '+' : '-'}₦${transaction.amount.toFixed(2)}
-                    </div>
-                `;
-                
-                transactionsContainer.appendChild(transactionItem);
-            });
-        }
-        
-        // Update balance displays
-        function updateBalances() {
-            const totalIncome = transactions
-                .filter(t => t.type === 'income')
-                .reduce((sum, t) => sum + t.amount, 0);
-            
-            const totalExpense = transactions
-                .filter(t => t.type === 'expense')
-                .reduce((sum, t) => sum + t.amount, 0);
-            
-            const balance = totalIncome - totalExpense;
-            
-            currentBalanceEl.textContent = balance.toFixed(2);
-            totalIncomeEl.textContent = `₦${totalIncome.toFixed(2)}`;
-            totalExpenseEl.textContent = `₦${totalExpense.toFixed(2)}`;
-        }
-        
-        // Update budget display
-        function updateBudgetDisplay() {
-            // Calculate used budget from current month's expenses
-            const now = new Date();
-            const currentMonth = now.getMonth();
-            const currentYear = now.getFullYear();
-            
-            const used = transactions
-                .filter(t => {
-                    const tDate = new Date(t.date);
-                    return t.type === 'expense' && 
-                           tDate.getMonth() === currentMonth && 
-                           tDate.getFullYear() === currentYear;
-                })
-                .reduce((sum, t) => sum + t.amount, 0);
-            
-            totalBudgetEl.textContent = `₦${budget.total.toFixed(2)}`;
-            usedBudgetEl.textContent = `₦${used.toFixed(2)}`;
-            
-            const remaining = budget.total - used;
-            remainingBudgetEl.textContent = `₦${remaining > 0 ? remaining.toFixed(2) : '0.00'}`;
-            
-            const percentage = budget.total > 0 ? (used / budget.total) * 100 : 0;
-            budgetProgressEl.style.width = `${Math.min(percentage, 100)}%`;
-            
-            // Change progress color based on usage
-            if (percentage > 90) {
-                budgetProgressEl.style.background = 'var(--danger)';
-            } else if (percentage > 75) {
-                budgetProgressEl.style.background = 'var(--warning)';
-            } else {
-                budgetProgressEl.style.background = 'var(--success)';
-            }
-            
-            // Calculate days left in month
-            const lastDay = new Date(currentYear, currentMonth + 1, 0);
-            const days = lastDay.getDate() - now.getDate();
-            daysLeftEl.textContent = `${days} ${days === 1 ? 'day' : 'days'}`;
-        }
-        
-        // Update charts with real data
-        function updateCharts() {
-            // Update spending chart
-            const spendingData = {
-                housing: 0,
-                food: 0,
-                transport: 0,
-                entertainment: 0,
-                shopping: 0,
-                other: 0
-            };
-            
-            transactions.filter(t => t.type === 'expense').forEach(t => {
-                if (spendingData[t.category] !== undefined) {
-                    spendingData[t.category] = (spendingData[t.category] || 0) + t.amount;
-                } else {
-                    spendingData.other += t.amount;
-                }
-            });
-            
-            spendingChart.data.datasets[0].data = [
-                spendingData.housing,
-                spendingData.food,
-                spendingData.transport,
-                spendingData.entertainment,
-                spendingData.shopping,
-                spendingData.other
-            ];
-            spendingChart.update();
-            
-            // Update income vs expense chart
-            const monthlyData = {
-                0: { income: 0, expense: 0 }, // Jan
-                1: { income: 0, expense: 0 }, // Feb
-                2: { income: 0, expense: 0 }, // Mar
-                3: { income: 0, expense: 0 }, // Apr
-                4: { income: 0, expense: 0 }, // May
-                5: { income: 0, expense: 0 }, // Jun
-                6: { income: 0, expense: 0 }, // Jul
-                7: { income: 0, expense: 0 }, // Aug
-                8: { income: 0, expense: 0 }, // Sep
-                9: { income: 0, expense: 0 }, // Oct
-                10: { income: 0, expense: 0 }, // Nov
-                11: { income: 0, expense: 0 }  // Dec
-            };
-            
-            transactions.forEach(t => {
-                const date = new Date(t.date);
-                const month = date.getMonth();
-                
-                if (monthlyData[month]) {
-                    monthlyData[month][t.type] += t.amount;
-                }
-            });
-            
-            // Update chart data
-            incomeChart.data.datasets[0].data = Object.values(monthlyData).map(m => m.income);
-            incomeChart.data.datasets[1].data = Object.values(monthlyData).map(m => m.expense);
-            incomeChart.update();
-        }
-        
-        // Set budget
-        function setBudget() {
-            const budgetAmount = parseFloat(budgetAmountInput.value);
-            if (isNaN(budgetAmount) || budgetAmount <= 0) {
-                showNotification('Please enter a valid budget amount', 'error');
-                return;
-            }
-            
-            budget.total = budgetAmount;
-            saveUserData();
-            updateBudgetDisplay();
-            budgetModal.classList.remove('active');
-            budgetAmountInput.value = '';
-            showNotification('Budget set successfully!');
-        }
-        
-        // Export to CSV
-        function exportToCsv() {
-            if (transactions.length === 0) {
-                showNotification('No transactions to export', 'error');
-                return;
-            }
-            
-            let csvContent = 'Date,Type,Category,Description,Amount (₦)\n';
-            
-            transactions.forEach(t => {
-                csvContent += `${t.date},${t.type},${t.category},${t.description},${t.amount}\n`;
-            });
-            
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', `fintrack-export-${new Date().toISOString().slice(0, 10)}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showNotification('CSV exported successfully!');
-        }
-        
-        // Export to PDF
-        function exportToPdf() {
-            if (transactions.length === 0) {
-                showNotification('No transactions to export', 'error');
-                return;
-            }
-            
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Title
-            doc.setFontSize(16);
-            doc.text('FinTrack NG - Transaction Report', 105, 15, null, null, 'center');
-            
-            // Date
-            doc.setFontSize(10);
-            doc.text(`Generated: ${new Date().toLocaleDateString()}`, 105, 22, null, null, 'center');
-            
-            // Summary
-            doc.setFontSize(12);
-            doc.text('Financial Summary', 15, 30);
-            
-            doc.setFontSize(10);
-            doc.text(`Current Balance: ₦${document.getElementById('currentBalance').textContent}`, 20, 38);
-            doc.text(`Total Income: ₦${document.getElementById('totalIncome').textContent.slice(1)}`, 20, 45);
-            doc.text(`Total Expenses: ₦${document.getElementById('totalExpense').textContent.slice(1)}`, 20, 52);
-            doc.text(`Monthly Budget: ₦${budget.total.toFixed(2)}`, 20, 59);
-            doc.text(`Budget Used: ₦${document.getElementById('usedBudget').textContent.slice(1)}`, 20, 66);
-            
-            // Transactions table
-            doc.setFontSize(12);
-            doc.text('Transaction History', 15, 75);
-            
-            const tableData = transactions.map(t => [
-                t.date,
-                t.type.charAt(0).toUpperCase() + t.type.slice(1),
-                t.category,
-                t.description,
-                `₦${t.amount.toFixed(2)}`
-            ]);
-            
-            doc.autoTable({
-                head: [['Date', 'Type', 'Category', 'Description', 'Amount']],
-                body: tableData,
-                startY: 80,
-                theme: 'grid',
-                headStyles: { fillColor: [0, 135, 81] },
-                columnStyles: {
-                    0: { cellWidth: 25 },
-                    1: { cellWidth: 20 },
-                    2: { cellWidth: 25 },
-                    3: { cellWidth: 60 },
-                    4: { cellWidth: 25 }
-                }
-            });
-            
-            // Save PDF
-            doc.save(`fintrack-report-${new Date().toISOString().slice(0, 10)}.pdf`);
-            showNotification('PDF exported successfully!');
-        }
-        
-        // Reset all data
-        function resetAllData() {
-            transactions = [];
-            budget = { total: 0 };
-            debts = {
-                owedToMe: [],
-                owedToOthers: []
-            };
-            
-            saveUserData();
-            
-            updateBalances();
-            updateBudgetDisplay();
-            renderTransactions();
-            updateCharts();
-            updateDebtDisplay();
-            renderDebtList();
-            
-            resetModal.classList.remove('active');
-            showNotification('All data has been reset!');
-        }
-        
-        // Show notification
-        function showNotification(message, type = 'success') {
-            notification.textContent = message;
-            notification.style.background = type === 'error' ? 'var(--danger)' : 'var(--nigerian-green)';
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-        
-        // Helper functions
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        }
-        
-        function formatCategory(category) {
-            return category.charAt(0).toUpperCase() + category.slice(1);
-        }
+        // Calculate initial results on page load
+        window.addEventListener('load', () => {
+            calculateResults();
+            resultsSection.style.display = 'block';
+        });
     </script>
 </body>
 </html>
