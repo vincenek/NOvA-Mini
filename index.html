@@ -1152,15 +1152,16 @@
             });
         }
 
-        // Register Service Worker
+        // Register Service Worker with improved caching
         function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
                     // Create service worker script as a blob
                     const swContent = `
-                        const CACHE_NAME = 'soulboard-pro-v1';
+                        const CACHE_NAME = 'soulboard-pro-v2';
                         const urlsToCache = [
                             './',
+                            'index.html',
                             'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
                             'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js',
                             'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js',
@@ -1169,6 +1170,7 @@
                         ];
                         
                         self.addEventListener('install', event => {
+                            self.skipWaiting();
                             event.waitUntil(
                                 caches.open(CACHE_NAME)
                                     .then(cache => {
@@ -1189,9 +1191,27 @@
                                     );
                                 })
                             );
+                            event.waitUntil(clients.claim());
                         });
                         
                         self.addEventListener('fetch', event => {
+                            // Handle Firebase requests
+                            if (event.request.url.includes('firestore.googleapis.com') || 
+                                event.request.url.includes('firebaseio.com')) {
+                                event.respondWith(
+                                    fetch(event.request).catch(error => {
+                                        // Return empty response for Firestore requests when offline
+                                        if (event.request.url.includes('firestore.googleapis.com')) {
+                                            return new Response('{}', {
+                                                headers: { 'Content-Type': 'application/json' }
+                                            });
+                                        }
+                                        return Response.error();
+                                    })
+                                );
+                                return;
+                            }
+                            
                             event.respondWith(
                                 caches.match(event.request)
                                     .then(response => {
@@ -1207,6 +1227,12 @@
                     navigator.serviceWorker.register(swUrl)
                         .then(registration => {
                             console.log('Service Worker registered with scope:', registration.scope);
+                            
+                            // Check if the app is running as a PWA
+                            if (window.matchMedia('(display-mode: standalone)').matches) {
+                                console.log('Running as PWA');
+                                // Additional PWA-specific initialization if needed
+                            }
                         })
                         .catch(error => {
                             console.error('Service Worker registration failed:', error);
@@ -1724,7 +1750,7 @@
                         <div class="timeline-item">
                             <div class="timeline-mood">${post.mood}</div>
                             <div class="timeline-content">
-                                <div><strong>${time}</strong> - ${post.category.charAt(0).toUpperCase() + post.category.slice(1)}</div>
+                                <div><strong>${time</strong> - ${post.category.charAt(0).toUpperCase() + post.category.slice(1)}</div>
                                 <div>${post.text}</div>
                             </div>
                         </div>
@@ -1997,6 +2023,12 @@
             // Initialize offline status
             if (!navigator.onLine) {
                 offlineIndicator.classList.add('show');
+            }
+            
+            // Check if running as PWA and adjust if needed
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                console.log('Running as PWA - applying specific adjustments');
+                // You might need to add PWA-specific adjustments here
             }
             
             // Focus on email field
