@@ -258,11 +258,11 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 0.8rem;
+            font-size: 0.9rem;
         }
 
         .post-date {
             color: #5C8374;
-            font-size: 0.85rem;
             font-weight: 500;
         }
 
@@ -499,7 +499,7 @@
         .auth-container {
             background: var(--auth-bg);
             border-radius: 1rem;
-            box-shadow: 0 8px of 32px rgba(42, 157, 143, 0.08);
+            box-shadow: 0 8px 32px rgba(42, 157, 143, 0.08);
             padding: 2rem;
             margin-bottom: 2rem;
             backdrop-filter: blur(4px);
@@ -684,7 +684,7 @@
             background: white;
             border-radius: 16px;
             padding: 15px;
-            box-shadow: 0 10px of 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             display: flex;
             align-items: center;
             gap: 15px;
@@ -767,7 +767,7 @@
         @keyframes pulse {
             0% { transform: scale(0.95); }
             50% { transform: scale(1.05); }
-           100% { transform: scale(0.95); }
+            100% { transform: scale(0.95); }
         }
 
         @keyframes pulseInstall {
@@ -1096,7 +1096,6 @@
         let svg = null;
         let zoom = null;
         let graphRendered = false;
-        let userData = {}; // Added to store user data
 
         // PWA Installation Handling
         function handlePWAInstall() {
@@ -1253,6 +1252,39 @@
             }, 2000);
         }
 
+        // Auth state listener - UPDATED to load user data
+        auth.onAuthStateChanged(async user => {
+            if (user) {
+                currentUser = user;
+                userEmail.textContent = user.email;
+                authSection.style.display = 'none';
+                journalSection.style.display = 'block';
+                
+                try {
+                    // Load user data from Firestore
+                    await loadUserData();
+                    
+                    // Set up real-time listener
+                    setupFirestoreListener();
+                } catch (error) {
+                    console.error("Error loading user data:", error);
+                    // Fall back to local data if there's an error
+                    loadLocalPosts();
+                }
+            } else {
+                currentUser = null;
+                authSection.style.display = 'block';
+                journalSection.style.display = 'none';
+                allPosts = [];
+                
+                // Unsubscribe from listener when logged out
+                if (unsubscribeListener) {
+                    unsubscribeListener();
+                    unsubscribeListener = null;
+                }
+            }
+        });
+
         // NEW FUNCTION: Load user data from Firestore
         async function loadUserData() {
             if (!currentUser) return;
@@ -1261,7 +1293,7 @@
                 const userDoc = await db.collection('users').doc(currentUser.uid).get();
                 
                 if (userDoc.exists) {
-                    userData = userDoc.data();
+                    const userData = userDoc.data();
                     console.log("User data loaded:", userData);
                     
                     // Load any user preferences or settings here
@@ -1290,51 +1322,22 @@
             
             try {
                 // Merge new data with existing user data
-                userData = {...userData, ...data};
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                const existingData = userDoc.exists ? userDoc.data() : {};
+                const updatedData = {...existingData, ...data};
                 
-                await db.collection('users').doc(currentUser.uid).set(userData, { merge: true });
+                await db.collection('users').doc(currentUser.uid).set(updatedData, { merge: true });
                 console.log("User data saved successfully");
             } catch (error) {
                 console.error("Error saving user data:", error);
             }
         }
 
-        // Auth state listener - UPDATED to load user data
-        auth.onAuthStateChanged(async user => {
-            if (user) {
-                currentUser = user;
-                userEmail.textContent = user.email;
-                authSection.style.display = 'none';
-                journalSection.style.display = 'block';
-                
-                try {
-                    // Load user data from Firestore
-                    await loadUserData();
-                    
-                    // Set up real-time listener for posts
-                    setupFirestoreListener();
-                } catch (error) {
-                    console.error("Error loading user data:", error);
-                    // Fall back to local data if there's an error
-                    loadLocalPosts();
-                }
-            } else {
-                currentUser = null;
-                authSection.style.display = 'block';
-                journalSection.style.display = 'none';
-                allPosts = [];
-                
-                // Unsubscribe from listener when logged out
-                if (unsubscribeListener) {
-                    unsubscribeListener();
-                    unsubscribeListener = null;
-                }
-            }
-        });
-
         // Set up Firestore real-time listener
         function setupFirestoreListener() {
             if (unsubscribeListener) unsubscribeListener();
+            
+            if (!currentUser) return;
             
             const postsRef = db.collection('users').doc(currentUser.uid).collection('posts');
             
@@ -1385,7 +1388,7 @@
                 });
         });
 
-        // UPDATED Sign up function to create user document
+        // Sign up - UPDATED to create user document
         signUpBtn.addEventListener('click', () => {
             const email = document.getElementById('signUpEmail').value;
             const password = document.getElementById('signUpPassword').value;
@@ -1417,8 +1420,7 @@
                         lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
                         preferences: {
                             // Add default preferences here
-                            theme: 'light',
-                            notifications: true
+                            theme: 'light'
                         }
                     });
                 })
@@ -1515,7 +1517,7 @@
             selectedMood = mood;
         }
 
-        // UPDATED Create new post function to ensure it saves to the correct user document
+        // Create new post - UPDATED to use correct user path
         function createPost() {
             const text = document.getElementById('journalText').value.trim();
             
@@ -1542,7 +1544,7 @@
             // Save to local storage
             savePostsToLocal();
             
-            // Save to Firestore if online - UPDATED to use correct user path
+            // Save to Firestore if online
             if (isOnline && currentUser) {
                 showSyncIndicator();
                 
@@ -1791,7 +1793,7 @@
                 const links = [];
                 const linkSet = new Set(); // To avoid duplicate links
                 
-                for (let i = 极 i < nodes.length; i++) {
+                for (let i = 0; i < nodes.length; i++) {
                     for (let j = i + 1; j < nodes.length; j++) {
                         const sourcePost = soulMapData.find(p => p.id === nodes[i].id);
                         const targetPost = soulMapData.find(p => p.id === nodes[j].id);
@@ -1905,7 +1907,7 @@
                 .on("mouseout", function() {
                     tooltip.transition()
                         .duration(500)
-                        .style("opacity", 极);
+                        .style("opacity", 0);
                     
                     // Reset opacity
                     node.style("opacity", 1);
