@@ -602,14 +602,6 @@
         .user-email {
             font-weight: 500;
             color: var(--text);
-            font-size: 1.1rem;
-        }
-
-        .user-display-name {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin-right: 10px;
         }
 
         .logout-btn {
@@ -622,12 +614,9 @@
             align-items: center;
             gap: 0.3rem;
             transition: all 0.2s ease;
-            padding: 8px 12px;
-            border-radius: 6px;
         }
 
         .logout-btn:hover {
-            background-color: rgba(42, 157, 143, 0.1);
             color: #1e7a6f;
         }
 
@@ -824,12 +813,6 @@
                 flex-direction: column;
                 align-items: center;
             }
-            
-            .user-info {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
-            }
         }
 
         /* Loading spinner for network graph */
@@ -860,25 +843,6 @@
         
         .node-enter {
             animation: nodeEnter 0.5s ease-out;
-        }
-        
-        .profile-section {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 18px;
         }
     </style>
 </head>
@@ -931,10 +895,6 @@
                     <label class="form-label">Confirm Password</label>
                     <input type="password" id="signUpPasswordConfirm" class="form-input" placeholder="••••••••">
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Display Name (Optional)</label>
-                    <input type="text" id="displayName" class="form-input" placeholder="How would you like to be called?">
-                </div>
                 <button id="signUpBtn" class="auth-btn">Create Account</button>
                 <div class="auth-switch">
                     Already have an account? <a id="switchToSignIn">Sign In</a>
@@ -946,12 +906,8 @@
         <!-- Journal Section -->
         <div id="journalSection" style="display: none;">
             <div id="userInfo" class="user-info">
-                <div class="profile-section">
-                    <div class="user-avatar" id="userAvatar">U</div>
-                    <div>
-                        <div class="user-display-name" id="userDisplayName">User</div>
-                        <span class="user-email" id="userEmail">user@example.com</span>
-                    </div>
+                <div>
+                    <span class="user-email" id="userEmail">user@example.com</span>
                 </div>
                 <button id="logoutBtn" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i>
@@ -1100,8 +1056,6 @@
         const authSection = document.getElementById('authSection');
         const journalSection = document.getElementById('journalSection');
         const userEmail = document.getElementById('userEmail');
-        const userDisplayName = document.getElementById('userDisplayName');
-        const userAvatar = document.getElementById('userAvatar');
         const signInBtn = document.getElementById('signInBtn');
         const signUpBtn = document.getElementById('signUpBtn');
         const logoutBtn = document.getElementById('logoutBtn');
@@ -1142,6 +1096,7 @@
         let svg = null;
         let zoom = null;
         let graphRendered = false;
+        let userData = {}; // Store user data
 
         // PWA Installation Handling
         function handlePWAInstall() {
@@ -1298,42 +1253,68 @@
             }, 2000);
         }
 
+        // NEW: Load user data from Firestore
+        async function loadUserData() {
+            if (!currentUser) return;
+            
+            try {
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                
+                if (userDoc.exists) {
+                    userData = userDoc.data();
+                    console.log("User data loaded:", userData);
+                    
+                    // Apply any user preferences or settings here
+                    if (userData.preferences) {
+                        // You can apply user preferences to the UI here
+                    }
+                } else {
+                    // Create user document if it doesn't exist
+                    await saveUserData({
+                        email: currentUser.email,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+            } catch (error) {
+                console.error("Error loading user data:", error);
+            }
+        }
+
+        // NEW: Save user data to Firestore
+        async function saveUserData(data) {
+            if (!currentUser) return;
+            
+            try {
+                // Merge new data with existing user data
+                userData = {...userData, ...data};
+                
+                await db.collection('users').doc(currentUser.uid).set(userData, { merge: true });
+                console.log("User data saved successfully");
+            } catch (error) {
+                console.error("Error saving user data:", error);
+            }
+        }
+
         // Auth state listener - UPDATED to load user data
         auth.onAuthStateChanged(async user => {
             if (user) {
                 currentUser = user;
                 userEmail.textContent = user.email;
-                
-                // Set display name if available
-                if (user.displayName) {
-                    userDisplayName.textContent = user.displayName;
-                    userAvatar.textContent = user.displayName.charAt(0).toUpperCase();
-                } else {
-                    // Try to get display name from Firestore
-                    try {
-                        const userDoc = await db.collection('users').doc(user.uid).get();
-                        if (userDoc.exists && userDoc.data().displayName) {
-                            userDisplayName.textContent = userDoc.data().displayName;
-                            userAvatar.textContent = userDoc.data().displayName.charAt(0).toUpperCase();
-                        } else {
-                            userDisplayName.textContent = user.email.split('@')[0];
-                            userAvatar.textContent = user.email.charAt(0).toUpperCase();
-                        }
-                    } catch (error) {
-                        console.error("Error getting user data:", error);
-                        userDisplayName.textContent = user.email.split('@')[0];
-                        userAvatar.textContent = user.email.charAt(0).toUpperCase();
-                    }
-                }
-                
                 authSection.style.display = 'none';
                 journalSection.style.display = 'block';
                 
-                // Load user data from Firestore
-                await loadUserData();
-                
-                // Set up real-time listener
-                setupFirestoreListener();
+                try {
+                    // Load user data from Firestore
+                    await loadUserData();
+                    
+                    // Set up real-time listener for posts
+                    setupFirestoreListener();
+                } catch (error) {
+                    console.error("Error loading user data:", error);
+                    // Fall back to local data if there's an error
+                    loadLocalPosts();
+                }
             } else {
                 currentUser = null;
                 authSection.style.display = 'block';
@@ -1347,68 +1328,6 @@
                 }
             }
         });
-
-        // NEW FUNCTION: Load user data from Firestore
-        async function loadUserData() {
-            if (!currentUser) return;
-            
-            showSyncIndicator("Loading your data...");
-            
-            try {
-                // Load user posts
-                const postsSnapshot = await db.collection('users').doc(currentUser.uid)
-                    .collection('posts').orderBy('date', 'desc').get();
-                
-                const loadedPosts = [];
-                postsSnapshot.forEach(doc => {
-                    loadedPosts.push(doc.data());
-                });
-                
-                allPosts = loadedPosts;
-                displayPosts(allPosts);
-                processSoulMapData();
-                
-                // Save to local storage as backup
-                savePostsToLocal();
-                
-                hideSyncIndicator();
-            } catch (error) {
-                console.error('Error loading user data:', error);
-                // Fall back to local storage if available
-                loadLocalPosts();
-                hideSyncIndicator();
-            }
-        }
-
-        // Set up Firestore real-time listener
-        function setupFirestoreListener() {
-            if (unsubscribeListener) unsubscribeListener();
-            
-            const postsRef = db.collection('users').doc(currentUser.uid).collection('posts');
-            
-            unsubscribeListener = postsRef.orderBy('date', 'desc').onSnapshot(snapshot => {
-                const updatedPosts = [];
-                
-                snapshot.forEach(doc => {
-                    updatedPosts.push(doc.data());
-                });
-                
-                // Update allPosts and display
-                allPosts = updatedPosts;
-                displayPosts(allPosts);
-                
-                // Process data for SoulMap
-                processSoulMapData();
-                
-                // Save to local storage
-                savePostsToLocal();
-            }, error => {
-                console.error('Firestore listener error:', error);
-                
-                // Load from local storage on error
-                loadLocalPosts();
-            });
-        }
 
         // Sign in
         signInBtn.addEventListener('click', () => {
@@ -1428,12 +1347,11 @@
                 });
         });
 
-        // Sign up - UPDATED to create user document in Firestore
+        // Sign up - UPDATED to create user document
         signUpBtn.addEventListener('click', () => {
             const email = document.getElementById('signUpEmail').value;
             const password = document.getElementById('signUpPassword').value;
             const passwordConfirm = document.getElementById('signUpPasswordConfirm').value;
-            const displayName = document.getElementById('displayName').value;
             
             signUpError.textContent = '';
             
@@ -1453,24 +1371,17 @@
             }
             
             auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Update profile with display name if provided
-                    if (displayName) {
-                        return userCredential.user.updateProfile({
-                            displayName: displayName
-                        }).then(() => {
-                            return userCredential;
-                        });
-                    }
-                    return userCredential;
-                })
-                .then((userCredential) => {
-                    // Create user document in Firestore
-                    return db.collection('users').doc(userCredential.user.uid).set({
+                .then(async (userCredential) => {
+                    // Create user document in Firestore with additional data
+                    await db.collection('users').doc(userCredential.user.uid).set({
                         email: email,
-                        displayName: displayName || email.split('@')[0],
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                        preferences: {
+                            // Add default preferences here
+                            theme: 'light',
+                            notifications: true
+                        }
                     });
                 })
                 .catch(error => {
@@ -1566,7 +1477,7 @@
             selectedMood = mood;
         }
 
-        // Create new post
+        // Create new post - UPDATED to ensure user ID is included
         function createPost() {
             const text = document.getElementById('journalText').value.trim();
             
@@ -1580,7 +1491,7 @@
                 text: text,
                 mood: selectedMood,
                 date: Date.now(),
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                userId: currentUser.uid // Ensure post is associated with user
             };
 
             // Add to local array immediately for responsive UI
@@ -1593,7 +1504,7 @@
             // Save to local storage
             savePostsToLocal();
             
-            // Save to Firestore if online
+            // Save to Firestore if online - UPDATED to use correct user path
             if (isOnline && currentUser) {
                 showSyncIndicator();
                 
@@ -2022,6 +1933,43 @@
             if (zoom && graphRendered) {
                 svg.transition().duration(250).call(zoom.transform, d3.zoomIdentity);
             }
+        }
+
+        // UPDATED: Set up Firestore real-time listener to use correct user path
+        function setupFirestoreListener() {
+            if (unsubscribeListener) unsubscribeListener();
+            
+            if (!currentUser) return;
+            
+            const postsRef = db.collection('users').doc(currentUser.uid).collection('posts');
+            
+            showSyncIndicator();
+            
+            unsubscribeListener = postsRef.orderBy('date', 'desc').onSnapshot(snapshot => {
+                const updatedPosts = [];
+                
+                snapshot.forEach(doc => {
+                    updatedPosts.push(doc.data());
+                });
+                
+                // Update allPosts and display
+                allPosts = updatedPosts;
+                displayPosts(allPosts);
+                
+                // Process data for SoulMap
+                processSoulMapData();
+                
+                // Save to local storage
+                savePostsToLocal();
+                
+                hideSyncIndicator();
+            }, error => {
+                console.error('Firestore listener error:', error);
+                hideSyncIndicator();
+                
+                // Load from local storage on error
+                loadLocalPosts();
+            });
         }
 
         // Switch between SoulBoard and SoulMap views
