@@ -575,7 +575,6 @@
             text-decoration: none;
             font-weight: 500;
             cursor: pointer;
-            pointer-events: auto;
         }
 
         .auth-switch a:hover {
@@ -603,6 +602,14 @@
         .user-email {
             font-weight: 500;
             color: var(--text);
+            font-size: 1.1rem;
+        }
+
+        .user-display-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-right: 10px;
         }
 
         .logout-btn {
@@ -615,9 +622,12 @@
             align-items: center;
             gap: 0.3rem;
             transition: all 0.2s ease;
+            padding: 8px 12px;
+            border-radius: 6px;
         }
 
         .logout-btn:hover {
+            background-color: rgba(42, 157, 143, 0.1);
             color: #1e7a6f;
         }
 
@@ -814,6 +824,12 @@
                 flex-direction: column;
                 align-items: center;
             }
+            
+            .user-info {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
         }
 
         /* Loading spinner for network graph */
@@ -844,6 +860,25 @@
         
         .node-enter {
             animation: nodeEnter 0.5s ease-out;
+        }
+        
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
         }
     </style>
 </head>
@@ -896,6 +931,10 @@
                     <label class="form-label">Confirm Password</label>
                     <input type="password" id="signUpPasswordConfirm" class="form-input" placeholder="••••••••">
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Display Name (Optional)</label>
+                    <input type="text" id="displayName" class="form-input" placeholder="How would you like to be called?">
+                </div>
                 <button id="signUpBtn" class="auth-btn">Create Account</button>
                 <div class="auth-switch">
                     Already have an account? <a id="switchToSignIn">Sign In</a>
@@ -907,8 +946,12 @@
         <!-- Journal Section -->
         <div id="journalSection" style="display: none;">
             <div id="userInfo" class="user-info">
-                <div>
-                    <span class="user-email" id="userEmail">user@example.com</span>
+                <div class="profile-section">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div>
+                        <div class="user-display-name" id="userDisplayName">User</div>
+                        <span class="user-email" id="userEmail">user@example.com</span>
+                    </div>
                 </div>
                 <button id="logoutBtn" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i>
@@ -1057,6 +1100,8 @@
         const authSection = document.getElementById('authSection');
         const journalSection = document.getElementById('journalSection');
         const userEmail = document.getElementById('userEmail');
+        const userDisplayName = document.getElementById('userDisplayName');
+        const userAvatar = document.getElementById('userAvatar');
         const signInBtn = document.getElementById('signInBtn');
         const signUpBtn = document.getElementById('signUpBtn');
         const logoutBtn = document.getElementById('logoutBtn');
@@ -1258,6 +1303,29 @@
             if (user) {
                 currentUser = user;
                 userEmail.textContent = user.email;
+                
+                // Set display name if available
+                if (user.displayName) {
+                    userDisplayName.textContent = user.displayName;
+                    userAvatar.textContent = user.displayName.charAt(0).toUpperCase();
+                } else {
+                    // Try to get display name from Firestore
+                    try {
+                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        if (userDoc.exists && userDoc.data().displayName) {
+                            userDisplayName.textContent = userDoc.data().displayName;
+                            userAvatar.textContent = userDoc.data().displayName.charAt(0).toUpperCase();
+                        } else {
+                            userDisplayName.textContent = user.email.split('@')[0];
+                            userAvatar.textContent = user.email.charAt(0).toUpperCase();
+                        }
+                    } catch (error) {
+                        console.error("Error getting user data:", error);
+                        userDisplayName.textContent = user.email.split('@')[0];
+                        userAvatar.textContent = user.email.charAt(0).toUpperCase();
+                    }
+                }
+                
                 authSection.style.display = 'none';
                 journalSection.style.display = 'block';
                 
@@ -1312,41 +1380,13 @@
             }
         }
 
-        // NEW FUNCTION: Save user data to Firestore
-        async function saveUserData() {
-            if (!currentUser) return;
-            
-            showSyncIndicator();
-            
-            try {
-                // Save all posts to Firestore using batch operation for efficiency
-                const batch = db.batch();
-                const userPostsRef = db.collection('users').doc(currentUser.uid).collection('posts');
-                
-                allPosts.forEach(post => {
-                    const postRef = userPostsRef.doc(post.id);
-                    batch.set(postRef, post);
-                });
-                
-                await batch.commit();
-                console.log("User data saved to Firestore");
-                hideSyncIndicator();
-            } catch (error) {
-                console.error('Error saving user data:', error);
-                hideSyncIndicator();
-            }
-        }
-
-        // Set up Firestore real-time listener - UPDATED to handle initial load
+        // Set up Firestore real-time listener
         function setupFirestoreListener() {
             if (unsubscribeListener) unsubscribeListener();
             
             const postsRef = db.collection('users').doc(currentUser.uid).collection('posts');
             
             unsubscribeListener = postsRef.orderBy('date', 'desc').onSnapshot(snapshot => {
-                // Don't process initial load if we already loaded data
-                if (allPosts.length === 0) return;
-                
                 const updatedPosts = [];
                 
                 snapshot.forEach(doc => {
@@ -1364,6 +1404,9 @@
                 savePostsToLocal();
             }, error => {
                 console.error('Firestore listener error:', error);
+                
+                // Load from local storage on error
+                loadLocalPosts();
             });
         }
 
@@ -1385,11 +1428,12 @@
                 });
         });
 
-        // Sign up
+        // Sign up - UPDATED to create user document in Firestore
         signUpBtn.addEventListener('click', () => {
             const email = document.getElementById('signUpEmail').value;
             const password = document.getElementById('signUpPassword').value;
             const passwordConfirm = document.getElementById('signUpPasswordConfirm').value;
+            const displayName = document.getElementById('displayName').value;
             
             signUpError.textContent = '';
             
@@ -1410,10 +1454,23 @@
             
             auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
+                    // Update profile with display name if provided
+                    if (displayName) {
+                        return userCredential.user.updateProfile({
+                            displayName: displayName
+                        }).then(() => {
+                            return userCredential;
+                        });
+                    }
+                    return userCredential;
+                })
+                .then((userCredential) => {
                     // Create user document in Firestore
                     return db.collection('users').doc(userCredential.user.uid).set({
                         email: email,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        displayName: displayName || email.split('@')[0],
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 })
                 .catch(error => {
@@ -1522,7 +1579,8 @@
                 id: Date.now().toString(),
                 text: text,
                 mood: selectedMood,
-                date: Date.now()
+                date: Date.now(),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
 
             // Add to local array immediately for responsive UI
