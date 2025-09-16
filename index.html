@@ -575,6 +575,7 @@
             text-decoration: none;
             font-weight: 500;
             cursor: pointer;
+            pointer-events: auto;
         }
 
         .auth-switch a:hover {
@@ -1299,9 +1300,14 @@
                 displayPosts(allPosts);
                 processSoulMapData();
                 
+                // Save to local storage as backup
+                savePostsToLocal();
+                
                 hideSyncIndicator();
             } catch (error) {
                 console.error('Error loading user data:', error);
+                // Fall back to local storage if available
+                loadLocalPosts();
                 hideSyncIndicator();
             }
         }
@@ -1331,15 +1337,16 @@
             }
         }
 
-        // Set up Firestore real-time listener
+        // Set up Firestore real-time listener - UPDATED to handle initial load
         function setupFirestoreListener() {
             if (unsubscribeListener) unsubscribeListener();
             
             const postsRef = db.collection('users').doc(currentUser.uid).collection('posts');
             
-            showSyncIndicator();
-            
             unsubscribeListener = postsRef.orderBy('date', 'desc').onSnapshot(snapshot => {
+                // Don't process initial load if we already loaded data
+                if (allPosts.length === 0) return;
+                
                 const updatedPosts = [];
                 
                 snapshot.forEach(doc => {
@@ -1353,10 +1360,10 @@
                 // Process data for SoulMap
                 processSoulMapData();
                 
-                hideSyncIndicator();
+                // Save to local storage
+                savePostsToLocal();
             }, error => {
                 console.error('Firestore listener error:', error);
-                hideSyncIndicator();
             });
         }
 
@@ -1378,7 +1385,7 @@
                 });
         });
 
-        // Sign up - UPDATED to create user document
+        // Sign up
         signUpBtn.addEventListener('click', () => {
             const email = document.getElementById('signUpEmail').value;
             const password = document.getElementById('signUpPassword').value;
@@ -1430,7 +1437,79 @@
             authForm.style.display = 'block';
         });
 
-        // Create new post - UPDATED to save to Firestore
+        // Load posts from local storage
+        function loadLocalPosts() {
+            try {
+                const saved = localStorage.getItem('journalPosts');
+                const localPosts = saved ? JSON.parse(saved) : [];
+                
+                if (localPosts.length > 0) {
+                    allPosts = localPosts;
+                    displayPosts(allPosts);
+                    // Process data for SoulMap
+                    processSoulMapData();
+                }
+            } catch (e) {
+                console.error('Error loading local posts:', e);
+            }
+        }
+
+        // Save posts to local storage
+        function savePostsToLocal() {
+            try {
+                localStorage.setItem('journalPosts', JSON.stringify(allPosts));
+                // Also save processed SoulMap data
+                localStorage.setItem('soulMapData', JSON.stringify(soulMapData));
+            } catch (e) {
+                console.error('Error saving to local storage:', e);
+            }
+        }
+
+        // Sync local changes to Firestore
+        function syncLocalChanges() {
+            if (!currentUser) return;
+            
+            const localPosts = JSON.parse(localStorage.getItem('journalPosts') || '[]');
+            const cloudPosts = allPosts;
+            
+            // Find posts that exist locally but not in cloud
+            const postsToSync = localPosts.filter(localPost => 
+                !cloudPosts.some(cloudPost => cloudPost.id === localPost.id)
+            );
+            
+            if (postsToSync.length > 0) {
+                showSyncIndicator("Syncing local changes...");
+                
+                const batch = db.batch();
+                const userRef = db.collection('users').doc(currentUser.uid);
+                
+                postsToSync.forEach(post => {
+                    const postRef = userRef.collection('posts').doc(post.id);
+                    batch.set(postRef, post);
+                });
+                
+                batch.commit()
+                    .then(() => {
+                        console.log('Local changes synced to Firestore');
+                        hideSyncIndicator();
+                    })
+                    .catch(error => {
+                        console.error('Error syncing local changes:', error);
+                        hideSyncIndicator();
+                    });
+            }
+        }
+
+        // Select mood
+        function selectMood(button, mood) {
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+            selectedMood = mood;
+        }
+
+        // Create new post
         function createPost() {
             const text = document.getElementById('journalText').value.trim();
             
@@ -1453,6 +1532,9 @@
             // Process data for SoulMap
             processSoulMapData();
             
+            // Save to local storage
+            savePostsToLocal();
+            
             // Save to Firestore if online
             if (isOnline && currentUser) {
                 showSyncIndicator();
@@ -1467,7 +1549,7 @@
                         hideSyncIndicator();
                     });
             } else {
-                showSyncIndicator("Offline - changes will sync when online");
+                showSyncIndicator("Offline - changes saved locally");
             }
             
             // Clear form
@@ -1905,17 +1987,11 @@
             renderVisualization();
         });
 
-        // Select mood
-        function selectMood(button, mood) {
-            document.querySelectorAll('.mood-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            button.classList.add('active');
-            selectedMood = mood;
-        }
-
         // Initialize app when page loads
         window.onload = function() {
+            // Check if we have local posts to display while loading
+            loadLocalPosts();
+            
             // Initialize PWA features
             handlePWAInstall();
             registerServiceWorker();
