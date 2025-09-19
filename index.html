@@ -152,6 +152,7 @@
             justify-content: center;
             cursor: pointer;
             transition: var(--transition);
+            position: relative;
         }
 
         .notification-btn:hover, .user-btn:hover {
@@ -445,6 +446,8 @@
             max-width: 90%;
             padding: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-header {
@@ -467,6 +470,67 @@
             font-size: 1.5rem;
             cursor: pointer;
             color: var(--text-light);
+        }
+
+        /* Notification Dropdown */
+        .notification-dropdown {
+            display: none;
+            position: absolute;
+            top: 50px;
+            right: 0;
+            width: 300px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .notification-dropdown.active {
+            display: block;
+        }
+
+        .notification-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .notification-item:hover {
+            background: #f9f9f9;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Budget Progress */
+        .budget-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .budget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .budget-actions {
+            display: flex;
+            gap: 10px;
         }
 
         /* Responsive */
@@ -599,8 +663,9 @@
                     <p>Welcome back! Here's your financial overview</p>
                 </div>
                 <div class="header-right">
-                    <div class="notification-btn">
+                    <div class="notification-btn" id="notification-btn">
                         <i class="fas fa-bell"></i>
+                        <span class="notification-count">3</span>
                     </div>
                     <div class="user-info">
                         <div class="user-avatar">JD</div>
@@ -609,6 +674,29 @@
                             <div class="user-role">Premium Member</div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Notification Dropdown -->
+            <div class="notification-dropdown" id="notification-dropdown">
+                <div class="notification-header">
+                    <span>Notifications</span>
+                    <span class="text-accent">Mark all as read</span>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-title">New transaction categorized</div>
+                    <div class="notification-desc">Your Amazon purchase was categorized as Shopping</div>
+                    <div class="notification-time">2 hours ago</div>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-title">Budget alert</div>
+                    <div class="notification-desc">You've reached 80% of your Food budget</div>
+                    <div class="notification-time">5 hours ago</div>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-title">Account connected</div>
+                    <div class="notification-desc">Your Chase account was successfully connected</div>
+                    <div class="notification-time">Yesterday</div>
                 </div>
             </div>
 
@@ -658,8 +746,8 @@
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-chart-bar"></i> Monthly Cash Flow</h3>
                         <div class="card-actions">
-                            <button><i class="fas fa-sync-alt"></i></button>
-                            <button><i class="fas fa-expand"></i></button>
+                            <button id="refresh-cashflow"><i class="fas fa-sync-alt"></i></button>
+                            <button id="expand-cashflow"><i class="fas fa-expand"></i></button>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -672,8 +760,8 @@
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-chart-pie"></i> Expense Breakdown</h3>
                         <div class="card-actions">
-                            <button><i class="fas fa-sync-alt"></i></button>
-                            <button><i class="fas fa-expand"></i></button>
+                            <button id="refresh-expenses"><i class="fas fa-sync-alt"></i></button>
+                            <button id="expand-expenses"><i class="fas fa-expand"></i></button>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -783,6 +871,43 @@
         </div>
     </div>
 
+    <!-- Edit Account Modal -->
+    <div class="modal" id="edit-account-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Account</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-account-form">
+                    <input type="hidden" id="edit-account-id">
+                    <div class="form-group">
+                        <label class="form-label">Account Name</label>
+                        <input type="text" class="form-input" id="edit-account-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Account Type</label>
+                        <select class="form-select" id="edit-account-type" required>
+                            <option value="checking">Checking Account</option>
+                            <option value="savings">Savings Account</option>
+                            <option value="credit">Credit Card</option>
+                            <option value="investment">Investment Account</option>
+                            <option value="loan">Loan</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Current Balance</label>
+                        <input type="number" class="form-input" id="edit-account-balance" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Update Account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Add Transaction Modal -->
     <div class="modal" id="add-transaction-modal">
         <div class="modal-content">
@@ -882,6 +1007,48 @@
         </div>
     </div>
 
+    <!-- Edit Budget Modal -->
+    <div class="modal" id="edit-budget-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Budget</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-budget-form">
+                    <input type="hidden" id="edit-budget-id">
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" id="edit-budget-category" required disabled>
+                            <option value="food">Food & Dining</option>
+                            <option value="transport">Transportation</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="utilities">Utilities</option>
+                            <option value="health">Healthcare</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Budget Amount</label>
+                        <input type="number" class="form-input" id="edit-budget-amount" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Time Period</label>
+                        <select class="form-select" id="edit-budget-period" required>
+                            <option value="monthly">Monthly</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Update Budget</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Data storage
         let accounts = JSON.parse(localStorage.getItem('accounts')) || [];
@@ -896,14 +1063,20 @@
         const totalIncomeElement = document.getElementById('total-income');
         const totalExpensesElement = document.getElementById('total-expenses');
         const totalInvestmentsElement = document.getElementById('total-investments');
+        const notificationBtn = document.getElementById('notification-btn');
+        const notificationDropdown = document.getElementById('notification-dropdown');
 
         // Modal Elements
         const addAccountModal = document.getElementById('add-account-modal');
+        const editAccountModal = document.getElementById('edit-account-modal');
         const addTransactionModal = document.getElementById('add-transaction-modal');
         const addBudgetModal = document.getElementById('add-budget-modal');
+        const editBudgetModal = document.getElementById('edit-budget-modal');
         const addAccountForm = document.getElementById('add-account-form');
+        const editAccountForm = document.getElementById('edit-account-form');
         const addTransactionForm = document.getElementById('add-transaction-form');
         const addBudgetForm = document.getElementById('add-budget-form');
+        const editBudgetForm = document.getElementById('edit-budget-form');
         const transactionAccountSelect = document.getElementById('transaction-account');
 
         // Chart instances
@@ -912,6 +1085,9 @@
 
         // Initialize the application
         function initApp() {
+            // Set today's date as default for transaction date
+            document.getElementById('transaction-date').valueAsDate = new Date();
+            
             renderAccounts();
             renderTransactions();
             renderBudgets();
@@ -919,6 +1095,59 @@
             initCharts();
             populateAccountSelect();
             setupEventListeners();
+            
+            // Add sample data if no data exists
+            if (accounts.length === 0 && transactions.length === 0 && budgets.length === 0) {
+                addSampleData();
+            }
+        }
+
+        // Add sample data for demonstration
+        function addSampleData() {
+            // Add sample accounts
+            const sampleAccounts = [
+                { id: '1', name: 'Primary Checking', type: 'checking', balance: 2850.75 },
+                { id: '2', name: 'Savings Account', type: 'savings', balance: 12500.00 },
+                { id: '3', name: 'Credit Card', type: 'credit', balance: -1250.50 },
+                { id: '4', name: 'Investment Portfolio', type: 'investment', balance: 23750.30 }
+            ];
+            
+            accounts.push(...sampleAccounts);
+            localStorage.setItem('accounts', JSON.stringify(accounts));
+            
+            // Add sample transactions
+            const sampleTransactions = [
+                { id: '1', description: 'Salary Deposit', amount: 3500.00, type: 'income', category: 'salary', date: '2023-06-01', accountId: '1' },
+                { id: '2', description: 'Grocery Shopping', amount: 125.30, type: 'expense', category: 'food', date: '2023-06-03', accountId: '1' },
+                { id: '3', description: 'Electricity Bill', amount: 85.75, type: 'expense', category: 'utilities', date: '2023-06-05', accountId: '1' },
+                { id: '4', description: 'Amazon Purchase', amount: 64.99, type: 'expense', category: 'shopping', date: '2023-06-07', accountId: '3' },
+                { id: '5', description: 'Gas Station', amount: 45.00, type: 'expense', category: 'transport', date: '2023-06-08', accountId: '1' },
+                { id: '6', description: 'Freelance Work', amount: 1200.00, type: 'income', category: 'freelance', date: '2023-06-10', accountId: '1' },
+                { id: '7', description: 'Restaurant Dinner', amount: 78.50, type: 'expense', category: 'food', date: '2023-06-12', accountId: '3' },
+                { id: '8', description: 'Stock Dividend', amount: 42.30, type: 'income', category: 'investment', date: '2023-06-15', accountId: '4' }
+            ];
+            
+            transactions.push(...sampleTransactions);
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            
+            // Add sample budgets
+            const sampleBudgets = [
+                { id: '1', category: 'food', amount: 500.00, period: 'monthly' },
+                { id: '2', category: 'transport', amount: 200.00, period: 'monthly' },
+                { id: '3', category: 'utilities', amount: 300.00, period: 'monthly' },
+                { id: '4', category: 'shopping', amount: 250.00, period: 'monthly' }
+            ];
+            
+            budgets.push(...sampleBudgets);
+            localStorage.setItem('budgets', JSON.stringify(budgets));
+            
+            // Update the UI with sample data
+            renderAccounts();
+            renderTransactions();
+            renderBudgets();
+            updateSummary();
+            updateCharts();
+            populateAccountSelect();
         }
 
         // Set up event listeners
@@ -955,8 +1184,10 @@
 
             // Form submissions
             addAccountForm.addEventListener('submit', handleAddAccount);
+            editAccountForm.addEventListener('submit', handleEditAccount);
             addTransactionForm.addEventListener('submit', handleAddTransaction);
             addBudgetForm.addEventListener('submit', handleAddBudget);
+            editBudgetForm.addEventListener('submit', handleEditBudget);
 
             // Close modal when clicking outside
             document.querySelectorAll('.modal').forEach(modal => {
@@ -965,6 +1196,36 @@
                         modal.classList.remove('active');
                     }
                 });
+            });
+
+            // Notification dropdown
+            notificationBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                notificationDropdown.classList.toggle('active');
+            });
+
+            // Close notification dropdown when clicking elsewhere
+            document.addEventListener('click', (e) => {
+                if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+                    notificationDropdown.classList.remove('active');
+                }
+            });
+
+            // Chart actions
+            document.getElementById('refresh-cashflow').addEventListener('click', () => {
+                updateCharts();
+            });
+
+            document.getElementById('refresh-expenses').addEventListener('click', () => {
+                updateCharts();
+            });
+
+            document.getElementById('expand-cashflow').addEventListener('click', () => {
+                alert('Expanding cash flow chart. In a real application, this would open a full-screen view.');
+            });
+
+            document.getElementById('expand-expenses').addEventListener('click', () => {
+                alert('Expanding expenses chart. In a real application, this would open a full-screen view.');
             });
         }
 
@@ -976,6 +1237,7 @@
                 link.classList.remove('active');
             });
             document.querySelector(`.sidebar-menu a[data-tab="${tab}"]`).classList.add('active');
+            alert(`Switching to ${tab} tab. In a full implementation, this would show the ${tab} content.`);
         }
 
         // Render accounts table
@@ -1019,7 +1281,7 @@
                     <td>$${account.balance.toFixed(2)}</td>
                     <td>${account.type.charAt(0).toUpperCase() + account.type.slice(1)}</td>
                     <td>
-                        <button class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem;">
+                        <button class="btn-edit-account" data-id="${account.id}" style="padding: 5px 10px; font-size: 0.8rem;">
                             <i class="fas fa-edit"></i> Edit
                         </button>
                     </td>
@@ -1027,6 +1289,27 @@
                 
                 accountsTableBody.appendChild(row);
             });
+            
+            // Add event listeners to edit buttons
+            document.querySelectorAll('.btn-edit-account').forEach(button => {
+                button.addEventListener('click', () => {
+                    const accountId = button.getAttribute('data-id');
+                    openEditAccountModal(accountId);
+                });
+            });
+        }
+
+        // Open edit account modal
+        function openEditAccountModal(accountId) {
+            const account = accounts.find(a => a.id === accountId);
+            if (!account) return;
+            
+            document.getElementById('edit-account-id').value = account.id;
+            document.getElementById('edit-account-name').value = account.name;
+            document.getElementById('edit-account-type').value = account.type;
+            document.getElementById('edit-account-balance').value = account.balance;
+            
+            editAccountModal.classList.add('active');
         }
 
         // Render transactions table
@@ -1088,21 +1371,66 @@
                 const budgetElement = document.createElement('div');
                 budgetElement.className = 'budget-item';
                 budgetElement.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <div class="budget-header">
                         <span>${budget.category.charAt(0).toUpperCase() + budget.category.slice(1)}</span>
+                        <div class="budget-actions">
+                            <button class="btn-edit-budget" data-id="${budget.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-delete-budget" data-id="${budget.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                         <span>$${spent.toFixed(2)} / $${budget.amount.toFixed(2)}</span>
+                        <span>${percentage.toFixed(0)}%</span>
                     </div>
                     <div style="background: #f0f0f0; border-radius: 5px; height: 10px;">
                         <div style="background: ${percentage < 80 ? '#2ecc71' : percentage < 100 ? '#f39c12' : '#e74c3c'}; 
                             width: ${percentage}%; height: 10px; border-radius: 5px;"></div>
                     </div>
-                    <div style="text-align: right; font-size: 0.8rem; color: #777; margin-top: 5px;">
-                        ${percentage.toFixed(0)}% spent
-                    </div>
                 `;
                 
                 budgetContainer.appendChild(budgetElement);
             });
+            
+            // Add event listeners to edit and delete buttons
+            document.querySelectorAll('.btn-edit-budget').forEach(button => {
+                button.addEventListener('click', () => {
+                    const budgetId = button.getAttribute('data-id');
+                    openEditBudgetModal(budgetId);
+                });
+            });
+            
+            document.querySelectorAll('.btn-delete-budget').forEach(button => {
+                button.addEventListener('click', () => {
+                    const budgetId = button.getAttribute('data-id');
+                    deleteBudget(budgetId);
+                });
+            });
+        }
+
+        // Open edit budget modal
+        function openEditBudgetModal(budgetId) {
+            const budget = budgets.find(b => b.id === budgetId);
+            if (!budget) return;
+            
+            document.getElementById('edit-budget-id').value = budget.id;
+            document.getElementById('edit-budget-category').value = budget.category;
+            document.getElementById('edit-budget-amount').value = budget.amount;
+            document.getElementById('edit-budget-period').value = budget.period;
+            
+            editBudgetModal.classList.add('active');
+        }
+
+        // Delete budget
+        function deleteBudget(budgetId) {
+            if (confirm('Are you sure you want to delete this budget?')) {
+                budgets = budgets.filter(b => b.id !== budgetId);
+                localStorage.setItem('budgets', JSON.stringify(budgets));
+                renderBudgets();
+            }
         }
 
         // Update summary cards
@@ -1161,7 +1489,21 @@
                     maintainAspectRatio: false,
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': $' + context.raw;
+                                }
+                            }
                         }
                     }
                 }
@@ -1192,6 +1534,13 @@
                     plugins: {
                         legend: {
                             position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': $' + context.raw;
+                                }
+                            }
                         }
                     }
                 }
@@ -1202,13 +1551,42 @@
 
         // Update chart data
         function updateCharts() {
-            // For demo purposes, we'll use some sample data
-            // In a real application, we would calculate based on actual transactions
-            cashflowChart.data.datasets[0].data = [3200, 2900, 3500, 3800, 4200, 4500];
-            cashflowChart.data.datasets[1].data = [2200, 2400, 2600, 2800, 3000, 3200];
+            // Calculate monthly income and expenses for the last 6 months
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+            const monthlyIncome = [0, 0, 0, 0, 0, 0];
+            const monthlyExpenses = [0, 0, 0, 0, 0, 0];
+            
+            transactions.forEach(transaction => {
+                const date = new Date(transaction.date);
+                const month = date.getMonth();
+                
+                if (month >= 0 && month < 6) {
+                    if (transaction.type === 'income') {
+                        monthlyIncome[month] += transaction.amount;
+                    } else {
+                        monthlyExpenses[month] += transaction.amount;
+                    }
+                }
+            });
+            
+            cashflowChart.data.datasets[0].data = monthlyIncome;
+            cashflowChart.data.datasets[1].data = monthlyExpenses;
             cashflowChart.update();
             
-            expensesChart.data.datasets[0].data = [800, 500, 300, 600, 400, 300];
+            // Calculate expenses by category
+            const categories = ['food', 'transport', 'entertainment', 'shopping', 'utilities', 'other'];
+            const expensesByCategory = [0, 0, 0, 0, 0, 0];
+            
+            transactions.forEach(transaction => {
+                if (transaction.type === 'expense') {
+                    const categoryIndex = categories.indexOf(transaction.category);
+                    if (categoryIndex !== -1) {
+                        expensesByCategory[categoryIndex] += transaction.amount;
+                    }
+                }
+            });
+            
+            expensesChart.data.datasets[0].data = expensesByCategory;
             expensesChart.update();
         }
 
@@ -1253,6 +1631,35 @@
             updateSummary();
             addAccountForm.reset();
             addAccountModal.classList.remove('active');
+            
+            // Show notification
+            alert(`Account "${name}" added successfully!`);
+        }
+
+        // Handle edit account form submission
+        function handleEditAccount(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('edit-account-id').value;
+            const name = document.getElementById('edit-account-name').value;
+            const type = document.getElementById('edit-account-type').value;
+            const balance = parseFloat(document.getElementById('edit-account-balance').value);
+            
+            const accountIndex = accounts.findIndex(a => a.id === id);
+            if (accountIndex !== -1) {
+                accounts[accountIndex].name = name;
+                accounts[accountIndex].type = type;
+                accounts[accountIndex].balance = balance;
+                
+                localStorage.setItem('accounts', JSON.stringify(accounts));
+                
+                renderAccounts();
+                updateSummary();
+                editAccountModal.classList.remove('active');
+                
+                // Show notification
+                alert(`Account "${name}" updated successfully!`);
+            }
         }
 
         // Handle add transaction form submission
@@ -1297,8 +1704,13 @@
             renderTransactions();
             renderAccounts();
             updateSummary();
+            updateCharts();
             addTransactionForm.reset();
+            document.getElementById('transaction-date').valueAsDate = new Date();
             addTransactionModal.classList.remove('active');
+            
+            // Show notification
+            alert(`Transaction "${description}" added successfully!`);
         }
 
         // Handle add budget form submission
@@ -1331,6 +1743,32 @@
             renderBudgets();
             addBudgetForm.reset();
             addBudgetModal.classList.remove('active');
+            
+            // Show notification
+            alert(`Budget for ${category} created successfully!`);
+        }
+
+        // Handle edit budget form submission
+        function handleEditBudget(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('edit-budget-id').value;
+            const amount = parseFloat(document.getElementById('edit-budget-amount').value);
+            const period = document.getElementById('edit-budget-period').value;
+            
+            const budgetIndex = budgets.findIndex(b => b.id === id);
+            if (budgetIndex !== -1) {
+                budgets[budgetIndex].amount = amount;
+                budgets[budgetIndex].period = period;
+                
+                localStorage.setItem('budgets', JSON.stringify(budgets));
+                
+                renderBudgets();
+                editBudgetModal.classList.remove('active');
+                
+                // Show notification
+                alert(`Budget updated successfully!`);
+            }
         }
 
         // Initialize the app when the DOM is loaded
