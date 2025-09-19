@@ -3,534 +3,1015 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinPulse - Your Financial Wellness Dashboard</title>
+    <title>QuantumWealth | Advanced Financial Analytics</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.0.4/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.2.0"></script>
     <style>
         :root {
-            --primary: #2a4b8d;
-            --secondary: #4b7bec;
-            --accent: #26de81;
-            --light: #f5f9ff;
-            --dark: #1e2837;
-            --gray: #718096;
-            --danger: #fc5c65;
-            --warning: #fed330;
+            --primary: #1a1c2c;
+            --secondary: #2d3047;
+            --accent: #00d4aa;
+            --accent-dark: #00b896;
+            --text: #e6e6e6;
+            --text-secondary: #a0a0a0;
+            --danger: #ff4d4d;
+            --success: #00c853;
+            --warning: #ffab00;
+            --info: #00b0ff;
+            --card-bg: #23283b;
+            --header-height: 70px;
+            --sidebar-width: 260px;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
-            background-color: #f8fafc;
-            color: var(--dark);
+            background-color: var(--primary);
+            color: var(--text);
             line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 20px 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .header-content {
+            overflow-x: hidden;
+            min-height: 100vh;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
         }
-        
+
+        /* Header Styles */
+        header {
+            background-color: var(--secondary);
+            height: var(--header-height);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 24px;
+            gap: 12px;
             font-weight: 700;
-        }
-        
-        .logo i {
+            font-size: 1.5rem;
             color: var(--accent);
         }
-        
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 30px;
-        }
-        
-        nav a {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-        
-        nav a:hover {
+
+        .logo-icon {
             color: var(--accent);
+            font-size: 1.8rem;
         }
-        
-        .auth-buttons {
+
+        .search-bar {
             display: flex;
-            gap: 15px;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            width: 400px;
         }
-        
-        .btn {
-            padding: 10px 20px;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: none;
-        }
-        
-        .btn-outline {
+
+        .search-bar input {
             background: transparent;
-            border: 2px solid white;
+            border: none;
+            color: var(--text);
+            padding: 0.5rem;
+            width: 100%;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        .search-bar i {
+            color: var(--text-secondary);
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .notification-btn, .user-btn {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
             color: white;
-        }
-        
-        .btn-outline:hover {
-            background: white;
-            color: var(--primary);
-        }
-        
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #20c973;
-            transform: translateY(-2px);
-        }
-        
-        .hero {
-            padding: 80px 0;
-            text-align: center;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%232a4b8d" x="0" y="0" width="100" height="100"/><path fill="%234b7bec" d="M0 0L100 100"/></svg>') center/cover;
-            color: white;
-        }
-        
-        .hero h1 {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-        
-        .hero p {
-            font-size: 20px;
-            max-width: 700px;
-            margin: 0 auto 30px;
-            opacity: 0.9;
-        }
-        
-        .features {
-            padding: 80px 0;
-            background: white;
-        }
-        
-        .section-title {
-            text-align: center;
-            margin-bottom: 60px;
-            color: var(--primary);
-        }
-        
-        .section-title h2 {
-            font-size: 36px;
-            margin-bottom: 15px;
-        }
-        
-        .section-title p {
-            color: var(--gray);
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-        
-        .feature-card {
-            background: var(--light);
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-10px);
-        }
-        
-        .feature-icon {
-            background: var(--secondary);
-            color: white;
-            width: 70px;
-            height: 70px;
+            font-size: 0.7rem;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            margin-bottom: 20px;
         }
-        
-        .feature-card h3 {
-            font-size: 22px;
-            margin-bottom: 15px;
-            color: var(--primary);
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
         }
-        
-        .demo {
-            padding: 80px 0;
-            background: var(--light);
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
         }
-        
-        .dashboard-preview {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            flex: 1;
         }
-        
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--secondary);
+            padding: 1.5rem 0;
+            height: calc(100vh - var(--header-height));
+            position: sticky;
+            top: var(--header-height);
+            overflow-y: auto;
+            transition: var(--transition);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            margin-top: 2rem;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: var(--text);
+            text-decoration: none;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .sidebar-menu i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
         .dashboard-header {
-            background: var(--primary);
-            padding: 20px;
-            color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 1rem;
         }
-        
-        .dashboard-content {
-            padding: 30px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-        
-        .financial-pulse {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            border-radius: 15px;
-            padding: 25px;
-            color: white;
-            grid-column: 1 / -1;
-            text-align: center;
-        }
-        
-        .score {
-            font-size: 72px;
+
+        .dashboard-title {
+            font-size: 1.8rem;
             font-weight: 700;
-            margin: 15px 0;
+        }
+
+        .date-filter {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--card-bg);
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 212, 170, 0.1);
             color: var(--accent);
+            font-size: 1.5rem;
         }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-        
-        .stat-card {
-            background: var(--light);
-            border-radius: 10px;
-            padding: 20px;
-        }
-        
-        .stat-card h4 {
-            color: var(--gray);
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        
-        .stat-value {
-            font-size: 24px;
+
+        .card-value {
+            font-size: 2rem;
             font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .card-change {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .positive {
+            color: var(--success);
+        }
+
+        .negative {
+            color: var(--danger);
+        }
+
+        /* Charts */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chart-actions button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chart-actions button:hover {
+            background: var(--accent);
             color: var(--primary);
         }
-        
-        .cta {
-            padding: 80px 0;
-            text-align: center;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
+
+        .chart-container {
+            height: 300px;
+            position: relative;
         }
-        
-        .cta h2 {
-            font-size: 36px;
-            margin-bottom: 20px;
+
+        /* Portfolio Table */
+        .portfolio-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
         }
-        
-        .cta p {
-            max-width: 700px;
-            margin: 0 auto 30px;
-            font-size: 18px;
-            opacity: 0.9;
+
+        .portfolio-table th, .portfolio-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
-        footer {
-            background: var(--dark);
-            color: white;
-            padding: 50px 0 20px;
+
+        .portfolio-table th {
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
         }
-        
-        .footer-content {
+
+        .portfolio-table th:hover {
+            color: var(--accent);
+        }
+
+        .portfolio-table tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .stock-name {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .stock-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 212, 170, 0.1);
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .tab {
+            padding: 0.8rem 0;
+            cursor: pointer;
+            position: relative;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .tab.active {
+            color: var(--accent);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* Trading Panel */
+        .trading-panel {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 40px;
-            margin-bottom: 40px;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
         }
-        
-        .footer-column h3 {
-            margin-bottom: 20px;
-            font-size: 18px;
+
+        .trade-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
-        
-        .footer-column ul {
-            list-style: none;
+
+        .trade-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
-        
-        .footer-column ul li {
-            margin-bottom: 10px;
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
-        
-        .footer-column a {
-            color: #a0aec0;
-            text-decoration: none;
-            transition: color 0.3s;
+
+        .form-group label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
         }
-        
-        .footer-column a:hover {
-            color: white;
+
+        .form-group input, .form-group select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1rem;
+            border-radius: var(--border-radius);
+            color: var(--text);
+            outline: none;
+            transition: var(--transition);
         }
-        
-        .copyright {
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--accent);
+        }
+
+        .trade-type {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .trade-type-btn {
+            flex: 1;
             text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #2d3748;
-            color: #a0aec0;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
         }
-        
-        @media (max-width: 768px) {
-            .dashboard-content {
+
+        .trade-type-btn.active {
+            background: rgba(0, 212, 170, 0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-trade {
+            background: var(--accent);
+            color: var(--primary);
+            border: none;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-trade:hover {
+            background: var(--accent-dark);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .charts-container {
                 grid-template-columns: 1fr;
             }
             
-            nav ul {
+            .trading-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .sidebar-menu span {
                 display: none;
             }
             
-            .hero h1 {
-                font-size: 36px;
+            .search-bar {
+                width: 250px;
             }
+        }
+
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-bar {
+                display: none;
+            }
+            
+            .user-name {
+                display: none;
+            }
+        }
+
+        /* Footer */
+        footer {
+            background: var(--secondary);
+            padding: 1.5rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+            margin-top: auto;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="container header-content">
-            <div class="logo">
-                <i class="fas fa-wave-square"></i>
-                <span>FinPulse</span>
-            </div>
-            <nav>
-                <ul>
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#">Features</a></li>
-                    <li><a href="#">Pricing</a></li>
-                    <li><a href="#">About</a></li>
-                </ul>
-            </nav>
-            <div class="auth-buttons">
-                <button class="btn btn-outline">Log In</button>
-                <button class="btn btn-primary">Sign Up</button>
+        <div class="logo">
+            <i class="fas fa-chart-network logo-icon"></i>
+            <span>QuantumWealth</span>
+        </div>
+        
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search stocks, indices, or assets...">
+        </div>
+        
+        <div class="user-actions">
+            <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+            
+            <div class="user-profile">
+                <div class="user-avatar">JD</div>
+                <div class="user-info">
+                    <div class="user-name">John Doe</div>
+                </div>
             </div>
         </div>
     </header>
 
-    <section class="hero">
-        <div class="container">
-            <h1>Transform Your Financial Health</h1>
-            <p>FinPulse uses AI to analyze your spending, maximize savings, and build a stronger financial future with personalized recommendations.</p>
-            <button class="btn btn-primary">Get Started For Free</button>
-        </div>
-    </section>
+    <div class="main-container">
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+                <li><a href="#"><i class="fas fa-chart-line"></i> <span>Market Analysis</span></a></li>
+                <li><a href="#"><i class="fas fa-wallet"></i> <span>Portfolio</span></a></li>
+                <li><a href="#"><i class="fas fa-exchange-alt"></i> <span>Transactions</span></a></li>
+                <li><a href="#"><i class="fas fa-box"></i> <span>Assets</span></a></li>
+                <li><a href="#"><i class="fas fa-newspaper"></i> <span>Financial News</span></a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+                <li><a href="#"><i class="fas fa-question-circle"></i> <span>Help & Support</span></a></li>
+            </ul>
+        </aside>
 
-    <section class="features">
-        <div class="container">
-            <div class="section-title">
-                <h2>Smart Financial Management</h2>
-                <p>FinPulse goes beyond basic budgeting to provide holistic financial wellness</p>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-heartbeat"></i>
-                    </div>
-                    <h3>Financial Pulse Score</h3>
-                    <p>Get a comprehensive score that measures your financial health based on spending habits, savings, investments, and debt management.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <h3>AI-Powered Insights</h3>
-                    <p>Our algorithms analyze your transactions to find savings opportunities and alert you to potential financial pitfalls.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-gamepad"></i>
-                    </div>
-                    <h3>Gamified Goals</h3>
-                    <p>Set financial goals and earn rewards as you achieve milestones. Make financial improvement engaging and fun.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <h3>Bank-Level Security</h3>
-                    <p>Your financial data is encrypted with military-grade security. We never share your data without permission.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-chart-pie"></i>
-                    </div>
-                    <h3>Smart Budgeting</h3>
-                    <p>Automated categorization of expenses with dynamic budgeting that adjusts to your spending patterns.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-hand-holding-usd"></i>
-                    </div>
-                    <h3>Bill Optimization</h3>
-                    <p>We analyze your recurring bills and subscriptions to find better rates and eliminate unnecessary expenses.</p>
+        <main class="content">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Financial Dashboard</h1>
+                <div class="date-filter">
+                    <i class="fas fa-calendar"></i>
+                    <span>Today: October 15, 2023</span>
+                    <i class="fas fa-chevron-down"></i>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <section class="demo">
-        <div class="container">
-            <div class="section-title">
-                <h2>See FinPulse in Action</h2>
-                <p>Our dashboard gives you a complete view of your financial health</p>
-            </div>
-            <div class="dashboard-preview">
-                <div class="dashboard-header">
-                    <h3>Financial Dashboard</h3>
-                    <span>Updated 5 min ago</span>
-                </div>
-                <div class="dashboard-content">
-                    <div class="financial-pulse">
-                        <h3>Your Financial Pulse Score</h3>
-                        <div class="score">723</div>
-                        <p>Good • Increased by 12 points this month</p>
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Total Portfolio Value</h3>
+                        <div class="card-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <h4>Monthly Spending</h4>
-                        <div class="stat-value">$2,458</div>
-                        <p>5% under budget</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Savings Rate</h4>
-                        <div class="stat-value">18%</div>
-                        <p>3% higher than last month</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Projected Savings</h4>
-                        <div class="stat-value">$9,240</div>
-                        <p>In 6 months at current rate</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Subscription Waste</h4>
-                        <div class="stat-value">$34.99</div>
-                        <p>Unused subscriptions detected</p>
+                    <div class="card-value">$184,523.76</div>
+                    <div class="card-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+2.35% ($4,235.89)</span>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
 
-    <section class="cta">
-        <div class="container">
-            <h2>Ready to Improve Your Financial Health?</h2>
-            <p>Join thousands of users who have increased their savings, reduced debt, and achieved their financial goals with FinPulse.</p>
-            <button class="btn btn-primary">Get Started For Free</button>
-        </div>
-    </section>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Stock Holdings</h3>
+                        <div class="card-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">$124,258.43</div>
+                    <div class="card-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+1.89% ($2,305.67)</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Crypto Assets</h3>
+                        <div class="card-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">$42,358.21</div>
+                    <div class="card-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+5.27% ($2,125.43)</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Cash Balance</h3>
+                        <div class="card-icon">
+                            <i class="fas fa-piggy-bank"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">$17,907.12</div>
+                    <div class="card-change negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>-0.12% ($21.55)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Portfolio Performance</h3>
+                        <div class="chart-actions">
+                            <button>1D</button>
+                            <button>1W</button>
+                            <button class="active">1M</button>
+                            <button>3M</button>
+                            <button>1Y</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Asset Allocation</h3>
+                        <div class="chart-actions">
+                            <button class="active">%</button>
+                            <button>$</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="allocationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active">Portfolio</div>
+                <div class="tab">Watchlist</div>
+                <div class="tab">Analytics</div>
+                <div class="tab">Dividends</div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="portfolio-table">
+                    <thead>
+                        <tr>
+                            <th>Asset</th>
+                            <th>Name</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Value</th>
+                            <th>24h Change</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="stock-name">
+                                    <div class="stock-icon">AAPL</div>
+                                </div>
+                            </td>
+                            <td>Apple Inc.</td>
+                            <td>25</td>
+                            <td>$175.43</td>
+                            <td>$4,385.75</td>
+                            <td class="positive">+2.35%</td>
+                            <td>
+                                <button class="trade-type-btn">Trade</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="stock-name">
+                                    <div class="stock-icon">MSFT</div>
+                                </div>
+                            </td>
+                            <td>Microsoft Corp.</td>
+                            <td>18</td>
+                            <td>$330.92</td>
+                            <td>$5,956.56</td>
+                            <td class="positive">+1.67%</td>
+                            <td>
+                                <button class="trade-type-btn">Trade</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="stock-name">
+                                    <div class="stock-icon">TSLA</div>
+                                </div>
+                            </td>
+                            <td>Tesla Inc.</td>
+                            <td>12</td>
+                            <td>$245.78</td>
+                            <td>$2,949.36</td>
+                            <td class="negative">-1.24%</td>
+                            <td>
+                                <button class="trade-type-btn">Trade</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="stock-name">
+                                    <div class="stock-icon">NVDA</div>
+                                </div>
+                            </td>
+                            <td>NVIDIA Corp.</td>
+                            <td>15</td>
+                            <td>$435.70</td>
+                            <td>$6,535.50</td>
+                            <td class="positive">+4.82%</td>
+                            <td>
+                                <button class="trade-type-btn">Trade</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="stock-name">
+                                    <div class="stock-icon">BTC</div>
+                                </div>
+                            </td>
+                            <td>Bitcoin</td>
+                            <td>0.85</td>
+                            <td>$39,842.15</td>
+                            <td>$33,865.82</td>
+                            <td class="positive">+3.57%</td>
+                            <td>
+                                <button class="trade-type-btn">Trade</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="trading-panel">
+                <div class="trade-card">
+                    <h3>Buy/Sell Assets</h3>
+                    <form class="trade-form">
+                        <div class="form-group">
+                            <label for="asset">Select Asset</label>
+                            <select id="asset">
+                                <option value="AAPL">Apple Inc. (AAPL)</option>
+                                <option value="MSFT">Microsoft Corp. (MSFT)</option>
+                                <option value="TSLA">Tesla Inc. (TSLA)</option>
+                                <option value="NVDA">NVIDIA Corp. (NVDA)</option>
+                                <option value="BTC">Bitcoin (BTC)</option>
+                            </select>
+                        </div>
+
+                        <div class="trade-type">
+                            <div class="trade-type-btn active">Buy</div>
+                            <div class="trade-type-btn">Sell</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="amount">Amount ($)</label>
+                            <input type="number" id="amount" placeholder="Enter amount">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="quantity">Quantity</label>
+                            <input type="number" id="quantity" placeholder="Enter quantity">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="price">Current Price</label>
+                            <input type="text" id="price" value="$175.43" readonly>
+                        </div>
+
+                        <button type="submit" class="btn-trade">Execute Trade</button>
+                    </form>
+                </div>
+
+                <div class="trade-card">
+                    <h3>Trade Summary</h3>
+                    <div class="trade-summary">
+                        <div class="summary-item">
+                            <span>Estimated Cost</span>
+                            <span>$4,385.75</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Commission</span>
+                            <span>$0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Total</span>
+                            <span>$4,385.75</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Available Cash</span>
+                            <span>$17,907.12</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Remaining Cash</span>
+                            <span>$13,521.37</span>
+                        </div>
+                    </div>
+
+                    <h3>Price Alert</h3>
+                    <form class="alert-form">
+                        <div class="form-group">
+                            <label for="alert-price">Price Threshold</label>
+                            <input type="number" id="alert-price" placeholder="Set alert price">
+                        </div>
+                        <button type="submit" class="btn-trade">Set Alert</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-column">
-                    <h3>FinPulse</h3>
-                    <ul>
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">Press</a></li>
-                        <li><a href="#">Blog</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>Products</h3>
-                    <ul>
-                        <li><a href="#">Personal</a></li>
-                        <li><a href="#">Business</a></li>
-                        <li><a href="#">Enterprise</a></li>
-                        <li><a href="#">API</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>Resources</h3>
-                    <ul>
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">Community</a></li>
-                        <li><a href="#">Security</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>Connect</h3>
-                    <ul>
-                        <li><a href="#">Twitter</a></li>
-                        <li><a href="#">Facebook</a></li>
-                        <li><a href="#">Instagram</a></li>
-                        <li><a href="#">LinkedIn</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="copyright">
-                <p>&copy; 2023 FinPulse. All rights reserved.</p>
-            </div>
+        <p>© 2023 QuantumWealth. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="#">Terms of Service</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Security</a>
+            <a href="#">Disclosure</a>
+            <a href="#">Support</a>
         </div>
     </footer>
 
     <script>
-        // Simple animation for the financial pulse score
+        // Initialize Charts
         document.addEventListener('DOMContentLoaded', function() {
-            const scoreElement = document.querySelector('.score');
-            let score = 723;
-            let displayedScore = 600;
-            
-            const interval = setInterval(() => {
-                displayedScore += 3;
-                scoreElement.textContent = displayedScore;
-                
-                if (displayedScore >= score) {
-                    clearInterval(interval);
-                    scoreElement.textContent = score;
+            // Performance Chart
+            const perfChart = document.getElementById('performanceChart').getContext('2d');
+            const performanceChart = new Chart(perfChart, {
+                type: 'line',
+                data: {
+                    labels: ['1 Oct', '5 Oct', '10 Oct', '15 Oct', '20 Oct', '25 Oct', '30 Oct'],
+                    datasets: [{
+                        label: 'Portfolio Value',
+                        data: [170000, 172500, 174000, 176200, 178500, 181000, 184500],
+                        borderColor: '#00d4aa',
+                        backgroundColor: 'rgba(0, 212, 170, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
                 }
-            }, 20);
+            });
+
+            // Allocation Chart
+            const allocChart = document.getElementById('allocationChart').getContext('2d');
+            const allocationChart = new Chart(allocChart, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Stocks', 'Cryptocurrencies', 'Cash', 'Bonds', 'Real Estate'],
+                    datasets: [{
+                        data: [67, 23, 8, 1, 1],
+                        backgroundColor: [
+                            '#00d4aa',
+                            '#00b0ff',
+                            '#ffab00',
+                            '#ff4d4d',
+                            '#9c27b0'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+
+            // Tab functionality
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                });
+            });
+
+            // Trade type buttons
+            const tradeTypeBtns = document.querySelectorAll('.trade-type-btn');
+            tradeTypeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tradeTypeBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+
+            // Simulate live data updates
+            setInterval(() => {
+                // Randomly update card values
+                const cards = document.querySelectorAll('.card');
+                cards.forEach(card => {
+                    const valueElement = card.querySelector('.card-value');
+                    const changeElement = card.querySelector('.card-change');
+                    
+                    if (valueElement && changeElement) {
+                        const currentValue = parseFloat(valueElement.textContent.replace('$', '').replace(/,/g, ''));
+                        const randomChange = (Math.random() - 0.5) * 0.5;
+                        const newValue = currentValue * (1 + randomChange);
+                        
+                        valueElement.textContent = '$' + newValue.toLocaleString('en-US', {maximumFractionDigits: 2});
+                        
+                        // Update change indicator
+                        changeElement.classList.remove('positive', 'negative');
+                        if (randomChange >= 0) {
+                            changeElement.classList.add('positive');
+                            changeElement.innerHTML = `<i class="fas fa-arrow-up"></i> <span>+${(randomChange * 100).toFixed(2)}% ($${Math.abs((newValue - currentValue)).toFixed(2)})</span>`;
+                        } else {
+                            changeElement.classList.add('negative');
+                            changeElement.innerHTML = `<i class="fas fa-arrow-down"></i> <span>${(randomChange * 100).toFixed(2)}% ($${Math.abs((newValue - currentValue)).toFixed(2)})</span>`;
+                        }
+                    }
+                });
+            }, 5000);
         });
     </script>
 </body>
