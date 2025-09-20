@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeMapper Pro - Advanced Code Dependency Visualization</title>
+    <title>CodeMapper Pro - Code Dependency Visualization</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         :root {
             --primary: #6366f1;
@@ -78,6 +77,7 @@
             padding: 20px 30px;
             box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
+            flex-wrap: wrap;
         }
         
         .logo {
@@ -112,33 +112,23 @@
         }
         
         /* Theme Toggle */
-        .theme-toggle {
+        .theme-toggle, .help-btn {
             background: var(--bg-secondary);
             border-radius: 50px;
-            padding: 5px;
+            padding: 10px;
             display: flex;
             cursor: pointer;
             position: relative;
-            width: 60px;
-            height: 30px;
-        }
-        
-        .theme-toggle-handle {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: var(--primary);
-            transition: var(--transition);
-            display: flex;
+            width: 50px;
+            height: 50px;
             align-items: center;
             justify-content: center;
+            border: 1px solid var(--border-color);
         }
         
-        [data-theme="dark"] .theme-toggle-handle {
-            left: calc(100% - 27px);
+        .theme-toggle i, .help-btn i {
+            font-size: 1.2rem;
+            color: var(--text-primary);
         }
         
         /* Main Layout */
@@ -260,6 +250,7 @@
             border-radius: 12px;
             background: var(--bg-secondary);
             position: relative;
+            overflow: hidden;
         }
         
         /* Controls */
@@ -433,6 +424,53 @@
             background: var(--secondary);
         }
         
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
         /* Responsive Design */
         @media (max-width: 1200px) {
             .main-content {
@@ -470,6 +508,19 @@
             .view-options {
                 width: 100%;
                 justify-content: center;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .logo-text {
+                font-size: 1.5rem;
+            }
+            
+            .logo-icon {
+                font-size: 2rem;
             }
         }
 
@@ -551,6 +602,53 @@
             border-radius: 3px;
             transition: width 0.3s ease;
         }
+        
+        /* Graph nodes */
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .node:hover {
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+        
+        .node-text {
+            font-size: 12px;
+            font-weight: 600;
+            pointer-events: none;
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+        
+        .link {
+            stroke: #94a3b8;
+            stroke-opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+        
+        .link:hover {
+            stroke: var(--primary);
+            stroke-opacity: 1;
+            stroke-width: 2px;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary);
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -564,17 +662,11 @@
                 </div>
             </div>
             <div class="header-actions">
-                <div class="tooltip">
-                    <i class="fas fa-question-circle" style="font-size: 1.5rem; color: var(--text-secondary);"></i>
-                    <div class="tooltip-text">
-                        <strong>CodeMapper Pro</strong><br>
-                        Visualize, analyze, and optimize your code dependencies in real-time.
-                    </div>
+                <div class="help-btn" id="help-btn">
+                    <i class="fas fa-question-circle"></i>
                 </div>
                 <div class="theme-toggle" id="theme-toggle">
-                    <div class="theme-toggle-handle">
-                        <i class="fas fa-sun" style="font-size: 12px; color: white;"></i>
-                    </div>
+                    <i class="fas fa-sun"></i>
                 </div>
             </div>
         </div>
@@ -649,11 +741,10 @@ const API_URL = 'https://api.example.com';"></textarea>
                     <div class="form-group">
                         <label for="layout">Visualization Layout</label>
                         <select id="layout">
-                            <option value="3d-force">3D Force-Directed</option>
+                            <option value="force">Force-Directed</option>
                             <option value="hierarchical">Hierarchical</option>
                             <option value="circular">Circular</option>
                             <option value="radial">Radial</option>
-                            <option value="organic">Organic</option>
                         </select>
                     </div>
                     
@@ -661,16 +752,16 @@ const API_URL = 'https://api.example.com';"></textarea>
                         <label>Analysis Options</label>
                         <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
                             <label style="display: flex; align-items: center; gap: 8px;">
-                                <input type="checkbox" checked> Detect Code Smells
+                                <input type="checkbox" id="detectSmells" checked> Detect Code Smells
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px;">
-                                <input type="checkbox" checked> Identify Circular Dependencies
+                                <input type="checkbox" id="detectCircular" checked> Identify Circular Dependencies
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px;">
-                                <input type="checkbox" checked> Suggest Optimizations
+                                <input type="checkbox" id="suggestOptimizations" checked> Suggest Optimizations
                             </label>
                             <label style="display: flex; align-items: center; gap: 8px;">
-                                <input type="checkbox"> Security Vulnerability Scan
+                                <input type="checkbox" id="securityScan"> Security Vulnerability Scan
                             </label>
                         </div>
                     </div>
@@ -682,17 +773,17 @@ const API_URL = 'https://api.example.com';"></textarea>
                     <div class="visualization-header">
                         <h2 class="card-title"><i class="fas fa-project-diagram"></i> Dependency Visualization</h2>
                         <div class="view-options">
-                            <button class="btn btn-secondary">
+                            <button class="btn btn-secondary" onclick="zoomIn()">
                                 <i class="fas fa-search-plus"></i>
                             </button>
-                            <button class="btn btn-secondary">
+                            <button class="btn btn-secondary" onclick="zoomOut()">
                                 <i class="fas fa-search-minus"></i>
                             </button>
-                            <button class="btn btn-secondary">
-                                <i class="fas fa-expand"></i>
+                            <button class="btn btn-secondary" onclick="resetZoom()">
+                                <i class="fas fa-sync-alt"></i>
                             </button>
-                            <button class="btn btn-secondary" onclick="toggleViewMode()">
-                                <i class="fas fa-cube"></i> 3D
+                            <button class="btn btn-secondary" onclick="exportGraph()">
+                                <i class="fas fa-download"></i>
                             </button>
                         </div>
                     </div>
@@ -737,9 +828,6 @@ const API_URL = 'https://api.example.com';"></textarea>
                     </button>
                     <button class="btn btn-accent" onclick="loadExample()">
                         <i class="fas fa-magic"></i> Load Example
-                    </button>
-                    <button class="btn btn-secondary" onclick="exportGraph()">
-                        <i class="fas fa-download"></i> Export
                     </button>
                     <button class="btn btn-danger" onclick="resetGraph()">
                         <i class="fas fa-trash"></i> Reset
@@ -792,6 +880,34 @@ const API_URL = 'https://api.example.com';"></textarea>
         </div>
     </div>
 
+    <!-- Help Modal -->
+    <div class="modal" id="help-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">CodeMapper Pro Help</h2>
+                <button class="close-modal" id="close-modal">&times;</button>
+            </div>
+            <div>
+                <h3>How to Use</h3>
+                <p>1. Paste your code into the code input area</p>
+                <p>2. Select the programming language</p>
+                <p>3. Choose your analysis preferences</p>
+                <p>4. Click "Analyze Dependencies" to generate the visualization</p>
+                
+                <h3>Features</h3>
+                <p><strong>Code Analysis:</strong> Detects functions, variables, classes, and imports</p>
+                <p><strong>Dependency Mapping:</strong> Visualizes relationships between code elements</p>
+                <p><strong>Multiple Layouts:</strong> Choose from different visualization layouts</p>
+                <p><strong>Export Options:</strong> Export your dependency graph as PNG or SVG</p>
+                
+                <h3>Tips</h3>
+                <p>• Use the zoom buttons to explore large graphs</p>
+                <p>• Hover over nodes to see connections highlighted</p>
+                <p>• Try different layouts to find the best visualization for your code</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Theme Toggle
         const themeToggle = document.getElementById('theme-toggle');
@@ -808,111 +924,309 @@ const API_URL = 'https://api.example.com';"></textarea>
             localStorage.setItem('theme', newTheme);
         });
         
+        // Help Modal
+        const helpBtn = document.getElementById('help-btn');
+        const helpModal = document.getElementById('help-modal');
+        const closeModal = document.getElementById('close-modal');
+        
+        helpBtn.addEventListener('click', () => {
+            helpModal.style.display = 'flex';
+        });
+        
+        closeModal.addEventListener('click', () => {
+            helpModal.style.display = 'none';
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                helpModal.style.display = 'none';
+            }
+        });
+        
         // Load saved theme
         const savedTheme = localStorage.getItem('theme') || 'dark';
         document.body.setAttribute('data-theme', savedTheme);
         
-        // Initialize Three.js for 3D visualization
-        let scene, camera, renderer, graphNodes = [], graphEdges = [];
+        // D3.js graph variables
+        let svg, graph, simulation;
+        let zoom = d3.zoom();
+        let currentTransform = d3.zoomIdentity;
         
-        function init3DVisualization() {
+        // Initialize D3.js visualization
+        function initD3Visualization() {
             const canvas = document.getElementById('graph-canvas');
-            
-            // Set up scene
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0f172a);
-            
-            // Set up camera
-            camera = new THREE.PerspectiveCamera(75, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000);
-            camera.position.z = 5;
-            
-            // Set up renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
             canvas.innerHTML = '';
-            canvas.appendChild(renderer.domElement);
             
-            // Add some sample nodes for demonstration
-            addSampleNodes();
+            const width = canvas.offsetWidth;
+            const height = canvas.offsetHeight;
             
-            // Add lights
-            const ambientLight = new THREE.AmbientLight(0x404040);
-            scene.add(ambientLight);
+            svg = d3.select('#graph-canvas')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height)
+                .attr('viewBox', [0, 0, width, height])
+                .attr('class', 'graph-svg');
             
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-            directionalLight.position.set(1, 1, 1);
-            scene.add(directionalLight);
-            
-            // Animation loop
-            animate();
-        }
-        
-        function addSampleNodes() {
-            // Sample nodes for demonstration
-            const colors = [0x6366f1, 0x10b981, 0xf59e0b, 0x8b5cf6, 0xef4444];
-            const geometry = new THREE.SphereGeometry(0.2, 32, 32);
-            
-            for (let i = 0; i < 20; i++) {
-                const material = new THREE.MeshPhongMaterial({ 
-                    color: colors[i % colors.length] 
+            // Add zoom functionality
+            zoom = d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on('zoom', (event) => {
+                    currentTransform = event.transform;
+                    svg.selectAll('g.container').attr('transform', event.transform);
                 });
-                const node = new THREE.Mesh(geometry, material);
-                
-                // Random position
-                node.position.x = (Math.random() - 0.5) * 5;
-                node.position.y = (Math.random() - 0.5) * 5;
-                node.position.z = (Math.random() - 0.5) * 5;
-                
-                scene.add(node);
-                graphNodes.push(node);
-            }
             
-            // Sample edges for demonstration
-            for (let i = 0; i < 15; i++) {
-                const node1 = graphNodes[Math.floor(Math.random() * graphNodes.length)];
-                const node2 = graphNodes[Math.floor(Math.random() * graphNodes.length)];
-                
-                if (node1 !== node2) {
-                    const edgeGeometry = new THREE.BufferGeometry().setFromPoints([
-                        new THREE.Vector3(node1.position.x, node1.position.y, node1.position.z),
-                        new THREE.Vector3(node2.position.x, node2.position.y, node2.position.z)
-                    ]);
-                    
-                    const edgeMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true });
-                    const edge = new THREE.Line(edgeGeometry, edgeMaterial);
-                    
-                    scene.add(edge);
-                    graphEdges.push(edge);
-                }
-            }
+            svg.call(zoom);
+            
+            // Create container for all graph elements
+            const container = svg.append('g').attr('class', 'container');
+            
+            // Add initial text
+            container.append('text')
+                .attr('x', width / 2)
+                .attr('y', height / 2)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#94a3b8')
+                .attr('font-size', '18px')
+                .text('Analyzing code...');
         }
         
-        function animate() {
-            requestAnimationFrame(animate);
+        // Create graph visualization
+        function createGraphVisualization(elements, layoutType) {
+            const canvas = document.getElementById('graph-canvas');
+            const width = canvas.offsetWidth;
+            const height = canvas.offsetHeight;
             
-            // Rotate nodes slightly for visual effect
-            graphNodes.forEach(node => {
-                node.rotation.x += 0.005;
-                node.rotation.y += 0.005;
+            // Clear previous graph
+            d3.select('.graph-svg').remove();
+            
+            svg = d3.select('#graph-canvas')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height)
+                .attr('viewBox', [0, 0, width, height])
+                .attr('class', 'graph-svg');
+            
+            // Set up zoom
+            zoom = d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on('zoom', (event) => {
+                    currentTransform = event.transform;
+                    svg.selectAll('g.container').attr('transform', event.transform);
+                });
+            
+            svg.call(zoom);
+            
+            const container = svg.append('g').attr('class', 'container');
+            
+            // Create nodes from elements
+            const nodes = [];
+            const nodeMap = {};
+            
+            // Add functions as nodes
+            elements.functions.forEach((func, i) => {
+                const node = {
+                    id: `function-${i}`,
+                    name: func,
+                    type: 'function',
+                    radius: 20,
+                    color: '#6366f1'
+                };
+                nodes.push(node);
+                nodeMap[func] = node;
             });
             
-            renderer.render(scene, camera);
+            // Add classes as nodes
+            elements.classes.forEach((cls, i) => {
+                const node = {
+                    id: `class-${i}`,
+                    name: cls,
+                    type: 'class',
+                    radius: 25,
+                    color: '#f59e0b'
+                };
+                nodes.push(node);
+                nodeMap[cls] = node;
+            });
+            
+            // Add variables as nodes
+            elements.variables.forEach((variable, i) => {
+                const node = {
+                    id: `variable-${i}`,
+                    name: variable,
+                    type: 'variable',
+                    radius: 15,
+                    color: '#10b981'
+                };
+                nodes.push(node);
+                nodeMap[variable] = node;
+            });
+            
+            // Add imports as nodes
+            elements.imports.forEach((imp, i) => {
+                const node = {
+                    id: `import-${i}`,
+                    name: imp,
+                    type: 'import',
+                    radius: 18,
+                    color: '#8b5cf6'
+                };
+                nodes.push(node);
+                nodeMap[imp] = node;
+            });
+            
+            // Create links from dependencies
+            const links = [];
+            elements.dependencies.forEach(dep => {
+                if (nodeMap[dep.from] && nodeMap[dep.to]) {
+                    links.push({
+                        source: nodeMap[dep.from].id,
+                        target: nodeMap[dep.to].id,
+                        type: dep.type
+                    });
+                }
+            });
+            
+            // Create the force simulation
+            simulation = d3.forceSimulation(nodes)
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(d => d.radius + 10));
+            
+            // Draw links
+            const link = container.append('g')
+                .attr('class', 'links')
+                .selectAll('line')
+                .data(links)
+                .enter()
+                .append('line')
+                .attr('class', 'link')
+                .attr('stroke-width', 2);
+            
+            // Draw nodes
+            const node = container.append('g')
+                .attr('class', 'nodes')
+                .selectAll('circle')
+                .data(nodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'node')
+                .attr('r', d => d.radius)
+                .attr('fill', d => d.color)
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+            
+            // Add node labels
+            const label = container.append('g')
+                .attr('class', 'labels')
+                .selectAll('text')
+                .data(nodes)
+                .enter()
+                .append('text')
+                .attr('class', 'node-text')
+                .attr('fill', '#fff')
+                .attr('font-size', d => d.type === 'class' ? '10px' : '9px')
+                .text(d => d.name);
+            
+            // Update positions on each tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+                
+                node
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+                
+                label
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y);
+            });
+            
+            // Add hover interactions
+            node.on('mouseover', function(event, d) {
+                // Highlight connected nodes
+                link.style('stroke-opacity', l => 
+                    l.source === d || l.target === d ? 1 : 0.2);
+                
+                node.style('opacity', n => 
+                    n === d || links.some(l => l.source === n && l.target === d) || 
+                    links.some(l => l.source === d && l.target === n) ? 1 : 0.2);
+                
+                label.style('opacity', n => 
+                    n === d || links.some(l => l.source === n && l.target === d) || 
+                    links.some(l => l.source === d && l.target === n) ? 1 : 0.2);
+                
+                // Show tooltip
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.innerHTML = `<strong>${d.name}</strong><br>Type: ${d.type}`;
+                tooltip.style.position = 'absolute';
+                tooltip.style.background = 'rgba(0, 0, 0, 0.8)';
+                tooltip.style.color = 'white';
+                tooltip.style.padding = '8px';
+                tooltip.style.borderRadius = '4px';
+                tooltip.style.pointerEvents = 'none';
+                document.body.appendChild(tooltip);
+                
+                // Position tooltip
+                const moveTooltip = (e) => {
+                    tooltip.style.left = (e.pageX + 10) + 'px';
+                    tooltip.style.top = (e.pageY - 28) + 'px';
+                };
+                
+                moveTooltip(event);
+                node.on('mousemove', moveTooltip);
+                
+                // Remove tooltip on mouseout
+                node.on('mouseout', () => {
+                    link.style('stroke-opacity', 0.6);
+                    node.style('opacity', 1);
+                    label.style('opacity', 1);
+                    
+                    if (tooltip) {
+                        document.body.removeChild(tooltip);
+                    }
+                    
+                    node.on('mousemove', null);
+                });
+            });
         }
         
-        // Toggle between 2D and 3D view
-        let view3D = false;
-        function toggleViewMode() {
-            view3D = !view3D;
-            if (view3D) {
-                init3DVisualization();
-                document.querySelector('[onclick="toggleViewMode()"] i').className = 'fas fa-square';
-                document.querySelector('[onclick="toggleViewMode()"]').innerHTML = '<i class="fas fa-square"></i> 2D';
-            } else {
-                const canvas = document.getElementById('graph-canvas');
-                canvas.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100%;"><div style="text-align: center; color: var(--text-secondary);"><i class="fas fa-project-diagram" style="font-size: 3rem; margin-bottom: 15px;"></i><h3>No code analyzed yet</h3><p>Enter your code and click "Analyze Dependencies" to visualize</p></div></div>';
-                document.querySelector('[onclick="toggleViewMode()"] i').className = 'fas fa-cube';
-                document.querySelector('[onclick="toggleViewMode()"]').innerHTML = '<i class="fas fa-cube"></i> 3D';
-            }
+        // Drag functions for nodes
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+        
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+        
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+        
+        // Zoom functions
+        function zoomIn() {
+            svg.transition().call(zoom.scaleBy, 1.5);
+        }
+        
+        function zoomOut() {
+            svg.transition().call(zoom.scaleBy, 0.75);
+        }
+        
+        function resetZoom() {
+            svg.transition().call(zoom.transform, d3.zoomIdentity);
         }
         
         // Toggle fullscreen editor
@@ -921,7 +1235,7 @@ const API_URL = 'https://api.example.com';"></textarea>
             textarea.style.height = textarea.style.height === '500px' ? '250px' : '500px';
         }
         
-        // Enhanced code parsing with AI simulation
+        // Enhanced code parsing
         function parseCode(code, language) {
             const elements = {
                 functions: [],
@@ -933,85 +1247,73 @@ const API_URL = 'https://api.example.com';"></textarea>
                 recommendations: []
             };
             
-            // Simulate AI analysis with more detailed parsing
-            const lines = code.split('\n');
-            
-            // Extract code elements with more sophisticated regex patterns
-            const patterns = {
-                javascript: {
-                    function: /(?:function\s+(\w+)|(?:const|let|var)\s+(\w+)\s*=\s*(?:function|\([^)]*\)\s*=>)|(?:async\s+)?function\s*\*?\s*(\w+))/g,
-                    class: /class\s+(\w+)/g,
-                    variable: /(?:const|let|var)\s+(\w+)\s*=/g,
-                    import: /import\s+.*?from\s+['"]([^'"]+)['"]|require\s*\(['"]([^'"]+)['"]\)/g,
-                    method: /(\w+)\s*\([^)]*\)\s*\{/g
-                }
-            };
-            
-            const langPatterns = patterns[language] || patterns.javascript;
-            
-            // Extract functions
-            let match;
-            while ((match = langPatterns.function.exec(code)) !== null) {
-                const name = match[1] || match[2] || match[3];
-                if (name && !elements.functions.includes(name)) {
-                    elements.functions.push(name);
-                }
-            }
-            
-            // Extract classes
-            langPatterns.class.lastIndex = 0;
-            while ((match = langPatterns.class.exec(code)) !== null) {
-                if (match[1] && !elements.classes.includes(match[1])) {
-                    elements.classes.push(match[1]);
-                }
-            }
-            
-            // Extract variables
-            langPatterns.variable.lastIndex = 0;
-            while ((match = langPatterns.variable.exec(code)) !== null) {
-                const name = match[1];
-                if (name && !elements.variables.includes(name) && 
-                    !elements.functions.includes(name) && 
-                    !elements.classes.includes(name)) {
-                    elements.variables.push(name);
-                }
-            }
-            
-            // Extract imports
-            langPatterns.import.lastIndex = 0;
-            while ((match = langPatterns.import.exec(code)) !== null) {
-                const name = match[1] || match[2];
-                if (name && !elements.imports.includes(name)) {
-                    elements.imports.push(name);
-                }
-            }
-            
-            // Extract methods (for classes)
-            langPatterns.method.lastIndex = 0;
-            while ((match = langPatterns.method.exec(code)) !== null) {
-                const name = match[1];
-                if (name && !elements.functions.includes(name) && 
-                    !elements.variables.includes(name)) {
-                    elements.functions.push(name);
-                }
-            }
-            
-            // Find dependencies with more sophisticated analysis
-            elements.functions.forEach(func => {
-                // Find function calls
-                elements.functions.forEach(otherFunc => {
-                    if (func !== otherFunc && new RegExp(`\\b${otherFunc}\\(`).test(code)) {
-                        elements.dependencies.push({ from: func, to: otherFunc, type: 'function-call' });
+            // JavaScript/TypeScript specific parsing
+            if (language === 'javascript' || language === 'typescript') {
+                // Parse functions
+                const functionRegex = /(?:function\s+(\w+)|(?:const|let|var)\s+(\w+)\s*=\s*(?:function|\([^)]*\)\s*=>)|(?:async\s+)?function\s*\*?\s*(\w+))/g;
+                let match;
+                while ((match = functionRegex.exec(code)) !== null) {
+                    const name = match[1] || match[2] || match[3];
+                    if (name && !elements.functions.includes(name)) {
+                        elements.functions.push(name);
                     }
-                });
+                }
                 
-                // Find variable usage
-                elements.variables.forEach(variable => {
-                    if (new RegExp(`\\b${variable}\\b`).test(code)) {
-                        elements.dependencies.push({ from: func, to: variable, type: 'variable-use' });
+                // Parse classes
+                const classRegex = /class\s+(\w+)/g;
+                while ((match = classRegex.exec(code)) !== null) {
+                    if (match[1] && !elements.classes.includes(match[1])) {
+                        elements.classes.push(match[1]);
                     }
+                }
+                
+                // Parse variables
+                const variableRegex = /(?:const|let|var)\s+(\w+)\s*=/g;
+                while ((match = variableRegex.exec(code)) !== null) {
+                    const name = match[1];
+                    if (name && !elements.variables.includes(name) && 
+                        !elements.functions.includes(name) && 
+                        !elements.classes.includes(name)) {
+                        elements.variables.push(name);
+                    }
+                }
+                
+                // Parse imports
+                const importRegex = /import\s+.*?from\s+['"]([^'"]+)['"]|require\s*\(['"]([^'"]+)['"]\)/g;
+                while ((match = importRegex.exec(code)) !== null) {
+                    const name = match[1] || match[2];
+                    if (name && !elements.imports.includes(name)) {
+                        elements.imports.push(name);
+                    }
+                }
+                
+                // Parse methods (for classes)
+                const methodRegex = /(\w+)\s*\([^)]*\)\s*\{/g;
+                while ((match = methodRegex.exec(code)) !== null) {
+                    const name = match[1];
+                    if (name && !elements.functions.includes(name) && 
+                        !elements.variables.includes(name)) {
+                        elements.functions.push(name);
+                    }
+                }
+                
+                // Find dependencies
+                elements.functions.forEach(func => {
+                    // Find function calls
+                    elements.functions.forEach(otherFunc => {
+                        if (func !== otherFunc && new RegExp(`\\b${otherFunc}\\(`).test(code)) {
+                            elements.dependencies.push({ from: func, to: otherFunc, type: 'function-call' });
+                        }
+                    });
+                    
+                    // Find variable usage
+                    elements.variables.forEach(variable => {
+                        if (new RegExp(`\\b${variable}\\b`).test(code)) {
+                            elements.dependencies.push({ from: func, to: variable, type: 'variable-use' });
+                        }
+                    });
                 });
-            });
+            }
             
             // Simulate AI recommendations
             if (elements.dependencies.length > 20) {
@@ -1030,25 +1332,6 @@ const API_URL = 'https://api.example.com';"></textarea>
             return elements;
         }
         
-        // Simulate AI-powered analysis
-        function simulateAIAnalysis(elements) {
-            // Add some simulated AI insights
-            elements.insights = [
-                "Your code has good modularity overall",
-                "Consider extracting repeated logic into helper functions",
-                "No major security vulnerabilities detected"
-            ];
-            
-            // Add some simulated metrics
-            elements.metrics = {
-                cohesion: Math.random() * 0.5 + 0.5, // 0.5 to 1.0
-                coupling: Math.random() * 0.3, // 0 to 0.3
-                complexity: Math.random() * 40 + 10 // 10 to 50
-            };
-            
-            return elements;
-        }
-        
         // Enhanced analysis function
         function analyzeDependencies() {
             const code = document.getElementById('codeInput').value.trim();
@@ -1061,81 +1344,40 @@ const API_URL = 'https://api.example.com';"></textarea>
             }
             
             // Show loading state
-            const canvas = document.getElementById('graph-canvas');
-            canvas.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100%;"><div style="text-align: center; color: var(--text-secondary);"><i class="fas fa-spinner fa-spin" style="font-size: 3rem; margin-bottom: 15px;"></i><h3>Analyzing code...</h3><p>This may take a few moments</p></div></div>';
+            initD3Visualization();
             
             // Simulate processing time based on analysis depth
             const delay = analysisDepth === 'basic' ? 1000 : 
                          analysisDepth === 'standard' ? 2000 : 
                          analysisDepth === 'deep' ? 3500 : 5000;
             
+            // Update progress bar
+            const progressBar = document.getElementById('analysisProgress');
+            let progress = 30;
+            progressBar.style.width = `${progress}%`;
+            
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                if (progress < 95) {
+                    progressBar.style.width = `${progress}%`;
+                }
+            }, delay / 15);
+            
             setTimeout(() => {
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                
                 // Parse the code
                 const elements = parseCode(code, language);
-                
-                // Apply AI analysis for deeper analysis modes
-                if (analysisDepth === 'deep' || analysisDepth === 'ai') {
-                    simulateAIAnalysis(elements);
-                }
                 
                 // Update statistics
                 updateStats(elements);
                 
                 // Create visualization based on selected layout
                 const layout = document.getElementById('layout').value;
-                createVisualization(elements, layout);
-                
-                // Show AI insights if available
-                if (elements.insights) {
-                    showInsights(elements.insights);
-                }
+                createGraphVisualization(elements, layout);
                 
             }, delay);
-        }
-        
-        // Create enhanced visualization
-        function createVisualization(elements, layoutType) {
-            const canvas = document.getElementById('graph-canvas');
-            
-            if (view3D) {
-                // 3D visualization is already handled by Three.js
-                return;
-            }
-            
-            // Create 2D visualization
-            canvas.innerHTML = '';
-            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svg.setAttribute('width', '100%');
-            svg.setAttribute('height', '100%');
-            canvas.appendChild(svg);
-            
-            // For demonstration, we'll just show a message about the visualization
-            // In a real implementation, this would create the actual graph
-            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            text.setAttribute('x', '50%');
-            text.setAttribute('y', '50%');
-            text.setAttribute('text-anchor', 'middle');
-            text.setAttribute('fill', '#e2e8f0');
-            text.setAttribute('font-size', '18px');
-            text.textContent = `Visualizing ${elements.functions.length + elements.classes.length} nodes with ${elements.dependencies.length} connections using ${layoutType} layout`;
-            svg.appendChild(text);
-            
-            // In a real implementation, we would create the actual graph visualization here
-            // using libraries like D3.js or our own custom SVG rendering
-        }
-        
-        // Show AI insights
-        function showInsights(insights) {
-            // Create a notification or panel to show insights
-            const insightHtml = insights.map(insight => 
-                `<div style="padding: 10px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 10px;">
-                    <i class="fas fa-lightbulb" style="color: var(--accent); margin-right: 10px;"></i>
-                    ${insight}
-                </div>`
-            ).join('');
-            
-            // For demonstration, we'll use an alert
-            alert("AI Insights:\n\n" + insights.join("\n"));
         }
         
         // Update statistics
@@ -1149,7 +1391,12 @@ const API_URL = 'https://api.example.com';"></textarea>
         
         // Export function
         function exportGraph() {
-            const format = prompt("Choose export format: PNG, SVG, or JSON", "PNG");
+            if (!svg) {
+                alert("No graph to export. Please analyze code first.");
+                return;
+            }
+            
+            const format = prompt("Choose export format: PNG or SVG", "PNG");
             if (format) {
                 alert(`Exporting graph as ${format}...`);
                 // In a real implementation, this would actually export the graph
@@ -1167,10 +1414,8 @@ const API_URL = 'https://api.example.com';"></textarea>
                 // Reset stats
                 updateStats({ functions: [], variables: [], classes: [], imports: [], dependencies: [] });
                 
-                // Reset 3D view if active
-                if (view3D) {
-                    toggleViewMode();
-                }
+                // Reset progress bar
+                document.getElementById('analysisProgress').style.width = '30%';
             }
         }
         
@@ -1271,12 +1516,24 @@ const TAX_RATE = 0.08;`;
             // Set default language to JavaScript
             document.getElementById('language').value = 'javascript';
             
-            // Set default layout to 3D Force-Directed
-            document.getElementById('layout').value = '3d-force';
+            // Set default layout to Force-Directed
+            document.getElementById('layout').value = 'force';
             
             // Load the example code
             loadExample();
         };
+        
+        // Make the app responsive to window resize
+        window.addEventListener('resize', function() {
+            if (simulation) {
+                const canvas = document.getElementById('graph-canvas');
+                const width = canvas.offsetWidth;
+                const height = canvas.offsetHeight;
+                
+                simulation.force('center', d3.forceCenter(width / 2, height / 2));
+                simulation.alpha(0.3).restart();
+            }
+        });
     </script>
 </body>
 </html>
