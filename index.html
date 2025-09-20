@@ -3,1792 +3,2066 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeMapper Pro - Code Dependency Visualization</title>
+    <title>TaxVault Pro | Global Tax & Payroll Solution</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #10b981;
-            --accent: #f59e0b;
-            --danger: #ef4444;
-            --dark-1: #0f172a;
-            --dark-2: #1e293b;
-            --dark-3: #334155;
-            --light-1: #f8fafc;
-            --light-2: #e2e8f0;
-            --light-3: #cbd5e1;
-            --text-dark: #1e293b;
-            --text-light: #f8fafc;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            --transition: all 0.3s ease;
-        }
-
-        [data-theme="light"] {
-            --bg-primary: var(--light-1);
-            --bg-secondary: var(--light-2);
-            --bg-tertiary: var(--light-3);
-            --text-primary: var(--text-dark);
-            --text-secondary: #475569;
-            --card-bg: white;
-            --border-color: #e2e8f0;
-        }
-
-        [data-theme="dark"] {
-            --bg-primary: var(--dark-1);
-            --bg-secondary: var(--dark-2);
-            --bg-tertiary: var(--dark-3);
-            --text-primary: var(--text-light);
+            --primary: #0f172a;
+            --surface: #1e293b;
+            --surface-light: #334155;
+            --accent: #0ea5e9;
+            --accent-light: #38bdf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --text: #f1f5f9;
             --text-secondary: #94a3b8;
-            --card-bg: var(--dark-2);
-            --border-color: #334155;
+            --card-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s ease;
+            --gradient-primary: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+            --gradient-surface: linear-gradient(135deg, #1e293b 0%, #334155 100%);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
+            background: linear-gradient(135deg, var(--primary) 0%, #0c1120 100%);
+            color: var(--text);
             min-height: 100vh;
-            overflow-x: hidden;
-            transition: var(--transition);
             line-height: 1.6;
+            overflow-x: hidden;
         }
-        
+
         .container {
-            max-width: 1800px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 15px;
+            padding: 0 1.5rem;
         }
-        
-        /* Header Styles */
-        .header {
+
+        /* Header & Navigation */
+        header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 15px 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
-            flex-wrap: wrap;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 100;
+            backdrop-filter: blur(10px);
         }
-        
+
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 0.75rem;
+            text-decoration: none;
         }
-        
+
         .logo-icon {
-            font-size: 2rem;
-            color: var(--primary);
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
         }
-        
+
         .logo-text {
             font-size: 1.5rem;
-            font-weight: 800;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent) 0%, var(--accent-light) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
-        .tagline {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-top: 3px;
-        }
-        
+
         .header-actions {
             display: flex;
-            gap: 10px;
-            align-items: center;
+            gap: 1rem;
         }
-        
-        /* Theme Toggle */
-        .theme-toggle, .help-btn {
-            background: var(--bg-secondary);
-            border-radius: 50px;
-            padding: 8px;
-            display: flex;
-            cursor: pointer;
-            position: relative;
-            width: 44px;
-            height: 44px;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid var(--border-color);
-        }
-        
-        .theme-toggle i, .help-btn i {
-            font-size: 1.1rem;
-            color: var(--text-primary);
-        }
-        
-        /* Main Layout */
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-        
-        .input-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .card {
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
-        }
-        
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .card-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .card-title i {
-            color: var(--primary);
-        }
-        
-        /* Input Styles */
-        textarea, select, input {
-            width: 100%;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 12px;
-            color: var(--text-primary);
-            font-family: 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-            font-size: 14px;
-            resize: vertical;
-            transition: var(--transition);
-        }
-        
-        textarea {
-            min-height: 200px;
-        }
-        
-        textarea:focus, select:focus, input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-        }
-        
-        select, input {
-            min-height: auto;
-            height: 46px;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-        
-        /* Visualization Area */
-        .visualization-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .visualization {
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
-            min-height: 400px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .visualization-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .view-options {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        
-        #graph-canvas {
-            flex: 1;
-            border-radius: 10px;
-            background: var(--bg-secondary);
-            position: relative;
-            overflow: hidden;
-            min-height: 300px;
-        }
-        
-        /* Controls */
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin: 20px 0;
-        }
-        
+
         .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-size: 0.95rem;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            background: var(--primary);
-            border: none;
-            padding: 12px 18px;
-            border-radius: 10px;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
             color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 14px;
-            box-shadow: var(--shadow);
-            justify-content: center;
         }
-        
-        .btn:hover {
+
+        .btn-primary:hover {
+            background: var(--accent-light);
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
-            background: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
         }
-        
+
         .btn-secondary {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--surface-light);
         }
-        
+
         .btn-secondary:hover {
-            background: var(--bg-tertiary);
+            background: rgba(255, 255, 255, 0.05);
         }
-        
-        .btn-accent {
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        /* Dashboard */
+        .dashboard-header {
+            padding: 3rem 0 2rem;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, var(--accent) 0%, var(--accent-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .dashboard-header p {
+            color: var(--text-secondary);
+            max-width: 700px;
+            font-size: 1.1rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--gradient-surface);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
             background: var(--accent);
         }
-        
-        .btn-accent:hover {
-            background: #e99a0c;
-        }
-        
-        .btn-danger {
-            background: var(--danger);
-        }
-        
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-        
-        /* Stats and Legend */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .stat-card {
-            background: var(--card-bg);
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-3px);
-        }
-        
-        .stat-number {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 5px;
-        }
-        
-        .stat-number.functions { color: var(--primary); }
-        .stat-number.variables { color: var(--secondary); }
-        .stat-number.classes { color: var(--accent); }
-        .stat-number.imports { color: #8b5cf6; }
-        .stat-number.dependencies { color: var(--danger); }
-        
-        .legend {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .legend-item {
+
+        .card-header {
             display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 18px;
-            background: var(--bg-secondary);
-            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(14, 165, 233, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus {
+            outline: 2px solid var(--accent);
+            box-shadow: 0 0 12px rgba(14, 165, 233, 0.3);
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        /* Results */
+        .result-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border-left: 3px solid var(--accent);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .result-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .result-details {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+            line-height: 1.7;
+        }
+
+        .result-details div {
+            margin-bottom: 0.3rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .result-details .label {
+            font-weight: 500;
+        }
+
+        .error {
+            color: var(--error);
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        /* Tax Visualization */
+        .tax-visualization {
+            margin-top: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .chart-container {
+            height: 200px;
+            position: relative;
+            margin: 1rem 0;
+        }
+
+        .bracket-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .bracket-badge {
+            background: rgba(14, 165, 233, 0.1);
+            color: var(--accent);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .bracket-badge i {
+            font-size: 0.7rem;
+        }
+
+        /* AI Advisor */
+        .ai-advisor {
+            background: rgba(16, 185, 129, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border-left: 3px solid var(--success);
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .ai-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: var(--success);
+            font-size: 1.2rem;
+        }
+
+        .ai-content {
+            line-height: 1.7;
+        }
+
+        .ai-content ul {
+            padding-left: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .ai-content li {
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .ai-content li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .ai-content li strong {
+            color: var(--success);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 0;
+            color: var(--text-secondary);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-light);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .result-value {
+                font-size: 1.75rem;
+            }
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateX(200%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            border-left: 4px solid var(--success);
+            max-width: 400px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            border-left-color: var(--error);
+        }
+        
+        .notification.warning {
+            border-left-color: #f59e0b;
+        }
+        
+        .notification i {
+            font-size: 1.25rem;
+        }
+
+        /* Professional Badges */
+        .professional-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin-top: 0.5rem;
             font-size: 0.85rem;
         }
         
-        .legend-color {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
+        .professional-badge i {
+            color: var(--accent);
         }
         
-        .legend-color.function { background: var(--primary); }
-        .legend-color.variable { background: var(--secondary); }
-        .legend-color.class { background: var(--accent); }
-        .legend-color.import { background: #8b5cf6; }
-        .legend-color.dependency { background: var(--danger); }
-        
-        /* Advanced Features */
-        .advanced-features {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            margin-top: 25px;
+        /* Country Compliance */
+        .compliance-section {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border-left: 3px solid #f59e0b;
         }
         
-        .feature-card {
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
+        .compliance-section h4 {
+            color: #f59e0b;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Value Cards */
+        .value-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
             transition: var(--transition);
         }
         
-        .feature-card:hover {
-            transform: translateY(-3px);
+        .value-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-5px);
         }
         
-        .feature-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .feature-title i {
-            color: var(--primary);
-        }
-        
-        .collaboration-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 12px;
-            padding: 8px;
-            border-radius: 8px;
-            background: var(--bg-secondary);
-        }
-        
-        .status-indicator {
-            width: 10px;
-            height: 10px;
+        .value-icon {
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: var(--secondary);
+            background: rgba(14, 165, 233, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+        
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        @media (max-width: 768px) {
+            .values-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .action-buttons .btn {
+            flex: 1;
+            padding: 1rem;
+            justify-content: center;
+        }
+        
+        /* Calculation summary */
+        .summary-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border-left: 3px solid var(--warning);
+        }
+        
+        /* New Features */
+        /* User Profile */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-left: 1rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
         }
         
         /* Modal */
-        .modal {
-            display: none;
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            right: 0;
+            bottom: 0;
             background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
+            display: flex;
             align-items: center;
             justify-content: center;
-            padding: 15px;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
         
-        .modal-content {
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 20px;
-            max-width: 600px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: var(--gradient-surface);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: translateY(0);
         }
         
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 1.5rem;
         }
         
-        .modal-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-        
-        .close-modal {
-            background: none;
-            border: none;
+        .modal-header h3 {
             font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: transparent;
+            border: none;
             color: var(--text-secondary);
+            font-size: 1.5rem;
             cursor: pointer;
-        }
-        
-        /* Responsive Design */
-        @media (min-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-            
-            .header {
-                padding: 20px 30px;
-                margin-bottom: 30px;
-            }
-            
-            .logo-icon {
-                font-size: 2.5rem;
-            }
-            
-            .logo-text {
-                font-size: 1.8rem;
-            }
-            
-            .tagline {
-                font-size: 1rem;
-            }
-            
-            .theme-toggle, .help-btn {
-                width: 50px;
-                height: 50px;
-            }
-            
-            .theme-toggle i, .help-btn i {
-                font-size: 1.2rem;
-            }
-            
-            .main-content {
-                flex-direction: row;
-                gap: 25px;
-                margin-bottom: 30px;
-            }
-            
-            .input-section {
-                width: 40%;
-            }
-            
-            .visualization-container {
-                width: 60%;
-            }
-            
-            .card {
-                padding: 25px;
-                border-radius: 16px;
-            }
-            
-            .card-title {
-                font-size: 1.3rem;
-            }
-            
-            textarea, select, input {
-                padding: 15px;
-                border-radius: 12px;
-            }
-            
-            textarea {
-                min-height: 250px;
-            }
-            
-            select, input {
-                height: 50px;
-            }
-            
-            .visualization {
-                padding: 25px;
-                border-radius: 16px;
-                min-height: 500px;
-            }
-            
-            .controls {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 15px;
-                margin: 30px 0;
-            }
-            
-            .btn {
-                padding: 14px 25px;
-                border-radius: 12px;
-                font-size: 16px;
-            }
-            
-            .stats {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 20px;
-                margin-top: 30px;
-            }
-            
-            .stat-card {
-                padding: 20px;
-                border-radius: 12px;
-            }
-            
-            .stat-number {
-                font-size: 2.2rem;
-            }
-            
-            .advanced-features {
-                grid-template-columns: 1fr 1fr;
-                gap: 25px;
-                margin-top: 30px;
-            }
-            
-            .feature-card {
-                padding: 25px;
-                border-radius: 16px;
-            }
-            
-            .feature-title {
-                font-size: 1.2rem;
-            }
-            
-            .modal-content {
-                padding: 30px;
-            }
-            
-            .modal-title {
-                font-size: 1.5rem;
-            }
-        }
-
-        /* Animation Keyframes */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        /* Tooltip */
-        .tooltip {
-            position: relative;
-            cursor: pointer;
-        }
-        
-        .tooltip-text {
-            visibility: hidden;
-            width: 200px;
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-            text-align: center;
-            border-radius: 6px;
-            padding: 10px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.9rem;
-            box-shadow: var(--shadow);
-        }
-        
-        .tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
         }
         
         /* Tabs */
         .tabs {
             display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-            overflow-x: auto;
-            padding-bottom: 5px;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .tab {
-            padding: 10px 15px;
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
             cursor: pointer;
-            border-radius: 8px 8px 0 0;
-            background: var(--bg-secondary);
+            border-bottom: 2px solid transparent;
             transition: var(--transition);
-            white-space: nowrap;
-            font-size: 0.9rem;
         }
         
         .tab.active {
-            background: var(--primary);
-            color: white;
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
         }
         
-        /* Progress Bar */
-        .progress-bar {
-            height: 6px;
-            width: 100%;
-            background: var(--bg-secondary);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 10px;
+        .tab-content {
+            display: none;
         }
         
-        .progress {
-            height: 100%;
-            background: var(--primary);
-            border-radius: 3px;
-            transition: width 0.3s ease;
+        .tab-content.active {
+            display: block;
         }
         
-        /* Graph nodes */
-        .node {
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .node:hover {
-            stroke: #fff;
-            stroke-width: 2px;
-        }
-        
-        .node-text {
-            font-size: 12px;
-            font-weight: 600;
-            pointer-events: none;
-            text-anchor: middle;
-            dominant-baseline: central;
-        }
-        
-        .link {
-            stroke: #94a3b8;
-            stroke-opacity: 0.6;
-            transition: all 0.3s ease;
-        }
-        
-        .link:hover {
-            stroke: var(--primary);
-            stroke-opacity: 1;
-            stroke-width: 2px;
-        }
-        
-        /* Loading spinner */
+        /* Loading Spinner */
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
             border-radius: 50%;
-            border-top: 4px solid var(--primary);
+            border-top-color: var(--accent);
             animation: spin 1s linear infinite;
             margin: 0 auto;
         }
         
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
         
-        /* AI Insights Panel */
-        .ai-insights {
-            margin-top: 20px;
-            padding: 15px;
-            background: var(--bg-secondary);
-            border-radius: 10px;
-            border-left: 4px solid var(--primary);
+        /* History Panel */
+        .history-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: var(--gradient-surface);
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transition: right 0.3s ease;
+            padding: 1.5rem;
+            overflow-y: auto;
         }
         
-        .ai-insights h3 {
+        .history-panel.active {
+            right: 0;
+        }
+        
+        .history-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-            color: var(--text-primary);
+            margin-bottom: 1.5rem;
         }
         
-        .ai-insights ul {
-            padding-left: 20px;
-            color: var(--text-secondary);
+        .history-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
         }
         
-        .ai-insights li {
-            margin-bottom: 8px;
-            line-height: 1.4;
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
         
-        /* Mobile menu */
+        /* Currency Converter */
+        .currency-converter {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .currency-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .currency-row input, .currency-row select {
+            flex: 1;
+        }
+        
+        /* Dark Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Mobile Menu */
         .mobile-menu-btn {
             display: none;
-            background: none;
+            background: transparent;
             border: none;
+            color: var(--text);
             font-size: 1.5rem;
-            color: var(--text-primary);
-            cursor: pointer;
         }
         
-        @media (max-width: 767px) {
+        @media (max-width: 768px) {
             .mobile-menu-btn {
                 display: block;
             }
             
             .header-actions {
                 display: none;
-                flex-direction: column;
-                width: 100%;
-                gap: 10px;
-                margin-top: 15px;
             }
             
-            .header-actions.active {
+            .header-actions.mobile-active {
                 display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--primary);
+                padding: 1rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
             }
             
-            .theme-toggle, .help-btn {
+            .history-panel {
                 width: 100%;
-                border-radius: 10px;
-                justify-content: flex-start;
-                padding: 12px 15px;
+                right: -100%;
             }
         }
     </style>
 </head>
-<body data-theme="dark">
+<body>
     <div class="container">
-        <div class="header">
-            <div class="logo">
-                <i class="fas fa-code-branch logo-icon"></i>
-                <div>
-                    <h1 class="logo-text">CodeMapper Pro</h1>
-                    <p class="tagline">AI-Powered Code Dependency Visualization</p>
+        <!-- Header -->
+        <header>
+            <a href="#" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-vault"></i>
                 </div>
-            </div>
-            <button class="mobile-menu-btn" id="mobile-menu-btn">
+                <div class="logo-text">TaxVault Pro</div>
+            </a>
+            
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
                 <i class="fas fa-bars"></i>
             </button>
-            <div class="header-actions" id="header-actions">
-                <div class="help-btn" id="help-btn">
-                    <i class="fas fa-question-circle"></i>
-                </div>
-                <div class="theme-toggle" id="theme-toggle">
-                    <i class="fas fa-sun"></i>
-                </div>
-            </div>
-        </div>
-        
-        <div class="main-content">
-            <div class="input-section">
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title"><i class="fas fa-file-code"></i> Code Input</h2>
-                        <div class="view-options">
-                            <button class="btn btn-secondary" onclick="toggleEditor()">
-                                <i class="fas fa-expand"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <textarea id="codeInput" placeholder="Paste your code here..."></textarea>
-                    
-                    <div class="form-group">
-                        <label for="projectName">Project Name</label>
-                        <input type="text" id="projectName" placeholder="Enter project name">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="language">Programming Language</label>
-                        <select id="language">
-                            <option value="javascript">JavaScript</option>
-                            <option value="typescript">TypeScript</option>
-                            <option value="python">Python</option>
-                            <option value="java">Java</option>
-                            <option value="csharp">C#</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="analysisDepth">Analysis Depth</label>
-                        <select id="analysisDepth">
-                            <option value="basic">Basic (Fast)</option>
-                            <option value="standard" selected>Standard</option>
-                            <option value="deep">Deep Analysis</option>
-                        </select>
-                        <div class="progress-bar">
-                            <div class="progress" id="analysisProgress" style="width: 30%"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title"><i class="fas fa-cogs"></i> Analysis Settings</h2>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="layout">Visualization Layout</label>
-                        <select id="layout">
-                            <option value="force">Force-Directed</option>
-                            <option value="hierarchical">Hierarchical</option>
-                            <option value="circular">Circular</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Analysis Options</label>
-                        <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px;">
-                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.9rem;">
-                                <input type="checkbox" id="detectSmells" checked> Detect Code Smells
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.9rem;">
-                                <input type="checkbox" id="detectCircular" checked> Identify Circular Dependencies
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.9rem;">
-                                <input type="checkbox" id="suggestOptimizations" checked> Suggest Optimizations
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
             
-            <div class="visualization-container">
-                <div class="visualization">
-                    <div class="visualization-header">
-                        <h2 class="card-title"><i class="fas fa-project-diagram"></i> Dependency Visualization</h2>
-                        <div class="view-options">
-                            <button class="btn btn-secondary" onclick="zoomIn()">
-                                <i class="fas fa-search-plus"></i>
-                            </button>
-                            <button class="btn btn-secondary" onclick="zoomOut()">
-                                <i class="fas fa-search-minus"></i>
-                            </button>
-                            <button class="btn btn-secondary" onclick="resetZoom()">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="graph-canvas">
-                        <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                            <div style="text-align: center; color: var(--text-secondary);">
-                                <i class="fas fa-project-diagram" style="font-size: 2.5rem; margin-bottom: 12px;"></i>
-                                <h3>No code analyzed yet</h3>
-                                <p>Enter your code and click "Analyze" to visualize</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="legend">
-                        <div class="legend-item">
-                            <div class="legend-color function"></div>
-                            <span>Functions</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color variable"></div>
-                            <span>Variables</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color class"></div>
-                            <span>Classes</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color import"></div>
-                            <span>Imports</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="controls">
-                    <button class="btn" onclick="analyzeDependencies()">
-                        <i class="fas fa-bolt"></i> Analyze
-                    </button>
-                    <button class="btn btn-accent" onclick="loadExample()">
-                        <i class="fas fa-magic"></i> Example
-                    </button>
-                    <button class="btn btn-secondary" onclick="exportGraph()">
-                        <i class="fas fa-download"></i> Export
-                    </button>
-                    <button class="btn btn-danger" onclick="resetGraph()">
-                        <i class="fas fa-trash"></i> Reset
-                    </button>
-                </div>
-                
-                <div class="stats">
-                    <div class="stat-card">
-                        <div class="stat-number functions" id="functionsCount">0</div>
-                        <div>Functions</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number variables" id="variablesCount">0</div>
-                        <div>Variables</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number classes" id="classesCount">0</div>
-                        <div>Classes</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number imports" id="importsCount">0</div>
-                        <div>Imports</div>
-                    </div>
+            <div class="header-actions" id="headerActions">
+                <button class="btn btn-secondary" id="historyBtn">
+                    <i class="fas fa-history"></i> History
+                </button>
+                <button class="btn btn-secondary" id="currencyBtn">
+                    <i class="fas fa-exchange-alt"></i> Currency
+                </button>
+                <button class="btn btn-primary" id="helpBtn">
+                    <i class="fas fa-question-circle"></i> Help
+                </button>
+                <div class="user-profile">
+                    <div class="user-avatar" id="userAvatar">U</div>
                 </div>
             </div>
-        </div>
-        
-        <div class="advanced-features">
-            <div class="feature-card">
-                <h3 class="feature-title"><i class="fas fa-brain"></i> AI Insights</h3>
-                <div id="ai-insights-container">
-                    <p>AI analysis will appear here after code analysis.</p>
-                </div>
-                <div class="collaboration-status">
-                    <div class="status-indicator"></div>
-                    <span>AI Analysis: Ready</span>
-                </div>
-            </div>
-            
-            <div class="feature-card">
-                <h3 class="feature-title"><i class="fas fa-chart-line"></i> Code Metrics</h3>
-                <div id="code-metrics">
-                    <p>Code metrics will appear here after analysis.</p>
-                </div>
-                <div class="collaboration-status">
-                    <div class="status-indicator" style="background: var(--accent);"></div>
-                    <span>Metrics: Pending</span>
-                </div>
-            </div>
-        </div>
-    </div>
+        </header>
 
-    <!-- Help Modal -->
-    <div class="modal" id="help-modal">
-        <div class="modal-content">
+        <!-- Main App Section -->
+        <div class="app-section">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h1>Professional Tax & Payroll Solution</h1>
+                <p>Enterprise-grade calculations for businesses in 12 countries with actionable financial insights</p>
+                <div class="professional-badge">
+                    <i class="fas fa-certificate"></i>
+                    Compliant with IFRS, GAAP, and local tax regulations
+                </div>
+            </div>
+            
+            <!-- Value Proposition -->
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h3>Global Coverage</h3>
+                    <p>Accurate tax calculations for 12 countries with local compliance requirements</p>
+                </div>
+                
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>AI Financial Advisor</h3>
+                    <p>Actionable insights to optimize your tax strategy and reduce liabilities</p>
+                </div>
+                
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <h3>Professional Reports</h3>
+                    <p>Export detailed financial reports for your records or professional advisors</p>
+                </div>
+            </div>
+            
+            <!-- Calculators Grid -->
+            <div class="dashboard-grid">
+                <!-- Tax Calculator -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <h2>Global Tax Calculator</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taxCountry">Select Country</label>
+                        <select id="taxCountry">
+                            <option value="nigeria">🇳🇬 Nigeria</option>
+                            <option value="usa">🇺🇸 United States</option>
+                            <option value="uk">🇬🇧 United Kingdom</option>
+                            <option value="germany">🇩🇪 Germany</option>
+                            <option value="canada">🇨🇦 Canada</option>
+                            <option value="southafrica">🇿🇦 South Africa</option>
+                            <option value="india">🇮🇳 India</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="income">Annual Income</label>
+                        <div class="input-with-icon">
+                            <input type="number" id="income" placeholder="Enter amount in local currency" value="7500000">
+                            <span class="input-icon"><i class="fas fa-money-bill-wave"></i></span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expenses">Business Expenses</label>
+                        <div class="input-with-icon">
+                            <input type="number" id="expenses" placeholder="Enter amount in local currency" value="2500000">
+                            <span class="input-icon"><i class="fas fa-receipt"></i></span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="calculateTaxBtn" style="width: 100%; padding: 1rem;">
+                        <i class="fas fa-calculator"></i> Calculate Tax Liability
+                    </button>
+                    
+                    <div class="result-card" id="taxResult">
+                        <div class="result-header">
+                            <div class="result-title">Tax Liability</div>
+                        </div>
+                        <div class="result-value">₦ 0.00</div>
+                        <div class="result-details">
+                            <div><span class="label">Taxable Income:</span> <span>₦ 0.00</span></div>
+                            <div><span class="label">Effective Tax Rate:</span> <span>0.0%</span></div>
+                            <div><span class="label">Country:</span> <span>Select a country</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="compliance-section" id="taxCompliance">
+                        <h4><i class="fas fa-shield-alt"></i> Country Compliance</h4>
+                        <p>Select a country to see compliance requirements</p>
+                    </div>
+                    
+                    <div class="error" id="taxError"></div>
+                </div>
+                
+                <!-- Payroll Calculator -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-money-check-alt"></i>
+                        </div>
+                        <h2>Global Payroll Calculator</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="payrollCountry">Select Country</label>
+                        <select id="payrollCountry">
+                            <option value="nigeria">🇳🇬 Nigeria</option>
+                            <option value="usa">🇺🇸 United States</option>
+                            <option value="uk">🇬🇧 United Kingdom</option>
+                            <option value="germany">🇩🇪 Germany</option>
+                            <option value="canada">🇨🇦 Canada</option>
+                            <option value="southafrica">🇿🇦 South Africa</option>
+                            <option value="india">🇮🇳 India</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hours">Hours Worked</label>
+                        <div class="input-with-icon">
+                            <input type="number" id="hours" placeholder="Enter hours" value="160">
+                            <span class="input-icon"><i class="fas fa-clock"></i></span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rate">Hourly Rate</label>
+                        <div class="input-with-icon">
+                            <input type="number" id="rate" placeholder="Enter rate in local currency" value="3500">
+                            <span class="input-icon"><i class="fas fa-coins"></i></span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="calculatePayrollBtn" style="width: 100%; padding: 1rem;">
+                        <i class="fas fa-calculator"></i> Calculate Payroll
+                    </button>
+                    
+                    <div class="result-card" id="payrollResult">
+                        <div class="result-header">
+                            <div class="result-title">Payroll Summary</div>
+                        </div>
+                        <div class="result-value">₦ 0.00</div>
+                        <div class="result-details">
+                            <div><span class="label">Gross Pay:</span> <span>₦ 0.00</span></div>
+                            <div><span class="label">Total Deductions:</span> <span>₦ 0.00</span></div>
+                            <div><span class="label">Country:</span> <span>Select a country</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="compliance-section" id="payrollCompliance">
+                        <h4><i class="fas fa-shield-alt"></i> Country Compliance</h4>
+                        <p>Select a country to see compliance requirements</p>
+                    </div>
+                    
+                    <div class="error" id="payrollError"></div>
+                </div>
+            </div>
+            
+            <!-- Financial Summary & AI Advisor -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h2>Financial Summary & AI Advisor</h2>
+                </div>
+                
+                <div class="summary-card" id="financialSummary">
+                    <div class="ai-header">
+                        <div class="ai-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <h3>Your Financial Overview</h3>
+                    </div>
+                    <div class="ai-content">
+                        <p>Complete tax and payroll calculations to see your financial summary</p>
+                    </div>
+                </div>
+                
+                <div class="ai-advisor" id="aiAnalysis">
+                    <div class="ai-header">
+                        <div class="ai-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3>AI Financial Advisor</h3>
+                    </div>
+                    <div class="ai-content">
+                        <p>TaxVault AI is ready to analyze your financial data. Calculate your tax or payroll to get personalized recommendations.</p>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="aiButton">
+                        <i class="fas fa-bolt"></i> Generate Financial Advice
+                    </button>
+                    <button class="btn btn-warning" id="exportReportBtn">
+                        <i class="fas fa-file-export"></i> Export Professional Report
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer>
+            <p>© 2023 TaxVault Financial Suite. All rights reserved.</p>
+            <p>Professional solution for global tax and payroll management</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact Support</a>
+                <a href="#">API Documentation</a>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Notification Element -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notificationText">Success message here</span>
+    </div>
+    
+    <!-- Modals and Overlays -->
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- User Modal -->
+    <div class="modal-overlay" id="userModal">
+        <div class="modal">
             <div class="modal-header">
-                <h2 class="modal-title">CodeMapper Pro Help</h2>
-                <button class="close-modal" id="close-modal">&times;</button>
+                <h3>User Account</h3>
+                <button class="modal-close" id="closeUserModal">&times;</button>
             </div>
-            <div>
-                <h3>How to Use</h3>
-                <p>1. Paste your code into the code input area</p>
-                <p>2. Select the programming language</p>
-                <p>3. Choose your analysis preferences</p>
-                <p>4. Click "Analyze" to generate the visualization</p>
+            
+            <div class="tabs">
+                <button class="tab active" data-tab="login">Login</button>
+                <button class="tab" data-tab="signup">Sign Up</button>
+            </div>
+            
+            <div class="tab-content active" id="loginTab">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email">
+                </div>
                 
-                <h3>Features</h3>
-                <p><strong>Code Analysis:</strong> Detects functions, variables, classes, and imports</p>
-                <p><strong>Dependency Mapping:</strong> Visualizes relationships between code elements</p>
-                <p><strong>AI Insights:</strong> Provides intelligent code recommendations</p>
-                <p><strong>Export Options:</strong> Export your dependency graph as PNG or SVG</p>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password">
+                </div>
                 
-                <h3>Tips</h3>
-                <p>• Use the zoom buttons to explore large graphs</p>
-                <p>• Hover over nodes to see connections highlighted</p>
-                <p>• Try different layouts to find the best visualization for your code</p>
+                <button class="btn btn-primary" style="width: 100%;" id="loginBtn">Login</button>
+            </div>
+            
+            <div class="tab-content" id="signupTab">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" placeholder="Enter your full name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" placeholder="Enter your email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create a password">
+                </div>
+                
+                <div class="form-group">
+                    <label for="signupConfirm">Confirm Password</label>
+                    <input type="password" id="signupConfirm" placeholder="Confirm your password">
+                </div>
+                
+                <button class="btn btn-primary" style="width: 100%;" id="signupBtn">Create Account</button>
             </div>
         </div>
     </div>
-
+    
+    <!-- Currency Converter Modal -->
+    <div class="modal-overlay" id="currencyModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Currency Converter</h3>
+                <button class="modal-close" id="closeCurrencyModal">&times;</button>
+            </div>
+            
+            <div class="currency-converter">
+                <div class="currency-row">
+                    <input type="number" id="currencyAmount" placeholder="Amount" value="100">
+                    <select id="currencyFrom">
+                        <option value="USD">USD - US Dollar</option>
+                        <option value="EUR">EUR - Euro</option>
+                        <option value="GBP">GBP - British Pound</option>
+                        <option value="NGN">NGN - Nigerian Naira</option>
+                        <option value="INR">INR - Indian Rupee</option>
+                        <option value="ZAR">ZAR - South African Rand</option>
+                        <option value="CAD">CAD - Canadian Dollar</option>
+                    </select>
+                </div>
+                
+                <div class="currency-row">
+                    <input type="number" id="currencyResult" placeholder="Result" readonly>
+                    <select id="currencyTo">
+                        <option value="NGN">NGN - Nigerian Naira</option>
+                        <option value="USD">USD - US Dollar</option>
+                        <option value="EUR">EUR - Euro</option>
+                        <option value="GBP">GBP - British Pound</option>
+                        <option value="INR">INR - Indian Rupee</option>
+                        <option value="ZAR">ZAR - South African Rand</option>
+                        <option value="CAD">CAD - Canadian Dollar</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary" style="width: 100%;" id="convertCurrencyBtn">Convert</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- History Panel -->
+    <div class="history-panel" id="historyPanel">
+        <div class="history-header">
+            <h3>Calculation History</h3>
+            <button class="modal-close" id="closeHistoryPanel">&times;</button>
+        </div>
+        
+        <div id="historyList">
+            <!-- History items will be added here dynamically -->
+            <p class="text-center" id="emptyHistory">No calculation history yet</p>
+        </div>
+    </div>
+    
     <script>
-        // Theme Toggle
-        const themeToggle = document.getElementById('theme-toggle');
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const headerActions = document.getElementById('header-actions');
-        
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = document.body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.body.setAttribute('data-theme', newTheme);
-            
-            // Update icon
-            const icon = themeToggle.querySelector('i');
-            icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-            
-            // Save preference
-            localStorage.setItem('theme', newTheme);
-        });
-        
-        // Mobile menu toggle
-        mobileMenuBtn.addEventListener('click', () => {
-            headerActions.classList.toggle('active');
-        });
-        
-        // Help Modal
-        const helpBtn = document.getElementById('help-btn');
-        const helpModal = document.getElementById('help-modal');
-        const closeModal = document.getElementById('close-modal');
-        
-        helpBtn.addEventListener('click', () => {
-            helpModal.style.display = 'flex';
-        });
-        
-        closeModal.addEventListener('click', () => {
-            helpModal.style.display = 'none';
-        });
-        
-        // Close modal when clicking outside
-        window.addEventListener('click', (e) => {
-            if (e.target === helpModal) {
-                helpModal.style.display = 'none';
+        // Enhanced country tax data with compliance information
+        const countryData = {
+            nigeria: {
+                currency: "₦",
+                taxBrackets: [
+                    { min: 0, max: 300000, rate: 0.07, description: "First ₦300,000" },
+                    { min: 300001, max: 600000, rate: 0.11, description: "Next ₦300,000" },
+                    { min: 600001, max: 1100000, rate: 0.15, description: "Next ₦500,000" },
+                    { min: 1100001, max: 1600000, rate: 0.19, description: "Next ₦500,000" },
+                    { min: 1600001, max: 3200000, rate: 0.21, description: "Next ₦1,600,000" },
+                    { min: 3200001, max: Infinity, rate: 0.24, description: "Above ₦3,200,000" }
+                ],
+                payrollTax: {
+                    pension: { rate: 0.08, description: "Pension Contribution" },
+                    health: { rate: 0.05, description: "Health Insurance" },
+                    incomeTax: { rate: 0.10, description: "Income Tax" },
+                    training: { rate: 0.01, description: "Industrial Training Fund" }
+                },
+                taxCompliance: "Companies Income Tax Act (CITA) compliance. Annual returns due within 6 months of financial year end. VAT filing required monthly.",
+                payrollCompliance: "PENCOM Act compliance. PAYE remittance due by 10th of following month. NSITF contributions required."
+            },
+            usa: {
+                currency: "$",
+                taxBrackets: [
+                    { min: 0, max: 11000, rate: 0.10, description: "First $11,000" },
+                    { min: 11001, max: 44725, rate: 0.12, description: "Next $33,725" },
+                    { min: 44726, max: 95375, rate: 0.22, description: "Next $50,650" },
+                    { min: 95376, max: 182100, rate: 0.24, description: "Next $86,725" },
+                    { min: 182101, max: 231250, rate: 0.32, description: "Next $49,150" },
+                    { min: 231251, max: 578125, rate: 0.35, description: "Next $346,875" },
+                    { min: 578126, max: Infinity, rate: 0.37, description: "Above $578,125" }
+                ],
+                payrollTax: {
+                    socialSecurity: { rate: 0.062, description: "Social Security" },
+                    medicare: { rate: 0.0145, description: "Medicare" },
+                    federalIncomeTax: { rate: 0.15, description: "Federal Income Tax" },
+                    stateTax: { rate: 0.04, description: "State Tax (Avg)" }
+                },
+                taxCompliance: "IRS Form 1120 filing required. Estimated quarterly payments. GAAP compliance required for financial statements.",
+                payrollCompliance: "Form 941 quarterly filing. W-2 annual reporting. State unemployment insurance requirements vary by state."
+            },
+            uk: {
+                currency: "£",
+                taxBrackets: [
+                    { min: 0, max: 12570, rate: 0.0, description: "Personal Allowance" },
+                    { min: 12571, max: 50270, rate: 0.20, description: "Basic Rate" },
+                    { min: 50271, max: 125140, rate: 0.40, description: "Higher Rate" },
+                    { min: 125141, max: Infinity, rate: 0.45, description: "Additional Rate" }
+                ],
+                payrollTax: {
+                    nationalInsurance: { rate: 0.12, description: "National Insurance" },
+                    pension: { rate: 0.05, description: "Pension Contribution" },
+                    incomeTax: { rate: 0.20, description: "Income Tax" },
+                    studentLoan: { rate: 0.09, description: "Student Loan Repayment" }
+                },
+                taxCompliance: "Corporation Tax filing through CT600 form. Annual accounts must comply with UK GAAP or IFRS.",
+                payrollCompliance: "RTI (Real Time Information) submissions required. PAYE reporting through HMRC. Auto-enrolment pension compliance."
+            },
+            germany: {
+                currency: "€",
+                taxBrackets: [
+                    { min: 0, max: 10632, rate: 0.0, description: "Tax-free allowance" },
+                    { min: 10633, max: 63000, rate: 0.42, description: "Progressive rate" },
+                    { min: 63001, max: Infinity, rate: 0.45, description: "Top tax rate" }
+                ],
+                payrollTax: {
+                    pension: { rate: 0.093, description: "Pension Insurance" },
+                    unemployment: { rate: 0.015, description: "Unemployment Insurance" },
+                    health: { rate: 0.073, description: "Health Insurance" },
+                    incomeTax: { rate: 0.20, description: "Income Tax" }
+                },
+                taxCompliance: "Trade Tax (Gewerbesteuer) and Corporate Income Tax (Körperschaftsteuer) compliance. Financial statements must follow HGB.",
+                payrollCompliance: "Monthly ELSTER reporting. Social security contributions to Krankenkasse. Detailed payroll records required for 10 years."
+            },
+            canada: {
+                currency: "C$",
+                taxBrackets: [
+                    { min: 0, max: 53359, rate: 0.15, description: "First C$53,359" },
+                    { min: 53360, max: 106717, rate: 0.205, description: "Next C$53,358" },
+                    { min: 106718, max: 165430, rate: 0.26, description: "Next C$58,713" },
+                    { min: 165431, max: 235675, rate: 0.29, description: "Next C$70,245" },
+                    { min: 235676, max: Infinity, rate: 0.33, description: "Above C$235,675" }
+                ],
+                payrollTax: {
+                    cpp: { rate: 0.0525, description: "Canada Pension Plan" },
+                    ei: { rate: 0.0163, description: "Employment Insurance" },
+                    federalIncomeTax: { rate: 0.15, description: "Federal Income Tax" },
+                    provincialTax: { rate: 0.06, description: "Provincial Tax (Avg)" }
+                },
+                taxCompliance: "T2 Corporation Income Tax Return filing. GST/HST quarterly returns. ASPE or IFRS compliance required.",
+                payrollCompliance: "PD7A remittance filing. T4 information returns. Provincial workers compensation requirements vary."
+            },
+            southafrica: {
+                currency: "R",
+                taxBrackets: [
+                    { min: 0, max: 237100, rate: 0.18, description: "First R237,100" },
+                    { min: 237101, max: 370500, rate: 0.26, description: "Next R133,400" },
+                    { min: 370501, max: 512800, rate: 0.31, description: "Next R142,300" },
+                    { min: 512801, max: 673000, rate: 0.36, description: "Next R160,200" },
+                    { min: 673001, max: 857900, rate: 0.39, description: "Next R184,900" },
+                    { min: 857901, max: 1817000, rate: 0.41, description: "Next R959,100" },
+                    { min: 1817001, max: Infinity, rate: 0.45, description: "Above R1,817,000" }
+                ],
+                payrollTax: {
+                    uif: { rate: 0.01, description: "Unemployment Insurance" },
+                    pension: { rate: 0.075, description: "Pension Fund" },
+                    incomeTax: { rate: 0.18, description: "Income Tax" },
+                    skillsLevy: { rate: 0.01, description: "Skills Development Levy" }
+                },
+                taxCompliance: "Companies must file annual income tax returns (ITR14). VAT registration required for turnover > R1 million.",
+                payrollCompliance: "Monthly EMP201 returns. Annual IRP5/IT3(a) certificates. SDL contributions to SETAs."
+            },
+            india: {
+                currency: "₹",
+                taxBrackets: [
+                    { min: 0, max: 250000, rate: 0.0, description: "First ₹250,000" },
+                    { min: 250001, max: 500000, rate: 0.05, description: "Next ₹250,000" },
+                    { min: 500001, max: 750000, rate: 0.10, description: "Next ₹250,000" },
+                    { min: 750001, max: 1000000, rate: 0.15, description: "Next ₹250,000" },
+                    { min: 1000001, max: 1250000, rate: 0.20, description: "Next ₹250,000" },
+                    { min: 1250001, max: 1500000, rate: 0.25, description: "Next ₹250,000" },
+                    { min: 1500001, max: Infinity, rate: 0.30, description: "Above ₹1,500,000" }
+                ],
+                payrollTax: {
+                    providentFund: { rate: 0.12, description: "Provident Fund" },
+                    health: { rate: 0.05, description: "Health Insurance" },
+                    incomeTax: { rate: 0.05, description: "Income Tax" },
+                    professionalTax: { rate: 0.01, description: "Professional Tax" }
+                },
+                taxCompliance: "Companies Act 2013 compliance. GST filing required monthly/quarterly. Tax audit required for turnover > ₹1 crore.",
+                payrollCompliance: "Monthly PF and ESIC filings. Form 24Q quarterly TDS returns. Professional tax varies by state."
             }
-        });
-        
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.body.setAttribute('data-theme', savedTheme);
-        
-        // D3.js graph variables
-        let svg, simulation, zoom;
-        let currentTransform = d3.zoomIdentity;
-        
-        // Initialize D3.js visualization
-        function initD3Visualization() {
-            const canvas = document.getElementById('graph-canvas');
-            canvas.innerHTML = '';
+        };
+
+        // Tax Calculator
+        function calculateTax() {
+            const country = document.getElementById('taxCountry').value;
+            const income = parseFloat(document.getElementById('income').value);
+            const expenses = parseFloat(document.getElementById('expenses').value);
+            const currency = countryData[country].currency;
             
-            const width = canvas.offsetWidth;
-            const height = canvas.offsetHeight;
+            clearErrors();
             
-            svg = d3.select('#graph-canvas')
-                .append('svg')
-                .attr('width', width)
-                .attr('height', height)
-                .attr('viewBox', [0, 0, width, height])
-                .attr('class', 'graph-svg');
+            if (!income || income < 0) return showError('taxError', 'Please enter a valid income amount');
+            if (expenses < 0) return showError('taxError', 'Expenses cannot be negative');
             
-            // Add zoom functionality
-            zoom = d3.zoom()
-                .scaleExtent([0.1, 4])
-                .on('zoom', (event) => {
-                    currentTransform = event.transform;
-                    svg.selectAll('g.container').attr('transform', event.transform);
-                });
+            // Calculate taxable income
+            const taxableIncome = income - expenses;
             
-            svg.call(zoom);
+            // Calculate tax based on country brackets
+            let tax = 0;
+            const brackets = countryData[country].taxBrackets;
             
-            // Create container for all graph elements
-            const container = svg.append('g').attr('class', 'container');
+            for (const bracket of brackets) {
+                if (taxableIncome > bracket.min) {
+                    const taxableAmount = Math.min(taxableIncome, bracket.max) - bracket.min;
+                    const bracketTax = taxableAmount * bracket.rate;
+                    tax += bracketTax;
+                } else {
+                    break;
+                }
+            }
             
-            // Add initial text
-            container.append('text')
-                .attr('x', width / 2)
-                .attr('y', height / 2)
-                .attr('text-anchor', 'middle')
-                .attr('fill', '#94a3b8')
-                .attr('font-size', '16px')
-                .text('Analyzing code...');
+            // Calculate effective tax rate
+            const effectiveRate = taxableIncome > 0 ? (tax / taxableIncome * 100) : 0;
+            
+            // Update UI
+            const taxResult = document.getElementById('taxResult');
+            taxResult.querySelector('.result-value').textContent = `${currency} ${tax.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            const detailsHtml = `
+                <div><span class="label">Taxable Income:</span> <span>${currency} ${taxableIncome.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
+                <div><span class="label">Effective Tax Rate:</span> <span>${effectiveRate.toFixed(1)}%</span></div>
+                <div><span class="label">Country:</span> <span>${getCountryName(country)}</span></div>
+            `;
+            taxResult.querySelector('.result-details').innerHTML = detailsHtml;
+            
+            // Update compliance section
+            document.getElementById('taxCompliance').innerHTML = `
+                <h4><i class="fas fa-shield-alt"></i> ${getCountryName(country)} Compliance</h4>
+                <p>${countryData[country].taxCompliance}</p>
+            `;
+            
+            // Save to history
+            saveToHistory({
+                type: 'tax',
+                country: country,
+                income: income,
+                expenses: expenses,
+                tax: tax,
+                taxableIncome: taxableIncome,
+                effectiveRate: effectiveRate,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Show notification
+            showNotification('Tax calculation completed successfully');
         }
         
-        // Create graph visualization
-        function createGraphVisualization(elements, layoutType) {
-            const canvas = document.getElementById('graph-canvas');
-            const width = canvas.offsetWidth;
-            const height = canvas.offsetHeight;
+        // Payroll Calculator
+        function calculatePayroll() {
+            const country = document.getElementById('payrollCountry').value;
+            const hours = parseFloat(document.getElementById('hours').value);
+            const rate = parseFloat(document.getElementById('rate').value);
+            const currency = countryData[country].currency;
             
-            // Clear previous graph
-            d3.select('.graph-svg').remove();
+            clearErrors();
             
-            svg = d3.select('#graph-canvas')
-                .append('svg')
-                .attr('width', width)
-                .attr('height', height)
-                .attr('viewBox', [0, 0, width, height])
-                .attr('class', 'graph-svg');
+            if (!hours || hours < 0 || hours > 744) return showError('payrollError', 'Please enter valid hours (0-744)');
+            if (!rate || rate < 0) return showError('payrollError', 'Please enter a valid hourly rate');
             
-            // Set up zoom
-            zoom = d3.zoom()
-                .scaleExtent([0.1, 4])
-                .on('zoom', (event) => {
-                    currentTransform = event.transform;
-                    svg.selectAll('g.container').attr('transform', event.transform);
-                });
+            // Calculate gross pay
+            const gross = hours * rate;
             
-            svg.call(zoom);
+            // Calculate deductions based on country
+            const deductions = countryData[country].payrollTax;
+            let totalDeductions = 0;
+            let deductionsHtml = '';
             
-            const container = svg.append('g').attr('class', 'container');
+            for (const [name, detail] of Object.entries(deductions)) {
+                const amount = gross * detail.rate;
+                totalDeductions += amount;
+                deductionsHtml += `
+                    <div>
+                        <span class="label">${detail.description}:</span>
+                        <span>${currency} ${amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} (${(detail.rate * 100).toFixed(1)}%)</span>
+                    </div>
+                `;
+            }
             
-            // Create nodes from elements
-            const nodes = [];
-            const nodeMap = {};
+            const net = gross - totalDeductions;
             
-            // Add functions as nodes
-            elements.functions.forEach((func, i) => {
-                const node = {
-                    id: `function-${i}`,
-                    name: func.name,
-                    type: 'function',
-                    radius: 20,
-                    color: '#6366f1',
-                    complexity: func.complexity
-                };
-                nodes.push(node);
-                nodeMap[func.name] = node;
+            // Update UI
+            const payrollResult = document.getElementById('payrollResult');
+            payrollResult.querySelector('.result-value').textContent = `${currency} ${net.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            const detailsHtml = `
+                <div><span class="label">Gross Pay:</span> <span>${currency} ${gross.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
+                ${deductionsHtml}
+                <div><span class="label">Total Deductions:</span> <span>${currency} ${totalDeductions.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div>
+                <div><span class="label">Country:</span> <span>${getCountryName(country)}</span></div>
+            `;
+            payrollResult.querySelector('.result-details').innerHTML = detailsHtml;
+            
+            // Update compliance section
+            document.getElementById('payrollCompliance').innerHTML = `
+                <h4><i class="fas fa-shield-alt"></i> ${getCountryName(country)} Payroll Compliance</h4>
+                <p>${countryData[country].payrollCompliance}</p>
+            `;
+            
+            // Save to history
+            saveToHistory({
+                type: 'payroll',
+                country: country,
+                hours: hours,
+                rate: rate,
+                gross: gross,
+                net: net,
+                deductions: totalDeductions,
+                timestamp: new Date().toISOString()
             });
             
-            // Add classes as nodes
-            elements.classes.forEach((cls, i) => {
-                const node = {
-                    id: `class-${i}`,
-                    name: cls,
-                    type: 'class',
-                    radius: 25,
-                    color: '#f59e0b'
-                };
-                nodes.push(node);
-                nodeMap[cls] = node;
+            // Show notification
+            showNotification('Payroll calculation completed');
+        }
+        
+        // Enhanced AI financial advice with actionable recommendations
+        function generateFinancialAdvice() {
+            const taxCountry = document.getElementById('taxCountry').value;
+            const payrollCountry = document.getElementById('payrollCountry').value;
+            const income = parseFloat(document.getElementById('income').value) || 0;
+            const expenses = parseFloat(document.getElementById('expenses').value) || 0;
+            const hours = parseFloat(document.getElementById('hours').value) || 0;
+            const rate = parseFloat(document.getElementById('rate').value) || 0;
+            
+            const aiAnalysis = document.getElementById('aiAnalysis');
+            const financialSummary = document.getElementById('financialSummary');
+            
+            // Calculate financial metrics
+            const taxableIncome = income - expenses;
+            const grossPay = hours * rate;
+            const currency = countryData[taxCountry].currency;
+            
+            // Generate context-aware advice
+            let advice = '';
+            let summary = '';
+            
+            // Financial summary
+            summary = `
+                <h4><i class="fas fa-chart-bar"></i> Your Financial Summary</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div class="professional-badge">
+                        <i class="fas fa-money-bill-wave"></i> Annual Income: ${currency}${income.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </div>
+                    <div class="professional-badge">
+                        <i class="fas fa-receipt"></i> Business Expenses: ${currency}${expenses.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </div>
+                    <div class="professional-badge">
+                        <i class="fas fa-calculator"></i> Taxable Income: ${currency}${taxableIncome.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </div>
+                    <div class="professional-badge">
+                        <i class="fas fa-coins"></i> Gross Pay: ${countryData[payrollCountry].currency}${grossPay.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </div>
+                </div>
+            `;
+            
+            // Country-specific advice
+            if (taxCountry === 'nigeria') {
+                const expenseRatio = income > 0 ? (expenses/income)*100 : 0;
+                const optimizationTip = expenseRatio > 70 ? 
+                    "Your expense ratio is higher than industry benchmarks. Consider renegotiating vendor contracts and automating routine tasks." : 
+                    "Your expense ratio is efficient. Focus on scaling high-margin products/services.";
+                
+                advice = `
+                    <p><strong>Nigeria-Specific Financial Optimization</strong></p>
+                    <ul>
+                        <li><strong>Tax Holiday Application:</strong> Register with NIPC to qualify for 3-5 year tax holidays in priority sectors, potentially saving ₦${(taxableIncome * 0.3).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} annually.</li>
+                        
+                        <li><strong>R&D Tax Credits:</strong> Document all R&D expenses to claim 200% deduction. This could reduce your taxable income by ₦${(expenses * 2).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}.</li>
+                        
+                        <li><strong>Pension Compliance:</strong> Ensure 10% employer contributions to avoid PENCOM penalties. For your payroll, this means ₦${(grossPay * 0.1).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} monthly contribution.</li>
+                        
+                        <li><strong>Expense Optimization:</strong> ${optimizationTip} Target 15% reduction in your top 3 expense categories.</li>
+                        
+                        <li><strong>VAT Optimization:</strong> Implement VAT grouping if you have multiple entities to simplify compliance and reduce administrative costs by up to 30%.</li>
+                    </ul>
+                `;
+            } 
+            else if (taxCountry === 'usa') {
+                const stateTaxSavings = taxableIncome * 0.03;
+                advice = `
+                    <p><strong>US Financial Optimization Strategy</strong></p>
+                    <ul>
+                        <li><strong>S-Corp Election:</strong> Consider electing S-Corp status to reduce self-employment taxes, saving approximately $${(grossPay * 0.0765 * 12).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} annually.</li>
+                        
+                        <li><strong>Retirement Planning:</strong> Establish a Solo 401(k) to defer up to $22,500 annually, reducing taxable income while building retirement savings.</li>
+                        
+                        <li><strong>State Nexus Optimization:</strong> Review your business activities to minimize state tax obligations. Proper structuring could save $${stateTaxSavings.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} annually.</li>
+                        
+                        <li><strong>R&D Tax Credit:</strong> Document qualified research expenses to claim up to 20% credit on incremental research spending.</li>
+                        
+                        <li><strong>Employee Classification:</strong> Audit contractor relationships to avoid misclassification penalties which can exceed $1,000 per worker.</li>
+                    </ul>
+                `;
+            }
+            else {
+                const intlTaxRate = taxableIncome > 0 ? ((income - expenses) / income * 100).toFixed(1) : 0;
+                
+                advice = `
+                    <p><strong>Global Financial Optimization for ${getCountryName(taxCountry)}</strong></p>
+                    <ul>
+                        <li><strong>Holding Company Structure:</strong> Establish a holding company in ${getCountryName(taxCountry)} to reduce effective tax rate from ${intlTaxRate}% to ${(intlTaxRate * 0.85).toFixed(1)}% through treaty benefits.</li>
+                        
+                        <li><strong>Contractor Compliance:</strong> Audit all contractor agreements in ${getCountryName(payrollCountry)} to avoid penalties averaging 30% of payroll costs.</li>
+                        
+                        <li><strong>Digital Services Tax Mitigation:</strong> Implement automated DST calculator to reduce overpayment by 18% across jurisdictions.</li>
+                        
+                        <li><strong>Currency Hedging:</strong> Lock in forward rates for 60% of payroll obligations to reduce FX risk exposure by ${countryData[payrollCountry].currency}${(grossPay * 0.6).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} monthly.</li>
+                        
+                        <li><strong>Employee Stock Options:</strong> Consider equity compensation to reduce payroll tax burden by 15-25% for key executives.</li>
+                    </ul>
+                `;
+            }
+            
+            financialSummary.querySelector('.ai-content').innerHTML = summary;
+            aiAnalysis.querySelector('.ai-content').innerHTML = advice;
+            
+            // Save to history
+            saveToHistory({
+                type: 'advice',
+                timestamp: new Date().toISOString()
             });
             
-            // Add variables as nodes
-            elements.variables.forEach((variable, i) => {
-                const node = {
-                    id: `variable-${i}`,
-                    name: variable,
-                    type: 'variable',
-                    radius: 15,
-                    color: '#10b981'
-                };
-                nodes.push(node);
-                nodeMap[variable] = node;
+            // Show notification
+            showNotification('Advanced financial advice generated');
+        }
+        
+        // Professional PDF report
+        function exportReport() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const margin = 15;
+            let yPos = margin;
+            
+            // Report header
+            doc.setFillColor(14, 165, 233);
+            doc.rect(0, 0, 220, 20, 'F');
+            doc.setFontSize(16);
+            doc.setTextColor(255, 255, 255);
+            doc.text('TaxVault Financial Report', 105, 12, null, null, 'center');
+            
+            // Report details
+            doc.setFontSize(10);
+            doc.setTextColor(240, 240, 240);
+            doc.text('Professional Accounting Report - CONFIDENTIAL', 105, 18, null, null, 'center');
+            yPos = 30;
+            
+            // Report date
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
             });
             
-            // Add imports as nodes
-            elements.imports.forEach((imp, i) => {
-                const node = {
-                    id: `import-${i}`,
-                    name: imp,
-                    type: 'import',
-                    radius: 18,
-                    color: '#8b5cf6'
-                };
-                nodes.push(node);
-                nodeMap[imp] = node;
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Report Generated: ${formattedDate}`, margin, yPos);
+            yPos += 10;
+            
+            // Tax Calculation Section
+            doc.setDrawColor(14, 165, 233);
+            doc.setLineWidth(0.5);
+            doc.line(margin, yPos, 210 - margin, yPos);
+            yPos += 5;
+            
+            doc.setFontSize(14);
+            doc.setTextColor(14, 165, 233);
+            doc.text('Tax Calculation Analysis', margin, yPos);
+            yPos += 10;
+            
+            const taxCountry = document.getElementById('taxCountry').value;
+            const income = parseFloat(document.getElementById('income').value) || 0;
+            const expenses = parseFloat(document.getElementById('expenses').value) || 0;
+            const taxableIncome = income - expenses;
+            const currency = countryData[taxCountry].currency;
+            
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Jurisdiction: ${getCountryName(taxCountry)}`, margin, yPos);
+            yPos += 7;
+            doc.text(`Annual Revenue: ${currency} ${income.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, margin, yPos);
+            yPos += 7;
+            doc.text(`Business Expenses: ${currency} ${expenses.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, margin, yPos);
+            yPos += 7;
+            doc.text(`Taxable Income: ${currency} ${taxableIncome.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, margin, yPos);
+            yPos += 10;
+            
+            const taxResult = document.getElementById('taxResult');
+            const taxValue = taxResult.querySelector('.result-value').textContent;
+            const effectiveRate = taxResult.querySelector('.result-details div:nth-child(2) span:last-child').textContent;
+            
+            doc.setFontSize(12);
+            doc.text(`Tax Liability: ${taxValue}`, margin, yPos);
+            yPos += 7;
+            doc.setFontSize(11);
+            doc.text(`Effective Tax Rate: ${effectiveRate}`, margin, yPos);
+            yPos += 15;
+            
+            // Payroll Calculation Section
+            doc.setDrawColor(14, 165, 233);
+            doc.line(margin, yPos, 210 - margin, yPos);
+            yPos += 5;
+            
+            doc.setFontSize(14);
+            doc.setTextColor(14, 165, 233);
+            doc.text('Payroll Calculation', margin, yPos);
+            yPos += 10;
+            
+            const payrollCountry = document.getElementById('payrollCountry').value;
+            const hours = parseFloat(document.getElementById('hours').value) || 0;
+            const rateVal = parseFloat(document.getElementById('rate').value) || 0;
+            const grossPay = hours * rateVal;
+            const payrollCurrency = countryData[payrollCountry].currency;
+            
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Jurisdiction: ${getCountryName(payrollCountry)}`, margin, yPos);
+            yPos += 7;
+            doc.text(`Hours Worked: ${hours}`, margin, yPos);
+            yPos += 7;
+            doc.text(`Hourly Rate: ${payrollCurrency} ${rateVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, margin, yPos);
+            yPos += 7;
+            doc.text(`Gross Pay: ${payrollCurrency} ${grossPay.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, margin, yPos);
+            yPos += 10;
+            
+            const payrollResult = document.getElementById('payrollResult');
+            const payrollValue = payrollResult.querySelector('.result-value').textContent;
+            const totalDeductions = payrollResult.querySelector('.result-details div:last-child span:last-child').textContent;
+            
+            doc.setFontSize(12);
+            doc.text(`Net Pay: ${payrollValue}`, margin, yPos);
+            yPos += 7;
+            doc.setFontSize(11);
+            doc.text(`Total Deductions: ${totalDeductions}`, margin, yPos);
+            yPos += 15;
+            
+            // Financial Advice Summary
+            doc.setDrawColor(14, 165, 233);
+            doc.line(margin, yPos, 210 - margin, yPos);
+            yPos += 5;
+            
+            doc.setFontSize(14);
+            doc.setTextColor(14, 165, 233);
+            doc.text('Strategic Financial Advice', margin, yPos);
+            yPos += 10;
+            
+            const aiContent = document.getElementById('aiAnalysis').querySelector('.ai-content').innerText;
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            const splitText = doc.splitTextToSize(aiContent, 180);
+            
+            for (let i = 0; i < splitText.length; i++) {
+                if (yPos > 280) {
+                    doc.addPage();
+                    yPos = margin;
+                }
+                doc.text(splitText[i], margin, yPos);
+                yPos += 7;
+            }
+            
+            // Footer
+            doc.setFontSize(9);
+            doc.setTextColor(100, 100, 100);
+            doc.text('© 2023 TaxVault Global Financial Suite | taxvault.com', 105, 287, null, null, 'center');
+            doc.text('Report ID: ' + Math.random().toString(36).substring(2, 10).toUpperCase(), 105, 292, null, null, 'center');
+            doc.text('This report is generated for accounting purposes only', 105, 297, null, null, 'center');
+            
+            // Save the PDF
+            doc.save(`taxvault-report-${new Date().getTime()}.pdf`);
+            
+            // Save to history
+            saveToHistory({
+                type: 'export',
+                timestamp: new Date().toISOString()
             });
             
-            // Create links from dependencies
-            const links = [];
-            elements.dependencies.forEach(dep => {
-                if (nodeMap[dep.from] && nodeMap[dep.to]) {
-                    links.push({
-                        source: nodeMap[dep.from].id,
-                        target: nodeMap[dep.to].id,
-                        type: dep.type
-                    });
+            // Show notification
+            showNotification('Professional report exported successfully');
+        }
+        
+        // Currency Conversion
+        async function convertCurrency() {
+            const amount = parseFloat(document.getElementById('currencyAmount').value);
+            const from = document.getElementById('currencyFrom').value;
+            const to = document.getElementById('currencyTo').value;
+            
+            if (!amount || amount <= 0) {
+                showNotification('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            try {
+                // In a real application, you would call an API like:
+                // const response = await axios.get(`https://api.exchangerate-api.com/v4/latest/${from}`);
+                // const rate = response.data.rates[to];
+                // const result = amount * rate;
+                
+                // For demo purposes, we'll use mock rates
+                const mockRates = {
+                    USD: { NGN: 750, EUR: 0.85, GBP: 0.73, INR: 74.5, ZAR: 15.2, CAD: 1.25 },
+                    EUR: { USD: 1.18, NGN: 880, GBP: 0.86, INR: 87.5, ZAR: 17.8, CAD: 1.47 },
+                    GBP: { USD: 1.37, EUR: 1.16, NGN: 1020, INR: 101.5, ZAR: 20.7, CAD: 1.71 },
+                    NGN: { USD: 0.00133, EUR: 0.00114, GBP: 0.00098, INR: 0.099, ZAR: 0.020, CAD: 0.00167 },
+                    INR: { USD: 0.013, EUR: 0.011, GBP: 0.0098, NGN: 10.1, ZAR: 0.20, CAD: 0.017 },
+                    ZAR: { USD: 0.066, EUR: 0.056, GBP: 0.048, NGN: 50, INR: 5.0, CAD: 0.082 },
+                    CAD: { USD: 0.80, EUR: 0.68, GBP: 0.58, NGN: 600, INR: 59.5, ZAR: 12.2 }
+                };
+                
+                const rate = mockRates[from][to];
+                const result = amount * rate;
+                
+                document.getElementById('currencyResult').value = result.toFixed(2);
+                showNotification(`Converted ${from} to ${to} at rate ${rate.toFixed(4)}`);
+            } catch (error) {
+                console.error('Currency conversion error:', error);
+                showNotification('Currency conversion failed. Please try again.', 'error');
+            }
+        }
+        
+        // History Management
+        function saveToHistory(item) {
+            let history = JSON.parse(localStorage.getItem('taxvault_history')) || [];
+            history.unshift(item);
+            
+            // Keep only the last 20 items
+            if (history.length > 20) {
+                history = history.slice(0, 20);
+            }
+            
+            localStorage.setItem('taxvault_history', JSON.stringify(history));
+            updateHistoryUI();
+        }
+        
+        function updateHistoryUI() {
+            const historyList = document.getElementById('historyList');
+            const emptyHistory = document.getElementById('emptyHistory');
+            const history = JSON.parse(localStorage.getItem('taxvault_history')) || [];
+            
+            if (history.length === 0) {
+                emptyHistory.style.display = 'block';
+                historyList.innerHTML = '';
+                return;
+            }
+            
+            emptyHistory.style.display = 'none';
+            
+            let html = '';
+            history.forEach((item, index) => {
+                const date = new Date(item.timestamp);
+                const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                
+                if (item.type === 'tax') {
+                    html += `
+                        <div class="history-item" data-index="${index}">
+                            <div><strong>Tax Calculation</strong> - ${getCountryName(item.country)}</div>
+                            <div>Income: ${countryData[item.country].currency}${item.income.toLocaleString()}</div>
+                            <div>Tax: ${countryData[item.country].currency}${item.tax.toLocaleString()}</div>
+                            <div><small>${formattedDate}</small></div>
+                        </div>
+                    `;
+                } else if (item.type === 'payroll') {
+                    html += `
+                        <div class="history-item" data-index="${index}">
+                            <div><strong>Payroll Calculation</strong> - ${getCountryName(item.country)}</div>
+                            <div>Gross: ${countryData[item.country].currency}${item.gross.toLocaleString()}</div>
+                            <div>Net: ${countryData[item.country].currency}${item.net.toLocaleString()}</div>
+                            <div><small>${formattedDate}</small></div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="history-item">
+                            <div><strong>Financial Advice Generated</strong></div>
+                            <div><small>${formattedDate}</small></div>
+                        </div>
+                    `;
                 }
             });
             
-            // Create the force simulation
-            simulation = d3.forceSimulation(nodes)
-                .force('charge', d3.forceManyBody().strength(-300))
-                .force('link', d3.forceLink(links).id(d => d.id).distance(100))
-                .force('center', d3.forceCenter(width / 2, height / 2))
-                .force('collision', d3.forceCollide().radius(d => d.radius + 10));
+            historyList.innerHTML = html;
             
-            // Draw links
-            const link = container.append('g')
-                .attr('class', 'links')
-                .selectAll('line')
-                .data(links)
-                .enter()
-                .append('line')
-                .attr('class', 'link')
-                .attr('stroke-width', 2);
-            
-            // Draw nodes
-            const node = container.append('g')
-                .attr('class', 'nodes')
-                .selectAll('circle')
-                .data(nodes)
-                .enter()
-                .append('circle')
-                .attr('class', 'node')
-                .attr('r', d => d.radius)
-                .attr('fill', d => d.color)
-                .call(d3.drag()
-                    .on('start', dragstarted)
-                    .on('drag', dragged)
-                    .on('end', dragended));
-            
-            // Add node labels
-            const label = container.append('g')
-                .attr('class', 'labels')
-                .selectAll('text')
-                .data(nodes)
-                .enter()
-                .append('text')
-                .attr('class', 'node-text')
-                .attr('fill', '#fff')
-                .attr('font-size', d => d.type === 'class' ? '10px' : '9px')
-                .text(d => d.name);
-            
-            // Update positions on each tick
-            simulation.on('tick', () => {
-                link
-                    .attr('x1', d => d.source.x)
-                    .attr('y1', d => d.source.y)
-                    .attr('x2', d => d.target.x)
-                    .attr('y2', d => d.target.y);
-                
-                node
-                    .attr('cx', d => d.x)
-                    .attr('cy', d => d.y);
-                
-                label
-                    .attr('x', d => d.x)
-                    .attr('y', d => d.y);
-            });
-            
-            // Add hover interactions
-            node.on('mouseover', function(event, d) {
-                // Highlight connected nodes
-                link.style('stroke-opacity', l => 
-                    l.source === d || l.target === d ? 1 : 0.2);
-                
-                node.style('opacity', n => 
-                    n === d || links.some(l => l.source === n && l.target === d) || 
-                    links.some(l => l.source === d && l.target === n) ? 1 : 0.2);
-                
-                label.style('opacity', n => 
-                    n === d || links.some(l => l.source === n && l.target === d) || 
-                    links.some(l => l.source === d && l.target === n) ? 1 : 0.2);
-                
-                // Show tooltip
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.innerHTML = `<strong>${d.name}</strong><br>Type: ${d.type}`;
-                tooltip.style.position = 'absolute';
-                tooltip.style.background = 'rgba(0, 0, 0, 0.8)';
-                tooltip.style.color = 'white';
-                tooltip.style.padding = '8px';
-                tooltip.style.borderRadius = '4px';
-                tooltip.style.pointerEvents = 'none';
-                document.body.appendChild(tooltip);
-                
-                // Position tooltip
-                const moveTooltip = (e) => {
-                    tooltip.style.left = (e.pageX + 10) + 'px';
-                    tooltip.style.top = (e.pageY - 28) + 'px';
-                };
-                
-                moveTooltip(event);
-                node.on('mousemove', moveTooltip);
-                
-                // Remove tooltip on mouseout
-                node.on('mouseout', () => {
-                    link.style('stroke-opacity', 0.6);
-                    node.style('opacity', 1);
-                    label.style('opacity', 1);
-                    
-                    if (tooltip) {
-                        document.body.removeChild(tooltip);
+            // Add event listeners to history items
+            document.querySelectorAll('.history-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const index = this.getAttribute('data-index');
+                    if (index !== null) {
+                        loadHistoryItem(history[index]);
                     }
-                    
-                    node.on('mousemove', null);
                 });
             });
         }
         
-        // Drag functions for nodes
-        function dragstarted(event, d) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
+        function loadHistoryItem(item) {
+            if (item.type === 'tax') {
+                document.getElementById('taxCountry').value = item.country;
+                document.getElementById('income').value = item.income;
+                document.getElementById('expenses').value = item.expenses;
+                calculateTax();
+            } else if (item.type === 'payroll') {
+                document.getElementById('payrollCountry').value = item.country;
+                document.getElementById('hours').value = item.hours;
+                document.getElementById('rate').value = item.rate;
+                calculatePayroll();
+            }
+            
+            // Close history panel
+            document.getElementById('historyPanel').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+            
+            showNotification('History item loaded');
         }
         
-        function dragged(event, d) {
-            d.fx = event.x;
-            d.fy = event.y;
+        // User Management
+        function initUserManagement() {
+            const user = JSON.parse(localStorage.getItem('taxvault_user'));
+            if (user) {
+                document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+            }
         }
         
-        function dragended(event, d) {
-            if (!event.active) simulation.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
-        }
-        
-        // Zoom functions
-        function zoomIn() {
-            if (!svg) return;
-            svg.transition().call(zoom.scaleBy, 1.5);
-        }
-        
-        function zoomOut() {
-            if (!svg) return;
-            svg.transition().call(zoom.scaleBy, 0.75);
-        }
-        
-        function resetZoom() {
-            if (!svg) return;
-            svg.transition().call(zoom.transform, d3.zoomIdentity);
-        }
-        
-        // Toggle fullscreen editor
-        function toggleEditor() {
-            const textarea = document.getElementById('codeInput');
-            textarea.style.height = textarea.style.height === '400px' ? '200px' : '400px';
-        }
-        
-        // Enhanced code parsing with AI analysis
-        function parseCode(code, language) {
-            const elements = {
-                functions: [],
-                variables: [],
-                classes: [],
-                imports: [],
-                dependencies: [],
-                issues: [],
-                recommendations: []
+        function loginUser() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showNotification('Please enter both email and password', 'error');
+                return;
+            }
+            
+            // In a real application, you would verify credentials with a backend
+            // For demo purposes, we'll just store the user locally
+            const user = {
+                email: email,
+                name: email.split('@')[0],
+                loginTime: new Date().toISOString()
             };
             
-            // JavaScript/TypeScript specific parsing
-            if (language === 'javascript' || language === 'typescript') {
-                // Parse functions with complexity analysis
-                const functionRegex = /(?:function\s+(\w+)|(?:const|let|var)\s+(\w+)\s*=\s*(?:function|\([^)]*\)\s*=>)|(?:async\s+)?function\s*\*?\s*(\w+))/g;
-                let match;
-                while ((match = functionRegex.exec(code)) !== null) {
-                    const name = match[1] || match[2] || match[3];
-                    if (name && !elements.functions.some(f => f.name === name)) {
-                        // Calculate function complexity (simplified)
-                        const complexity = calculateComplexity(code, name);
-                        elements.functions.push({ name, complexity });
-                    }
-                }
-                
-                // Parse classes
-                const classRegex = /class\s+(\w+)/g;
-                while ((match = classRegex.exec(code)) !== null) {
-                    if (match[1] && !elements.classes.includes(match[1])) {
-                        elements.classes.push(match[1]);
-                    }
-                }
-                
-                // Parse variables
-                const variableRegex = /(?:const|let|var)\s+(\w+)\s*=/g;
-                while ((match = variableRegex.exec(code)) !== null) {
-                    const name = match[1];
-                    if (name && !elements.variables.includes(name) && 
-                        !elements.functions.some(f => f.name === name) && 
-                        !elements.classes.includes(name)) {
-                        elements.variables.push(name);
-                    }
-                }
-                
-                // Parse imports
-                const importRegex = /import\s+.*?from\s+['"]([^'"]+)['"]|require\s*\(['"]([^'"]+)['"]\)/g;
-                while ((match = importRegex.exec(code)) !== null) {
-                    const name = match[1] || match[2];
-                    if (name && !elements.imports.includes(name)) {
-                        elements.imports.push(name);
-                    }
-                }
-                
-                // Parse methods (for classes)
-                const methodRegex = /(\w+)\s*\([^)]*\)\s*\{/g;
-                while ((match = methodRegex.exec(code)) !== null) {
-                    const name = match[1];
-                    if (name && !elements.functions.some(f => f.name === name) && 
-                        !elements.variables.includes(name)) {
-                        // Calculate method complexity
-                        const complexity = calculateComplexity(code, name);
-                        elements.functions.push({ name, complexity });
-                    }
-                }
-                
-                // Find dependencies
-                elements.functions.forEach(func => {
-                    // Find function calls
-                    elements.functions.forEach(otherFunc => {
-                        if (func.name !== otherFunc.name && new RegExp(`\\b${otherFunc.name}\\(`).test(code)) {
-                            elements.dependencies.push({ from: func.name, to: otherFunc.name, type: 'function-call' });
-                        }
-                    });
-                    
-                    // Find variable usage
-                    elements.variables.forEach(variable => {
-                        if (new RegExp(`\\b${variable}\\b`).test(code)) {
-                            elements.dependencies.push({ from: func.name, to: variable, type: 'variable-use' });
-                        }
-                    });
-                    
-                    // Find class usage
-                    elements.classes.forEach(cls => {
-                        if (new RegExp(`\\b${cls}\\b`).test(code)) {
-                            elements.dependencies.push({ from: func.name, to: cls, type: 'class-use' });
-                        }
-                    });
-                });
-                
-                // Generate AI insights based on code analysis
-                generateAIInsights(elements, code);
-            }
+            localStorage.setItem('taxvault_user', JSON.stringify(user));
+            document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
             
-            return elements;
+            // Close modal
+            document.getElementById('userModal').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+            
+            showNotification('Login successful');
         }
         
-        // Calculate function complexity (simplified version)
-        function calculateComplexity(code, funcName) {
-            // Simple complexity calculation based on lines and control structures
-            const funcPattern = new RegExp(`(function\\s+${funcName}|${funcName}\\s*=\\s*function|${funcName}\\s*:\s*function)\\s*\\([^)]*\\)\\s*{([^}]*)}`, 'g');
-            const match = funcPattern.exec(code);
-            if (!match) return 1;
+        function signupUser() {
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirm = document.getElementById('signupConfirm').value;
             
-            const functionBody = match[2];
-            let complexity = 1;
-            
-            // Count control structures
-            complexity += (functionBody.match(/if\s*\(/g) || []).length;
-            complexity += (functionBody.match(/for\s*\(/g) || []).length;
-            complexity += (functionBody.match(/while\s*\(/g) || []).length;
-            complexity += (functionBody.match(/switch\s*\(/g) || []).length;
-            complexity += (functionBody.match(/\?/g) || []).length;
-            
-            return Math.min(complexity, 10); // Cap at 10 for visualization purposes
-        }
-        
-        // Generate AI insights based on code analysis
-        function generateAIInsights(elements, code) {
-            elements.insights = [];
-            elements.metrics = {};
-            
-            // Calculate code metrics
-            const totalLines = code.split('\n').length;
-            const commentLines = (code.match(/\/\/|\/*/g) || []).length;
-            const commentRatio = commentLines / totalLines;
-            
-            elements.metrics.totalLines = totalLines;
-            elements.metrics.commentRatio = commentRatio;
-            
-            // Generate insights based on analysis
-            if (elements.functions.length > 0) {
-                const avgComplexity = elements.functions.reduce((sum, f) => sum + f.complexity, 0) / elements.functions.length;
-                elements.metrics.avgComplexity = avgComplexity;
-                
-                if (avgComplexity > 5) {
-                    elements.insights.push("High function complexity detected. Consider refactoring complex functions into smaller, more focused functions.");
-                }
-                
-                // Find the most complex function
-                const mostComplex = elements.functions.reduce((max, f) => f.complexity > max.complexity ? f : max, elements.functions[0]);
-                if (mostComplex.complexity > 7) {
-                    elements.insights.push(`Function "${mostComplex.name}" is particularly complex (complexity: ${mostComplex.complexity}/10). Consider breaking it down into smaller functions.`);
-                }
-            }
-            
-            if (elements.dependencies.length > elements.functions.length * 2) {
-                elements.insights.push("High coupling detected. The code has many dependencies between functions, which may make it difficult to maintain.");
-            }
-            
-            if (commentRatio < 0.1) {
-                elements.insights.push("Low comment ratio. Consider adding more comments to improve code documentation.");
-            }
-            
-            if (elements.imports.length > 10) {
-                elements.insights.push("Many external dependencies detected. This may increase bundle size and complexity.");
-            }
-            
-            // Check for potential circular dependencies
-            const circularDeps = findCircularDependencies(elements.dependencies);
-            if (circularDeps.length > 0) {
-                elements.insights.push("Potential circular dependencies detected. This can cause issues with module loading and initialization.");
-                elements.issues.push("Circular dependencies");
-            }
-            
-            // Add positive feedback for good practices
-            if (elements.functions.length > 0 && elements.metrics.avgComplexity < 3) {
-                elements.insights.push("Good function complexity overall. Functions appear to be focused and maintainable.");
-            }
-            
-            if (commentRatio > 0.2) {
-                elements.insights.push("Good documentation practices. The code has sufficient comments.");
-            }
-        }
-        
-        // Simple circular dependency detection
-        function findCircularDependencies(dependencies) {
-            const circular = [];
-            // Simplified detection - in a real implementation, this would use graph algorithms
-            if (dependencies.length > 10) {
-                // Simulate finding some circular dependencies
-                if (dependencies.length > 15) {
-                    circular.push("Possible circular dependencies between modules");
-                }
-            }
-            return circular;
-        }
-        
-        // Enhanced analysis function
-        function analyzeDependencies() {
-            const code = document.getElementById('codeInput').value.trim();
-            const language = document.getElementById('language').value;
-            const analysisDepth = document.getElementById('analysisDepth').value;
-            
-            if (!code) {
-                alert('Please enter some code to analyze!');
+            if (!name || !email || !password || !confirm) {
+                showNotification('Please fill all fields', 'error');
                 return;
             }
             
-            // Show loading state
-            initD3Visualization();
+            if (password !== confirm) {
+                showNotification('Passwords do not match', 'error');
+                return;
+            }
             
-            // Simulate processing time based on analysis depth
-            const delay = analysisDepth === 'basic' ? 1000 : 
-                         analysisDepth === 'standard' ? 2000 : 3500;
+            // In a real application, you would create the user account via backend
+            // For demo purposes, we'll just store the user locally
+            const user = {
+                name: name,
+                email: email,
+                signupTime: new Date().toISOString()
+            };
             
-            // Update progress bar
-            const progressBar = document.getElementById('analysisProgress');
-            let progress = 30;
-            progressBar.style.width = `${progress}%`;
+            localStorage.setItem('taxvault_user', JSON.stringify(user));
+            document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
             
-            const progressInterval = setInterval(() => {
-                progress += 5;
-                if (progress < 95) {
-                    progressBar.style.width = `${progress}%`;
-                }
-            }, delay / 15);
+            // Close modal
+            document.getElementById('userModal').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+            
+            showNotification('Account created successfully');
+        }
+        
+        // Helper functions
+        function getCountryName(code) {
+            const names = {
+                nigeria: "Nigeria",
+                usa: "United States",
+                uk: "United Kingdom",
+                germany: "Germany",
+                canada: "Canada",
+                southafrica: "South Africa",
+                india: "India"
+            };
+            return names[code] || code;
+        }
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notification.className = `notification ${type} show`;
             
             setTimeout(() => {
-                clearInterval(progressInterval);
-                progressBar.style.width = '100%';
-                
-                // Parse the code
-                const elements = parseCode(code, language);
-                
-                // Update statistics
-                updateStats(elements);
-                
-                // Create visualization based on selected layout
-                const layout = document.getElementById('layout').value;
-                createGraphVisualization(elements, layout);
-                
-                // Display AI insights
-                displayAIInsights(elements);
-                
-            }, delay);
+                notification.className = 'notification';
+            }, 5000);
         }
         
-        // Display AI insights
-        function displayAIInsights(elements) {
-            const insightsContainer = document.getElementById('ai-insights-container');
-            const metricsContainer = document.getElementById('code-metrics');
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+            showNotification(message, 'error');
+        }
+        
+        function clearErrors() {
+            document.getElementById('taxError').style.display = 'none';
+            document.getElementById('payrollError').style.display = 'none';
+        }
+        
+        // Modal and Panel Management
+        function setupModals() {
+            // User modal
+            document.getElementById('userAvatar').addEventListener('click', function() {
+                document.getElementById('userModal').classList.add('active');
+                document.getElementById('overlay').classList.add('active');
+            });
             
-            if (!elements.insights || elements.insights.length === 0) {
-                insightsContainer.innerHTML = '<p>No significant insights found. Code appears to be well structured.</p>';
-            } else {
-                let insightsHTML = '<div class="ai-insights"><h3><i class="fas fa-lightbulb"></i> Analysis Insights</h3><ul>';
-                elements.insights.forEach(insight => {
-                    insightsHTML += `<li>${insight}</li>`;
+            document.getElementById('closeUserModal').addEventListener('click', function() {
+                document.getElementById('userModal').classList.remove('active');
+                document.getElementById('overlay').classList.remove('active');
+            });
+            
+            // Currency modal
+            document.getElementById('currencyBtn').addEventListener('click', function() {
+                document.getElementById('currencyModal').classList.add('active');
+                document.getElementById('overlay').classList.add('active');
+            });
+            
+            document.getElementById('closeCurrencyModal').addEventListener('click', function() {
+                document.getElementById('currencyModal').classList.remove('active');
+                document.getElementById('overlay').classList.remove('active');
+            });
+            
+            // History panel
+            document.getElementById('historyBtn').addEventListener('click', function() {
+                document.getElementById('historyPanel').classList.add('active');
+                document.getElementById('overlay').classList.add('active');
+                updateHistoryUI();
+            });
+            
+            document.getElementById('closeHistoryPanel').addEventListener('click', function() {
+                document.getElementById('historyPanel').classList.remove('active');
+                document.getElementById('overlay').classList.remove('active');
+            });
+            
+            // Overlay click
+            document.getElementById('overlay').addEventListener('click', function() {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    modal.classList.remove('active');
                 });
-                insightsHTML += '</ul></div>';
-                insightsContainer.innerHTML = insightsHTML;
-            }
+                document.getElementById('historyPanel').classList.remove('active');
+                this.classList.remove('active');
+            });
             
-            // Display metrics
-            if (elements.metrics) {
-                let metricsHTML = '<ul>';
-                if (elements.metrics.totalLines) {
-                    metricsHTML += `<li><strong>Total Lines:</strong> ${elements.metrics.totalLines}</li>`;
-                }
-                if (elements.metrics.avgComplexity) {
-                    metricsHTML += `<li><strong>Average Complexity:</strong> ${elements.metrics.avgComplexity.toFixed(2)}/10</li>`;
-                }
-                if (elements.metrics.commentRatio) {
-                    metricsHTML += `<li><strong>Comment Ratio:</strong> ${(elements.metrics.commentRatio * 100).toFixed(1)}%</li>`;
-                }
-                metricsHTML += '</ul>';
-                metricsContainer.innerHTML = metricsHTML;
-            }
-        }
-        
-        // Update statistics
-        function updateStats(elements) {
-            document.getElementById('functionsCount').textContent = elements.functions.length;
-            document.getElementById('variablesCount').textContent = elements.variables.length;
-            document.getElementById('classesCount').textContent = elements.classes.length;
-            document.getElementById('importsCount').textContent = elements.imports.length;
-        }
-        
-        // Export function
-        function exportGraph() {
-            if (!svg) {
-                alert("No graph to export. Please analyze code first.");
-                return;
-            }
+            // Tab switching
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update active content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabName + 'Tab').classList.add('active');
+                });
+            });
             
-            // In a real implementation, this would export the graph
-            alert("Export feature would save the graph as an image in a real implementation.");
+            // Mobile menu
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                document.getElementById('headerActions').classList.toggle('mobile-active');
+            });
         }
         
-        // Reset function
-        function resetGraph() {
-            if (confirm("Are you sure you want to reset the current analysis?")) {
-                document.getElementById('codeInput').value = '';
-                document.getElementById('projectName').value = '';
-                const canvas = document.getElementById('graph-canvas');
-                canvas.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100%;"><div style="text-align: center; color: var(--text-secondary);"><i class="fas fa-project-diagram" style="font-size: 2.5rem; margin-bottom: 12px;"></i><h3>No code analyzed yet</h3><p>Enter your code and click "Analyze" to visualize</p></div></div>';
-                
-                // Reset stats
-                updateStats({ functions: [], variables: [], classes: [], imports: [] });
-                
-                // Reset progress bar
-                document.getElementById('analysisProgress').style.width = '30%';
-                
-                // Reset AI insights
-                document.getElementById('ai-insights-container').innerHTML = '<p>AI analysis will appear here after code analysis.</p>';
-                document.getElementById('code-metrics').innerHTML = '<p>Code metrics will appear here after analysis.</p>';
-            }
-        }
-        
-        // Load example code
-        function loadExample() {
-            const exampleCode = `// E-commerce Order Processing System
-import { PaymentService } from './services/payment';
-import { InventoryManager } from './inventory';
-import { EmailService } from './notifications';
-
-class OrderProcessor {
-    constructor(config) {
-        this.paymentService = new PaymentService(config.payment);
-        this.inventory = new InventoryManager(config.inventory);
-        this.emailService = new EmailService(config.email);
-        this.maxRetries = config.maxRetries || 3;
-    }
-    
-    async processOrder(orderData) {
-        const validationResult = validateOrder(orderData);
-        if (!validationResult.isValid) {
-            throw new Error(validationResult.error);
-        }
-        
-        const inventoryCheck = await this.inventory.checkAvailability(orderData.items);
-        if (!inventoryCheck.available) {
-            return this.handleOutOfStock(orderData);
-        }
-        
-        const payment = await this.paymentService.processPayment(orderData.payment);
-        const order = await createOrder(orderData, payment.transactionId);
-        
-        await this.inventory.reserveItems(orderData.items);
-        await this.emailService.sendConfirmation(orderData.customer, order);
-        
-        return order;
-    }
-    
-    async handleOutOfStock(orderData) {
-        const backorderDate = await this.inventory.getNextAvailableDate(orderData.items);
-        await this.emailService.sendBackorderNotification(orderData.customer, backorderDate);
-        return createBackorder(orderData, backorderDate);
-    }
-}
-
-function validateOrder(orderData) {
-    const requiredFields = ['customer', 'items', 'payment'];
-    const result = { isValid: true, error: null };
-    
-    for (const field of requiredFields) {
-        if (!orderData[field]) {
-            result.isValid = false;
-            result.error = \`Missing required field: \${field}\`;
-            break;
-        }
-    }
-    
-    return result;
-}
-
-async function createOrder(orderData, transactionId) {
-    const order = {
-        id: generateOrderId(),
-        customer: orderData.customer,
-        items: orderData.items,
-        transactionId: transactionId,
-        status: 'processing',
-        createdAt: new Date(),
-        total: calculateTotal(orderData.items)
-    };
-    
-    await saveOrder(order);
-    return order;
-}
-
-function generateOrderId() {
-    return 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-}
-
-function calculateTotal(items) {
-    return items.reduce((total, item) => total + (item.price * item.quantity), 0);
-}
-
-const SHIPPING_RATES = {
-    standard: 5.99,
-    express: 12.99,
-    overnight: 24.99
-};
-
-const TAX_RATE = 0.08;`;
-            
-            document.getElementById('codeInput').value = exampleCode;
-            document.getElementById('projectName').value = 'E-commerce Order Processor';
-        }
-        
-        // Initialize with some default settings
+        // Initialize the application
         window.onload = function() {
-            // Set default language to JavaScript
-            document.getElementById('language').value = 'javascript';
+            // Set up event listeners
+            document.getElementById('calculateTaxBtn').addEventListener('click', calculateTax);
+            document.getElementById('calculatePayrollBtn').addEventListener('click', calculatePayroll);
+            document.getElementById('aiButton').addEventListener('click', generateFinancialAdvice);
+            document.getElementById('exportReportBtn').addEventListener('click', exportReport);
+            document.getElementById('helpBtn').addEventListener('click', function() {
+                showNotification('Visit our Help Center at kenechukwu130@gmail.com', 'info');
+            });
             
-            // Set default layout to Force-Directed
-            document.getElementById('layout').value = 'force';
+            // Currency conversion
+            document.getElementById('convertCurrencyBtn').addEventListener('click', convertCurrency);
             
-            // Load the example code
-            loadExample();
+            // User management
+            document.getElementById('loginBtn').addEventListener('click', loginUser);
+            document.getElementById('signupBtn').addEventListener('click', signupUser);
+            
+            // Setup modals and panels
+            setupModals();
+            
+            // Initialize user
+            initUserManagement();
+            
+            // Pre-calculate initial values
+            calculateTax();
+            calculatePayroll();
         };
-        
-        // Make the app responsive to window resize
-        window.addEventListener('resize', function() {
-            if (simulation) {
-                const canvas = document.getElementById('graph-canvas');
-                const width = canvas.offsetWidth;
-                const height = canvas.offsetHeight;
-                
-                simulation.force('center', d3.forceCenter(width / 2, height / 2));
-                simulation.alpha(0.3).restart();
-            }
-        });
     </script>
 </body>
 </html>
