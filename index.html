@@ -1119,9 +1119,8 @@
                         <div class="roadmap-item released">
                             <div class="roadmap-icon">🏦</div>
                             <div class="roadmap-title">Bank Integration</div>
-                            <div class="roadmap-status status-released">Released</div>
+                            <div class="roadmap-status status-released">In Development</div>
                             <p class="roadmap-desc">Automatically sync your loan balances with your bank accounts</p>
-                            <button class="btn btn-outline">Learn More</button>
                         </div>
                         
                         <div class="roadmap-item in-development">
@@ -1129,7 +1128,6 @@
                             <div class="roadmap-title">AI Payoff Assistant</div>
                             <div class="roadmap-status status-in-development">In Development</div>
                             <p class="roadmap-desc">Get personalized payoff strategies from our AI assistant</p>
-                            <button class="btn btn-outline">Learn More</button>
                         </div>
                         
                         <div class="roadmap-item coming-soon">
@@ -1137,7 +1135,6 @@
                             <div class="roadmap-title">Advanced Cloud Sync</div>
                             <div class="roadmap-status status-coming-soon">Coming Soon</div>
                             <p class="roadmap-desc">Access your debt plan from any device with secure sync</p>
-                            <button class="btn btn-outline">Learn More</button>
                         </div>
                         
                         <div class="roadmap-item coming-soon">
@@ -1145,7 +1142,6 @@
                             <div class="roadmap-title">Smart Payment Reminders</div>
                             <div class="roadmap-status status-coming-soon">Coming Soon</div>
                             <p class="roadmap-desc">Get notified about upcoming payments and milestones</p>
-                            <button class="btn btn-outline">Learn More</button>
                         </div>
                         
                         <div class="roadmap-item coming-soon">
@@ -1153,7 +1149,6 @@
                             <div class="roadmap-title">Advanced Analytics</div>
                             <div class="roadmap-status status-coming-soon">Coming Soon</div>
                             <p class="roadmap-desc">Deep insights into your spending and debt patterns</p>
-                            <button class="btn btn-outline">Learn More</button>
                         </div>
                         
                         <div class="roadmap-item coming-soon">
@@ -1161,7 +1156,6 @@
                             <div class="roadmap-title">Debt Counseling</div>
                             <div class="roadmap-status status-coming-soon">Coming Soon</div>
                             <p class="roadmap-desc">Connect with certified debt counselors</p>
-                            <button class="btn btn-outline">Learn More</button>
                         </div>
                     </div>
                 </div>
@@ -1398,6 +1392,29 @@
             setupOnlineOfflineListener();
             auth.onAuthStateChanged(handleAuthStateChanged);
             checkForDeferredPrompt();
+            
+            // Initialize app data after a short delay as fallback
+            setTimeout(() => {
+                if (!state.dataLoaded) {
+                    initializeAppData();
+                }
+            }, 3000);
+        }
+        
+        // Initialize app data as fallback
+        function initializeAppData() {
+            if (!state.dataLoaded) {
+                // Force reload from localStorage if Firebase fails
+                loadDataFromLocalStorage();
+                state.dataLoaded = true;
+                showAppContent();
+                renderLoans();
+                renderPaymentHistory();
+                updateDashboard();
+                renderAchievements();
+                updatePayoffStrategy();
+                generateInsights();
+            }
         }
         
         // Setup online/offline listener
@@ -1476,8 +1493,8 @@
             
             // Update user info
             elements.userInfo.style.display = 'flex';
-            elements.userName.textContent = state.userName || state.currentUser.email.split('@')[0];
-            elements.userAvatar.textContent = (state.userName || state.currentUser.email).charAt(0).toUpperCase();
+            elements.userName.textContent = state.userName || (state.currentUser ? state.currentUser.email.split('@')[0] : 'User');
+            elements.userAvatar.textContent = (state.userName || (state.currentUser ? state.currentUser.email : 'U')).charAt(0).toUpperCase();
             
             // Update auth buttons
             elements.signInBtn.style.display = 'none';
@@ -1497,6 +1514,145 @@
             elements.signInBtn.style.display = 'block';
             elements.signUpBtn.style.display = 'block';
             elements.signOutBtn.style.display = 'none';
+        }
+        
+        // Load user data from Firebase
+        function loadUserData() {
+            if (!state.currentUser) return;
+            
+            showLoading(true);
+            
+            // Load user profile from Firestore
+            db.collection('users').doc(state.currentUser.uid).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        state.userName = userData.name || state.currentUser.email.split('@')[0];
+                    } else {
+                        state.userName = state.currentUser.email.split('@')[0];
+                    }
+                    
+                    // Load app data from Firestore
+                    return db.collection('users').doc(state.currentUser.uid).collection('data').doc('appData').get();
+                })
+                .then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        state.loans = data.loans || [];
+                        state.payments = data.payments || [];
+                        state.strategy = data.strategy || 'avalanche';
+                        state.achievements = data.achievements || availableAchievements.map(a => ({...a, earned: false}));
+                        
+                        // Ensure all loans have required properties
+                        state.loans.forEach(loan => {
+                            loan.originalBalance = loan.originalBalance || loan.balance;
+                            loan.totalInterest = loan.totalInterest || 0;
+                            loan.paid = loan.paid || 0;
+                            loan.payments = loan.payments || [];
+                            loan.payoffDate = loan.payoffDate || calculatePayoffDate(loan);
+                        });
+                        
+                        showToast('Data loaded successfully!', 'success');
+                    } else {
+                        // Initialize with default data
+                        state.loans = [];
+                        state.payments = [];
+                        state.strategy = 'avalanche';
+                        state.achievements = availableAchievements.map(a => ({...a, earned: false}));
+                    }
+                    
+                    state.dataLoaded = true;
+                    showAppContent();
+                    renderLoans();
+                    renderPaymentHistory();
+                    updateDashboard();
+                    renderAchievements();
+                    updatePayoffStrategy();
+                    generateInsights();
+                    showLoading(false);
+                })
+                .catch((error) => {
+                    console.error('Error loading data: ', error);
+                    showToast('Error loading data. Using local storage.', 'error');
+                    
+                    // Fallback to localStorage with proper error handling
+                    loadDataFromLocalStorage();
+                    showAppContent();
+                    showLoading(false);
+                });
+        }
+        
+        // Load data from localStorage as fallback
+        function loadDataFromLocalStorage() {
+            try {
+                const savedLoans = localStorage.getItem('debtfreeLoans');
+                const savedPayments = localStorage.getItem('debtfreePayments');
+                const savedStrategy = localStorage.getItem('debtfreeStrategy');
+                const savedAchievements = localStorage.getItem('debtfreeAchievements');
+                
+                state.loans = savedLoans ? JSON.parse(savedLoans) : [];
+                state.payments = savedPayments ? JSON.parse(savedPayments) : [];
+                state.strategy = savedStrategy || 'avalanche';
+                state.achievements = savedAchievements ? JSON.parse(savedAchievements) : availableAchievements.map(a => ({...a, earned: false}));
+                
+                // Ensure all loans have required properties
+                state.loans.forEach(loan => {
+                    loan.originalBalance = loan.originalBalance || loan.balance;
+                    loan.totalInterest = loan.totalInterest || 0;
+                    loan.paid = loan.paid || 0;
+                    loan.payments = loan.payments || [];
+                    loan.payoffDate = loan.payoffDate || calculatePayoffDate(loan);
+                });
+                
+                state.dataLoaded = true;
+            } catch (error) {
+                console.error('Error loading from localStorage:', error);
+                // Reset to empty state if corrupted
+                state.loans = [];
+                state.payments = [];
+                state.strategy = 'avalanche';
+                state.achievements = availableAchievements.map(a => ({...a, earned: false}));
+                state.dataLoaded = true;
+            }
+        }
+        
+        // Save data to Firebase and localStorage
+        function saveData() {
+            try {
+                // Always save to localStorage for offline access
+                localStorage.setItem('debtfreeLoans', JSON.stringify(state.loans));
+                localStorage.setItem('debtfreePayments', JSON.stringify(state.payments));
+                localStorage.setItem('debtfreeStrategy', state.strategy);
+                localStorage.setItem('debtfreeAchievements', JSON.stringify(state.achievements));
+                
+                // Save to Firebase if user is logged in and online
+                if (state.currentUser && state.isOnline) {
+                    syncDataToFirebase();
+                }
+            } catch (error) {
+                console.error('Error saving data:', error);
+                showToast('Error saving data', 'error');
+            }
+        }
+        
+        // Sync data to Firebase
+        function syncDataToFirebase() {
+            if (!state.currentUser) return;
+            
+            db.collection('users').doc(state.currentUser.uid).collection('data').doc('appData')
+                .set({
+                    loans: state.loans,
+                    payments: state.payments,
+                    strategy: state.strategy,
+                    achievements: state.achievements,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    console.log('Data synced to Firebase');
+                })
+                .catch((error) => {
+                    console.error('Error syncing data: ', error);
+                });
         }
         
         // Setup auth listeners
@@ -1624,112 +1780,6 @@
             // Clear messages
             elements.signInMessage.style.display = 'none';
             elements.signUpMessage.style.display = 'none';
-        }
-        
-        // Load user data from Firebase
-        function loadUserData() {
-            if (!state.currentUser) return;
-            
-            showLoading(true);
-            
-            // Load user profile from Firestore
-            db.collection('users').doc(state.currentUser.uid).get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        const userData = doc.data();
-                        state.userName = userData.name || state.currentUser.email.split('@')[0];
-                    } else {
-                        state.userName = state.currentUser.email.split('@')[0];
-                    }
-                    
-                    // Load app data from Firestore
-                    return db.collection('users').doc(state.currentUser.uid).collection('data').doc('appData').get();
-                })
-                .then((doc) => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        state.loans = data.loans || [];
-                        state.payments = data.payments || [];
-                        state.strategy = data.strategy || 'avalanche';
-                        state.achievements = data.achievements || availableAchievements.map(a => ({...a, earned: false}));
-                        
-                        showToast('Data loaded successfully!', 'success');
-                    } else {
-                        // Initialize with default data
-                        state.loans = [];
-                        state.payments = [];
-                        state.strategy = 'avalanche';
-                        state.achievements = availableAchievements.map(a => ({...a, earned: false}));
-                    }
-                    
-                    state.dataLoaded = true;
-                    showAppContent();
-                    renderLoans();
-                    renderPaymentHistory();
-                    updateDashboard();
-                    renderAchievements();
-                    updatePayoffStrategy();
-                    generateInsights();
-                    showLoading(false);
-                })
-                .catch((error) => {
-                    console.error('Error loading data: ', error);
-                    showToast('Error loading data. Using local storage.', 'error');
-                    
-                    // Fallback to localStorage
-                    loadDataFromLocalStorage();
-                    showAppContent();
-                    showLoading(false);
-                });
-        }
-        
-        // Load data from localStorage as fallback
-        function loadDataFromLocalStorage() {
-            const savedLoans = localStorage.getItem('debtfreeLoans');
-            const savedPayments = localStorage.getItem('debtfreePayments');
-            const savedStrategy = localStorage.getItem('debtfreeStrategy');
-            const savedAchievements = localStorage.getItem('debtfreeAchievements');
-            
-            state.loans = savedLoans ? JSON.parse(savedLoans) : [];
-            state.payments = savedPayments ? JSON.parse(savedPayments) : [];
-            state.strategy = savedStrategy || 'avalanche';
-            state.achievements = savedAchievements ? JSON.parse(savedAchievements) : availableAchievements.map(a => ({...a, earned: false}));
-            
-            state.dataLoaded = true;
-        }
-        
-        // Save data to Firebase and localStorage
-        function saveData() {
-            // Always save to localStorage for offline access
-            localStorage.setItem('debtfreeLoans', JSON.stringify(state.loans));
-            localStorage.setItem('debtfreePayments', JSON.stringify(state.payments));
-            localStorage.setItem('debtfreeStrategy', state.strategy);
-            localStorage.setItem('debtfreeAchievements', JSON.stringify(state.achievements));
-            
-            // Save to Firebase if user is logged in and online
-            if (state.currentUser && state.isOnline) {
-                syncDataToFirebase();
-            }
-        }
-        
-        // Sync data to Firebase
-        function syncDataToFirebase() {
-            if (!state.currentUser) return;
-            
-            db.collection('users').doc(state.currentUser.uid).collection('data').doc('appData')
-                .set({
-                    loans: state.loans,
-                    payments: state.payments,
-                    strategy: state.strategy,
-                    achievements: state.achievements,
-                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                })
-                .then(() => {
-                    console.log('Data synced to Firebase');
-                })
-                .catch((error) => {
-                    console.error('Error syncing data: ', error);
-                });
         }
         
         // Setup event listeners
@@ -1942,22 +1992,28 @@
         
         // Calculate payoff date for a loan
         function calculatePayoffDate(loan) {
+            if (!loan || loan.balance <= 0) {
+                return "Paid Off";
+            }
+            
             const monthlyRate = loan.interestRate / 100 / 12;
             let balance = loan.balance;
             let months = 0;
-            let totalInterest = 0;
             
             // If the monthly payment is less than the monthly interest, it will never be paid off
             if (loan.minPayment <= balance * monthlyRate) {
-                return "Never";
+                return "Never (Increase Payments)";
             }
             
-            while (balance > 0) {
+            while (balance > 0 && months < 1200) { // 100 year limit
                 months++;
                 const interest = balance * monthlyRate;
-                totalInterest += interest;
                 const principalPayment = Math.min(loan.minPayment - interest, balance);
                 balance -= principalPayment;
+                
+                if (months >= 1200) {
+                    return "Over 100 Years";
+                }
             }
             
             const payoffDate = new Date();
@@ -2150,7 +2206,7 @@
                             <div class="payment-row" style="display: grid; grid-template-columns: 1fr auto; gap: 12px;">
                                 <div class="payment-input" style="display: flex; align-items: center; gap: 8px;">
                                     <span>$</span>
-                                    <input type="number" class="payment-amount" min="${loan.minPayment.toFixed(2)}" step="0.01" value="${loan.minPayment.toFixed(2)}" style="max-width: 120px;">
+                                    <input type="number" class="payment-amount" min="${loan.minPayment > 0 ? loan.minPayment.toFixed(2) : '0.01'}" step="0.01" value="${loan.minPayment > 0 ? loan.minPayment.toFixed(2) : '0.00'}" style="max-width: 120px;">
                                 </div>
                                 <button class="btn btn-secondary btn-sm record-payment" data-id="${loan.id}">Record Payment</button>
                             </div>
