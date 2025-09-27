@@ -3,267 +3,857 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Calendar</title>
+    <title>ChronoSphere - Smart Calendar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --accent: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #e63946;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s ease;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
-        
+
         body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            padding: 20px;
         }
-        
-        .calendar-container {
+
+        .app-container {
             width: 100%;
-            max-width: 800px;
-            background: white;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 25px;
+            height: 90vh;
+        }
+
+        /* Calendar Styles */
+        .calendar-panel {
+            background: rgba(25, 25, 45, 0.85);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .calendar-header {
-            background: #4a69bd;
-            color: white;
-            padding: 25px 20px;
-            text-align: center;
-            position: relative;
-        }
-        
-        .month-year {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-        
-        .nav-buttons {
+            padding: 25px;
             display: flex;
             justify-content: space-between;
-            max-width: 400px;
-            margin: 0 auto;
+            align-items: center;
+            background: rgba(30, 30, 50, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
+        .month-nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .month-title {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--success), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
         .nav-btn {
-            background: rgba(255, 255, 255, 0.2);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
             border: none;
             color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            font-size: 20px;
+            font-size: 18px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            padding: 20px;
+            gap: 8px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .weekday-header {
+            text-align: center;
+            padding: 12px 0;
+            font-weight: 600;
+            color: var(--success);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .calendar-day {
+            min-height: 100px;
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(40, 40, 60, 0.4);
+        }
+
+        .calendar-day:hover {
+            background: rgba(50, 50, 80, 0.6);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .day-number {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .day-number span {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-        
-        .nav-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
+
+        .today .day-number span {
+            background: var(--accent);
+            color: white;
         }
-        
-        .calendar-body {
-            padding: 20px;
+
+        .other-month {
+            opacity: 0.4;
         }
-        
-        .weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            text-align: center;
-            font-weight: 600;
-            color: #4a69bd;
+
+        .event {
+            background: rgba(67, 97, 238, 0.3);
+            border-left: 3px solid var(--primary);
+            padding: 5px 8px;
+            margin-top: 4px;
+            border-radius: 4px;
+            font-size: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .event:hover {
+            background: rgba(67, 97, 238, 0.5);
+            transform: translateX(3px);
+        }
+
+        .event.conflict {
+            border-left-color: var(--danger);
+            background: rgba(230, 57, 70, 0.2);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .panel {
+            background: rgba(25, 25, 45, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--success);
+        }
+
+        .input-group {
             margin-bottom: 15px;
-            padding: 10px 0;
         }
-        
-        .days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--light-gray);
+        }
+
+        .input-group input,
+        .input-group textarea,
+        .input-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(30, 30, 50, 0.7);
+            color: white;
+            font-size: 15px;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             gap: 8px;
         }
-        
-        .day {
-            height: 60px;
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-accent:hover {
+            background: #d11e6f;
+            transform: translateY(-2px);
+        }
+
+        .ai-suggestions {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(114, 9, 183, 0.2);
+            border-radius: 12px;
+            border-left: 3px solid var(--secondary);
+        }
+
+        .suggestion-item {
+            padding: 10px;
+            background: rgba(30, 30, 50, 0.7);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .suggestion-item:hover {
+            background: rgba(40, 40, 70, 0.7);
+            transform: translateX(5px);
+        }
+
+        .event-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .event-list-item {
+            padding: 12px;
+            background: rgba(30, 30, 50, 0.7);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .event-time {
+            color: var(--success);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .event-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .delete-event {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 18px;
+            width: 30px;
+            height: 30px;
             display: flex;
             justify-content: center;
             align-items: center;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            font-weight: 500;
-        }
-        
-        .day:hover {
-            background: #e6f0ff;
-            transform: translateY(-2px);
-        }
-        
-        .day.other-month {
-            color: #b0b0b0;
-            background: #f8f9fa;
-        }
-        
-        .day.today {
-            background: #4a69bd;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .day.today::after {
-            content: '';
-            position: absolute;
-            bottom: 5px;
-            width: 8px;
-            height: 8px;
-            background: white;
             border-radius: 50%;
+            transition: var(--transition);
         }
-        
-        .empty-day {
-            background: transparent;
+
+        .delete-event:hover {
+            background: rgba(230, 57, 70, 0.2);
         }
-        
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            .app-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .calendar-grid {
+                min-height: 500px;
+            }
+        }
+
         @media (max-width: 600px) {
-            .day {
-                height: 45px;
-                font-size: 14px;
+            .calendar-header {
+                flex-direction: column;
+                gap: 15px;
             }
             
-            .month-year {
-                font-size: 22px;
+            .month-title {
+                font-size: 24px;
             }
-            
-            .nav-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
-            }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(30, 30, 50, 0.5);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
         }
     </style>
 </head>
 <body>
-    <div class="calendar-container">
-        <div class="calendar-header">
-            <div class="month-year" id="month-year">June 2023</div>
-            <div class="nav-buttons">
-                <button class="nav-btn" id="prev-month">‹</button>
-                <button class="nav-btn" id="today-btn">Today</button>
-                <button class="nav-btn" id="next-month">›</button>
+    <div class="app-container">
+        <!-- Calendar Panel -->
+        <div class="calendar-panel">
+            <div class="calendar-header">
+                <div class="month-nav">
+                    <button class="nav-btn" id="prev-month">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h2 class="month-title" id="current-month">June 2023</h2>
+                    <button class="nav-btn" id="next-month">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <button class="nav-btn" id="today-btn">
+                    <i class="fas fa-calendar-day"></i>
+                </button>
+            </div>
+            <div class="calendar-grid" id="calendar-grid">
+                <!-- Calendar days will be generated here -->
             </div>
         </div>
-        <div class="calendar-body">
-            <div class="weekdays">
-                <div>Sun</div>
-                <div>Mon</div>
-                <div>Tue</div>
-                <div>Wed</div>
-                <div>Thu</div>
-                <div>Fri</div>
-                <div>Sat</div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Event Creation Panel -->
+            <div class="panel">
+                <h3 class="panel-title"><i class="fas fa-plus-circle"></i> Create Event</h3>
+                <div class="input-group">
+                    <label for="event-title">Event Title</label>
+                    <input type="text" id="event-title" placeholder="Meeting with team...">
+                </div>
+                <div class="input-group">
+                    <label for="event-date">Date</label>
+                    <input type="date" id="event-date">
+                </div>
+                <div class="input-group">
+                    <label for="event-time">Time</label>
+                    <input type="time" id="event-time" value="09:00">
+                </div>
+                <div class="input-group">
+                    <label for="event-duration">Duration (minutes)</label>
+                    <select id="event-duration">
+                        <option value="30">30 minutes</option>
+                        <option value="60" selected>1 hour</option>
+                        <option value="90">1.5 hours</option>
+                        <option value="120">2 hours</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="create-event">
+                    <i class="fas fa-calendar-plus"></i> Create Event
+                </button>
+                
+                <!-- AI Suggestions -->
+                <div class="ai-suggestions">
+                    <h4 style="margin-bottom: 10px; color: var(--secondary);">
+                        <i class="fas fa-robot"></i> AI Scheduling Suggestions
+                    </h4>
+                    <div id="suggestions-container">
+                        <!-- Suggestions will be populated here -->
+                    </div>
+                </div>
             </div>
-            <div class="days" id="days-container"></div>
+
+            <!-- Upcoming Events -->
+            <div class="panel">
+                <h3 class="panel-title"><i class="fas fa-list"></i> Upcoming Events</h3>
+                <div class="event-list" id="upcoming-events">
+                    <!-- Events will be listed here -->
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initialize variables
-            let currentDate = new Date();
-            const today = new Date();
-            
-            // DOM elements
-            const monthYearElement = document.getElementById('month-year');
-            const daysContainer = document.getElementById('days-container');
-            const prevMonthBtn = document.getElementById('prev-month');
-            const nextMonthBtn = document.getElementById('next-month');
-            const todayBtn = document.getElementById('today-btn');
-            
-            // Render calendar for the current date
-            renderCalendar(currentDate);
-            
-            // Event listeners for navigation
-            prevMonthBtn.addEventListener('click', () => {
-                currentDate.setMonth(currentDate.getMonth() - 1);
-                renderCalendar(currentDate);
-            });
-            
-            nextMonthBtn.addEventListener('click', () => {
-                currentDate.setMonth(currentDate.getMonth() + 1);
-                renderCalendar(currentDate);
-            });
-            
-            todayBtn.addEventListener('click', () => {
-                currentDate = new Date();
-                renderCalendar(currentDate);
-            });
-            
-            // Function to render the calendar
-            function renderCalendar(date) {
-                // Update month and year display
+        // ChronoSphere - Smart Calendar MVP
+        class ChronoSphere {
+            constructor() {
+                this.currentDate = new Date();
+                this.events = this.loadEvents();
+                this.today = new Date();
+                this.init();
+            }
+
+            init() {
+                this.renderCalendar();
+                this.setupEventListeners();
+                this.updateUpcomingEvents();
+                this.generateAISuggestions();
+            }
+
+            loadEvents() {
+                const saved = localStorage.getItem('chronoEvents');
+                return saved ? JSON.parse(saved) : [];
+            }
+
+            saveEvents() {
+                localStorage.setItem('chronoEvents', JSON.stringify(this.events));
+            }
+
+            setupEventListeners() {
+                document.getElementById('prev-month').addEventListener('click', () => {
+                    this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+                    this.renderCalendar();
+                });
+
+                document.getElementById('next-month').addEventListener('click', () => {
+                    this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+                    this.renderCalendar();
+                });
+
+                document.getElementById('today-btn').addEventListener('click', () => {
+                    this.currentDate = new Date();
+                    this.renderCalendar();
+                });
+
+                document.getElementById('create-event').addEventListener('click', () => {
+                    this.createEvent();
+                });
+
+                // Natural language input simulation
+                document.getElementById('event-title').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.processNaturalLanguage();
+                    }
+                });
+            }
+
+            processNaturalLanguage() {
+                const input = document.getElementById('event-title').value.toLowerCase();
+                
+                // Simple NLP patterns
+                if (input.includes('tomorrow')) {
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    document.getElementById('event-date').valueAsDate = tomorrow;
+                } else if (input.includes('next week')) {
+                    const nextWeek = new Date();
+                    nextWeek.setDate(nextWeek.getDate() + 7);
+                    document.getElementById('event-date').valueAsDate = nextWeek;
+                } else if (input.includes('monday') || input.includes('tuesday') || 
+                          input.includes('wednesday') || input.includes('thursday') || 
+                          input.includes('friday') || input.includes('saturday') || 
+                          input.includes('sunday')) {
+                    // Find next occurrence of the day
+                    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                    const targetDay = days.findIndex(day => input.includes(day));
+                    const today = new Date();
+                    const currentDay = today.getDay();
+                    let daysToAdd = targetDay - currentDay;
+                    if (daysToAdd <= 0) daysToAdd += 7;
+                    
+                    const nextOccurrence = new Date();
+                    nextOccurrence.setDate(today.getDate() + daysToAdd);
+                    document.getElementById('event-date').valueAsDate = nextOccurrence;
+                }
+                
+                // Time detection
+                const timeMatch = input.match(/(\d{1,2}):(\d{2})/);
+                if (timeMatch) {
+                    document.getElementById('event-time').value = `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}`;
+                }
+            }
+
+            createEvent() {
+                const title = document.getElementById('event-title').value;
+                const dateInput = document.getElementById('event-date').value;
+                const timeInput = document.getElementById('event-time').value;
+                const duration = parseInt(document.getElementById('event-duration').value);
+
+                if (!title || !dateInput || !timeInput) {
+                    this.showToast('Please fill in all fields', 'error');
+                    return;
+                }
+
+                const eventDate = new Date(`${dateInput}T${timeInput}`);
+                const endDate = new Date(eventDate.getTime() + duration * 60000);
+
+                // Check for conflicts
+                const conflict = this.checkConflict(eventDate, endDate);
+                if (conflict) {
+                    if (!confirm('This event conflicts with another event. Do you want to proceed?')) {
+                        return;
+                    }
+                }
+
+                const newEvent = {
+                    id: Date.now(),
+                    title,
+                    start: eventDate.toISOString(),
+                    end: endDate.toISOString()
+                };
+
+                this.events.push(newEvent);
+                this.saveEvents();
+                this.renderCalendar();
+                this.updateUpcomingEvents();
+                this.generateAISuggestions();
+                
+                // Reset form
+                document.getElementById('event-title').value = '';
+                document.getElementById('event-date').value = '';
+                document.getElementById('event-time').value = '09:00';
+                
+                this.showToast('Event created successfully!', 'success');
+            }
+
+            checkConflict(startDate, endDate) {
+                return this.events.some(event => {
+                    const eventStart = new Date(event.start);
+                    const eventEnd = new Date(event.end);
+                    return startDate < eventEnd && endDate > eventStart;
+                });
+            }
+
+            renderCalendar() {
+                const grid = document.getElementById('calendar-grid');
+                grid.innerHTML = '';
+
+                // Add weekday headers
+                const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                weekdays.forEach(day => {
+                    const header = document.createElement('div');
+                    header.className = 'weekday-header';
+                    header.textContent = day;
+                    grid.appendChild(header);
+                });
+
+                // Get month details
+                const year = this.currentDate.getFullYear();
+                const month = this.currentDate.getMonth();
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const startDayIndex = firstDay.getDay();
+                const daysInMonth = lastDay.getDate();
+
+                // Previous month days
+                const prevMonthLastDay = new Date(year, month, 0).getDate();
+                for (let i = startDayIndex - 1; i >= 0; i--) {
+                    const day = prevMonthLastDay - i;
+                    const date = new Date(year, month - 1, day);
+                    this.createDayElement(day, date, true);
+                }
+
+                // Current month days
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    const isToday = this.isSameDay(date, this.today);
+                    this.createDayElement(day, date, false, isToday);
+                }
+
+                // Next month days
+                const totalCells = 42; // 6 rows * 7 days
+                const daysFromNextMonth = totalCells - (startDayIndex + daysInMonth);
+                for (let day = 1; day <= daysFromNextMonth; day++) {
+                    const date = new Date(year, month + 1, day);
+                    this.createDayElement(day, date, true);
+                }
+
+                // Update month title
                 const monthNames = [
                     'January', 'February', 'March', 'April', 'May', 'June',
                     'July', 'August', 'September', 'October', 'November', 'December'
                 ];
-                monthYearElement.textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+                document.getElementById('current-month').textContent = 
+                    `${monthNames[month]} ${year}`;
+            }
+
+            createDayElement(day, date, isOtherMonth, isToday = false) {
+                const dayElement = document.createElement('div');
+                dayElement.className = `calendar-day ${isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`;
                 
-                // Clear previous days
-                daysContainer.innerHTML = '';
-                
-                // Get first day of the month and last day of the month
-                const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-                const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-                
-                // Get the day of the week for the first day (0 = Sunday, 1 = Monday, etc.)
-                const firstDayOfWeek = firstDay.getDay();
-                
-                // Get the last day of the previous month
-                const prevMonthLastDay = new Date(date.getFullYear(), date.getMonth(), 0).getDate();
-                
-                // Calculate days from previous month to show
-                for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-                    const dayElement = document.createElement('div');
-                    dayElement.classList.add('day', 'other-month');
-                    dayElement.textContent = prevMonthLastDay - i;
-                    daysContainer.appendChild(dayElement);
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                const daySpan = document.createElement('span');
+                daySpan.textContent = day;
+                dayNumber.appendChild(daySpan);
+                dayElement.appendChild(dayNumber);
+
+                // Add events for this day
+                const dayEvents = this.getEventsForDate(date);
+                dayEvents.forEach(event => {
+                    const eventElement = document.createElement('div');
+                    eventElement.className = `event ${this.checkConflictForEvent(event) ? 'conflict' : ''}`;
+                    eventElement.textContent = event.title;
+                    eventElement.addEventListener('click', () => this.showEventDetails(event));
+                    dayElement.appendChild(eventElement);
+                });
+
+                document.getElementById('calendar-grid').appendChild(dayElement);
+            }
+
+            getEventsForDate(date) {
+                return this.events.filter(event => {
+                    const eventDate = new Date(event.start);
+                    return this.isSameDay(eventDate, date);
+                });
+            }
+
+            isSameDay(date1, date2) {
+                return date1.getFullYear() === date2.getFullYear() &&
+                       date1.getMonth() === date2.getMonth() &&
+                       date1.getDate() === date2.getDate();
+            }
+
+            checkConflictForEvent(event) {
+                const eventStart = new Date(event.start);
+                const eventEnd = new Date(event.end);
+                return this.events.some(e => {
+                    if (e.id === event.id) return false;
+                    const eStart = new Date(e.start);
+                    const eEnd = new Date(e.end);
+                    return eventStart < eEnd && eventEnd > eStart;
+                });
+            }
+
+            showEventDetails(event) {
+                const eventDate = new Date(event.start);
+                const options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                alert(`Event: ${event.title}\nDate: ${eventDate.toLocaleDateString('en-US', options)}`);
+            }
+
+            updateUpcomingEvents() {
+                const container = document.getElementById('upcoming-events');
+                container.innerHTML = '';
+
+                // Get next 7 days of events
+                const upcoming = this.events
+                    .filter(event => new Date(event.start) >= new Date())
+                    .sort((a, b) => new Date(a.start) - new Date(b.start))
+                    .slice(0, 5);
+
+                if (upcoming.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--gray);">No upcoming events</p>';
+                    return;
                 }
-                
-                // Add days of current month
-                for (let i = 1; i <= lastDay.getDate(); i++) {
-                    const dayElement = document.createElement('div');
-                    dayElement.classList.add('day');
-                    dayElement.textContent = i;
+
+                upcoming.forEach(event => {
+                    const eventElement = document.createElement('div');
+                    eventElement.className = 'event-list-item';
                     
-                    // Check if this day is today
-                    if (date.getFullYear() === today.getFullYear() && 
-                        date.getMonth() === today.getMonth() && 
-                        i === today.getDate()) {
-                        dayElement.classList.add('today');
-                    }
+                    const eventDate = new Date(event.start);
+                    const timeOptions = { hour: '2-digit', minute: '2-digit' };
+                    const dateOptions = { month: 'short', day: 'numeric' };
                     
-                    daysContainer.appendChild(dayElement);
-                }
-                
-                // Calculate how many days from next month to show
-                const totalCells = 42; // 6 rows x 7 days
-                const daysFromNextMonth = totalCells - (firstDayOfWeek + lastDay.getDate());
-                
-                for (let i = 1; i <= daysFromNextMonth; i++) {
-                    const dayElement = document.createElement('div');
-                    dayElement.classList.add('day', 'other-month');
-                    dayElement.textContent = i;
-                    daysContainer.appendChild(dayElement);
+                    eventElement.innerHTML = `
+                        <div>
+                            <div class="event-time">${eventDate.toLocaleTimeString('en-US', timeOptions)}</div>
+                            <div class="event-title">${event.title}</div>
+                            <div style="font-size: 13px; color: var(--gray);">${eventDate.toLocaleDateString('en-US', dateOptions)}</div>
+                        </div>
+                        <button class="delete-event" data-id="${event.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    `;
+                    
+                    eventElement.querySelector('.delete-event').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.deleteEvent(event.id);
+                    });
+                    
+                    container.appendChild(eventElement);
+                });
+            }
+
+            deleteEvent(id) {
+                if (confirm('Are you sure you want to delete this event?')) {
+                    this.events = this.events.filter(event => event.id !== id);
+                    this.saveEvents();
+                    this.renderCalendar();
+                    this.updateUpcomingEvents();
+                    this.generateAISuggestions();
+                    this.showToast('Event deleted', 'success');
                 }
             }
+
+            generateAISuggestions() {
+                const container = document.getElementById('suggestions-container');
+                container.innerHTML = '';
+
+                // In a real app, this would call an AI API
+                // For this MVP, we'll simulate smart suggestions
+                const suggestions = [
+                    "Team sync meeting tomorrow at 10:00 AM",
+                    "Project deadline next Friday",
+                    "Schedule quarterly review for next month",
+                    "Plan team building activity for next week",
+                    "Follow up with client in 3 days"
+                ];
+
+                suggestions.forEach(suggestion => {
+                    const suggestionElement = document.createElement('div');
+                    suggestionElement.className = 'suggestion-item';
+                    suggestionElement.textContent = suggestion;
+                    suggestionElement.addEventListener('click', () => {
+                        this.applySuggestion(suggestion);
+                    });
+                    container.appendChild(suggestionElement);
+                });
+            }
+
+            applySuggestion(suggestion) {
+                // Parse suggestion and populate form
+                document.getElementById('event-title').value = suggestion;
+                this.processNaturalLanguage();
+            }
+
+            showToast(message, type) {
+                // Create toast element
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                toast.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    padding: 15px 25px;
+                    border-radius: 10px;
+                    color: white;
+                    font-weight: 500;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                    z-index: 1000;
+                    background: ${type === 'success' ? 'var(--success)' : 'var(--danger)'};
+                    transform: translateX(100%);
+                    transition: transform 0.3s ease;
+                `;
+                
+                document.body.appendChild(toast);
+                
+                // Animate in
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(0)';
+                }, 100);
+                
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }
+        }
+
+        // Initialize the calendar when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default date to today in the form
+            const today = new Date();
+            const dateStr = today.toISOString().split('T')[0];
+            document.getElementById('event-date').value = dateStr;
+            
+            // Initialize ChronoSphere
+            window.chrono = new ChronoSphere();
         });
     </script>
 </body>
