@@ -14,7 +14,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-analytics-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-functions-compat.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -1064,7 +1063,7 @@
         </div>
     </header>
     
-    <!-- All modals remain but enhanced with additional functionality -->
+    <!-- Auth Modal -->
     <div id="authModal" class="modal">
         <div class="modal-content">
             <button class="modal-close" id="closeAuthModal">&times;</button>
@@ -1113,7 +1112,7 @@
         </div>
     </div>
     
-    <!-- Enhanced Help Modal with Interactive Tutorial -->
+    <!-- Help Modal -->
     <div id="helpModal" class="modal">
         <div class="modal-content">
             <button class="modal-close" id="closeHelpModal">&times;</button>
@@ -1188,7 +1187,68 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- Edit Loan Modal -->
+    <div id="editLoanModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeEditModal">&times;</button>
+            <div style="font-size: 48px; color: var(--primary); margin-bottom: 16px;">✏️</div>
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">Edit Loan</h2>
+            <form id="editLoanForm">
+                <input type="hidden" id="editLoanId">
+                <div class="form-group">
+                    <label for="editLoanName">Loan Name</label>
+                    <input type="text" id="editLoanName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editLoanBalance">Current Balance ($)</label>
+                    <input type="number" id="editLoanBalance" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="editInterestRate">Interest Rate (%)</label>
+                    <input type="number" id="editInterestRate" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="editMinPayment">Minimum Payment ($)</label>
+                    <input type="number" id="editMinPayment" min="0" step="0.01" required>
+                </div>
+                <button type="submit" class="btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Data Management Modal -->
+    <div id="dataModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeDataModal">&times;</button>
+            <div style="font-size: 48px; color: var(--primary); margin-bottom: 16px;">💾</div>
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">Data Management</h2>
+            <div style="margin: 20px 0;">
+                <p>Export your data to backup or transfer to another device.</p>
+                <button id="exportData" class="btn" style="width: 100%; margin: 10px 0;">Export Data</button>
+            </div>
+            <div style="margin: 20px 0;">
+                <p>Import previously exported data.</p>
+                <div class="form-group">
+                    <label for="importFile">Select backup file</label>
+                    <input type="file" id="importFile" accept=".json">
+                </div>
+                <button id="importData" class="btn btn-secondary" style="width: 100%;">Import Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Celebration Modal -->
+    <div id="celebration" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeCelebration">&times;</button>
+            <div style="font-size: 48px; color: var(--primary); margin-bottom: 16px;">🎉</div>
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">Milestone Achieved!</h2>
+            <p style="color: var(--gray); margin-bottom: 24px;" id="celebrationMessage">You've paid off 25% of your Credit Card debt! Keep up the great work!</p>
+            <button class="btn" id="continueBtn">Continue</button>
+        </div>
+    </div>
+
     <div class="container">
         <div id="appContent" style="display: none;">
             <!-- Enhanced Dashboard with Summary Cards -->
@@ -1595,8 +1655,10 @@
         </div>
     </div>
 
+    <div id="loadingSpinner" class="spinner" style="display: none;"></div>
+
     <script>
-        // Enhanced Firebase Configuration
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyD6uE1Up7u-9W4VsFvZbwvVuWHYV7YBR8o",
             authDomain: "debt-tracker-f1363.firebaseapp.com",
@@ -1611,7 +1673,6 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        const analytics = firebase.analytics();
         
         // Enable offline persistence
         db.enablePersistence()
@@ -1619,11 +1680,11 @@
               console.log('Firebase persistence failed: ', err);
           });
         
-        // Advanced App State Management
+        // App State Management
         const state = {
             loans: [],
             payments: [],
-            strategy: 'hybrid',
+            strategy: 'avalanche',
             totalDebt: 0,
             paidDebt: 0,
             currentUser: null,
@@ -1780,291 +1841,7 @@
             enableReminders: document.getElementById('enableReminders')
         };
 
-        // Advanced AI Recommendation Engine
-        class AIRecommendationEngine {
-            constructor() {
-                this.recommendations = [];
-                this.userProfile = {};
-            }
-
-            analyzeFinancialSituation(loans, payments, userProfile) {
-                const analysis = {
-                    riskLevel: this.calculateRiskLevel(loans),
-                    optimizationOpportunities: this.findOptimizationOpportunities(loans),
-                    behavioralPatterns: this.analyzeBehavioralPatterns(payments),
-                    recommendations: []
-                };
-
-                // Generate personalized recommendations
-                if (loans.length > 0) {
-                    // High-interest debt recommendation
-                    const highInterestLoans = loans.filter(loan => loan.interestRate > 10);
-                    if (highInterestLoans.length > 0) {
-                        analysis.recommendations.push({
-                            type: 'high_interest',
-                            priority: 'high',
-                            title: 'High-Interest Debt Detected',
-                            message: `You have ${highInterestLoans.length} loan(s) with interest rates over 10%. Consider prioritizing these to save money.`,
-                            action: 'Review payoff strategy',
-                            impact: 'high'
-                        });
-                    }
-
-                    // Snowball vs Avalanche analysis
-                    const snowballAnalysis = this.analyzeSnowballStrategy(loans);
-                    const avalancheAnalysis = this.analyzeAvalancheStrategy(loans);
-                    
-                    if (avalancheAnalysis.interestSavings > snowballAnalysis.interestSavings * 1.1) {
-                        analysis.recommendations.push({
-                            type: 'strategy_optimization',
-                            priority: 'medium',
-                            title: 'Switch to Avalanche Method',
-                            message: `You could save $${(avalancheAnalysis.interestSavings - snowballAnalysis.interestSavings).toFixed(2)} by switching strategies.`,
-                            action: 'Change strategy',
-                            impact: 'medium'
-                        });
-                    }
-
-                    // Extra payment opportunity
-                    const totalMonthlyPayment = loans.reduce((sum, loan) => sum + loan.minPayment, 0);
-                    if (totalMonthlyPayment < 500) { // Arbitrary threshold
-                        analysis.recommendations.push({
-                            type: 'extra_payment',
-                            priority: 'low',
-                            title: 'Consider Increasing Payments',
-                            message: 'Even a small increase in monthly payments can significantly reduce your payoff time.',
-                            action: 'Set up extra payments',
-                            impact: 'medium'
-                        });
-                    }
-                }
-
-                return analysis;
-            }
-
-            calculateRiskLevel(loans) {
-                if (loans.length === 0) return 'low';
-                
-                const totalDebt = loans.reduce((sum, loan) => sum + loan.balance, 0);
-                const avgInterest = loans.reduce((sum, loan) => sum + loan.interestRate, 0) / loans.length;
-                
-                let riskScore = 0;
-                if (totalDebt > 10000) riskScore += 2;
-                if (totalDebt > 50000) riskScore += 3;
-                if (avgInterest > 15) riskScore += 3;
-                if (avgInterest > 10) riskScore += 2;
-                
-                if (riskScore >= 5) return 'high';
-                if (riskScore >= 3) return 'medium';
-                return 'low';
-            }
-
-            findOptimizationOpportunities(loans) {
-                const opportunities = [];
-                
-                loans.forEach(loan => {
-                    if (loan.interestRate > 15) {
-                        opportunities.push({
-                            type: 'refinance',
-                            loanId: loan.id,
-                            message: `Consider refinancing ${loan.name} (${loan.interestRate}% APR)`,
-                            potentialSavings: loan.balance * (loan.interestRate - 8) / 100 // Estimate
-                        });
-                    }
-                });
-
-                return opportunities;
-            }
-
-            analyzeBehavioralPatterns(payments) {
-                if (payments.length < 3) return { consistency: 'unknown', pattern: 'insufficient_data' };
-                
-                const recentPayments = payments.slice(-6); // Last 6 payments
-                const intervals = [];
-                
-                for (let i = 1; i < recentPayments.length; i++) {
-                    const daysBetween = this.daysBetween(
-                        new Date(recentPayments[i-1].date),
-                        new Date(recentPayments[i].date)
-                    );
-                    intervals.push(daysBetween);
-                }
-                
-                const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
-                const consistency = avgInterval <= 35 ? 'high' : avgInterval <= 45 ? 'medium' : 'low';
-                
-                return { consistency, pattern: this.identifyPaymentPattern(intervals) };
-            }
-
-            analyzeSnowballStrategy(loans) {
-                const sortedLoans = [...loans].sort((a, b) => a.balance - b.balance);
-                return this.calculateStrategyMetrics(sortedLoans);
-            }
-
-            analyzeAvalancheStrategy(loans) {
-                const sortedLoans = [...loans].sort((a, b) => b.interestRate - a.interestRate);
-                return this.calculateStrategyMetrics(sortedLoans);
-            }
-
-            calculateStrategyMetrics(loans) {
-                let totalInterest = 0;
-                let months = 0;
-                const simulatedLoans = JSON.parse(JSON.stringify(loans));
-                const totalMonthlyPayment = simulatedLoans.reduce((sum, loan) => sum + loan.minPayment, 0);
-                
-                while (simulatedLoans.length > 0) {
-                    months++;
-                    let remainingPayment = totalMonthlyPayment;
-                    
-                    // Pay minimums on all loans first
-                    simulatedLoans.forEach(loan => {
-                        const interest = loan.balance * (loan.interestRate / 100 / 12);
-                        totalInterest += interest;
-                        const principalPayment = Math.min(loan.minPayment - interest, loan.balance);
-                        loan.balance -= principalPayment;
-                        remainingPayment -= loan.minPayment;
-                    });
-                    
-                    // Apply extra to first loan in strategy
-                    if (remainingPayment > 0 && simulatedLoans.length > 0) {
-                        const targetLoan = simulatedLoans[0];
-                        const extraPrincipal = Math.min(remainingPayment, targetLoan.balance);
-                        targetLoan.balance -= extraPrincipal;
-                        remainingPayment -= extraPrincipal;
-                    }
-                    
-                    // Remove paid off loans
-                    simulatedLoans.forEach((loan, index) => {
-                        if (loan.balance <= 0) {
-                            simulatedLoans.splice(index, 1);
-                        }
-                    });
-                }
-                
-                return { totalInterest, months };
-            }
-
-            daysBetween(date1, date2) {
-                const oneDay = 24 * 60 * 60 * 1000;
-                return Math.round(Math.abs((date1 - date2) / oneDay));
-            }
-
-            identifyPaymentPattern(intervals) {
-                const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
-                const variance = intervals.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / intervals.length;
-                
-                if (variance < 10) return 'consistent';
-                if (intervals.some(interval => interval > 40)) return 'irregular';
-                return 'semi_consistent';
-            }
-        }
-
-        // Behavioral Analytics Engine
-        class BehavioralAnalytics {
-            constructor() {
-                this.userBehavior = {
-                    loginTimes: [],
-                    featureUsage: {},
-                    paymentConsistency: 0,
-                    goalSetting: 0,
-                    engagementScore: 0
-                };
-            }
-
-            trackLogin() {
-                const now = new Date();
-                this.userBehavior.loginTimes.push(now);
-                
-                // Calculate streak
-                const today = luxon.DateTime.now().toISODate();
-                const lastLogin = state.behavioralData.lastLogin;
-                
-                if (lastLogin) {
-                    const lastLoginDate = luxon.DateTime.fromISO(lastLogin).toISODate();
-                    const yesterday = luxon.DateTime.now().minus({ days: 1 }).toISODate();
-                    
-                    if (lastLoginDate === yesterday) {
-                        state.behavioralData.loginStreak++;
-                    } else if (lastLoginDate !== today) {
-                        state.behavioralData.loginStreak = 1;
-                    }
-                } else {
-                    state.behavioralData.loginStreak = 1;
-                }
-                
-                state.behavioralData.lastLogin = today;
-                this.updateEngagementScore();
-            }
-
-            trackFeatureUsage(feature) {
-                if (!this.userBehavior.featureUsage[feature]) {
-                    this.userBehavior.featureUsage[feature] = 0;
-                }
-                this.userBehavior.featureUsage[feature]++;
-                this.updateEngagementScore();
-            }
-
-            trackPayment(pattern) {
-                this.userBehavior.paymentConsistency = this.calculateConsistency(pattern);
-                this.updateEngagementScore();
-            }
-
-            calculateConsistency(payments) {
-                if (payments.length < 2) return 0;
-                
-                const intervals = [];
-                for (let i = 1; i < payments.length; i++) {
-                    const days = this.daysBetween(
-                        new Date(payments[i-1].date),
-                        new Date(payments[i].date)
-                    );
-                    intervals.push(days);
-                }
-                
-                const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
-                const variance = intervals.reduce((a, b) => a + Math.pow(b - avgInterval, 2), 0) / intervals.length;
-                
-                return Math.max(0, 100 - (variance * 2)); // Higher variance = lower consistency
-            }
-
-            updateEngagementScore() {
-                let score = 0;
-                
-                // Login streak contribution (max 30 points)
-                score += Math.min(state.behavioralData.loginStreak * 3, 30);
-                
-                // Feature usage contribution (max 40 points)
-                const featureCount = Object.keys(this.userBehavior.featureUsage).length;
-                score += Math.min(featureCount * 5, 40);
-                
-                // Payment consistency contribution (max 30 points)
-                score += Math.min(this.userBehavior.paymentConsistency * 0.3, 30);
-                
-                state.behavioralData.engagementScore = Math.round(score);
-                state.behavioralData.consistencyScore = this.userBehavior.paymentConsistency;
-            }
-
-            daysBetween(date1, date2) {
-                const oneDay = 24 * 60 * 60 * 1000;
-                return Math.round(Math.abs((date1 - date2) / oneDay));
-            }
-
-            getMotivationalMessage() {
-                const score = state.behavioralData.engagementScore;
-                
-                if (score >= 80) {
-                    return "You're crushing it! Your consistency is paying off.";
-                } else if (score >= 60) {
-                    return "Great progress! Keep up the good work.";
-                } else if (score >= 40) {
-                    return "You're building momentum. Every payment counts!";
-                } else {
-                    return "Getting started is the hardest part. You've got this!";
-                }
-            }
-        }
-
-        // Smart Notification System
+        // Notification System
         class NotificationSystem {
             constructor() {
                 this.notifications = [];
@@ -2163,9 +1940,7 @@
             }
         }
 
-        // Initialize advanced systems
-        const aiEngine = new AIRecommendationEngine();
-        const analyticsEngine = new BehavioralAnalytics();
+        // Initialize notification system
         const notificationSystem = new NotificationSystem();
 
         // Initialize the application
@@ -2181,28 +1956,558 @@
             renderLoans();
             renderPaymentHistory();
             renderAchievements();
-            
-            // Track initial login
-            analyticsEngine.trackLogin();
         }
 
-        // Enhanced setup functions with additional analytics tracking
-        function setupEventListeners() {
-            // ... (previous event listeners remain but enhanced)
+        // Setup online/offline listener
+        function setupOnlineOfflineListener() {
+            window.addEventListener('online', () => {
+                state.isOnline = true;
+                elements.offlineIndicator.classList.remove('active');
+                showToast('You are back online!', 'success');
+                
+                // Sync data if user is logged in
+                if (state.currentUser) {
+                    syncDataToFirebase();
+                }
+            });
             
-            // Track feature usage
-            elements.tabs.forEach(tab => {
+            window.addEventListener('offline', () => {
+                state.isOnline = false;
+                elements.offlineIndicator.classList.add('active');
+                showToast('You are offline. Changes will sync when online.', 'warning');
+            });
+        }
+        
+        // Check for deferred prompt for PWA installation
+        function checkForDeferredPrompt() {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                state.deferredPrompt = e;
+                elements.installBtn.style.display = 'block';
+                elements.installBtn.addEventListener('click', installApp);
+            });
+        }
+        
+        // Install app as PWA
+        function installApp() {
+            if (state.deferredPrompt) {
+                state.deferredPrompt.prompt();
+                state.deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    }
+                    state.deferredPrompt = null;
+                    elements.installBtn.style.display = 'none';
+                });
+            }
+        }
+        
+        // Show toast notification
+        function showToast(message, type = '') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+        
+        // Handle authentication state changes
+        function handleAuthStateChanged(user) {
+            if (user) {
+                // User is signed in
+                state.currentUser = user;
+                loadUserData();
+            } else {
+                // User is signed out
+                state.currentUser = null;
+                showWelcomeContent();
+            }
+        }
+        
+        // Show app content
+        function showAppContent() {
+            elements.welcomeContent.style.display = 'none';
+            elements.appContent.style.display = 'block';
+            
+            // Update user info
+            elements.userInfo.style.display = 'flex';
+            elements.userName.textContent = state.userName || state.currentUser.email.split('@')[0];
+            elements.userAvatar.textContent = (state.userName || state.currentUser.email).charAt(0).toUpperCase();
+            
+            // Update auth buttons
+            elements.signInBtn.style.display = 'none';
+            elements.signUpBtn.style.display = 'none';
+            elements.signOutBtn.style.display = 'block';
+        }
+        
+        // Show welcome content
+        function showWelcomeContent() {
+            elements.welcomeContent.style.display = 'block';
+            elements.appContent.style.display = 'none';
+            
+            // Reset user info
+            elements.userInfo.style.display = 'none';
+            
+            // Update auth buttons
+            elements.signInBtn.style.display = 'block';
+            elements.signUpBtn.style.display = 'block';
+            elements.signOutBtn.style.display = 'none';
+        }
+        
+        // Setup auth listeners
+        function setupAuthListeners() {
+            // Sign in with email/password
+            elements.signInSubmit.addEventListener('click', (e) => {
+                e.preventDefault();
+                const email = elements.signInEmail.value;
+                const password = elements.signInPassword.value;
+                
+                if (!email || !password) {
+                    showAuthMessage(elements.signInMessage, "Please fill in all fields", 'error');
+                    return;
+                }
+                
+                showLoading(true);
+                
+                auth.signInWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        // Signed in 
+                        elements.authModal.classList.remove('active');
+                        elements.signInMessage.style.display = 'none';
+                        showLoading(false);
+                        showToast('Successfully signed in!', 'success');
+                    })
+                    .catch((error) => {
+                        const errorMessage = error.message;
+                        showAuthMessage(elements.signInMessage, errorMessage, 'error');
+                        showLoading(false);
+                    });
+            });
+            
+            // Sign up with email/password
+            elements.signUpSubmit.addEventListener('click', (e) => {
+                e.preventDefault();
+                const name = elements.signUpName.value;
+                const email = elements.signUpEmail.value;
+                const password = elements.signUpPassword.value;
+                
+                if (!name || !email || !password) {
+                    showAuthMessage(elements.signUpMessage, "Please fill in all fields", 'error');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    showAuthMessage(elements.signUpMessage, "Password must be at least 6 characters", 'error');
+                    return;
+                }
+                
+                showLoading(true);
+                
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        // Signed up 
+                        state.userName = name;
+                        elements.authModal.classList.remove('active');
+                        elements.signUpMessage.style.display = 'none';
+                        showLoading(false);
+                        showToast('Account created successfully!', 'success');
+                        
+                        // Save user's name to Firestore
+                        return db.collection('users').doc(userCredential.user.uid).set({
+                            name: name,
+                            email: email,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    })
+                    .catch((error) => {
+                        const errorMessage = error.message;
+                        showAuthMessage(elements.signUpMessage, errorMessage, 'error');
+                        showLoading(false);
+                    });
+            });
+            
+            // Sign out
+            elements.signOutBtn.addEventListener('click', () => {
+                auth.signOut();
+                showToast('Signed out successfully', 'success');
+            });
+            
+            // Auth modal tabs
+            document.querySelectorAll('.auth-tab').forEach(tab => {
                 tab.addEventListener('click', () => {
-                    const tabName = tab.getAttribute('data-tab');
-                    analyticsEngine.trackFeatureUsage(`tab_${tabName}`);
+                    const tabId = tab.getAttribute('data-tab');
+                    switchAuthTab(tabId);
                 });
             });
-
+        }
+        
+        // Show/hide loading spinner
+        function showLoading(show) {
+            elements.loadingSpinner.style.display = show ? 'block' : 'none';
+        }
+        
+        // Show auth message
+        function showAuthMessage(element, message, type) {
+            element.textContent = message;
+            element.className = 'auth-message ' + type;
+            element.style.display = 'block';
+            
+            // Clear message after 5 seconds
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Switch auth tabs
+        function switchAuthTab(tabId) {
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.getAttribute('data-tab') === tabId) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            elements.signInForm.style.display = 'none';
+            elements.signUpForm.style.display = 'none';
+            
+            if (tabId === 'signin') {
+                elements.signInForm.style.display = 'block';
+            } else {
+                elements.signUpForm.style.display = 'block';
+            }
+            
+            // Clear messages
+            elements.signInMessage.style.display = 'none';
+            elements.signUpMessage.style.display = 'none';
+        }
+        
+        // Load user data from Firebase
+        function loadUserData() {
+            if (!state.currentUser) return;
+            
+            showLoading(true);
+            
+            // Load user profile from Firestore
+            db.collection('users').doc(state.currentUser.uid).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        state.userName = userData.name || state.currentUser.email.split('@')[0];
+                        state.userProfile = userData.profile || state.userProfile;
+                        state.behavioralData = userData.behavioralData || state.behavioralData;
+                    } else {
+                        state.userName = state.currentUser.email.split('@')[0];
+                    }
+                    
+                    // Load app data from Firestore
+                    return db.collection('users').doc(state.currentUser.uid).collection('data').doc('appData').get();
+                })
+                .then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        state.loans = data.loans || [];
+                        state.payments = data.payments || [];
+                        state.strategy = data.strategy || 'avalanche';
+                        state.achievements = data.achievements || availableAchievements.map(a => ({...a, earned: false}));
+                        state.goals = data.goals || [];
+                        
+                        showToast('Data loaded successfully!', 'success');
+                    } else {
+                        // Initialize with default data
+                        state.loans = [];
+                        state.payments = [];
+                        state.strategy = 'avalanche';
+                        state.achievements = availableAchievements.map(a => ({...a, earned: false}));
+                        state.goals = [];
+                    }
+                    
+                    state.dataLoaded = true;
+                    
+                    // Load notifications
+                    notificationSystem.loadNotifications();
+                    
+                    showAppContent();
+                    renderLoans();
+                    renderPaymentHistory();
+                    updateDashboard();
+                    renderAchievements();
+                    renderGoals();
+                    updatePayoffStrategy();
+                    generateInsights();
+                    updateBehavioralAnalytics();
+                    
+                    showLoading(false);
+                })
+                .catch((error) => {
+                    console.error('Error loading data: ', error);
+                    showToast('Error loading data. Using local storage.', 'error');
+                    
+                    // Fallback to localStorage
+                    loadDataFromLocalStorage();
+                    showAppContent();
+                    showLoading(false);
+                });
+        }
+        
+        // Load data from localStorage as fallback
+        function loadDataFromLocalStorage() {
+            const savedLoans = localStorage.getItem('debtfreeLoans');
+            const savedPayments = localStorage.getItem('debtfreePayments');
+            const savedStrategy = localStorage.getItem('debtfreeStrategy');
+            const savedAchievements = localStorage.getItem('debtfreeAchievements');
+            const savedGoals = localStorage.getItem('debtfreeGoals');
+            const savedProfile = localStorage.getItem('debtfreeProfile');
+            const savedBehavioral = localStorage.getItem('debtfreeBehavioral');
+            
+            state.loans = savedLoans ? JSON.parse(savedLoans) : [];
+            state.payments = savedPayments ? JSON.parse(savedPayments) : [];
+            state.strategy = savedStrategy || 'avalanche';
+            state.achievements = savedAchievements ? JSON.parse(savedAchievements) : availableAchievements.map(a => ({...a, earned: false}));
+            state.goals = savedGoals ? JSON.parse(savedGoals) : [];
+            state.userProfile = savedProfile ? JSON.parse(savedProfile) : state.userProfile;
+            state.behavioralData = savedBehavioral ? JSON.parse(savedBehavioral) : state.behavioralData;
+            
+            state.dataLoaded = true;
+        }
+        
+        // Save data to Firebase and localStorage
+        function saveData() {
+            // Always save to localStorage for offline access
+            localStorage.setItem('debtfreeLoans', JSON.stringify(state.loans));
+            localStorage.setItem('debtfreePayments', JSON.stringify(state.payments));
+            localStorage.setItem('debtfreeStrategy', state.strategy);
+            localStorage.setItem('debtfreeAchievements', JSON.stringify(state.achievements));
+            localStorage.setItem('debtfreeGoals', JSON.stringify(state.goals));
+            localStorage.setItem('debtfreeProfile', JSON.stringify(state.userProfile));
+            localStorage.setItem('debtfreeBehavioral', JSON.stringify(state.behavioralData));
+            
+            // Save to Firebase if user is logged in and online
+            if (state.currentUser && state.isOnline) {
+                syncDataToFirebase();
+            }
+        }
+        
+        // Sync data to Firebase
+        function syncDataToFirebase() {
+            if (!state.currentUser) return;
+            
+            // Update user profile with behavioral data
+            db.collection('users').doc(state.currentUser.uid).set({
+                name: state.userName,
+                email: state.currentUser.email,
+                profile: state.userProfile,
+                behavioralData: state.behavioralData,
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+            
+            // Sync app data
+            db.collection('users').doc(state.currentUser.uid).collection('data').doc('appData')
+                .set({
+                    loans: state.loans,
+                    payments: state.payments,
+                    strategy: state.strategy,
+                    achievements: state.achievements,
+                    goals: state.goals,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    console.log('Data synced to Firebase');
+                })
+                .catch((error) => {
+                    console.error('Error syncing data: ', error);
+                });
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Auth modal controls
+            elements.signInBtn.addEventListener('click', () => {
+                elements.authModal.classList.add('active');
+                switchAuthTab('signin');
+            });
+            
+            elements.welcomeSignIn.addEventListener('click', () => {
+                elements.authModal.classList.add('active');
+                switchAuthTab('signin');
+            });
+            
+            elements.signUpBtn.addEventListener('click', () => {
+                elements.authModal.classList.add('active');
+                switchAuthTab('signup');
+            });
+            
+            elements.welcomeSignUp.addEventListener('click', () => {
+                elements.authModal.classList.add('active');
+                switchAuthTab('signup');
+            });
+            
+            elements.closeAuthModal.addEventListener('click', () => {
+                elements.authModal.classList.remove('active');
+            });
+            
+            // Tab switching
+            elements.tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    elements.tabs.forEach(t => t.classList.remove('active'));
+                    elements.tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    const tabId = tab.getAttribute('data-tab');
+                    document.getElementById(`${tabId}Tab`).classList.add('active');
+                    
+                    // If strategy tab is selected, update the visualization
+                    if (tabId === 'strategy') {
+                        updatePayoffStrategy();
+                    } else if (tabId === 'insights') {
+                        generateInsights();
+                    }
+                });
+            });
+            
+            // Loan form submission
+            elements.loanForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const newLoan = {
+                    id: Date.now(),
+                    name: document.getElementById('loanName').value,
+                    balance: parseFloat(document.getElementById('loanBalance').value),
+                    originalBalance: parseFloat(document.getElementById('loanBalance').value),
+                    interestRate: parseFloat(document.getElementById('interestRate').value),
+                    minPayment: parseFloat(document.getElementById('minPayment').value),
+                    strategy: document.getElementById('strategy').value,
+                    totalInterest: 0,
+                    paid: 0,
+                    payments: []
+                };
+                
+                // Calculate payoff date
+                newLoan.payoffDate = calculatePayoffDate(newLoan);
+                
+                // Add to state
+                state.loans.push(newLoan);
+                state.strategy = newLoan.strategy;
+                saveData();
+                renderLoans();
+                updateDashboard();
+                updatePayoffStrategy();
+                generateInsights();
+                
+                // Check for first loan achievement
+                checkAchievement('first_loan');
+                
+                // Reset form
+                this.reset();
+                
+                // Show success message
+                showToast(`Your ${newLoan.name} loan has been added!`, 'success');
+            });
+            
+            // Reset button
+            elements.resetBtn.addEventListener('click', function() {
+                if (confirm("Are you sure you want to reset all loan data? This cannot be undone.")) {
+                    state.loans = [];
+                    state.payments = [];
+                    state.achievements = availableAchievements.map(a => ({...a, earned: false}));
+                    state.goals = [];
+                    saveData();
+                    renderLoans();
+                    renderPaymentHistory();
+                    updateDashboard();
+                    renderAchievements();
+                    renderGoals();
+                    updatePayoffStrategy();
+                    generateInsights();
+                    showToast('All data has been reset', 'success');
+                }
+            });
+            
+            // Help modal
+            elements.helpBtn.addEventListener('click', () => {
+                elements.helpModal.classList.add('active');
+                // Reset help steps
+                document.querySelectorAll('.help-step').forEach((step, index) => {
+                    step.style.display = 'none';
+                    if (index === 0) step.style.display = 'block';
+                });
+                document.querySelectorAll('.milestone').forEach((milestone, index) => {
+                    milestone.classList.remove('active', 'completed');
+                    if (index === 0) milestone.classList.add('completed');
+                    if (index === 1) milestone.classList.add('active');
+                });
+            });
+            
+            elements.closeHelpModal.addEventListener('click', () => {
+                elements.helpModal.classList.remove('active');
+            });
+            
+            elements.nextHelpStep.addEventListener('click', nextHelpStep);
+            
+            elements.prevHelpStep.addEventListener('click', prevHelpStep);
+            
+            // Data management
+            elements.dataManagementBtn.addEventListener('click', () => {
+                elements.dataModal.classList.add('active');
+            });
+            
+            elements.closeDataModal.addEventListener('click', () => {
+                elements.dataModal.classList.remove('active');
+            });
+            
+            elements.exportData.addEventListener('click', exportUserData);
+            
+            elements.importData.addEventListener('click', importUserData);
+            
+            // Payoff strategy
+            elements.updateProjection.addEventListener('click', updatePayoffStrategy);
+            
+            // Calculate savings
+            elements.calculateSavingsBtn.addEventListener('click', calculateInterestSavings);
+            
+            // Edit loan
+            elements.editLoanForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const loanId = parseInt(elements.editLoanId.value);
+                const loanIndex = state.loans.findIndex(loan => loan.id === loanId);
+                
+                if (loanIndex !== -1) {
+                    state.loans[loanIndex].name = elements.editLoanName.value;
+                    state.loans[loanIndex].balance = parseFloat(elements.editLoanBalance.value);
+                    state.loans[loanIndex].interestRate = parseFloat(elements.editInterestRate.value);
+                    state.loans[loanIndex].minPayment = parseFloat(elements.editMinPayment.value);
+                    state.loans[loanIndex].payoffDate = calculatePayoffDate(state.loans[loanIndex]);
+                    
+                    saveData();
+                    renderLoans();
+                    updateDashboard();
+                    updatePayoffStrategy();
+                    generateInsights();
+                    
+                    elements.editLoanModal.classList.remove('active');
+                    showToast('Loan updated successfully!', 'success');
+                }
+            });
+            
+            elements.closeEditModal.addEventListener('click', () => {
+                elements.editLoanModal.classList.remove('active');
+            });
+            
+            // Celebration modal
+            elements.closeCelebration.addEventListener('click', () => {
+                elements.celebration.classList.remove('active');
+            });
+            
+            elements.continueBtn.addEventListener('click', () => {
+                elements.celebration.classList.remove('active');
+            });
+            
             // Notification system
             elements.notificationBtn.addEventListener('click', () => {
                 elements.notificationCenter.classList.toggle('active');
                 notificationSystem.renderNotifications();
-                analyticsEngine.trackFeatureUsage('notifications');
             });
 
             elements.markAllRead.addEventListener('click', () => {
@@ -2216,6 +2521,27 @@
             // Payment reminders
             elements.enableReminders.addEventListener('click', setupPaymentReminders);
 
+            // Schedule options
+            document.querySelectorAll('.schedule-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.schedule-option').forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // Strategy options
+            document.querySelectorAll('.strategy-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const strategy = this.getAttribute('data-strategy');
+                    state.strategy = strategy;
+                    saveData();
+                    updatePayoffStrategy();
+                    
+                    document.querySelectorAll('.strategy-option').forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
             // Close notification center when clicking outside
             document.addEventListener('click', (e) => {
                 if (!elements.notificationCenter.contains(e.target) && 
@@ -2223,10 +2549,6 @@
                     elements.notificationCenter.classList.remove('active');
                 }
             });
-
-            // Enhanced help system
-            elements.nextHelpStep.addEventListener('click', nextHelpStep);
-            elements.prevHelpStep.addEventListener('click', prevHelpStep);
         }
 
         function nextHelpStep() {
@@ -2235,13 +2557,15 @@
             
             if (nextStep && nextStep.classList.contains('milestone')) {
                 currentStep.classList.remove('active');
+                currentStep.classList.add('completed');
                 nextStep.classList.add('active');
                 
                 // Update help content
                 document.querySelectorAll('.help-step').forEach(step => {
                     step.style.display = 'none';
                 });
-                document.querySelector(`.help-step[data-step="${nextStep.getAttribute('data-step')}"]`).style.display = 'block';
+                const nextStepNum = nextStep.getAttribute('data-step');
+                document.querySelector(`.help-step[data-step="${nextStepNum}"]`).style.display = 'block';
             }
         }
 
@@ -2257,7 +2581,8 @@
                 document.querySelectorAll('.help-step').forEach(step => {
                     step.style.display = 'none';
                 });
-                document.querySelector(`.help-step[data-step="${prevStep.getAttribute('data-step')}"]`).style.display = 'block';
+                const prevStepNum = prevStep.getAttribute('data-step');
+                document.querySelector(`.help-step[data-step="${prevStepNum}"]`).style.display = 'block';
             }
         }
 
@@ -2285,9 +2610,6 @@
             saveData();
             renderGoals();
             showToast('Goal set successfully!', 'success');
-            
-            // Track goal setting
-            analyticsEngine.trackFeatureUsage('goal_setting');
         }
 
         function renderGoals() {
@@ -2327,127 +2649,66 @@
             );
             
             showToast('Payment reminders enabled!', 'success');
-            analyticsEngine.trackFeatureUsage('payment_reminders');
         }
 
-        // Enhanced data loading with behavioral analytics
-        function loadUserData() {
-            if (!state.currentUser) return;
-
-            showLoading(true);
+        // Update debt statistics
+        function updateDebtStats() {
+            state.totalDebt = state.loans.reduce((sum, loan) => sum + loan.balance, 0);
+            state.paidDebt = state.loans.reduce((sum, loan) => sum + (loan.originalBalance - loan.balance), 0);
             
-            // Load user profile from Firestore
-            db.collection('users').doc(state.currentUser.uid).get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        const userData = doc.data();
-                        state.userName = userData.name || state.currentUser.email.split('@')[0];
-                        state.userProfile = userData.profile || state.userProfile;
-                        state.behavioralData = userData.behavioralData || state.behavioralData;
-                    } else {
-                        state.userName = state.currentUser.email.split('@')[0];
-                    }
-                    
-                    // Load app data from Firestore
-                    return db.collection('users').doc(state.currentUser.uid).collection('data').doc('appData').get();
-                })
-                .then((doc) => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        state.loans = data.loans || [];
-                        state.payments = data.payments || [];
-                        state.strategy = data.strategy || 'hybrid';
-                        state.achievements = data.achievements || availableAchievements.map(a => ({...a, earned: false}));
-                        state.goals = data.goals || [];
-                        
-                        showToast('Data loaded successfully!', 'success');
-                    } else {
-                        // Initialize with default data
-                        state.loans = [];
-                        state.payments = [];
-                        state.strategy = 'hybrid';
-                        state.achievements = availableAchievements.map(a => ({...a, earned: false}));
-                        state.goals = [];
-                    }
-                    
-                    state.dataLoaded = true;
-                    
-                    // Load notifications
-                    notificationSystem.loadNotifications();
-                    
-                    showAppContent();
-                    renderLoans();
-                    renderPaymentHistory();
-                    updateDashboard();
-                    renderAchievements();
-                    renderGoals();
-                    updatePayoffStrategy();
-                    generateInsights();
-                    generateAIRecommendations();
-                    updateBehavioralAnalytics();
-                    
-                    showLoading(false);
-                })
-                .catch((error) => {
-                    console.error('Error loading data: ', error);
-                    showToast('Error loading data. Using local storage.', 'error');
-                    
-                    // Fallback to localStorage
-                    loadDataFromLocalStorage();
-                    showAppContent();
-                    showLoading(false);
-                });
+            const totalOriginal = state.loans.reduce((sum, loan) => sum + loan.originalBalance, 0);
+            const paidPercentage = totalOriginal > 0 ? Math.round((state.paidDebt / totalOriginal) * 100) : 0;
+            
+            elements.totalDebt.textContent = state.totalDebt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            elements.paidDebt.textContent = state.paidDebt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
-
-        // Enhanced save function with analytics
-        function saveData() {
-            // Always save to localStorage for offline access
-            localStorage.setItem('debtfreeLoans', JSON.stringify(state.loans));
-            localStorage.setItem('debtfreePayments', JSON.stringify(state.payments));
-            localStorage.setItem('debtfreeStrategy', state.strategy);
-            localStorage.setItem('debtfreeAchievements', JSON.stringify(state.achievements));
-            localStorage.setItem('debtfreeGoals', JSON.stringify(state.goals));
-            localStorage.setItem('debtfreeProfile', JSON.stringify(state.userProfile));
-            localStorage.setItem('debtfreeBehavioral', JSON.stringify(state.behavioralData));
+        
+        // Update dashboard
+        function updateDashboard() {
+            updateDebtStats();
             
-            // Save to Firebase if user is logged in and online
-            if (state.currentUser && state.isOnline) {
-                syncDataToFirebase();
+            // Calculate time and interest savings
+            const avalancheAnalysis = analyzeAvalancheStrategy(state.loans);
+            const snowballAnalysis = analyzeSnowballStrategy(state.loans);
+            const timeSaved = Math.max(0, snowballAnalysis.months - avalancheAnalysis.months);
+            const interestSaved = Math.max(0, snowballAnalysis.totalInterest - avalancheAnalysis.totalInterest);
+            
+            elements.timeSaved.textContent = `${timeSaved} mos`;
+            elements.interestSaved.textContent = `$${interestSaved.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+        }
+        
+        // Calculate payoff date for a loan
+        function calculatePayoffDate(loan) {
+            const monthlyRate = loan.interestRate / 100 / 12;
+            let balance = loan.balance;
+            let months = 0;
+            let totalInterest = 0;
+            
+            // If the monthly payment is less than the monthly interest, it will never be paid off
+            if (loan.minPayment <= balance * monthlyRate) {
+                return "Never";
             }
-        }
-
-        // Enhanced sync function
-        function syncDataToFirebase() {
-            if (!state.currentUser) return;
             
-            // Update user profile with behavioral data
-            db.collection('users').doc(state.currentUser.uid).set({
-                name: state.userName,
-                email: state.currentUser.email,
-                profile: state.userProfile,
-                behavioralData: state.behavioralData,
-                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
+            while (balance > 0) {
+                months++;
+                const interest = balance * monthlyRate;
+                totalInterest += interest;
+                const principalPayment = Math.min(loan.minPayment - interest, balance);
+                balance -= principalPayment;
+            }
             
-            // Sync app data
-            db.collection('users').doc(state.currentUser.uid).collection('data').doc('appData')
-                .set({
-                    loans: state.loans,
-                    payments: state.payments,
-                    strategy: state.strategy,
-                    achievements: state.achievements,
-                    goals: state.goals,
-                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                })
-                .then(() => {
-                    console.log('Data synced to Firebase');
-                })
-                .catch((error) => {
-                    console.error('Error syncing data: ', error);
-                });
+            const payoffDate = new Date();
+            payoffDate.setMonth(payoffDate.getMonth() + months);
+            return payoffDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
         }
-
-        // Enhanced payment tracking with analytics
+        
+        // Calculate interest for a payment
+        function calculateInterest(loan, amount) {
+            const monthlyRate = loan.interestRate / 100 / 12;
+            return loan.balance * monthlyRate;
+        }
+        
+        // Make a payment on a loan
         function makePayment(loanId, amount) {
             const loan = state.loans.find(l => l.id === loanId);
             if (!loan) return;
@@ -2464,7 +2725,7 @@
                 amount: amount,
                 interest: interest,
                 principal: principal,
-                date: new Date().toISOString()
+                date: new Date().toLocaleDateString('en-US')
             };
             
             // Update loan
@@ -2479,9 +2740,6 @@
             // Add to payment history
             state.payments.push(payment);
             
-            // Update behavioral analytics
-            analyticsEngine.trackPayment(state.payments);
-            
             // Save and update UI
             saveData();
             renderLoans();
@@ -2489,8 +2747,6 @@
             updateDashboard();
             updatePayoffStrategy();
             generateInsights();
-            generateAIRecommendations();
-            updateBehavioralAnalytics();
             
             // Check for achievements
             checkAchievement('first_payment');
@@ -2504,12 +2760,54 @@
             
             // Check for milestones
             checkMilestones(loan);
-            
-            // Track payment in analytics
-            analyticsEngine.trackFeatureUsage('payment_made');
         }
-
-        // Enhanced achievement system with points
+        
+        // Check for payment streak achievement
+        function checkPaymentStreak() {
+            if (state.payments.length < 3) return;
+            
+            // Sort payments by date (newest first)
+            const sortedPayments = [...state.payments].sort((a, b) => b.id - a.id);
+            
+            // Check if last 3 payments were made on consecutive months
+            const lastPaymentDate = new Date(sortedPayments[0].date);
+            const secondPaymentDate = new Date(sortedPayments[1].date);
+            const thirdPaymentDate = new Date(sortedPayments[2].date);
+            
+            // Check if payments are in consecutive months
+            if (
+                lastPaymentDate.getMonth() === secondPaymentDate.getMonth() - 1 &&
+                secondPaymentDate.getMonth() === thirdPaymentDate.getMonth() - 1
+            ) {
+                checkAchievement('consistent');
+            }
+        }
+        
+        // Check for milestones and show celebrations
+        function checkMilestones(loan) {
+            const paidPercentage = Math.round(((loan.originalBalance - loan.balance) / loan.originalBalance) * 100);
+            
+            if (paidPercentage >= 100) {
+                showCelebration(`🎉 Congratulations! You've completely paid off your ${loan.name} loan! 🎉`);
+                checkAchievement('loan_free');
+                
+                // Check if all loans are paid off
+                if (state.loans.every(loan => loan.balance <= 0)) {
+                    checkAchievement('debt_free');
+                }
+            } else if (paidPercentage >= 75) {
+                showCelebration(`Amazing! You've paid off 75% of your ${loan.name} loan! Almost there!`);
+                checkAchievement('75_percent');
+            } else if (paidPercentage >= 50) {
+                showCelebration(`Great job! You're halfway through paying off your ${loan.name} loan!`);
+                checkAchievement('50_percent');
+            } else if (paidPercentage >= 25) {
+                showCelebration(`Nice work! You've paid off 25% of your ${loan.name} loan! Keep it up!`);
+                checkAchievement('25_percent');
+            }
+        }
+        
+        // Check and unlock achievements
         function checkAchievement(achievementId) {
             const achievement = state.achievements.find(a => a.id === achievementId);
             if (achievement && !achievement.earned) {
@@ -2527,77 +2825,647 @@
                     `You earned "${achievement.title}" and ${achievement.points} points!`,
                     'medium'
                 );
-                
-                // Track in analytics
-                analyticsEngine.trackFeatureUsage('achievement_earned');
             }
         }
-
-        // AI Recommendation Generation
-        function generateAIRecommendations() {
+        
+        // Render loans to the dashboard
+        function renderLoans() {
+            if (!state.dataLoaded && state.currentUser) return;
+            
             if (state.loans.length === 0) {
-                elements.aiRecommendation.style.display = 'none';
+                elements.loansContainer.innerHTML = `
+                    <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                        <h3>No Loans Added Yet</h3>
+                        <p>Get started by adding your first loan using the form above.</p>
+                    </div>
+                `;
                 return;
             }
-
-            const analysis = aiEngine.analyzeFinancialSituation(
-                state.loans, 
-                state.payments, 
-                state.userProfile
-            );
-
-            if (analysis.recommendations.length > 0) {
-                const topRecommendation = analysis.recommendations[0];
-                elements.aiRecommendationContent.innerHTML = `
-                    <p><strong>${topRecommendation.title}</strong></p>
-                    <p>${topRecommendation.message}</p>
-                    <small>Impact: ${topRecommendation.impact} • Priority: ${topRecommendation.priority}</small>
-                `;
-                elements.aiRecommendation.style.display = 'block';
+            
+            // Sort loans based on strategy
+            const sortedLoans = [...state.loans];
+            if (state.strategy === 'avalanche') {
+                sortedLoans.sort((a, b) => b.interestRate - a.interestRate);
             } else {
-                elements.aiRecommendation.style.display = 'none';
+                sortedLoans.sort((a, b) => a.balance - b.balance);
+            }
+            
+            elements.loansContainer.innerHTML = '';
+            
+            sortedLoans.forEach(loan => {
+                const paidAmount = loan.originalBalance - loan.balance;
+                const paidPercentage = Math.round((paidAmount / loan.originalBalance) * 100);
+                
+                const loanCard = document.createElement('div');
+                loanCard.className = 'loan-card';
+                loanCard.innerHTML = `
+                    <div class="loan-header">
+                        <div class="loan-name">${loan.name}</div>
+                        <div class="loan-details">
+                            <span>${loan.interestRate}% APR</span>
+                            <span>Min: $${loan.minPayment.toFixed(2)}/mo</span>
+                        </div>
+                    </div>
+                    <div class="loan-body">
+                        <div class="loan-stats">
+                            <div class="stat">
+                                <div class="stat-label">Remaining</div>
+                                <div class="stat-value">$${loan.balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Paid</div>
+                                <div class="stat-value">$${paidAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Interest</div>
+                                <div class="stat-value">$${loan.totalInterest.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Payoff Date</div>
+                                <div class="stat-value">${loan.payoffDate}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress" style="width: ${paidPercentage}%;"></div>
+                        </div>
+                        
+                        <div class="payment-form" style="background: var(--light); border-radius: 8px; padding: 16px; margin-top: 16px;">
+                            <h4>Make a Payment</h4>
+                            <div class="payment-row" style="display: grid; grid-template-columns: 1fr auto; gap: 12px;">
+                                <div class="payment-input" style="display: flex; align-items: center; gap: 8px;">
+                                    <span>$</span>
+                                    <input type="number" class="payment-amount" min="${loan.minPayment.toFixed(2)}" step="0.01" value="${loan.minPayment.toFixed(2)}" style="max-width: 120px;">
+                                </div>
+                                <button class="btn btn-secondary btn-sm record-payment" data-id="${loan.id}">Record Payment</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loan-footer">
+                        <button class="btn btn-sm btn-outline view-history" data-id="${loan.id}">View History</button>
+                        <button class="btn btn-sm btn-outline edit-loan" data-id="${loan.id}">Edit</button>
+                        <button class="btn btn-sm btn-danger remove-loan" data-id="${loan.id}">Remove</button>
+                    </div>
+                `;
+                
+                elements.loansContainer.appendChild(loanCard);
+                
+                // Add event listeners to buttons
+                loanCard.querySelector('.record-payment').addEventListener('click', function() {
+                    const loanId = parseInt(this.getAttribute('data-id'));
+                    const amount = parseFloat(loanCard.querySelector('.payment-amount').value);
+                    
+                    if (amount < loan.minPayment) {
+                        alert(`Payment must be at least the minimum payment of $${loan.minPayment.toFixed(2)}`);
+                        return;
+                    }
+                    
+                    if (amount > loan.balance + (loan.balance * (loan.interestRate/100/12))) {
+                        alert(`Payment exceeds the remaining balance plus interest. Max payment is $${(loan.balance + (loan.balance * (loan.interestRate/100/12))).toFixed(2)}`);
+                        return;
+                    }
+                    
+                    makePayment(loanId, amount);
+                });
+                
+                loanCard.querySelector('.remove-loan').addEventListener('click', function() {
+                    const loanId = parseInt(this.getAttribute('data-id'));
+                    removeLoan(loanId);
+                });
+                
+                loanCard.querySelector('.view-history').addEventListener('click', function() {
+                    const loanId = parseInt(this.getAttribute('data-id'));
+                    showLoanHistory(loanId);
+                });
+                
+                loanCard.querySelector('.edit-loan').addEventListener('click', function() {
+                    const loanId = parseInt(this.getAttribute('data-id'));
+                    editLoan(loanId);
+                });
+            });
+        }
+        
+        // Edit a loan
+        function editLoan(loanId) {
+            const loan = state.loans.find(l => l.id === loanId);
+            if (!loan) return;
+            
+            elements.editLoanId.value = loan.id;
+            elements.editLoanName.value = loan.name;
+            elements.editLoanBalance.value = loan.balance;
+            elements.editInterestRate.value = loan.interestRate;
+            elements.editMinPayment.value = loan.minPayment;
+            
+            elements.editLoanModal.classList.add('active');
+        }
+        
+        // Render payment history
+        function renderPaymentHistory() {
+            if (!state.dataLoaded && state.currentUser) return;
+            
+            if (state.payments.length === 0) {
+                elements.historyTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: var(--gray);">
+                            <h3>No Payments Recorded Yet</h3>
+                            <p>Make your first payment to see it appear here.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Sort payments by date (newest first)
+            const sortedPayments = [...state.payments].sort((a, b) => b.id - a.id);
+            
+            let html = '';
+            
+            sortedPayments.forEach(payment => {
+                html += `
+                    <tr>
+                        <td>${payment.date}</td>
+                        <td>${payment.loanName}</td>
+                        <td>$${payment.amount.toFixed(2)}</td>
+                        <td>$${payment.principal.toFixed(2)}</td>
+                        <td>$${payment.interest.toFixed(2)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline delete-payment" data-id="${payment.id}">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            elements.historyTableBody.innerHTML = html;
+            
+            // Add delete event listeners
+            document.querySelectorAll('.delete-payment').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const paymentId = parseInt(this.getAttribute('data-id'));
+                    deletePayment(paymentId);
+                });
+            });
+        }
+        
+        // Delete a payment
+        function deletePayment(paymentId) {
+            if (confirm("Are you sure you want to delete this payment?")) {
+                const paymentIndex = state.payments.findIndex(p => p.id === paymentId);
+                if (paymentIndex !== -1) {
+                    const payment = state.payments[paymentIndex];
+                    
+                    // Find the loan and reverse the payment
+                    const loan = state.loans.find(l => l.id === payment.loanId);
+                    if (loan) {
+                        loan.balance += payment.principal;
+                        loan.totalInterest -= payment.interest;
+                        loan.paid -= payment.amount;
+                        
+                        // Remove payment from loan's payments
+                        const loanPaymentIndex = loan.payments.findIndex(p => p.id === paymentId);
+                        if (loanPaymentIndex !== -1) {
+                            loan.payments.splice(loanPaymentIndex, 1);
+                        }
+                        
+                        // Recalculate payoff date
+                        loan.payoffDate = calculatePayoffDate(loan);
+                    }
+                    
+                    // Remove from payments array
+                    state.payments.splice(paymentIndex, 1);
+                    
+                    saveData();
+                    renderLoans();
+                    renderPaymentHistory();
+                    updateDashboard();
+                    updatePayoffStrategy();
+                    generateInsights();
+                    
+                    showToast('Payment deleted successfully', 'success');
+                }
             }
         }
-
-        // Behavioral Analytics Update
-        function updateBehavioralAnalytics() {
-            // Update UI elements
-            elements.loginStreak.textContent = state.behavioralData.loginStreak;
-            elements.consistencyScore.textContent = `${Math.round(state.behavioralData.consistencyScore)}%`;
-            elements.momentumProgress.style.width = `${state.behavioralData.consistencyScore}%`;
+        
+        // Show loan-specific payment history
+        function showLoanHistory(loanId) {
+            const loan = state.loans.find(l => l.id === loanId);
+            if (!loan) return;
             
-            // Generate insights
-            elements.behavioralInsights.innerHTML = `
-                <p>${analyticsEngine.getMotivationalMessage()}</p>
-                <small>Engagement Score: ${state.behavioralData.engagementScore}/100</small>
+            if (loan.payments.length === 0) {
+                elements.historyTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: var(--gray);">
+                            <h3>No Payments for ${loan.name}</h3>
+                            <p>Make your first payment to see it appear here.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Sort payments by date (newest first)
+            const sortedPayments = [...loan.payments].sort((a, b) => b.id - a.id);
+            
+            let html = '';
+            
+            sortedPayments.forEach(payment => {
+                html += `
+                    <tr>
+                        <td>${payment.date}</td>
+                        <td>${payment.loanName}</td>
+                        <td>$${payment.amount.toFixed(2)}</td>
+                        <td>$${payment.principal.toFixed(2)}</td>
+                        <td>$${payment.interest.toFixed(2)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline delete-payment" data-id="${payment.id}">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            elements.historyTableBody.innerHTML = html;
+            
+            // Add delete event listeners
+            document.querySelectorAll('.delete-payment').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const paymentId = parseInt(this.getAttribute('data-id'));
+                    deletePayment(paymentId);
+                });
+            });
+            
+            // Switch to payment history tab
+            document.getElementById('paymentsTab').classList.add('active');
+            document.getElementById('loansTab').classList.remove('active');
+            document.querySelector('.tab[data-tab="payments"]').classList.add('active');
+            document.querySelector('.tab[data-tab="loans"]').classList.remove('active');
+        }
+        
+        // Remove a loan
+        function removeLoan(loanId) {
+            if (confirm("Are you sure you want to remove this loan? All payment history for this loan will also be deleted.")) {
+                state.loans = state.loans.filter(loan => loan.id !== loanId);
+                state.payments = state.payments.filter(payment => payment.loanId !== loanId);
+                saveData();
+                renderLoans();
+                renderPaymentHistory();
+                updateDashboard();
+                updatePayoffStrategy();
+                generateInsights();
+                showToast('Loan removed successfully', 'success');
+            }
+        }
+        
+        // Show celebration modal
+        function showCelebration(message) {
+            elements.celebrationMessage.textContent = message;
+            elements.celebration.classList.add('active');
+        }
+        
+        // Render achievements
+        function renderAchievements() {
+            if (!state.dataLoaded && state.currentUser) return;
+            
+            const earnedCount = state.achievements.filter(a => a.earned).length;
+            const totalCount = state.achievements.length;
+            const percentComplete = Math.round((earnedCount / totalCount) * 100);
+            const totalPoints = state.achievements.filter(a => a.earned).reduce((sum, a) => sum + a.points, 0);
+            
+            elements.earnedAchievements.textContent = earnedCount;
+            elements.totalAchievements.textContent = totalCount;
+            elements.totalPoints.textContent = totalPoints;
+            elements.achievementProgress.style.width = `${percentComplete}%`;
+            
+            elements.achievementsContainer.innerHTML = '';
+            
+            state.achievements.forEach(achievement => {
+                const achievementElement = document.createElement('div');
+                achievementElement.className = `achievement-card ${achievement.earned ? 'unlocked' : ''} ${achievement.rare ? 'rare' : ''}`;
+                achievementElement.innerHTML = `
+                    <div class="achievement-icon">${achievement.icon}</div>
+                    <div class="achievement-title">${achievement.title}</div>
+                    <div class="achievement-desc">${achievement.description}</div>
+                    ${achievement.earned ? `<div class="achievement-points">+${achievement.points} pts</div>` : ''}
+                `;
+                
+                elements.achievementsContainer.appendChild(achievementElement);
+            });
+        }
+        
+        // Update payoff strategy visualization
+        function updatePayoffStrategy() {
+            if (!state.dataLoaded && state.currentUser) return;
+            
+            if (state.loans.length === 0) {
+                elements.payoffTimeline.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--gray);">
+                        <p>Add loans to see your payoff strategy</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Clone and sort loans based on strategy
+            const sortedLoans = [...state.loans];
+            if (state.strategy === 'avalanche') {
+                sortedLoans.sort((a, b) => b.interestRate - a.interestRate);
+            } else {
+                sortedLoans.sort((a, b) => a.balance - b.balance);
+            }
+            
+            // Update timeline
+            elements.payoffTimeline.innerHTML = '';
+            
+            sortedLoans.forEach((loan, index) => {
+                const timelineItem = document.createElement('div');
+                timelineItem.className = 'timeline-item';
+                timelineItem.innerHTML = `
+                    <div class="timeline-marker" style="width: 40px; height: 40px; border-radius: 50%; background: white; border: 4px solid var(--light-gray); margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--gray); transition: var(--transition);">${index + 1}</div>
+                    <div class="timeline-label" style="font-size: 0.875rem; color: var(--gray);">${loan.name}</div>
+                `;
+                elements.payoffTimeline.appendChild(timelineItem);
+            });
+            
+            // Update chart
+            updatePayoffChart(sortedLoans);
+            
+            // Update strategy comparison
+            updateStrategyComparison();
+        }
+        
+        // Update payoff chart
+        function updatePayoffChart(sortedLoans) {
+            const ctx = elements.payoffChart.getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.payoffChartInstance) {
+                window.payoffChartInstance.destroy();
+            }
+            
+            const labels = sortedLoans.map(loan => loan.name);
+            const balances = sortedLoans.map(loan => loan.balance);
+            const colors = sortedLoans.map((loan, i) => {
+                const hue = (i * 137.5) % 360; // Golden angle for distinct colors
+                return `hsl(${hue}, 70%, 60%)`;
+            });
+            
+            window.payoffChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Remaining Balance',
+                        data: balances,
+                        backgroundColor: colors,
+                        borderColor: colors.map(color => color.replace('60%)', '40%)')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Balance ($)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Payoff Order Visualization'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Balance: $${context.raw.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Analyze avalanche strategy
+        function analyzeAvalancheStrategy(loans) {
+            const sortedLoans = JSON.parse(JSON.stringify(loans)).sort((a, b) => b.interestRate - a.interestRate);
+            return calculateStrategyMetrics(sortedLoans);
+        }
+        
+        // Analyze snowball strategy
+        function analyzeSnowballStrategy(loans) {
+            const sortedLoans = JSON.parse(JSON.stringify(loans)).sort((a, b) => a.balance - b.balance);
+            return calculateStrategyMetrics(sortedLoans);
+        }
+        
+        // Calculate strategy metrics
+        function calculateStrategyMetrics(loans) {
+            let totalInterest = 0;
+            let months = 0;
+            const simulatedLoans = JSON.parse(JSON.stringify(loans));
+            const totalMonthlyPayment = simulatedLoans.reduce((sum, loan) => sum + loan.minPayment, 0);
+            
+            while (simulatedLoans.length > 0) {
+                months++;
+                let remainingPayment = totalMonthlyPayment;
+                
+                // Pay minimums on all loans first
+                simulatedLoans.forEach(loan => {
+                    const interest = loan.balance * (loan.interestRate / 100 / 12);
+                    totalInterest += interest;
+                    const principalPayment = Math.min(loan.minPayment - interest, loan.balance);
+                    loan.balance -= principalPayment;
+                    remainingPayment -= loan.minPayment;
+                });
+                
+                // Apply extra to first loan in strategy
+                if (remainingPayment > 0 && simulatedLoans.length > 0) {
+                    const targetLoan = simulatedLoans[0];
+                    const extraPrincipal = Math.min(remainingPayment, targetLoan.balance);
+                    targetLoan.balance -= extraPrincipal;
+                    remainingPayment -= extraPrincipal;
+                }
+                
+                // Remove paid off loans
+                simulatedLoans.forEach((loan, index) => {
+                    if (loan.balance <= 0) {
+                        simulatedLoans.splice(index, 1);
+                    }
+                });
+            }
+            
+            return { totalInterest, months };
+        }
+        
+        // Update strategy comparison
+        function updateStrategyComparison() {
+            if (state.loans.length < 2) {
+                elements.comparisonResults.innerHTML = `
+                    <p>Add at least two loans to compare payoff strategies.</p>
+                `;
+                return;
+            }
+            
+            const avalancheAnalysis = analyzeAvalancheStrategy(state.loans);
+            const snowballAnalysis = analyzeSnowballStrategy(state.loans);
+            
+            const avalancheInterest = avalancheAnalysis.totalInterest;
+            const snowballInterest = snowballAnalysis.totalInterest;
+            
+            // Calculate hybrid strategy (average of both)
+            const hybridInterest = (avalancheInterest + snowballInterest) / 2;
+            const hybridScore = Math.round((1 - (hybridInterest / Math.max(avalancheInterest, snowballInterest))) * 100);
+            
+            // Update UI elements
+            elements.avalancheSavings.textContent = `$${Math.max(0, snowballInterest - avalancheInterest).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            elements.snowballTime.textContent = `${Math.max(0, avalancheAnalysis.months - snowballAnalysis.months)}`;
+            elements.hybridScore.textContent = `${hybridScore}%`;
+            
+            const interestDifference = Math.abs(avalancheInterest - snowballInterest);
+            const timeDifference = Math.abs(avalancheAnalysis.months - snowballAnalysis.months);
+            
+            let recommendation = '';
+            if (avalancheInterest < snowballInterest) {
+                recommendation = `The <strong>Avalanche method</strong> will save you <strong>$${interestDifference.toFixed(2)}</strong> in interest compared to the Snowball method.`;
+            } else {
+                recommendation = `The <strong>Snowball method</strong> will save you <strong>$${interestDifference.toFixed(2)}</strong> in interest compared to the Avalanche method.`;
+            }
+            
+            if (avalancheAnalysis.months < snowballAnalysis.months) {
+                recommendation += ` The Avalanche method will also get you debt-free <strong>${timeDifference}</strong> months faster.`;
+            } else {
+                recommendation += ` The Snowball method will also get you debt-free <strong>${timeDifference}</strong> months faster.`;
+            }
+            
+            elements.comparisonResults.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="card">
+                        <h3>Avalanche Method</h3>
+                        <p>Total Interest: <strong>$${avalancheInterest.toFixed(2)}</strong></p>
+                        <p>Time to Debt Freedom: <strong>${avalancheAnalysis.months} months</strong></p>
+                    </div>
+                    <div class="card">
+                        <h3>Snowball Method</h3>
+                        <p>Total Interest: <strong>$${snowballInterest.toFixed(2)}</strong></p>
+                        <p>Time to Debt Freedom: <strong>${snowballAnalysis.months} months</strong></p>
+                    </div>
+                </div>
+                <div class="card" style="margin-top: 20px;">
+                    <h3>Recommendation</h3>
+                    <p>${recommendation}</p>
+                </div>
             `;
         }
-
-        // Enhanced dashboard with advanced metrics
-        function updateDashboard() {
-            // Calculate advanced metrics
-            const totalOriginal = state.loans.reduce((sum, loan) => sum + loan.originalBalance, 0);
-            const paidPercentage = totalOriginal > 0 ? Math.round((state.paidDebt / totalOriginal) * 100) : 0;
+        
+        // Calculate interest savings
+        function calculateInterestSavings() {
+            if (state.loans.length === 0) {
+                alert('Add at least one loan to calculate interest savings.');
+                return;
+            }
             
-            // Calculate time and interest savings from optimal strategy
-            const avalancheAnalysis = aiEngine.analyzeAvalancheStrategy(state.loans);
-            const snowballAnalysis = aiEngine.analyzeSnowballStrategy(state.loans);
-            const timeSaved = Math.max(0, snowballAnalysis.months - avalancheAnalysis.months);
-            const interestSaved = Math.max(0, snowballAnalysis.totalInterest - avalancheAnalysis.totalInterest);
+            const extraPayment = parseFloat(elements.extraPayment.value) || 0;
+            let totalInterestWithoutExtra = 0;
+            let totalInterestWithExtra = 0;
             
-            // Update UI
-            elements.totalDebt.textContent = `$${state.totalDebt.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
-            elements.paidDebt.textContent = `$${state.paidDebt.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
-            elements.timeSaved.textContent = `${timeSaved} mos`;
-            elements.interestSaved.textContent = `$${interestSaved.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            // Calculate interest without extra payments
+            state.loans.forEach(loan => {
+                let balance = loan.balance;
+                const monthlyRate = loan.interestRate / 100 / 12;
+                
+                while (balance > 0) {
+                    const interest = balance * monthlyRate;
+                    totalInterestWithoutExtra += interest;
+                    const principalPayment = Math.min(loan.minPayment - interest, balance);
+                    balance -= principalPayment;
+                }
+            });
+            
+            // Calculate interest with extra payments
+            state.loans.forEach(loan => {
+                let balance = loan.balance;
+                const monthlyRate = loan.interestRate / 100 / 12;
+                const payment = loan.minPayment + extraPayment;
+                
+                while (balance > 0) {
+                    const interest = balance * monthlyRate;
+                    totalInterestWithExtra += interest;
+                    const principalPayment = Math.min(payment - interest, balance);
+                    balance -= principalPayment;
+                }
+            });
+            
+            const savings = totalInterestWithoutExtra - totalInterestWithExtra;
+            const monthsSaved = Math.round(savings / (extraPayment * 12));
+            
+            showToast(`By paying an extra $${extraPayment} per month, you'll save $${savings.toFixed(2)} in interest and become debt-free ${monthsSaved} months earlier!`, 'success');
         }
-
-        // Initialize the app when DOM is loaded
-        document.addEventListener('DOMContentLoaded', init);
-
-        // ... (previous utility functions remain but are enhanced with analytics tracking)
-
-        // Enhanced insights generation
+        
+        // Export user data
+        function exportUserData() {
+            const data = {
+                loans: state.loans,
+                payments: state.payments,
+                strategy: state.strategy,
+                achievements: state.achievements,
+                goals: state.goals,
+                exportedAt: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(data);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'debtfree-backup.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showToast('Data exported successfully!', 'success');
+        }
+        
+        // Import user data
+        function importUserData() {
+            const file = elements.importFile.files[0];
+            if (!file) {
+                alert('Please select a backup file first.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (confirm('This will replace your current data. Are you sure?')) {
+                        state.loans = data.loans || [];
+                        state.payments = data.payments || [];
+                        state.strategy = data.strategy || 'avalanche';
+                        state.achievements = data.achievements || availableAchievements.map(a => ({...a, earned: false}));
+                        state.goals = data.goals || [];
+                        
+                        saveData();
+                        renderLoans();
+                        renderPaymentHistory();
+                        updateDashboard();
+                        renderAchievements();
+                        renderGoals();
+                        updatePayoffStrategy();
+                        generateInsights();
+                        
+                        showToast('Data imported successfully!', 'success');
+                    }
+                } catch (error) {
+                    alert('Error importing data: Invalid file format.');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // Generate financial insights
         function generateInsights() {
             if (!state.dataLoaded && state.currentUser) return;
             
@@ -2616,11 +3484,18 @@
                 return;
             }
             
-            const analysis = aiEngine.analyzeFinancialSituation(state.loans, state.payments, state.userProfile);
+            const avalancheAnalysis = analyzeAvalancheStrategy(state.loans);
+            const snowballAnalysis = analyzeSnowballStrategy(state.loans);
             
             let insightsHTML = '';
             
             // Risk Assessment Insight
+            const totalDebt = state.loans.reduce((sum, loan) => sum + loan.balance, 0);
+            const avgInterest = state.loans.reduce((sum, loan) => sum + loan.interestRate, 0) / state.loans.length;
+            let riskLevel = 'low';
+            if (totalDebt > 50000 || avgInterest > 15) riskLevel = 'high';
+            else if (totalDebt > 20000 || avgInterest > 10) riskLevel = 'medium';
+            
             insightsHTML += `
                 <div class="insight-card">
                     <div class="insight-header">
@@ -2628,43 +3503,28 @@
                         <div class="insight-title">Risk Assessment</div>
                     </div>
                     <div class="insight-content">
-                        <p>Your current debt situation is <strong>${analysis.riskLevel} risk</strong>.</p>
-                        <div class="insight-metric">${analysis.riskLevel.toUpperCase()}</div>
+                        <p>Your current debt situation is <strong>${riskLevel} risk</strong>.</p>
+                        <div class="insight-metric">${riskLevel.toUpperCase()}</div>
                     </div>
                 </div>
             `;
             
-            // Payment Behavior Insight
+            // Strategy Insight
+            const bestStrategy = avalancheAnalysis.totalInterest < snowballAnalysis.totalInterest ? 'Avalanche' : 'Snowball';
+            const savings = Math.abs(avalancheAnalysis.totalInterest - snowballAnalysis.totalInterest);
+            
             insightsHTML += `
                 <div class="insight-card">
                     <div class="insight-header">
-                        <div class="insight-icon">📈</div>
-                        <div class="insight-title">Payment Behavior</div>
+                        <div class="insight-icon">💡</div>
+                        <div class="insight-title">Optimal Strategy</div>
                     </div>
                     <div class="insight-content">
-                        <p>${analysis.behavioralPatterns.consistency === 'high' ? 
-                            'Excellent payment consistency! Keep it up.' : 
-                            'Consider setting up payment reminders to improve consistency.'}</p>
-                        <div class="insight-metric">${analysis.behavioralPatterns.consistency.toUpperCase()}</div>
+                        <p>The <strong>${bestStrategy} method</strong> would save you <strong>$${savings.toFixed(2)}</strong> compared to the alternative.</p>
+                        <div class="insight-metric">${bestStrategy.toUpperCase()}</div>
                     </div>
                 </div>
             `;
-            
-            // Optimization Opportunities
-            if (analysis.optimizationOpportunities.length > 0) {
-                insightsHTML += `
-                    <div class="insight-card">
-                        <div class="insight-header">
-                            <div class="insight-icon">💡</div>
-                            <div class="insight-title">Optimization Tips</div>
-                        </div>
-                        <div class="insight-content">
-                            <p>${analysis.optimizationOpportunities[0].message}</p>
-                            <div class="insight-metric">${analysis.optimizationOpportunities.length} opportunities</div>
-                        </div>
-                    </div>
-                `;
-            }
             
             // Progress Tracking
             const totalPaid = state.loans.reduce((sum, loan) => sum + (loan.originalBalance - loan.balance), 0);
@@ -2684,13 +3544,29 @@
                 </div>
             `;
             
+            // Interest Paid Insight
+            const totalInterestPaid = state.loans.reduce((sum, loan) => sum + loan.totalInterest, 0);
+            
+            insightsHTML += `
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">💰</div>
+                        <div class="insight-title">Interest Paid</div>
+                    </div>
+                    <div class="insight-content">
+                        <p>You've paid <strong>$${totalInterestPaid.toFixed(2)}</strong> in interest so far.</p>
+                        <div class="insight-metric">$${totalInterestPaid.toFixed(0)}</div>
+                    </div>
+                </div>
+            `;
+            
             elements.insightsContent.innerHTML = insightsHTML;
             
             // Update calendar chart
             updateCalendarChart();
         }
-
-        // Enhanced chart rendering with more data
+        
+        // Update calendar chart
         function updateCalendarChart() {
             const ctx = elements.calendarChart.getContext('2d');
             
@@ -2719,7 +3595,8 @@
                 months.push(futureDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
                 
                 // Calculate monthly interest
-                const monthlyInterest = currentDebt * 0.08 / 12; // Simplified average interest
+                const avgInterestRate = state.loans.reduce((sum, loan) => sum + loan.interestRate, 0) / state.loans.length;
+                const monthlyInterest = currentDebt * (avgInterestRate / 100 / 12);
                 totalInterest += monthlyInterest;
                 
                 // Reduce debt by payment minus interest
@@ -2772,9 +3649,33 @@
             });
         }
 
-        // Additional enhanced functions would continue here...
-        // This is a comprehensive foundation that can be further extended
+        // Behavioral Analytics Update
+        function updateBehavioralAnalytics() {
+            // Update UI elements
+            elements.loginStreak.textContent = state.behavioralData.loginStreak;
+            elements.consistencyScore.textContent = `${Math.round(state.behavioralData.consistencyScore)}%`;
+            elements.momentumProgress.style.width = `${state.behavioralData.consistencyScore}%`;
+            
+            // Generate insights
+            let encouragement = '';
+            if (state.behavioralData.engagementScore >= 80) {
+                encouragement = "You're crushing it! Your consistency is paying off.";
+            } else if (state.behavioralData.engagementScore >= 60) {
+                encouragement = "Great progress! Keep up the good work.";
+            } else if (state.behavioralData.engagementScore >= 40) {
+                encouragement = "You're building momentum. Every payment counts!";
+            } else {
+                encouragement = "Getting started is the hardest part. You've got this!";
+            }
+            
+            elements.behavioralInsights.innerHTML = `
+                <p>${encouragement}</p>
+                <small>Engagement Score: ${state.behavioralData.engagementScore}/100</small>
+            `;
+        }
 
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
