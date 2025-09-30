@@ -1670,7 +1670,7 @@
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        const app = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
         
@@ -1945,6 +1945,7 @@
 
         // Initialize the application
         function init() {
+            console.log('Initializing app...');
             setupAuthListeners();
             setupEventListeners();
             setupOnlineOfflineListener();
@@ -1956,6 +1957,8 @@
             renderLoans();
             renderPaymentHistory();
             renderAchievements();
+            
+            console.log('App initialized successfully');
         }
 
         // Setup online/offline listener
@@ -2014,21 +2017,25 @@
             }, 3000);
         }
         
-        // Handle authentication state changes
+        // Handle authentication state changes - FIXED VERSION
         function handleAuthStateChanged(user) {
+            console.log('Auth state changed:', user);
             if (user) {
                 // User is signed in
                 state.currentUser = user;
+                console.log('User signed in:', user.email);
                 loadUserData();
             } else {
                 // User is signed out
                 state.currentUser = null;
+                console.log('User signed out');
                 showWelcomeContent();
             }
         }
         
-        // Show app content
+        // Show app content - FIXED VERSION
         function showAppContent() {
+            console.log('Showing app content');
             elements.welcomeContent.style.display = 'none';
             elements.appContent.style.display = 'block';
             
@@ -2041,10 +2048,13 @@
             elements.signInBtn.style.display = 'none';
             elements.signUpBtn.style.display = 'none';
             elements.signOutBtn.style.display = 'block';
+            
+            console.log('App content shown successfully');
         }
         
         // Show welcome content
         function showWelcomeContent() {
+            console.log('Showing welcome content');
             elements.welcomeContent.style.display = 'block';
             elements.appContent.style.display = 'none';
             
@@ -2059,6 +2069,8 @@
         
         // Setup auth listeners
         function setupAuthListeners() {
+            console.log('Setting up auth listeners');
+            
             // Sign in with email/password
             elements.signInSubmit.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -2075,6 +2087,7 @@
                 auth.signInWithEmailAndPassword(email, password)
                     .then((userCredential) => {
                         // Signed in 
+                        console.log('Sign in successful');
                         elements.authModal.classList.remove('active');
                         elements.signInMessage.style.display = 'none';
                         showLoading(false);
@@ -2082,6 +2095,7 @@
                     })
                     .catch((error) => {
                         const errorMessage = error.message;
+                        console.error('Sign in error:', errorMessage);
                         showAuthMessage(elements.signInMessage, errorMessage, 'error');
                         showLoading(false);
                     });
@@ -2110,6 +2124,7 @@
                     .then((userCredential) => {
                         // Signed up 
                         state.userName = name;
+                        console.log('Sign up successful');
                         elements.authModal.classList.remove('active');
                         elements.signUpMessage.style.display = 'none';
                         showLoading(false);
@@ -2124,6 +2139,7 @@
                     })
                     .catch((error) => {
                         const errorMessage = error.message;
+                        console.error('Sign up error:', errorMessage);
                         showAuthMessage(elements.signUpMessage, errorMessage, 'error');
                         showLoading(false);
                     });
@@ -2142,6 +2158,15 @@
                     switchAuthTab(tabId);
                 });
             });
+            
+            // Close auth modal when clicking outside
+            elements.authModal.addEventListener('click', (e) => {
+                if (e.target === elements.authModal) {
+                    elements.authModal.classList.remove('active');
+                }
+            });
+            
+            console.log('Auth listeners setup complete');
         }
         
         // Show/hide loading spinner
@@ -2184,10 +2209,14 @@
             elements.signUpMessage.style.display = 'none';
         }
         
-        // Load user data from Firebase
+        // Load user data from Firebase - FIXED VERSION
         function loadUserData() {
-            if (!state.currentUser) return;
-            
+            if (!state.currentUser) {
+                console.log('No current user, cannot load data');
+                return;
+            }
+
+            console.log('Loading user data for:', state.currentUser.uid);
             showLoading(true);
             
             // Load user profile from Firestore
@@ -2198,8 +2227,10 @@
                         state.userName = userData.name || state.currentUser.email.split('@')[0];
                         state.userProfile = userData.profile || state.userProfile;
                         state.behavioralData = userData.behavioralData || state.behavioralData;
+                        console.log('User profile loaded:', state.userName);
                     } else {
                         state.userName = state.currentUser.email.split('@')[0];
+                        console.log('No user profile found, using default');
                     }
                     
                     // Load app data from Firestore
@@ -2214,6 +2245,7 @@
                         state.achievements = data.achievements || availableAchievements.map(a => ({...a, earned: false}));
                         state.goals = data.goals || [];
                         
+                        console.log('App data loaded successfully');
                         showToast('Data loaded successfully!', 'success');
                     } else {
                         // Initialize with default data
@@ -2222,6 +2254,7 @@
                         state.strategy = 'avalanche';
                         state.achievements = availableAchievements.map(a => ({...a, earned: false}));
                         state.goals = [];
+                        console.log('No app data found, using defaults');
                     }
                     
                     state.dataLoaded = true;
@@ -2240,9 +2273,10 @@
                     updateBehavioralAnalytics();
                     
                     showLoading(false);
+                    console.log('User data loading complete');
                 })
                 .catch((error) => {
-                    console.error('Error loading data: ', error);
+                    console.error('Error loading data from Firebase: ', error);
                     showToast('Error loading data. Using local storage.', 'error');
                     
                     // Fallback to localStorage
@@ -2254,6 +2288,7 @@
         
         // Load data from localStorage as fallback
         function loadDataFromLocalStorage() {
+            console.log('Loading data from localStorage');
             const savedLoans = localStorage.getItem('debtfreeLoans');
             const savedPayments = localStorage.getItem('debtfreePayments');
             const savedStrategy = localStorage.getItem('debtfreeStrategy');
@@ -2271,10 +2306,12 @@
             state.behavioralData = savedBehavioral ? JSON.parse(savedBehavioral) : state.behavioralData;
             
             state.dataLoaded = true;
+            console.log('LocalStorage data loaded');
         }
         
         // Save data to Firebase and localStorage
         function saveData() {
+            console.log('Saving data...');
             // Always save to localStorage for offline access
             localStorage.setItem('debtfreeLoans', JSON.stringify(state.loans));
             localStorage.setItem('debtfreePayments', JSON.stringify(state.payments));
@@ -2323,6 +2360,8 @@
         
         // Setup event listeners
         function setupEventListeners() {
+            console.log('Setting up event listeners');
+            
             // Auth modal controls
             elements.signInBtn.addEventListener('click', () => {
                 elements.authModal.classList.add('active');
@@ -2549,6 +2588,17 @@
                     elements.notificationCenter.classList.remove('active');
                 }
             });
+
+            // Close modals when clicking outside
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            });
+
+            console.log('Event listeners setup complete');
         }
 
         function nextHelpStep() {
