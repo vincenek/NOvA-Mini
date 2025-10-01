@@ -1755,6 +1755,9 @@
             elements.importData.addEventListener('click', importUserData);
             elements.resetAllData.addEventListener('click', resetAllData);
             
+            // Export payments
+            elements.exportPayments.addEventListener('click', exportPaymentsData);
+            
             // Notifications
             elements.notificationBtn.addEventListener('click', toggleNotifications);
             elements.markAllRead.addEventListener('click', markAllNotificationsRead);
@@ -1866,6 +1869,9 @@
                     // Clear form
                     elements.signInEmail.value = '';
                     elements.signInPassword.value = '';
+                    
+                    // Show app content immediately
+                    showAppContent();
                 })
                 .catch((error) => {
                     showToast(error.message, 'error');
@@ -1914,6 +1920,9 @@
                     elements.signUpName.value = '';
                     elements.signUpEmail.value = '';
                     elements.signUpPassword.value = '';
+                    
+                    // Show app content immediately
+                    showAppContent();
                 })
                 .catch((error) => {
                     showToast(error.message, 'error');
@@ -2523,6 +2532,35 @@
                     showToast('Payment deleted successfully', 'success');
                 }
             }
+        }
+
+        // Export payments data
+        function exportPaymentsData() {
+            if (state.payments.length === 0) {
+                showToast('No payment data to export', 'warning');
+                return;
+            }
+            
+            // Convert payments to CSV format
+            let csvContent = "Date,Loan Name,Amount,Principal,Interest\n";
+            
+            state.payments.forEach(payment => {
+                const date = new Date(payment.date).toLocaleDateString();
+                csvContent += `"${date}","${payment.loanName}",${payment.amount},${payment.principal},${payment.interest}\n`;
+            });
+            
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'debtfreecompass-payments.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showToast('Payments exported successfully!', 'success');
         }
 
         // Milestone checking
