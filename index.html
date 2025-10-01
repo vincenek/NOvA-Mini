@@ -646,7 +646,7 @@
             padding: 16px;
             border-bottom: 1px solid var(--light-gray);
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
         }
 
@@ -1020,6 +1020,23 @@
             font-size: 0.7rem;
             margin-top: 8px;
         }
+        
+        .offline-indicator {
+            display: none;
+            background: var(--warning);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 2000;
+        }
+        
+        .offline-indicator.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -1048,7 +1065,7 @@
                 <div class="auth-buttons">
                     <div id="userInfo" class="user-info" style="display: none;">
                         <div class="user-avatar" id="userAvatar">U</div>
-                        <div class="user-name" id="userName"></div>
+                        <div class="user-email" id="userEmail"></div>
                     </div>
                     <button id="signInBtn" class="auth-btn">Sign In</button>
                     <button id="signUpBtn" class="auth-btn">Sign Up</button>
@@ -1755,7 +1772,7 @@
             welcomeSignUp: document.getElementById('welcomeSignUp'),
             userInfo: document.getElementById('userInfo'),
             userAvatar: document.getElementById('userAvatar'),
-            userName: document.getElementById('userName'),
+            userEmail: document.getElementById('userEmail'),
             
             // App content elements
             tabs: document.querySelectorAll('.tab'),
@@ -2024,6 +2041,9 @@
                 // User is signed in
                 state.currentUser = user;
                 console.log('User signed in:', user.email);
+                
+                // Update UI immediately
+                updateAuthUI();
                 loadUserData();
             } else {
                 // User is signed out
@@ -2033,21 +2053,39 @@
             }
         }
         
+        // Update authentication UI
+        function updateAuthUI() {
+            if (state.currentUser) {
+                elements.userInfo.style.display = 'flex';
+                elements.userEmail.textContent = state.currentUser.email;
+                elements.userAvatar.textContent = state.currentUser.email.charAt(0).toUpperCase();
+                
+                elements.signInBtn.style.display = 'none';
+                elements.signUpBtn.style.display = 'none';
+                elements.signOutBtn.style.display = 'block';
+            } else {
+                elements.userInfo.style.display = 'none';
+                elements.signInBtn.style.display = 'block';
+                elements.signUpBtn.style.display = 'block';
+                elements.signOutBtn.style.display = 'none';
+            }
+        }
+        
         // Show app content - FIXED VERSION
         function showAppContent() {
             console.log('Showing app content');
             elements.welcomeContent.style.display = 'none';
             elements.appContent.style.display = 'block';
             
-            // Update user info
-            elements.userInfo.style.display = 'flex';
-            elements.userName.textContent = state.userName || state.currentUser.email.split('@')[0];
-            elements.userAvatar.textContent = (state.userName || state.currentUser.email).charAt(0).toUpperCase();
-            
-            // Update auth buttons
-            elements.signInBtn.style.display = 'none';
-            elements.signUpBtn.style.display = 'none';
-            elements.signOutBtn.style.display = 'block';
+            // Create welcome notification if first time
+            if (state.notifications.length === 0) {
+                notificationSystem.createNotification(
+                    'welcome',
+                    'Welcome to DebtFree Compass!',
+                    'Start by adding your loans to create a personalized payoff plan.',
+                    'low'
+                );
+            }
             
             console.log('App content shown successfully');
         }
@@ -2092,6 +2130,10 @@
                         elements.signInMessage.style.display = 'none';
                         showLoading(false);
                         showToast('Successfully signed in!', 'success');
+                        
+                        // Clear form
+                        elements.signInEmail.value = '';
+                        elements.signInPassword.value = '';
                     })
                     .catch((error) => {
                         const errorMessage = error.message;
@@ -2129,6 +2171,11 @@
                         elements.signUpMessage.style.display = 'none';
                         showLoading(false);
                         showToast('Account created successfully!', 'success');
+                        
+                        // Clear form
+                        elements.signUpName.value = '';
+                        elements.signUpEmail.value = '';
+                        elements.signUpPassword.value = '';
                         
                         // Save user's name to Firestore
                         return db.collection('users').doc(userCredential.user.uid).set({
@@ -2488,23 +2535,12 @@
             elements.prevHelpStep.addEventListener('click', prevHelpStep);
             
             // Data management
-            elements.dataManagementBtn.addEventListener('click', () => {
-                elements.dataModal.classList.add('active');
-            });
-            
-            elements.closeDataModal.addEventListener('click', () => {
-                elements.dataModal.classList.remove('active');
-            });
-            
             elements.exportData.addEventListener('click', exportUserData);
             
             elements.importData.addEventListener('click', importUserData);
             
             // Payoff strategy
             elements.updateProjection.addEventListener('click', updatePayoffStrategy);
-            
-            // Calculate savings
-            elements.calculateSavingsBtn.addEventListener('click', calculateInterestSavings);
             
             // Edit loan
             elements.editLoanForm.addEventListener('submit', function(e) {
@@ -2543,8 +2579,9 @@
                 elements.celebration.classList.remove('active');
             });
             
-            // Notification system
-            elements.notificationBtn.addEventListener('click', () => {
+            // Notification system - FIXED
+            elements.notificationBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 elements.notificationCenter.classList.toggle('active');
                 notificationSystem.renderNotifications();
             });
@@ -3221,81 +3258,8 @@
                 sortedLoans.sort((a, b) => a.balance - b.balance);
             }
             
-            // Update timeline
-            elements.payoffTimeline.innerHTML = '';
-            
-            sortedLoans.forEach((loan, index) => {
-                const timelineItem = document.createElement('div');
-                timelineItem.className = 'timeline-item';
-                timelineItem.innerHTML = `
-                    <div class="timeline-marker" style="width: 40px; height: 40px; border-radius: 50%; background: white; border: 4px solid var(--light-gray); margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--gray); transition: var(--transition);">${index + 1}</div>
-                    <div class="timeline-label" style="font-size: 0.875rem; color: var(--gray);">${loan.name}</div>
-                `;
-                elements.payoffTimeline.appendChild(timelineItem);
-            });
-            
-            // Update chart
-            updatePayoffChart(sortedLoans);
-            
             // Update strategy comparison
             updateStrategyComparison();
-        }
-        
-        // Update payoff chart
-        function updatePayoffChart(sortedLoans) {
-            const ctx = elements.payoffChart.getContext('2d');
-            
-            // Destroy existing chart if it exists
-            if (window.payoffChartInstance) {
-                window.payoffChartInstance.destroy();
-            }
-            
-            const labels = sortedLoans.map(loan => loan.name);
-            const balances = sortedLoans.map(loan => loan.balance);
-            const colors = sortedLoans.map((loan, i) => {
-                const hue = (i * 137.5) % 360; // Golden angle for distinct colors
-                return `hsl(${hue}, 70%, 60%)`;
-            });
-            
-            window.payoffChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Remaining Balance',
-                        data: balances,
-                        backgroundColor: colors,
-                        borderColor: colors.map(color => color.replace('60%)', '40%)')),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Balance ($)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Payoff Order Visualization'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Balance: $${context.raw.toFixed(2)}`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
         }
         
         // Analyze avalanche strategy
@@ -3389,7 +3353,7 @@
                 recommendation += ` The Snowball method will also get you debt-free <strong>${timeDifference}</strong> months faster.`;
             }
             
-            elements.comparisonResults.innerHTML = `
+            elements.whatIfResults.innerHTML = `
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div class="card">
                         <h3>Avalanche Method</h3>
@@ -3407,50 +3371,6 @@
                     <p>${recommendation}</p>
                 </div>
             `;
-        }
-        
-        // Calculate interest savings
-        function calculateInterestSavings() {
-            if (state.loans.length === 0) {
-                alert('Add at least one loan to calculate interest savings.');
-                return;
-            }
-            
-            const extraPayment = parseFloat(elements.extraPayment.value) || 0;
-            let totalInterestWithoutExtra = 0;
-            let totalInterestWithExtra = 0;
-            
-            // Calculate interest without extra payments
-            state.loans.forEach(loan => {
-                let balance = loan.balance;
-                const monthlyRate = loan.interestRate / 100 / 12;
-                
-                while (balance > 0) {
-                    const interest = balance * monthlyRate;
-                    totalInterestWithoutExtra += interest;
-                    const principalPayment = Math.min(loan.minPayment - interest, balance);
-                    balance -= principalPayment;
-                }
-            });
-            
-            // Calculate interest with extra payments
-            state.loans.forEach(loan => {
-                let balance = loan.balance;
-                const monthlyRate = loan.interestRate / 100 / 12;
-                const payment = loan.minPayment + extraPayment;
-                
-                while (balance > 0) {
-                    const interest = balance * monthlyRate;
-                    totalInterestWithExtra += interest;
-                    const principalPayment = Math.min(payment - interest, balance);
-                    balance -= principalPayment;
-                }
-            });
-            
-            const savings = totalInterestWithoutExtra - totalInterestWithExtra;
-            const monthsSaved = Math.round(savings / (extraPayment * 12));
-            
-            showToast(`By paying an extra $${extraPayment} per month, you'll save $${savings.toFixed(2)} in interest and become debt-free ${monthsSaved} months earlier!`, 'success');
         }
         
         // Export user data
@@ -3611,92 +3531,6 @@
             `;
             
             elements.insightsContent.innerHTML = insightsHTML;
-            
-            // Update calendar chart
-            updateCalendarChart();
-        }
-        
-        // Update calendar chart
-        function updateCalendarChart() {
-            const ctx = elements.calendarChart.getContext('2d');
-            
-            // Destroy existing chart if it exists
-            if (window.calendarChartInstance) {
-                window.calendarChartInstance.destroy();
-            }
-            
-            // Generate enhanced projection data
-            const months = [];
-            const debtAmounts = [];
-            const interestProjections = [];
-            
-            let currentDebt = state.loans.reduce((sum, loan) => sum + loan.originalBalance, 0);
-            const monthlyPayment = state.loans.reduce((sum, loan) => sum + loan.minPayment, 0);
-            let totalInterest = 0;
-            
-            const today = new Date();
-            months.push(today.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
-            debtAmounts.push(currentDebt);
-            interestProjections.push(totalInterest);
-            
-            for (let i = 1; i <= 12; i++) {
-                const futureDate = new Date();
-                futureDate.setMonth(today.getMonth() + i);
-                months.push(futureDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
-                
-                // Calculate monthly interest
-                const avgInterestRate = state.loans.reduce((sum, loan) => sum + loan.interestRate, 0) / state.loans.length;
-                const monthlyInterest = currentDebt * (avgInterestRate / 100 / 12);
-                totalInterest += monthlyInterest;
-                
-                // Reduce debt by payment minus interest
-                currentDebt = Math.max(0, currentDebt - (monthlyPayment - monthlyInterest));
-                debtAmounts.push(currentDebt);
-                interestProjections.push(totalInterest);
-            }
-            
-            window.calendarChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: months,
-                    datasets: [
-                        {
-                            label: 'Projected Debt',
-                            data: debtAmounts,
-                            borderColor: 'rgb(75, 192, 192)',
-                            tension: 0.1,
-                            fill: true,
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)'
-                        },
-                        {
-                            label: 'Cumulative Interest',
-                            data: interestProjections,
-                            borderColor: 'rgb(255, 99, 132)',
-                            tension: 0.1,
-                            fill: false
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Amount ($)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: '12-Month Debt & Interest Projection'
-                        }
-                    }
-                }
-            });
         }
 
         // Behavioral Analytics Update
