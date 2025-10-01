@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BudgetWise | Smart Finance Tracker</title>
+    <title>BudgetWise | Proprietary Finance Intelligence</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -144,6 +144,16 @@
         .btn-primary:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(67, 97, 238, 0.05);
         }
         
         /* Header */
@@ -341,6 +351,7 @@
             border-radius: var(--border-radius);
             padding: 28px;
             box-shadow: var(--card-shadow);
+            position: relative;
         }
         
         .chart-header {
@@ -356,29 +367,91 @@
             color: var(--dark);
         }
         
+        .chart-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
         .chart-canvas {
-            height: 300px;
+            height: 320px;
             position: relative;
             overflow: hidden;
+            background: rgba(67, 97, 238, 0.02);
+            border-radius: 8px;
+        }
+        
+        .chart-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-rows: repeat(5, 1fr);
+            grid-template-columns: 1fr;
+        }
+        
+        .grid-line {
+            border-bottom: 1px solid rgba(67, 97, 238, 0.1);
+        }
+        
+        .chart-bar-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 20px;
         }
         
         .chart-bar {
-            position: absolute;
-            bottom: 0;
-            width: 40px;
+            width: 32px;
             background: linear-gradient(to top, var(--primary), var(--secondary));
             border-radius: 4px 4px 0 0;
-            transition: height 0.8s ease, background 0.3s ease;
+            position: relative;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
         }
         
-        .chart-label {
+        .chart-bar:hover {
+            transform: scaleY(1.05);
+            z-index: 10;
+        }
+        
+        .bar-value {
             position: absolute;
-            bottom: -25px;
+            top: -25px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.85rem;
+            background: var(--card-bg);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .chart-bar:hover .bar-value {
+            opacity: 1;
+        }
+        
+        .bar-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
             color: var(--gray);
             white-space: nowrap;
+            text-align: center;
+            width: 50px;
         }
         
         .insights-panel {
@@ -815,6 +888,15 @@
             .currency-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+            
+            .chart-bar {
+                width: 24px;
+            }
+            
+            .bar-label {
+                font-size: 0.65rem;
+                width: 40px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -842,6 +924,10 @@
             .setup-screen {
                 padding: 30px 20px;
                 margin: 20px auto;
+            }
+            
+            .chart-bar {
+                width: 18px;
             }
         }
         
@@ -895,6 +981,29 @@
         .loading {
             animation: pulse 1.5s infinite;
         }
+        
+        /* Proprietary features */
+        .prop-badge {
+            background: linear-gradient(135deg, var(--secondary), #4cc9f0);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .reset-btn {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            background: rgba(239, 71, 111, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        
+        .reset-btn:hover {
+            background: rgba(239, 71, 111, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -904,7 +1013,7 @@
             <i class="fas fa-wallet"></i>
         </div>
         <h1 class="setup-title">Welcome to BudgetWise</h1>
-        <p class="setup-description">Let's get you set up for financial success</p>
+        <p class="setup-description">Proprietary Finance Intelligence Platform • 2025</p>
         
         <div class="form-group">
             <label>Select your currency</label>
@@ -919,7 +1028,7 @@
         </div>
         
         <button class="btn btn-primary" id="start-btn" disabled>
-            <i class="fas fa-arrow-right"></i> Get Started
+            <i class="fas fa-arrow-right"></i> Launch Platform
         </button>
     </div>
     
@@ -931,7 +1040,7 @@
                 <div class="logo-icon">
                     <i class="fas fa-wallet"></i>
                 </div>
-                <div class="logo-text">BudgetWise</div>
+                <div class="logo-text">BudgetWise<span class="prop-badge">PROPRIETARY</span></div>
             </div>
             <div class="header-actions">
                 <button class="theme-toggle" id="theme-toggle">
@@ -1007,7 +1116,7 @@
             <div class="ai-insight">
                 <div class="ai-insight-header">
                     <i class="fas fa-robot"></i>
-                    <span>Smart Insight</span>
+                    <span>Proprietary Insight Engine</span>
                 </div>
                 <p id="ai-insight-text">Based on your spending patterns, you're on track to save $240 this month. Consider allocating $50 to your emergency fund.</p>
             </div>
@@ -1070,16 +1179,22 @@
             <div class="analytics-grid">
                 <div class="chart-container">
                     <div class="chart-header">
-                        <h2 class="chart-title">Monthly Spending Trends</h2>
-                        <select id="chart-period">
-                            <option value="30">Last 30 Days</option>
-                            <option value="90">Last 90 Days</option>
-                            <option value="180">Last 6 Months</option>
-                            <option value="365">Year to Date</option>
-                        </select>
+                        <h2 class="chart-title">Proprietary Spending Intelligence</h2>
+                        <div class="chart-actions">
+                            <button class="btn btn-outline reset-btn" id="reset-chart">
+                                <i class="fas fa-redo"></i> Reset
+                            </button>
+                            <select id="chart-period">
+                                <option value="30">Last 30 Days</option>
+                                <option value="90">Last 90 Days</option>
+                                <option value="180">Last 6 Months</option>
+                                <option value="365">Year to Date</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="chart-canvas" id="chart-canvas">
-                        <!-- Chart bars will be generated here -->
+                        <div class="chart-grid" id="chart-grid"></div>
+                        <div class="chart-bar-container" id="chart-bars"></div>
                     </div>
                 </div>
                 
@@ -1119,7 +1234,7 @@
                 <div class="card-header">
                     <h2 class="card-title">
                         <i class="fas fa-lightbulb card-icon"></i>
-                        Smart Recommendations
+                        AI-Powered Recommendations
                     </h2>
                 </div>
                 <div id="recommendations">
@@ -1164,12 +1279,10 @@
                 <div class="card-header">
                     <h2 class="card-title">
                         <i class="fas fa-file-alt card-icon"></i>
-                        Monthly Summary Report
+                        Intelligent Monthly Report
                     </h2>
                     <select id="report-month">
-                        <option value="2024-03">March 2024</option>
-                        <option value="2024-02">February 2024</option>
-                        <option value="2024-01">January 2024</option>
+                        <!-- Will be populated dynamically -->
                     </select>
                 </div>
                 <div style="padding: 20px;">
@@ -1196,13 +1309,13 @@
                         <div class="card-header">
                             <h3 style="font-size: 1.2rem; color: var(--primary);">
                                 <i class="fas fa-chart-pie"></i>
-                                Category Breakdown
+                                Category Intelligence Breakdown
                             </h3>
                         </div>
                         <div style="padding: 20px;">
                             <div id="category-breakdown">
                                 <p style="color: var(--gray); text-align: center; padding: 40px 0;">
-                                    Add transactions to see category breakdown
+                                    Add transactions to see intelligent category analysis
                                 </p>
                             </div>
                         </div>
@@ -1277,7 +1390,10 @@
         const dateInput = document.getElementById('date');
         const filterButtons = document.querySelectorAll('.filter-btn');
         const chartCanvas = document.getElementById('chart-canvas');
+        const chartGrid = document.getElementById('chart-grid');
+        const chartBars = document.getElementById('chart-bars');
         const chartPeriod = document.getElementById('chart-period');
+        const resetChartBtn = document.getElementById('reset-chart');
         const reportMonth = document.getElementById('report-month');
         const reportIncomeEl = document.getElementById('report-income');
         const reportExpenseEl = document.getElementById('report-expense');
@@ -1285,10 +1401,13 @@
         const reportSavingsEl = document.getElementById('report-savings');
         const categoryBreakdownEl = document.getElementById('category-breakdown');
         
-        // Set today as default date
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.value = today;
-        dateInput.max = today;
+        // Set today as default date (2025 ready)
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = String(today.getMonth() + 1).padStart(2, '0');
+        const todayFormatted = `${currentYear}-${currentMonth}-${String(today.getDate()).padStart(2, '0')}`;
+        dateInput.value = todayFormatted;
+        dateInput.max = todayFormatted;
         
         // App state
         let transactions = [];
@@ -1388,6 +1507,68 @@
             setTimeout(() => {
                 notificationEl.classList.remove('show');
             }, 3000);
+        }
+        
+        // Generate intelligent sample data for 2025
+        function generateSampleData() {
+            const categories = ['salary', 'food', 'transport', 'entertainment', 'shopping', 'bills', 'health'];
+            const descriptions = {
+                salary: ['Monthly Salary', 'Freelance Payment', 'Bonus'],
+                food: ['Grocery Shopping', 'Restaurant Dinner', 'Coffee Break'],
+                transport: ['Gas', 'Public Transport', 'Uber'],
+                entertainment: ['Movie Tickets', 'Streaming Service', 'Concert'],
+                shopping: ['Clothing', 'Electronics', 'Home Goods'],
+                bills: ['Electricity', 'Internet', 'Phone Bill'],
+                health: ['Doctor Visit', 'Pharmacy', 'Gym Membership']
+            };
+            
+            const sampleTransactions = [];
+            const startDate = new Date(currentYear, 0, 1); // January 1, 2025
+            const endDate = new Date(currentYear, 11, 31); // December 31, 2025
+            
+            // Generate 6 months of data
+            for (let i = 0; i < 180; i++) {
+                const randomDate = new Date(startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime()));
+                const year = randomDate.getFullYear();
+                const month = String(randomDate.getMonth() + 1).padStart(2, '0');
+                const day = String(randomDate.getDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
+                
+                // Income every 15 days
+                if (i % 15 === 0) {
+                    const desc = descriptions.salary[Math.floor(Math.random() * descriptions.salary.length)];
+                    sampleTransactions.push({
+                        id: `sample-${Date.now()}-${i}`,
+                        amount: 3500 + Math.random() * 1500,
+                        type: 'income',
+                        category: 'salary',
+                        description: desc,
+                        date: dateStr
+                    });
+                }
+                
+                // Expenses daily
+                const category = categories[1 + Math.floor(Math.random() * (categories.length - 1))];
+                const amount = category === 'food' ? 20 + Math.random() * 80 :
+                              category === 'transport' ? 10 + Math.random() * 50 :
+                              category === 'entertainment' ? 15 + Math.random() * 100 :
+                              category === 'shopping' ? 50 + Math.random() * 300 :
+                              category === 'bills' ? 50 + Math.random() * 200 :
+                              20 + Math.random() * 150;
+                
+                const desc = descriptions[category][Math.floor(Math.random() * descriptions[category].length)];
+                
+                sampleTransactions.push({
+                    id: `sample-${Date.now()}-${i}-exp`,
+                    amount: amount,
+                    type: 'expense',
+                    category: category,
+                    description: desc,
+                    date: dateStr
+                });
+            }
+            
+            return sampleTransactions;
         }
         
         // Calculate financial data
@@ -1492,7 +1673,7 @@
                 bestCategory.charAt(0).toUpperCase() + bestCategory.slice(1);
             
             // Average daily spending
-            const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+            const daysInMonth = new Date(currentYear, today.getMonth() + 1, 0).getDate();
             const avgDaily = totalExpense / daysInMonth;
             avgDailyEl.textContent = formatCurrency(avgDaily);
             
@@ -1551,7 +1732,8 @@
                 const transDate = new Date(transaction.date);
                 const formattedDate = transDate.toLocaleDateString('en-US', {
                     month: 'short',
-                    day: 'numeric'
+                    day: 'numeric',
+                    year: 'numeric'
                 });
                 
                 const amountClass = transaction.type === 'income' ? 'income' : 'expense';
@@ -1625,7 +1807,8 @@
                 transactions: transactions,
                 monthlyBudget: monthlyBudget,
                 currency: currency,
-                version: '2.0'
+                version: '3.0',
+                lastUpdated: new Date().toISOString()
             };
             localStorage.setItem('budgetwise_data', JSON.stringify(data));
         }
@@ -1644,6 +1827,13 @@
                     showNotification('Error loading data. Starting fresh.', true);
                 }
             }
+            
+            // If no data exists, generate intelligent sample data for 2025
+            if (transactions.length === 0) {
+                transactions = generateSampleData();
+                monthlyBudget = 3000;
+                saveData();
+            }
         }
         
         // Export data
@@ -1652,14 +1842,15 @@
                 transactions: transactions,
                 monthlyBudget: monthlyBudget,
                 currency: currency,
-                version: '2.0',
-                exportedAt: new Date().toISOString()
+                version: '3.0',
+                exportedAt: new Date().toISOString(),
+                platform: 'BudgetWise Proprietary Platform'
             };
             
             const dataStr = JSON.stringify(data, null, 2);
             const dataUri = 'application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
             
-            const exportFileDefaultName = `budgetwise-export-${new Date().toISOString().split('T')[0]}.json`;
+            const exportFileDefaultName = `budgetwise-export-${todayFormatted}.json`;
             
             const linkElement = document.createElement('a');
             linkElement.setAttribute('href', dataUri);
@@ -1668,9 +1859,18 @@
             showNotification('Data exported successfully!');
         }
         
-        // Generate spending chart
+        // Generate proprietary spending chart
         function generateChart() {
-            chartCanvas.innerHTML = '';
+            // Clear existing chart
+            chartGrid.innerHTML = '';
+            chartBars.innerHTML = '';
+            
+            // Create grid lines
+            for (let i = 0; i < 5; i++) {
+                const gridLine = document.createElement('div');
+                gridLine.className = 'grid-line';
+                chartGrid.appendChild(gridLine);
+            }
             
             // Get selected period
             const periodDays = parseInt(chartPeriod.value);
@@ -1680,62 +1880,84 @@
             // Filter transactions for the period
             const periodTransactions = transactions.filter(t => {
                 const transDate = new Date(t.date);
-                return transDate >= startDate && transDate <= now;
+                return transDate >= startDate && transDate <= now && t.type === 'expense';
             });
             
             if (periodTransactions.length === 0) {
-                chartCanvas.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--gray);">No transactions in this period</div>';
+                chartBars.innerHTML = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--gray);">No expenses in this period</div>';
                 return;
             }
             
-            // Group by day
+            // Group by day and calculate totals
             const dailyExpenses = {};
             periodTransactions.forEach(t => {
-                if (t.type === 'expense') {
-                    const dateKey = t.date.split('T')[0];
-                    dailyExpenses[dateKey] = (dailyExpenses[dateKey] || 0) + t.amount;
-                }
+                const dateKey = t.date;
+                dailyExpenses[dateKey] = (dailyExpenses[dateKey] || 0) + t.amount;
             });
             
-            // Create chart bars
+            // Sort dates
             const dates = Object.keys(dailyExpenses).sort();
             const maxExpense = Math.max(...Object.values(dailyExpenses));
             
             if (dates.length === 0) {
-                chartCanvas.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--gray);">No expenses in this period</div>';
+                chartBars.innerHTML = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--gray);">No expenses to display</div>';
                 return;
             }
             
-            const barWidth = Math.min(40, (chartCanvas.offsetWidth - 40) / dates.length);
-            const spacing = 10;
+            // Create chart bars
+            const containerWidth = chartBars.offsetWidth;
+            const maxBars = Math.min(dates.length, 20); // Limit to 20 bars for readability
+            const startIndex = Math.max(0, dates.length - maxBars);
+            const visibleDates = dates.slice(startIndex);
             
-            dates.forEach((date, index) => {
+            const barWidth = Math.min(32, (containerWidth - 40) / visibleDates.length);
+            const spacing = 8;
+            
+            visibleDates.forEach((date, index) => {
                 const expense = dailyExpenses[date];
-                const height = maxExpense > 0 ? (expense / maxExpense) * 250 : 0;
+                const height = maxExpense > 0 ? (expense / maxExpense) * 280 : 0;
                 const x = index * (barWidth + spacing) + 20;
                 
                 const bar = document.createElement('div');
                 bar.className = 'chart-bar';
                 bar.style.height = `${height}px`;
                 bar.style.width = `${barWidth}px`;
-                bar.style.left = `${x}px`;
-                bar.style.bottom = '0';
                 bar.title = `${formatCurrency(expense)} on ${new Date(date).toLocaleDateString()}`;
                 
-                const label = document.createElement('div');
-                label.className = 'chart-label';
-                label.textContent = new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                label.style.left = `${x + barWidth/2}px`;
+                const valueLabel = document.createElement('div');
+                valueLabel.className = 'bar-value';
+                valueLabel.textContent = formatCurrency(expense);
+                bar.appendChild(valueLabel);
                 
-                chartCanvas.appendChild(bar);
-                chartCanvas.appendChild(label);
+                const dateLabel = document.createElement('div');
+                dateLabel.className = 'bar-label';
+                dateLabel.textContent = new Date(date).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+                bar.appendChild(dateLabel);
+                
+                chartBars.appendChild(bar);
             });
         }
         
+        // Reset chart to default view
+        resetChartBtn.addEventListener('click', () => {
+            chartPeriod.value = '30';
+            generateChart();
+            showNotification('Chart view reset to last 30 days');
+        });
+        
         // Update reports
         function updateReports() {
+            // Populate report months dropdown with available months from transactions
+            populateReportMonths();
+            
             // Get selected report month
-            const [year, month] = reportMonth.value.split('-');
+            const selectedValue = reportMonth.value;
+            if (!selectedValue) return;
+            
+            const [year, month] = selectedValue.split('-');
             const reportDate = new Date(parseInt(year), parseInt(month) - 1);
             
             // Filter transactions for the report month
@@ -1768,6 +1990,43 @@
             
             // Update category breakdown
             updateCategoryBreakdown(reportTransactions);
+        }
+        
+        // Populate report months dropdown
+        function populateReportMonths() {
+            // Get all unique months from transactions
+            const months = new Set();
+            transactions.forEach(t => {
+                const date = new Date(t.date);
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                months.add(monthKey);
+            });
+            
+            // Convert to array and sort in descending order
+            const sortedMonths = Array.from(months).sort((a, b) => {
+                return new Date(b + '-01') - new Date(a + '-01');
+            });
+            
+            // Populate dropdown
+            reportMonth.innerHTML = '';
+            sortedMonths.forEach(monthKey => {
+                const date = new Date(monthKey + '-01');
+                const option = document.createElement('option');
+                option.value = monthKey;
+                option.textContent = date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long' 
+                });
+                reportMonth.appendChild(option);
+            });
+            
+            // Set default to current month if available
+            const currentMonthKey = `${currentYear}-${currentMonth}`;
+            if (months.has(currentMonthKey)) {
+                reportMonth.value = currentMonthKey;
+            } else if (sortedMonths.length > 0) {
+                reportMonth.value = sortedMonths[0];
+            }
         }
         
         // Update category breakdown
@@ -1879,7 +2138,7 @@
             
             // Reset form
             transactionForm.reset();
-            dateInput.value = today;
+            dateInput.value = todayFormatted;
             
             // Update UI
             renderTransactions();
@@ -1925,9 +2184,9 @@
             calculateFinancials();
             renderTransactions();
             
-            // Set up budget if none exists
+            // Set up budget if none exists (shouldn't happen due to sample data)
             if (monthlyBudget === 0) {
-                monthlyBudget = 2500;
+                monthlyBudget = 3000;
                 saveData();
                 calculateFinancials();
             }
