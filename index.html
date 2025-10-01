@@ -156,6 +156,16 @@
             background: rgba(67, 97, 238, 0.05);
         }
         
+        .btn-danger {
+            background: rgba(239, 71, 111, 0.1);
+            color: var(--danger);
+            border: 2px solid var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background: rgba(239, 71, 111, 0.2);
+        }
+        
         /* Header */
         .header {
             display: flex;
@@ -1037,6 +1047,76 @@
             font-size: 0.85rem;
             color: var(--gray);
         }
+        
+        /* Reset confirmation modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .modal-body {
+            margin-bottom: 25px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
     </style>
 </head>
 <body>
@@ -1082,6 +1162,9 @@
                 </button>
                 <button class="btn btn-outline" id="export-btn">
                     <i class="fas fa-file-export"></i> Export
+                </button>
+                <button class="btn btn-danger" id="reset-btn">
+                    <i class="fas fa-redo"></i> Reset
                 </button>
             </div>
         </div>
@@ -1355,6 +1438,23 @@
         </div>
     </div>
     
+    <!-- Reset Confirmation Modal -->
+    <div class="modal" id="reset-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Reset All Data</h3>
+                <button class="close-modal" id="close-reset-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to reset all your financial data? This action cannot be undone and will delete all transactions, budget settings, and preferences.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancel-reset">Cancel</button>
+                <button class="btn btn-danger" id="confirm-reset">Reset All Data</button>
+            </div>
+        </div>
+    </div>
+    
     <!-- Floating Action Button -->
     <div class="fab" id="fab">
         <i class="fas fa-plus"></i>
@@ -1396,6 +1496,11 @@
         const themeToggle = document.getElementById('theme-toggle');
         const fab = document.getElementById('fab');
         const body = document.body;
+        const resetBtn = document.getElementById('reset-btn');
+        const resetModal = document.getElementById('reset-modal');
+        const closeResetModal = document.getElementById('close-reset-modal');
+        const cancelReset = document.getElementById('cancel-reset');
+        const confirmReset = document.getElementById('confirm-reset');
         
         // Main app elements
         const balanceEl = document.getElementById('balance');
@@ -1521,11 +1626,6 @@
         // Format currency based on selected currency
         function formatCurrency(amount) {
             const currencySymbol = currencySymbols[currency] || '$';
-            const options = { 
-                style: 'currency', 
-                currency: currency,
-                minimumFractionDigits: currency === 'JPY' ? 0 : 2
-            };
             
             // For NGN, we'll format manually to avoid scientific notation
             if (currency === 'NGN') {
@@ -1534,6 +1634,13 @@
                     maximumFractionDigits: 2
                 });
             }
+            
+            // For other currencies, use Intl.NumberFormat
+            const options = { 
+                style: 'currency', 
+                currency: currency,
+                minimumFractionDigits: currency === 'JPY' ? 0 : 2
+            };
             
             return new Intl.NumberFormat('en-US', options).format(amount);
         }
@@ -1578,7 +1685,7 @@
             const budgetRemaining = monthlyBudget - expense;
             const savingsRate = income > 0 ? ((income - expense) / income) * 100 : 0;
             
-            // Update UI
+            // Update UI with correct currency
             balanceEl.textContent = formatCurrency(balance);
             totalIncomeEl.textContent = formatCurrency(income);
             totalExpenseEl.textContent = formatCurrency(expense);
@@ -1955,7 +2062,7 @@
             const balance = income - expense;
             const savingsRate = income > 0 ? ((income - expense) / income) * 100 : 0;
             
-            // Update report UI
+            // Update report UI with correct currency
             reportIncomeEl.textContent = formatCurrency(income);
             reportExpenseEl.textContent = formatCurrency(expense);
             reportBalanceEl.textContent = formatCurrency(balance);
@@ -2043,6 +2150,22 @@
             categoryBreakdownEl.innerHTML = html;
         }
         
+        // Reset all data
+        function resetAllData() {
+            if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
+                localStorage.removeItem('budgetwise_data');
+                localStorage.removeItem('budgetwise_theme');
+                transactions = [];
+                monthlyBudget = 0;
+                currency = 'USD';
+                darkMode = false;
+                body.classList.remove('dark-mode');
+                
+                // Reload the page to show setup screen
+                location.reload();
+            }
+        }
+        
         // Tab Navigation
         navItems.forEach(item => {
             item.addEventListener('click', () => {
@@ -2078,6 +2201,32 @@
                 disableDarkMode();
             } else {
                 enableDarkMode();
+            }
+        });
+        
+        // Reset button
+        resetBtn.addEventListener('click', () => {
+            resetModal.classList.add('show');
+        });
+        
+        // Modal close handlers
+        closeResetModal.addEventListener('click', () => {
+            resetModal.classList.remove('show');
+        });
+        
+        cancelReset.addEventListener('click', () => {
+            resetModal.classList.remove('show');
+        });
+        
+        confirmReset.addEventListener('click', () => {
+            resetModal.classList.remove('show');
+            resetAllData();
+        });
+        
+        // Close modal when clicking outside
+        resetModal.addEventListener('click', (e) => {
+            if (e.target === resetModal) {
+                resetModal.classList.remove('show');
             }
         });
         
