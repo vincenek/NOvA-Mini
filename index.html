@@ -3,288 +3,751 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real Forex Data Dashboard</title>
+    <title>ForexPro - Advanced Trading Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
-            color: white;
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
             min-height: 100vh;
-            padding: 20px;
+            overflow-x: hidden;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
             padding: 20px;
         }
         
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #00c9ff, #92fe9d);
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--card-border);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo i {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.8;
-            margin-bottom: 20px;
+        .user-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
         
-        .disclaimer {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            border-left: 3px solid #ff6b6b;
-        }
-        
+        /* Dashboard Layout */
         .dashboard {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 300px;
             gap: 20px;
-            margin-bottom: 30px;
         }
         
-        @media (max-width: 768px) {
+        .main-content {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 1024px) {
             .dashboard {
                 grid-template-columns: 1fr;
             }
         }
         
+        /* Cards */
         .card {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 15px;
-            padding: 25px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         
-        .card h2 {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: #00c9ff;
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
         }
         
-        .currency-pair {
+        .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
-            margin-bottom: 10px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            transition: transform 0.2s ease;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--light);
+        }
+        
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+        
+        .status-item i {
+            color: var(--secondary);
+        }
+        
+        .status-item.error i {
+            color: var(--danger);
+        }
+        
+        /* Currency Pairs */
+        .currency-pairs {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .currency-pair {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
         }
         
         .currency-pair:hover {
-            transform: translateY(-2px);
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+        }
+        
+        .currency-pair.active {
+            background: rgba(37, 99, 235, 0.15);
+            border-color: var(--primary);
+        }
+        
+        .pair-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
         
         .pair-name {
-            font-weight: bold;
-            font-size: 1.2rem;
+            font-weight: 600;
+            font-size: 1.1rem;
         }
         
-        .current-rate {
+        .pair-change {
+            font-size: 0.85rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        
+        .positive {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--secondary);
+        }
+        
+        .negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        .pair-rate {
             font-size: 1.3rem;
-            font-weight: bold;
+            font-weight: 700;
+            margin-bottom: 5px;
         }
         
-        .positive { color: #4ade80; }
-        .negative { color: #f87171; }
+        .pair-info {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
         
+        /* Charts */
         .chart-container {
-            height: 300px;
+            height: 400px;
             position: relative;
             margin-top: 20px;
         }
         
-        canvas {
-            width: 100%;
-            height: 100%;
-            border-radius: 10px;
-        }
-        
-        .status {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            font-size: 0.9rem;
-        }
-        
-        .status.success {
-            background: rgba(74, 222, 128, 0.2);
-            color: #4ade80;
-        }
-        
-        .status.error {
-            background: rgba(248, 113, 113, 0.2);
-            color: #f87171;
-        }
-        
-        .status.loading {
-            background: rgba(251, 191, 36, 0.2);
-            color: #fbbf24;
-        }
-        
+        /* Controls */
         .controls {
             display: flex;
             gap: 15px;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
         
-        button {
-            background: linear-gradient(45deg, #00c9ff, #92fe9d);
+        .btn {
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
             border: none;
             padding: 12px 24px;
-            border-radius: 25px;
-            color: #1a2a6c;
-            font-weight: bold;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
-        button:hover {
-            transform: scale(1.05);
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
         }
         
-        button:disabled {
+        .btn:disabled {
             opacity: 0.5;
             transform: none;
             cursor: not-allowed;
+            box-shadow: none;
         }
         
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Alerts Panel */
+        .alerts-panel {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .alert-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--card-border);
+        }
+        
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+        
+        .alert-pair {
+            font-weight: 600;
+        }
+        
+        .alert-condition {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        
+        .alert-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .alert-actions button {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .alert-actions button:hover {
+            color: var(--light);
+        }
+        
+        /* News Panel */
+        .news-panel {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .news-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--card-border);
+        }
+        
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        
+        .news-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+        
+        .news-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: var(--dark);
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            color: var(--light);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            color: var(--light);
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        /* Footer */
         .footer {
             text-align: center;
-            margin-top: 30px;
+            margin-top: 40px;
             padding: 20px;
             font-size: 0.9rem;
-            opacity: 0.7;
+            color: var(--gray);
+            border-top: 1px solid var(--card-border);
         }
         
-        .loading {
-            text-align: center;
-            padding: 20px;
-            font-style: italic;
-            opacity: 0.6;
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
         
-        .api-info {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 15px;
-            font-size: 0.85rem;
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .currency-pairs {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .status-bar {
+                flex-wrap: wrap;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .user-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Real Forex Data Dashboard</h1>
-            <p class="subtitle">Live currency exchange rates from real APIs</p>
-            <div class="disclaimer">
-                <strong>Disclaimer:</strong> This dashboard fetches real market data from free APIs. 
-                Data may have delays. Not financial advice. Use at your own risk.
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <h1>ForexPro</h1>
+            </div>
+            <div class="user-controls">
+                <div class="status-item">
+                    <i class="fas fa-circle"></i>
+                    <span>Live</span>
+                </div>
+                <button class="btn" id="settingsBtn">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </button>
             </div>
         </header>
         
         <div class="dashboard">
-            <div class="card">
-                <h2>Live Currency Rates</h2>
-                <div id="status" class="status loading">Initializing...</div>
-                <div id="currencyPairs">
-                    <div class="loading">Fetching real market data...</div>
+            <div class="main-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Live Currency Rates</h2>
+                        <div class="status-bar">
+                            <div class="status-item">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Updated: <span id="lastUpdate">Just now</span></span>
+                            </div>
+                            <div class="status-item" id="connectionStatus">
+                                <i class="fas fa-wifi"></i>
+                                <span>Connected</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="currency-pairs" id="currencyPairs">
+                        <!-- Currency pairs will be populated here -->
+                    </div>
+                    
+                    <div class="controls">
+                        <button class="btn" id="refreshBtn">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh Data
+                        </button>
+                        <button class="btn btn-secondary" id="addAlertBtn">
+                            <i class="fas fa-bell"></i>
+                            Add Alert
+                        </button>
+                        <button class="btn btn-secondary" id="exportDataBtn">
+                            <i class="fas fa-download"></i>
+                            Export Data
+                        </button>
+                    </div>
                 </div>
-                <div class="api-info">
-                    <strong>Data Sources:</strong> exchangerate-api.com (free tier) • Updates every 60 seconds
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title" id="chartTitle">EUR/USD Chart</h2>
+                        <div class="chart-controls">
+                            <select id="timeframeSelect" class="form-control" style="width: auto; display: inline-block;">
+                                <option value="1D">1 Day</option>
+                                <option value="1W">1 Week</option>
+                                <option value="1M" selected>1 Month</option>
+                                <option value="3M">3 Months</option>
+                                <option value="1Y">1 Year</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="priceChart"></canvas>
+                    </div>
                 </div>
             </div>
             
-            <div class="card">
-                <h2>EUR/USD Historical Data</h2>
-                <div class="chart-container">
-                    <canvas id="priceChart"></canvas>
+            <div class="sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Price Alerts</h2>
+                        <button class="btn btn-secondary" id="addAlertSidebarBtn" style="padding: 8px 12px;">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="alerts-panel" id="alertsPanel">
+                        <!-- Alerts will be populated here -->
+                    </div>
                 </div>
-                <div class="api-info">
-                    <strong>Note:</strong> Historical data shows last 30 days from Alpha Vantage API
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Market News</h2>
+                    </div>
+                    <div class="news-panel" id="newsPanel">
+                        <!-- News items will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Watchlist</h2>
+                    </div>
+                    <div id="watchlistPanel">
+                        <!-- Watchlist items will be populated here -->
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="controls">
-            <button id="refreshBtn">Refresh Data</button>
-            <button id="historicalBtn">Load Historical Data</button>
-        </div>
-        
         <div class="footer">
-            <p>Real Forex Data Dashboard • Powered by public APIs • Data updates automatically</p>
+            <p>ForexPro Dashboard • Advanced Trading Tools • Data updates automatically</p>
+            <p class="disclaimer">Disclaimer: This is a demo application. Forex trading involves risk.</p>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Settings</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">API Configuration</label>
+                <input type="text" class="form-control" id="apiKeyInput" placeholder="Enter your API key">
+                <small style="color: var(--gray); margin-top: 5px; display: block;">
+                    Get a free API key from exchangerate-api.com
+                </small>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Refresh Interval (seconds)</label>
+                <input type="number" class="form-control" id="refreshInterval" value="60" min="10">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Default Base Currency</label>
+                <select class="form-control" id="baseCurrencySelect">
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="JPY">JPY</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Theme</label>
+                <select class="form-control" id="themeSelect">
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                </select>
+            </div>
+            <button class="btn" style="width: 100%;">Save Settings</button>
+        </div>
+    </div>
+    
+    <!-- Add Alert Modal -->
+    <div class="modal" id="alertModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Price Alert</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Currency Pair</label>
+                <select class="form-control" id="alertPairSelect">
+                    <option value="EUR/USD">EUR/USD</option>
+                    <option value="GBP/USD">GBP/USD</option>
+                    <option value="USD/JPY">USD/JPY</option>
+                    <option value="USD/CHF">USD/CHF</option>
+                    <option value="AUD/USD">AUD/USD</option>
+                    <option value="USD/CAD">USD/CAD</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Condition</label>
+                <select class="form-control" id="alertConditionSelect">
+                    <option value="above">Price Above</option>
+                    <option value="below">Price Below</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Target Price</label>
+                <input type="number" class="form-control" id="alertPriceInput" step="0.0001" placeholder="1.1000">
+            </div>
+            <button class="btn" id="saveAlertBtn" style="width: 100%;">Save Alert</button>
         </div>
     </div>
 
     <script>
         // Configuration
-        const API_KEYS = {
-            // Note: These are examples. You'll need to get your own free API keys
-            EXCHANGERATE_API: 'f28d047ff80b8545bff3aa60', // Get from https://exchangerate-api.com
-            ALPHA_VANTAGE: 'TTJJT7H8D3CVKS0W' // Get from https://www.alphavantage.co/support/#api-key
+        const CONFIG = {
+            API_KEYS: {
+                EXCHANGERATE_API: 'f28d047ff80b8545bff3aa60', // Example key - replace with your own
+                ALPHA_VANTAGE: 'TTJJT7H8D3CVKS0W' // Example key - replace with your own
+            },
+            REFRESH_INTERVAL: 60000, // 60 seconds
+            TRACKED_PAIRS: [
+                { symbol: 'EUR/USD', name: 'Euro / US Dollar', base: 'EUR', quote: 'USD' },
+                { symbol: 'GBP/USD', name: 'British Pound / US Dollar', base: 'GBP', quote: 'USD' },
+                { symbol: 'USD/JPY', name: 'US Dollar / Japanese Yen', base: 'USD', quote: 'JPY' },
+                { symbol: 'USD/CHF', name: 'US Dollar / Swiss Franc', base: 'USD', quote: 'CHF' },
+                { symbol: 'AUD/USD', name: 'Australian Dollar / US Dollar', base: 'AUD', quote: 'USD' },
+                { symbol: 'USD/CAD', name: 'US Dollar / Canadian Dollar', base: 'USD', quote: 'CAD' }
+            ]
         };
-        
-        // Currency pairs to track
-        const TRACKED_PAIRS = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'USD/CAD'];
-        let currentRates = {};
-        let historicalData = [];
-        
+
+        // Application State
+        const state = {
+            currentRates: {},
+            historicalData: {},
+            selectedPair: 'EUR/USD',
+            alerts: [],
+            watchlist: ['EUR/USD', 'GBP/USD'],
+            chart: null,
+            lastUpdate: null
+        };
+
         // DOM Elements
-        const statusEl = document.getElementById('status');
-        const currencyPairsEl = document.getElementById('currencyPairs');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const historicalBtn = document.getElementById('historicalBtn');
-        
+        const elements = {
+            currencyPairs: document.getElementById('currencyPairs'),
+            priceChart: document.getElementById('priceChart'),
+            refreshBtn: document.getElementById('refreshBtn'),
+            lastUpdate: document.getElementById('lastUpdate'),
+            connectionStatus: document.getElementById('connectionStatus'),
+            chartTitle: document.getElementById('chartTitle'),
+            timeframeSelect: document.getElementById('timeframeSelect'),
+            alertsPanel: document.getElementById('alertsPanel'),
+            newsPanel: document.getElementById('newsPanel'),
+            watchlistPanel: document.getElementById('watchlistPanel'),
+            settingsModal: document.getElementById('settingsModal'),
+            alertModal: document.getElementById('alertModal'),
+            settingsBtn: document.getElementById('settingsBtn'),
+            addAlertBtn: document.getElementById('addAlertBtn'),
+            addAlertSidebarBtn: document.getElementById('addAlertSidebarBtn'),
+            saveAlertBtn: document.getElementById('saveAlertBtn'),
+            exportDataBtn: document.getElementById('exportDataBtn')
+        };
+
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if API keys are configured
-            if (API_KEYS.EXCHANGERATE_API === 'YOUR_EXCHANGERATE_API_KEY') {
-                showStatus('Please configure your API keys in the JavaScript code to get real data.', 'error');
-                showDemoData();
-                return;
-            }
+            initializeApp();
             
-            loadCurrentRates();
-            loadHistoricalData();
+            // Set up event listeners
+            elements.refreshBtn.addEventListener('click', loadCurrentRates);
+            elements.timeframeSelect.addEventListener('change', function() {
+                loadHistoricalData(state.selectedPair, this.value);
+            });
+            elements.settingsBtn.addEventListener('click', () => toggleModal(elements.settingsModal));
+            elements.addAlertBtn.addEventListener('click', () => toggleModal(elements.alertModal));
+            elements.addAlertSidebarBtn.addEventListener('click', () => toggleModal(elements.alertModal));
+            elements.saveAlertBtn.addEventListener('click', saveAlert);
+            elements.exportDataBtn.addEventListener('click', exportData);
+            
+            // Close modals when clicking the X button
+            document.querySelectorAll('.close-modal').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.closest('.modal').style.display = 'none';
+                });
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target.classList.contains('modal')) {
+                    event.target.style.display = 'none';
+                }
+            });
             
             // Set up auto-refresh
-            setInterval(loadCurrentRates, 60000); // Refresh every 60 seconds
-            
-            // Event listeners
-            refreshBtn.addEventListener('click', loadCurrentRates);
-            historicalBtn.addEventListener('click', loadHistoricalData);
+            setInterval(loadCurrentRates, CONFIG.REFRESH_INTERVAL);
         });
-        
+
+        async function initializeApp() {
+            // Load user preferences from localStorage
+            loadUserPreferences();
+            
+            // Load initial data
+            await loadCurrentRates();
+            await loadHistoricalData(state.selectedPair, '1M');
+            loadAlerts();
+            loadNews();
+            renderWatchlist();
+            
+            // Initialize chart
+            initializeChart();
+        }
+
         async function loadCurrentRates() {
             try {
-                showStatus('Fetching current exchange rates...', 'loading');
-                refreshBtn.disabled = true;
+                setStatus('loading', 'Fetching current rates...');
                 
-                // Using exchangerate-api.com (free tier allows 1500 requests/month)
-                const response = await fetch(`https://v6.exchangerate-api.com/v6/${API_KEYS.EXCHANGERATE_API}/latest/USD`);
+                // Using exchangerate-api.com
+                const response = await fetch(`https://v6.exchangerate-api.com/v6/${CONFIG.API_KEYS.EXCHANGERATE_API}/latest/USD`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -297,28 +760,29 @@
                 }
                 
                 // Store current rates
-                currentRates = data.conversion_rates;
+                state.currentRates = data.conversion_rates;
+                state.lastUpdate = new Date();
+                
+                // Update UI
                 renderCurrencyPairs();
-                showStatus('Data updated successfully!', 'success');
+                updateLastUpdateTime();
+                checkAlerts();
+                setStatus('success', 'Data updated successfully');
                 
             } catch (error) {
                 console.error('Error fetching current rates:', error);
-                showStatus(`Error: ${error.message}. Showing demo data.`, 'error');
+                setStatus('error', `Error: ${error.message}. Showing demo data.`);
                 showDemoData();
-            } finally {
-                refreshBtn.disabled = false;
             }
         }
-        
-        async function loadHistoricalData() {
+
+        async function loadHistoricalData(pair, timeframe) {
             try {
-                showStatus('Loading historical data...', 'loading');
-                historicalBtn.disabled = true;
+                const [base, quote] = pair.split('/');
                 
-                // Using Alpha Vantage API for historical forex data
-                // Note: Free tier has limitations (5 requests/minute, 500 requests/day)
+                // Using Alpha Vantage API
                 const response = await fetch(
-                    `https://www.alphavantage.co/query?function=FX_DAILY&from_symbol=EUR&to_symbol=USD&apikey=${API_KEYS.ALPHA_VANTAGE}&outputsize=compact`
+                    `https://www.alphavantage.co/query?function=FX_DAILY&from_symbol=${base}&to_symbol=${quote}&apikey=${CONFIG.API_KEYS.ALPHA_VANTAGE}&outputsize=compact`
                 );
                 
                 if (!response.ok) {
@@ -341,126 +805,453 @@
                     throw new Error('No historical data available');
                 }
                 
-                historicalData = Object.entries(timeSeries)
-                    .slice(0, 30) // Last 30 days
+                // Filter data based on timeframe
+                let daysToShow = 30; // Default to 1 month
+                switch(timeframe) {
+                    case '1D': daysToShow = 1; break;
+                    case '1W': daysToShow = 7; break;
+                    case '3M': daysToShow = 90; break;
+                    case '1Y': daysToShow = 365; break;
+                }
+                
+                state.historicalData[pair] = Object.entries(timeSeries)
+                    .slice(0, daysToShow)
                     .map(([date, values]) => ({
                         date: date,
+                        open: parseFloat(values['1. open']),
+                        high: parseFloat(values['2. high']),
+                        low: parseFloat(values['3. low']),
                         close: parseFloat(values['4. close'])
                     }))
                     .reverse(); // Oldest first
                 
-                drawHistoricalChart();
-                showStatus('Historical data loaded!', 'success');
+                updateChart();
                 
             } catch (error) {
-                console.error('Error fetching historical ', error);
-                showStatus(`Historical data error: ${error.message}`, 'error');
-            } finally {
-                historicalBtn.disabled = false;
+                console.error('Error fetching historical data:', error);
+                // Generate demo historical data
+                generateDemoHistoricalData(pair, timeframe);
+                updateChart();
             }
         }
-        
+
         function renderCurrencyPairs() {
-            currencyPairsEl.innerHTML = '';
+            elements.currencyPairs.innerHTML = '';
             
-            TRACKED_PAIRS.forEach(pair => {
-                const [base, quote] = pair.split('/');
-                let rate, change = 0;
+            CONFIG.TRACKED_PAIRS.forEach(pairInfo => {
+                const { symbol, base, quote } = pairInfo;
+                let rate, previousRate = 0;
                 
                 if (base === 'USD') {
-                    // USD/XXX - we have XXX rates, so invert
-                    rate = 1 / (currentRates[quote] || 1);
+                    rate = state.currentRates[quote] || 0;
                 } else if (quote === 'USD') {
-                    // XXX/USD - direct rate
-                    rate = currentRates[base] || 0;
+                    rate = state.currentRates[base] || 0;
                 } else {
-                    // XXX/YYY - convert through USD
-                    const baseToUSD = currentRates[base] || 0;
-                    const quoteToUSD = currentRates[quote] || 1;
+                    // Cross rate calculation
+                    const baseToUSD = state.currentRates[base] || 0;
+                    const quoteToUSD = state.currentRates[quote] || 1;
                     rate = baseToUSD / quoteToUSD;
                 }
                 
-                const pairElement = document.createElement('div');
-                pairElement.className = 'currency-pair';
+                // For demo purposes, calculate a random change
+                const change = (Math.random() - 0.5) * 0.02;
+                const changePercent = (change * 100).toFixed(2);
+                const changeClass = change >= 0 ? 'positive' : 'negative';
+                const changeIcon = change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
                 
+                const pairElement = document.createElement('div');
+                pairElement.className = `currency-pair ${state.selectedPair === symbol ? 'active' : ''}`;
                 pairElement.innerHTML = `
-                    <div class="pair-name">${pair}</div>
-                    <div class="current-rate">${rate ? rate.toFixed(4) : 'N/A'}</div>
+                    <div class="pair-header">
+                        <div class="pair-name">${symbol}</div>
+                        <div class="pair-change ${changeClass}">
+                            <i class="fas ${changeIcon}"></i> ${changePercent}%
+                        </div>
+                    </div>
+                    <div class="pair-rate">${rate ? rate.toFixed(4) : 'N/A'}</div>
+                    <div class="pair-info">${pairInfo.name}</div>
                 `;
                 
-                currencyPairsEl.appendChild(pairElement);
+                pairElement.addEventListener('click', () => {
+                    // Remove active class from all pairs
+                    document.querySelectorAll('.currency-pair').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked pair
+                    pairElement.classList.add('active');
+                    
+                    // Update selected pair and chart
+                    state.selectedPair = symbol;
+                    elements.chartTitle.textContent = `${symbol} Chart`;
+                    loadHistoricalData(symbol, elements.timeframeSelect.value);
+                });
+                
+                elements.currencyPairs.appendChild(pairElement);
             });
         }
-        
-        function drawHistoricalChart() {
-            const canvas = document.getElementById('priceChart');
-            const ctx = canvas.getContext('2d');
+
+        function initializeChart() {
+            const ctx = elements.priceChart.getContext('2d');
             
-            // Set canvas dimensions
-            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            state.chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Price',
+                        data: [],
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                            titleColor: '#f8fafc',
+                            bodyColor: '#f8fafc',
+                            borderColor: '#475569',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return `Price: ${context.parsed.y.toFixed(4)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return value.toFixed(4);
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+
+        function updateChart() {
+            if (!state.chart || !state.historicalData[state.selectedPair]) return;
             
-            if (historicalData.length === 0) {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                ctx.font = '16px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('No historical data available', canvas.offsetWidth / 2, canvas.offsetHeight / 2);
+            const data = state.historicalData[state.selectedPair];
+            const labels = data.map(item => {
+                const date = new Date(item.date);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            });
+            
+            const prices = data.map(item => item.close);
+            
+            state.chart.data.labels = labels;
+            state.chart.data.datasets[0].data = prices;
+            state.chart.update();
+        }
+
+        function loadAlerts() {
+            // In a real app, this would load from localStorage or a backend
+            state.alerts = [
+                { id: 1, pair: 'EUR/USD', condition: 'above', price: 1.1000, active: true },
+                { id: 2, pair: 'GBP/USD', condition: 'below', price: 1.2500, active: true }
+            ];
+            
+            renderAlerts();
+        }
+
+        function renderAlerts() {
+            elements.alertsPanel.innerHTML = '';
+            
+            if (state.alerts.length === 0) {
+                elements.alertsPanel.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--gray);">No alerts set</div>';
                 return;
             }
             
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
-            
-            // Get price data
-            const prices = historicalData.map(d => d.close);
-            const minPrice = Math.min(...prices);
-            const maxPrice = Math.max(...prices);
-            const priceRange = maxPrice - minPrice || 1; // Avoid division by zero
-            
-            const width = canvas.offsetWidth;
-            const height = canvas.offsetHeight;
-            
-            // Draw grid
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-            ctx.lineWidth = 1;
-            
-            // Horizontal grid lines
-            for (let i = 0; i <= 4; i++) {
-                const y = height - (i * height / 4);
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(width, y);
-                ctx.stroke();
-            }
-            
-            // Draw price line
-            ctx.strokeStyle = '#00c9ff';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            
-            for (let i = 0; i < historicalData.length; i++) {
-                const x = (i / (historicalData.length - 1)) * width;
-                const y = height - ((prices[i] - minPrice) / priceRange) * height;
+            state.alerts.forEach(alert => {
+                const alertElement = document.createElement('div');
+                alertElement.className = 'alert-item';
+                alertElement.innerHTML = `
+                    <div>
+                        <div class="alert-pair">${alert.pair}</div>
+                        <div class="alert-condition">${alert.condition === 'above' ? 'Above' : 'Below'} ${alert.price}</div>
+                    </div>
+                    <div class="alert-actions">
+                        <button class="toggle-alert" data-id="${alert.id}">
+                            <i class="fas ${alert.active ? 'fa-bell' : 'fa-bell-slash'}"></i>
+                        </button>
+                        <button class="delete-alert" data-id="${alert.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
                 
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
+                elements.alertsPanel.appendChild(alertElement);
+            });
+            
+            // Add event listeners for alert actions
+            document.querySelectorAll('.toggle-alert').forEach(button => {
+                button.addEventListener('click', function() {
+                    const alertId = parseInt(this.getAttribute('data-id'));
+                    toggleAlert(alertId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-alert').forEach(button => {
+                button.addEventListener('click', function() {
+                    const alertId = parseInt(this.getAttribute('data-id'));
+                    deleteAlert(alertId);
+                });
+            });
+        }
+
+        function saveAlert() {
+            const pair = document.getElementById('alertPairSelect').value;
+            const condition = document.getElementById('alertConditionSelect').value;
+            const price = parseFloat(document.getElementById('alertPriceInput').value);
+            
+            if (!price || price <= 0) {
+                alert('Please enter a valid price');
+                return;
             }
             
-            ctx.stroke();
+            const newAlert = {
+                id: Date.now(), // Simple ID generation
+                pair,
+                condition,
+                price,
+                active: true
+            };
             
-            // Draw current price
-            const currentPrice = prices[prices.length - 1];
-            ctx.fillStyle = '#92fe9d';
-            ctx.font = '12px Arial';
-            ctx.fillText(`Current: ${currentPrice.toFixed(4)}`, 10, 20);
+            state.alerts.push(newAlert);
+            renderAlerts();
+            elements.alertModal.style.display = 'none';
+            
+            // Reset form
+            document.getElementById('alertPriceInput').value = '';
         }
-        
+
+        function toggleAlert(alertId) {
+            const alert = state.alerts.find(a => a.id === alertId);
+            if (alert) {
+                alert.active = !alert.active;
+                renderAlerts();
+            }
+        }
+
+        function deleteAlert(alertId) {
+            state.alerts = state.alerts.filter(a => a.id !== alertId);
+            renderAlerts();
+        }
+
+        function checkAlerts() {
+            state.alerts.forEach(alert => {
+                if (!alert.active) return;
+                
+                const [base, quote] = alert.pair.split('/');
+                let currentPrice = 0;
+                
+                if (base === 'USD') {
+                    currentPrice = state.currentRates[quote] || 0;
+                } else if (quote === 'USD') {
+                    currentPrice = state.currentRates[base] || 0;
+                } else {
+                    // Cross rate calculation
+                    const baseToUSD = state.currentRates[base] || 0;
+                    const quoteToUSD = state.currentRates[quote] || 1;
+                    currentPrice = baseToUSD / quoteToUSD;
+                }
+                
+                const conditionMet = 
+                    (alert.condition === 'above' && currentPrice >= alert.price) ||
+                    (alert.condition === 'below' && currentPrice <= alert.price);
+                
+                if (conditionMet) {
+                    triggerAlert(alert, currentPrice);
+                }
+            });
+        }
+
+        function triggerAlert(alert, currentPrice) {
+            // In a real app, this would show a browser notification
+            console.log(`ALERT: ${alert.pair} is ${alert.condition} ${alert.price}. Current: ${currentPrice}`);
+            
+            // Show a visual alert
+            setStatus('warning', `Alert: ${alert.pair} is ${alert.condition} ${alert.price}`);
+            
+            // Deactivate the alert after triggering
+            alert.active = false;
+            renderAlerts();
+        }
+
+        function loadNews() {
+            // In a real app, this would fetch from a news API
+            const demoNews = [
+                {
+                    title: 'Fed Signals Potential Rate Cut Amid Inflation Concerns',
+                    source: 'Financial Times',
+                    time: '2 hours ago'
+                },
+                {
+                    title: 'EUR/USD Approaches Key Resistance Level at 1.0950',
+                    source: 'Bloomberg',
+                    time: '4 hours ago'
+                },
+                {
+                    title: 'Bank of England Holds Rates Steady, Pound Volatility Expected',
+                    source: 'Reuters',
+                    time: '6 hours ago'
+                },
+                {
+                    title: 'Japanese Yen Weakens as BOJ Maintains Ultra-Loose Policy',
+                    source: 'CNBC',
+                    time: '1 day ago'
+                }
+            ];
+            
+            renderNews(demoNews);
+        }
+
+        function renderNews(newsItems) {
+            elements.newsPanel.innerHTML = '';
+            
+            newsItems.forEach(news => {
+                const newsElement = document.createElement('div');
+                newsElement.className = 'news-item';
+                newsElement.innerHTML = `
+                    <div class="news-title">${news.title}</div>
+                    <div class="news-meta">
+                        <span>${news.source}</span>
+                        <span>${news.time}</span>
+                    </div>
+                `;
+                
+                elements.newsPanel.appendChild(newsElement);
+            });
+        }
+
+        function renderWatchlist() {
+            elements.watchlistPanel.innerHTML = '';
+            
+            state.watchlist.forEach(pair => {
+                const watchlistItem = document.createElement('div');
+                watchlistItem.className = 'currency-pair';
+                watchlistItem.style.marginBottom = '10px';
+                
+                // For demo, just show the pair name
+                watchlistItem.innerHTML = `
+                    <div class="pair-name">${pair}</div>
+                    <div class="pair-rate">1.0835</div>
+                    <div class="pair-change positive">
+                        <i class="fas fa-arrow-up"></i> 0.25%
+                    </div>
+                `;
+                
+                elements.watchlistPanel.appendChild(watchlistItem);
+            });
+        }
+
+        function setStatus(type, message) {
+            const statusEl = elements.connectionStatus;
+            const iconEl = statusEl.querySelector('i');
+            
+            statusEl.className = 'status-item';
+            iconEl.className = 'fas';
+            
+            switch(type) {
+                case 'loading':
+                    statusEl.classList.add('pulse');
+                    iconEl.classList.add('fa-sync', 'fa-spin');
+                    break;
+                case 'success':
+                    iconEl.classList.add('fa-check-circle');
+                    break;
+                case 'error':
+                    statusEl.classList.add('error');
+                    iconEl.classList.add('fa-exclamation-circle');
+                    break;
+                case 'warning':
+                    iconEl.classList.add('fa-exclamation-triangle');
+                    break;
+            }
+            
+            statusEl.querySelector('span').textContent = message;
+        }
+
+        function updateLastUpdateTime() {
+            if (!state.lastUpdate) return;
+            
+            const now = new Date();
+            const diffMs = now - state.lastUpdate;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins < 1) {
+                elements.lastUpdate.textContent = 'Just now';
+            } else if (diffMins === 1) {
+                elements.lastUpdate.textContent = '1 minute ago';
+            } else {
+                elements.lastUpdate.textContent = `${diffMins} minutes ago`;
+            }
+        }
+
+        function toggleModal(modal) {
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function exportData() {
+            // In a real app, this would export to CSV or Excel
+            const dataStr = JSON.stringify({
+                rates: state.currentRates,
+                historical: state.historicalData,
+                alerts: state.alerts,
+                exportTime: new Date().toISOString()
+            }, null, 2);
+            
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `forexpro-data-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function loadUserPreferences() {
+            // In a real app, this would load from localStorage
+            // For now, we'll just use defaults
+        }
+
         function showDemoData() {
-            // Show realistic demo data when APIs aren't configured
+            // Generate realistic demo data
             const demoRates = {
                 'EUR': 0.9234,
                 'GBP': 0.7891,
@@ -470,54 +1261,60 @@
                 'CAD': 1.3567
             };
             
-            currentRates = demoRates;
+            state.currentRates = demoRates;
             renderCurrencyPairs();
             
-            // Demo historical data
-            historicalData = [];
-            let currentPrice = 1.0842;
-            for (let i = 0; i < 30; i++) {
-                currentPrice += (Math.random() - 0.5) * 0.005;
-                historicalData.push({
-                    date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            // Generate demo historical data for all pairs
+            CONFIG.TRACKED_PAIRS.forEach(pairInfo => {
+                generateDemoHistoricalData(pairInfo.symbol, '1M');
+            });
+            
+            updateChart();
+        }
+
+        function generateDemoHistoricalData(pair, timeframe) {
+            let daysToShow = 30;
+            switch(timeframe) {
+                case '1D': daysToShow = 1; break;
+                case '1W': daysToShow = 7; break;
+                case '3M': daysToShow = 90; break;
+                case '1Y': daysToShow = 365; break;
+            }
+            
+            // Generate realistic price data with some volatility
+            let currentPrice = 1.0;
+            if (pair === 'EUR/USD') currentPrice = 1.0835;
+            else if (pair === 'GBP/USD') currentPrice = 1.2640;
+            else if (pair === 'USD/JPY') currentPrice = 149.82;
+            else if (pair === 'USD/CHF') currentPrice = 0.8840;
+            else if (pair === 'AUD/USD') currentPrice = 0.6525;
+            else if (pair === 'USD/CAD') currentPrice = 1.3567;
+            
+            const data = [];
+            const today = new Date();
+            
+            for (let i = daysToShow - 1; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                
+                // Add some random price movement
+                const change = (Math.random() - 0.5) * 0.02;
+                currentPrice *= (1 + change);
+                
+                const high = currentPrice * (1 + Math.random() * 0.01);
+                const low = currentPrice * (1 - Math.random() * 0.01);
+                
+                data.push({
+                    date: date.toISOString().split('T')[0],
+                    open: currentPrice * (1 - change/2),
+                    high: high,
+                    low: low,
                     close: currentPrice
                 });
             }
             
-            drawHistoricalChart();
+            state.historicalData[pair] = data;
         }
-        
-        function showStatus(message, type) {
-            statusEl.textContent = message;
-            statusEl.className = `status ${type}`;
-        }
-        
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            if (historicalData.length > 0) {
-                drawHistoricalChart();
-            }
-        });
-        
-        // Instructions for users
-        console.log(`
-        === Forex Dashboard Setup Instructions ===
-        
-        To get REAL forex data working:
-        
-        1. Get a free API key from https://exchangerate-api.com
-        2. Get a free API key from https://www.alphavantage.co/support/#api-key
-        3. Replace the placeholder keys in the API_KEYS object in the JavaScript code:
-           - Replace 'YOUR_EXCHANGERATE_API_KEY' with your actual key
-           - Replace 'YOUR_ALPHA_VANTAGE_KEY' with your actual key
-        4. Save and reload the page
-        
-        Note: Free API tiers have usage limits:
-        - ExchangeRate-API: 1,500 requests/month
-        - Alpha Vantage: 5 requests/minute, 500 requests/day
-        
-        Without API keys, the dashboard shows realistic demo data.
-        `);
     </script>
 </body>
 </html>
