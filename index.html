@@ -1579,7 +1579,6 @@
 
     <script>
         // ==================== FIREBASE SETUP ====================
-        // Using Code 2's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyD6uE1Up7u-9W4VsFvZbwvVuWHYV7YBR8o",
             authDomain: "debt-tracker-f1363.firebaseapp.com",
@@ -1614,6 +1613,7 @@
         const signUpEmail = document.getElementById('signUpEmail');
         const signUpPassword = document.getElementById('signUpPassword');
         const signUpConfirmPassword = document.getElementById('signUpConfirmPassword');
+        const signOutBtn = document.getElementById('signOutBtn');
         
         // Switch between login/signup forms
         authTabs.forEach(tab => {
@@ -1726,7 +1726,8 @@
                         loans: [],
                         payments: [],
                         goals: [],
-                        achievements: []
+                        achievements: [],
+                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 })
                 .then(() => {
@@ -1744,6 +1745,27 @@
                     showAuthError(error.message);
                     showLoading(false);
                 });
+        });
+        
+        // Sign out function
+        signOutBtn.addEventListener('click', () => {
+            auth.signOut().then(() => {
+                showToast('Signed out successfully', 'success');
+            });
+        });
+        
+        // Auth state observer
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in
+                state.currentUser = user;
+                showAppContent();
+                loadUserData(user.uid);
+            } else {
+                // User is signed out
+                state.currentUser = null;
+                showWelcomeContent();
+            }
         });
         
         // ==================== USER DATA FUNCTIONS ====================
@@ -1775,7 +1797,8 @@
                                 loans: [],
                                 payments: [],
                                 goals: [],
-                                achievements: []
+                                achievements: [],
+                                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                             });
                         }
                     }
@@ -1800,8 +1823,13 @@
             
             // Save to the "users" collection with the user's UID as document ID
             db.collection('users').doc(userId).set(userData, { merge: true })
+                .then(() => {
+                    console.log("Data saved to Firebase");
+                })
                 .catch((error) => {
                     console.error("Error saving user data:", error);
+                    // Fallback to localStorage
+                    localStorage.setItem(`debtFreeCompassData_${userId}`, JSON.stringify(userData));
                 });
         }
         
@@ -1827,7 +1855,6 @@
             // Authentication
             signInBtn: document.getElementById('signInBtn'),
             signUpBtn: document.getElementById('signUpBtn'),
-            signOutBtn: document.getElementById('signOutBtn'),
             userInfo: document.getElementById('userInfo'),
             userAvatar: document.getElementById('userAvatar'),
             userEmail: document.getElementById('userEmail'),
@@ -1926,7 +1953,6 @@
         // Initialize the application
         function init() {
             setupEventListeners();
-            setupAuthStateListener();
             checkOnlineStatus();
             
             // Check if user is already logged in
@@ -1954,7 +1980,6 @@
             elements.signUpBtn.addEventListener('click', () => authModal.classList.add('active'));
             elements.welcomeSignIn.addEventListener('click', () => authModal.classList.add('active'));
             elements.welcomeSignUp.addEventListener('click', () => authModal.classList.add('active'));
-            elements.signOutBtn.addEventListener('click', signOut);
             closeAuthModal.addEventListener('click', () => authModal.classList.remove('active'));
             
             // Mobile navigation
@@ -2073,31 +2098,6 @@
                     elements.notificationCenter.classList.remove('active');
                 }
             });
-        }
-
-        // Authentication functions
-        function setupAuthStateListener() {
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    state.currentUser = user;
-                    localStorage.setItem('currentUser', JSON.stringify({
-                        uid: user.uid,
-                        email: user.email,
-                        displayName: user.displayName
-                    }));
-                    showAppContent();
-                    loadUserData(user.uid);
-                } else {
-                    state.currentUser = null;
-                    localStorage.removeItem('currentUser');
-                    showWelcomeContent();
-                }
-            });
-        }
-
-        function signOut() {
-            auth.signOut();
-            showToast('Signed out successfully', 'success');
         }
 
         // Content management
