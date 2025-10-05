@@ -959,22 +959,6 @@
             font-size: 0.9rem;
             display: none;
         }
-        
-        /* Password Reset Link */
-        .password-reset-link {
-            text-align: center;
-            margin-top: 15px;
-        }
-        
-        .password-reset-link a {
-            color: var(--primary);
-            font-size: 0.9rem;
-            text-decoration: none;
-        }
-        
-        .password-reset-link a:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
@@ -990,26 +974,6 @@
         </div>
         <div class="notification-list" id="notificationList">
             <!-- Notifications will be populated here -->
-        </div>
-    </div>
-
-    <!-- Password Reset Modal -->
-    <div id="passwordResetModal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close" id="closePasswordResetModal">&times;</button>
-            <div style="font-size: 48px; color: var(--primary); margin-bottom: 16px;">🔐</div>
-            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 16px;">Reset Password</h2>
-            
-            <div class="form-group">
-                <label for="resetEmail">Email Address</label>
-                <input type="email" id="resetEmail" placeholder="Enter your email" required>
-            </div>
-            
-            <button id="resetPasswordSubmit" class="btn" style="width: 100%;">Send Reset Link</button>
-            
-            <div class="password-reset-link" style="margin-top: 15px;">
-                <a href="#" id="backToSignIn">Back to Sign In</a>
-            </div>
         </div>
     </div>
 
@@ -1398,10 +1362,6 @@
                 
                 <button id="signInSubmit" class="btn" style="width: 100%;">Sign In</button>
                 
-                <div class="password-reset-link">
-                    <a href="#" id="forgotPasswordLink">Forgot your password?</a>
-                </div>
-                
                 <div class="auth-footer" style="margin-top: 15px; font-size: 0.9rem; color: var(--gray);">
                     <p>Don't have an account? <a href="#" id="switch-to-signup" style="color: var(--primary); font-weight: 600;">Sign Up</a></p>
                 </div>
@@ -1653,12 +1613,6 @@
         const signUpEmail = document.getElementById('signUpEmail');
         const signUpPassword = document.getElementById('signUpPassword');
         const signUpConfirmPassword = document.getElementById('signUpConfirmPassword');
-        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
-        const passwordResetModal = document.getElementById('passwordResetModal');
-        const closePasswordResetModal = document.getElementById('closePasswordResetModal');
-        const resetPasswordSubmit = document.getElementById('resetPasswordSubmit');
-        const resetEmail = document.getElementById('resetEmail');
-        const backToSignIn = document.getElementById('backToSignIn');
         
         // Switch between login/signup forms
         authTabs.forEach(tab => {
@@ -1690,47 +1644,6 @@
             document.querySelector('.auth-tab[data-tab="signin"]').click();
         });
         
-        // Password reset functionality
-        forgotPasswordLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            authModal.classList.remove('active');
-            passwordResetModal.classList.add('active');
-        });
-        
-        backToSignIn.addEventListener('click', (e) => {
-            e.preventDefault();
-            passwordResetModal.classList.remove('active');
-            authModal.classList.add('active');
-        });
-        
-        closePasswordResetModal.addEventListener('click', () => {
-            passwordResetModal.classList.remove('active');
-        });
-        
-        resetPasswordSubmit.addEventListener('click', (e) => {
-            e.preventDefault();
-            const email = resetEmail.value;
-            
-            if (!email) {
-                showAuthError('Please enter your email address');
-                return;
-            }
-            
-            showLoading(true);
-            
-            auth.sendPasswordResetEmail(email)
-                .then(() => {
-                    showToast('Password reset email sent! Check your inbox.', 'success');
-                    passwordResetModal.classList.remove('active');
-                    resetEmail.value = '';
-                    showLoading(false);
-                })
-                .catch((error) => {
-                    showAuthError(error.message);
-                    showLoading(false);
-                });
-        });
-        
         // Show authentication error
         function showAuthError(message) {
             errorMessage.textContent = message;
@@ -1753,15 +1666,6 @@
             auth.signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     // Signed in
-                    const user = userCredential.user;
-                    
-                    // Check if email is verified
-                    if (!user.emailVerified) {
-                        showAuthError('Please verify your email address before signing in');
-                        showLoading(false);
-                        return;
-                    }
-                    
                     authModal.classList.remove('active');
                     showToast('Successfully signed in!', 'success');
                     showLoading(false);
@@ -1771,17 +1675,7 @@
                     signInPassword.value = '';
                 })
                 .catch((error) => {
-                    // Handle specific error cases
-                    let errorMsg = error.message;
-                    if (error.code === 'auth/user-not-found') {
-                        errorMsg = 'No account found with this email address';
-                    } else if (error.code === 'auth/wrong-password') {
-                        errorMsg = 'Incorrect password';
-                    } else if (error.code === 'auth/too-many-requests') {
-                        errorMsg = 'Too many failed attempts. Please try again later';
-                    }
-                    
-                    showAuthError(errorMsg);
+                    showAuthError(error.message);
                     showLoading(false);
                 });
         });
@@ -1822,11 +1716,6 @@
                     });
                 })
                 .then(() => {
-                    // Send email verification
-                    const user = auth.currentUser;
-                    return user.sendEmailVerification();
-                })
-                .then(() => {
                     // Save user data to Firestore in the "users" collection
                     const user = auth.currentUser;
                     return db.collection('users').doc(user.uid).set({
@@ -1837,13 +1726,12 @@
                         payments: [],
                         goals: [],
                         achievements: [],
-                        lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-                        emailVerified: false
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 })
                 .then(() => {
                     authModal.classList.remove('active');
-                    showToast('Account created successfully! Please check your email for verification.', 'success');
+                    showToast('Account created successfully!', 'success');
                     showLoading(false);
                     
                     // Clear form
@@ -1853,17 +1741,7 @@
                     signUpConfirmPassword.value = '';
                 })
                 .catch((error) => {
-                    // Handle specific error cases
-                    let errorMsg = error.message;
-                    if (error.code === 'auth/email-already-in-use') {
-                        errorMsg = 'An account with this email already exists';
-                    } else if (error.code === 'auth/invalid-email') {
-                        errorMsg = 'Invalid email address';
-                    } else if (error.code === 'auth/weak-password') {
-                        errorMsg = 'Password is too weak';
-                    }
-                    
-                    showAuthError(errorMsg);
+                    showAuthError(error.message);
                     showLoading(false);
                 });
         });
@@ -1907,8 +1785,7 @@
                             payments: [],
                             goals: [],
                             achievements: [],
-                            lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-                            emailVerified: state.currentUser.emailVerified || false
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                         });
                     }
                 })
@@ -2253,11 +2130,6 @@
         function setupAuthStateListener() {
             auth.onAuthStateChanged((user) => {
                 if (user) {
-                    // Check if email is verified
-                    if (!user.emailVerified) {
-                        showToast('Please verify your email address to access all features', 'warning');
-                    }
-                    
                     state.currentUser = user;
                     localStorage.setItem('currentUser', JSON.stringify({
                         uid: user.uid,
