@@ -1346,7 +1346,7 @@
             </div>
             
             <div id="auth-error" class="auth-error">
-                <i class="fas fa-exclamation-circle"></i> <span id="error-message"></span>
+                <span id="error-message"></span>
             </div>
             
             <div id="signInForm" class="auth-form active">
@@ -1613,7 +1613,6 @@
         const signUpEmail = document.getElementById('signUpEmail');
         const signUpPassword = document.getElementById('signUpPassword');
         const signUpConfirmPassword = document.getElementById('signUpConfirmPassword');
-        const signOutBtn = document.getElementById('signOutBtn');
         
         // Switch between login/signup forms
         authTabs.forEach(tab => {
@@ -1727,7 +1726,7 @@
                         payments: [],
                         goals: [],
                         achievements: [],
-                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 })
                 .then(() => {
@@ -1747,31 +1746,10 @@
                 });
         });
         
-        // Sign out function
-        signOutBtn.addEventListener('click', () => {
-            auth.signOut().then(() => {
-                showToast('Signed out successfully', 'success');
-            });
-        });
-        
-        // Auth state observer
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                // User is signed in
-                state.currentUser = user;
-                showAppContent();
-                loadUserData(user.uid);
-            } else {
-                // User is signed out
-                state.currentUser = null;
-                showWelcomeContent();
-            }
-        });
-        
         // ==================== USER DATA FUNCTIONS ====================
         // Load user data from Firestore
         function loadUserData(userId) {
-            db.collection('users').doc(userId).get()
+            return db.collection('users').doc(userId).get()
                 .then((doc) => {
                     if (doc.exists) {
                         const userData = doc.data();
@@ -1786,33 +1764,63 @@
                         updatePayments();
                         renderGoals();
                         updateProfile();
+                        
+                        // Save to localStorage as backup
+                        localStorage.setItem(`debtFreeCompassData_${userId}`, JSON.stringify({
+                            loans: state.loans,
+                            payments: state.payments,
+                            goals: state.goals,
+                            achievements: state.achievements,
+                            lastUpdated: new Date().toISOString()
+                        }));
+                        
+                        return true;
                     } else {
                         // Initialize data for new user
-                        const user = auth.currentUser;
-                        if (user) {
-                            db.collection('users').doc(userId).set({
-                                name: user.displayName || "User",
-                                email: user.email,
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                loans: [],
-                                payments: [],
-                                goals: [],
-                                achievements: [],
-                                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                        }
+                        return db.collection('users').doc(userId).set({
+                            name: state.currentUser.displayName || "User",
+                            email: state.currentUser.email,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            loans: [],
+                            payments: [],
+                            goals: [],
+                            achievements: [],
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                        });
                     }
                 })
                 .catch((error) => {
                     console.error("Error loading user data:", error);
+                    // Try to load from localStorage as fallback
+                    const localData = localStorage.getItem(`debtFreeCompassData_${userId}`);
+                    if (localData) {
+                        try {
+                            const data = JSON.parse(localData);
+                            state.loans = data.loans || [];
+                            state.payments = data.payments || [];
+                            state.goals = data.goals || [];
+                            state.achievements = data.achievements || [];
+                            
+                            renderLoans();
+                            updateDashboard();
+                            updatePayments();
+                            renderGoals();
+                            updateProfile();
+                            
+                            showToast('Loaded data from local backup', 'info');
+                        } catch (e) {
+                            console.error('Error parsing local data:', e);
+                        }
+                    }
+                    return false;
                 });
         }
         
         // Save user data to Firestore
         function saveUserData() {
-            if (!auth.currentUser) return;
+            if (!state.currentUser) return;
             
-            const userId = auth.currentUser.uid;
+            const userId = state.currentUser.uid;
             const userData = {
                 loans: state.loans,
                 payments: state.payments,
@@ -1824,12 +1832,15 @@
             // Save to the "users" collection with the user's UID as document ID
             db.collection('users').doc(userId).set(userData, { merge: true })
                 .then(() => {
-                    console.log("Data saved to Firebase");
+                    console.log('Data saved to Firebase');
+                    // Also save to localStorage as backup
+                    localStorage.setItem(`debtFreeCompassData_${userId}`, JSON.stringify(userData));
                 })
                 .catch((error) => {
                     console.error("Error saving user data:", error);
-                    // Fallback to localStorage
+                    // Save to localStorage as fallback
                     localStorage.setItem(`debtFreeCompassData_${userId}`, JSON.stringify(userData));
+                    showToast('Data saved locally (offline)', 'info');
                 });
         }
         
@@ -1847,7 +1858,8 @@
                 createdAt: null
             },
             isOnline: navigator.onLine,
-            dataLoaded: false
+            dataLoaded: false,
+            unsubscribeUserData: null
         };
 
         // DOM Elements
@@ -1855,6 +1867,7 @@
             // Authentication
             signInBtn: document.getElementById('signInBtn'),
             signUpBtn: document.getElementById('signUpBtn'),
+            signOutBtn: document.getElementById('signOutBtn'),
             userInfo: document.getElementById('userInfo'),
             userAvatar: document.getElementById('userAvatar'),
             userEmail: document.getElementById('userEmail'),
@@ -1953,24 +1966,12 @@
         // Initialize the application
         function init() {
             setupEventListeners();
+            setupAuthStateListener();
             checkOnlineStatus();
+            setupDataPersistence();
             
-            // Check if user is already logged in
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                try {
-                    const userData = JSON.parse(savedUser);
-                    state.currentUser = userData;
-                    showAppContent();
-                    loadUserData(userData.uid);
-                } catch (e) {
-                    console.error('Error parsing saved user data:', e);
-                    localStorage.removeItem('currentUser');
-                    showWelcomeContent();
-                }
-            } else {
-                showWelcomeContent();
-            }
+            // Show welcome content by default
+            showWelcomeContent();
         }
 
         // Setup event listeners
@@ -1980,6 +1981,7 @@
             elements.signUpBtn.addEventListener('click', () => authModal.classList.add('active'));
             elements.welcomeSignIn.addEventListener('click', () => authModal.classList.add('active'));
             elements.welcomeSignUp.addEventListener('click', () => authModal.classList.add('active'));
+            elements.signOutBtn.addEventListener('click', signOut);
             closeAuthModal.addEventListener('click', () => authModal.classList.remove('active'));
             
             // Mobile navigation
@@ -2098,6 +2100,99 @@
                     elements.notificationCenter.classList.remove('active');
                 }
             });
+
+            // Add beforeunload event to save data when page is about to be closed
+            window.addEventListener('beforeunload', () => {
+                if (state.currentUser) {
+                    saveUserData();
+                }
+            });
+
+            // Add visibility change event to save data when app is backgrounded
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && state.currentUser) {
+                    saveUserData();
+                }
+            });
+        }
+
+        // Setup data persistence
+        function setupDataPersistence() {
+            // Auto-save data every 30 seconds if user is logged in
+            setInterval(() => {
+                if (state.currentUser) {
+                    saveUserData();
+                }
+            }, 30000);
+        }
+
+        // Authentication functions
+        function setupAuthStateListener() {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    state.currentUser = user;
+                    localStorage.setItem('currentUser', JSON.stringify({
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName
+                    }));
+                    showAppContent();
+                    
+                    // Load user data from Firestore
+                    loadUserData(user.uid).then(() => {
+                        state.dataLoaded = true;
+                        
+                        // Set up real-time listener for data changes
+                        if (state.unsubscribeUserData) {
+                            state.unsubscribeUserData();
+                        }
+                        
+                        state.unsubscribeUserData = db.collection('users').doc(user.uid)
+                            .onSnapshot((doc) => {
+                                if (doc.exists) {
+                                    const userData = doc.data();
+                                    // Only update if data is different to avoid infinite loops
+                                    if (JSON.stringify(state.loans) !== JSON.stringify(userData.loans || []) ||
+                                        JSON.stringify(state.payments) !== JSON.stringify(userData.payments || []) ||
+                                        JSON.stringify(state.goals) !== JSON.stringify(userData.goals || []) ||
+                                        JSON.stringify(state.achievements) !== JSON.stringify(userData.achievements || [])) {
+                                        
+                                        state.loans = userData.loans || [];
+                                        state.payments = userData.payments || [];
+                                        state.goals = userData.goals || [];
+                                        state.achievements = userData.achievements || [];
+                                        
+                                        renderLoans();
+                                        updateDashboard();
+                                        updatePayments();
+                                        renderGoals();
+                                        updateProfile();
+                                        
+                                        console.log('Data updated from Firestore');
+                                    }
+                                }
+                            }, (error) => {
+                                console.error('Error listening to Firestore updates:', error);
+                            });
+                    });
+                } else {
+                    state.currentUser = null;
+                    localStorage.removeItem('currentUser');
+                    
+                    // Unsubscribe from real-time updates
+                    if (state.unsubscribeUserData) {
+                        state.unsubscribeUserData();
+                        state.unsubscribeUserData = null;
+                    }
+                    
+                    showWelcomeContent();
+                }
+            });
+        }
+
+        function signOut() {
+            auth.signOut();
+            showToast('Signed out successfully', 'success');
         }
 
         // Content management
