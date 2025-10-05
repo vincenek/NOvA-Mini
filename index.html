@@ -1562,7 +1562,8 @@
             isOnline: navigator.onLine,
             // Add data persistence flags
             dataLoaded: false,
-            pendingSave: false
+            pendingSave: false,
+            unsubscribeUserData: null
         };
 
         // DOM Elements
@@ -1881,6 +1882,11 @@
                 } else {
                     state.currentUser = null;
                     localStorage.removeItem('currentUser');
+                    // Unsubscribe from real-time updates
+                    if (state.unsubscribeUserData) {
+                        state.unsubscribeUserData();
+                        state.unsubscribeUserData = null;
+                    }
                     showWelcomeContent();
                 }
             });
@@ -2710,28 +2716,48 @@
                 return;
             }
             
-            // Load from Firebase
-            db.collection('users').doc(state.currentUser.uid).get()
-                .then(doc => {
+            // Load from Firebase with real-time updates
+            state.unsubscribeUserData = db.collection('users').doc(state.currentUser.uid)
+                .onSnapshot(doc => {
                     if (doc.exists) {
                         const data = doc.data();
                         state.loans = data.loans || [];
                         state.payments = data.payments || [];
                         state.goals = data.goals || [];
                         state.achievements = data.achievements || [];
+                        
+                        state.dataLoaded = true;
+                        renderLoans();
+                        updateDashboard();
+                        updatePayments();
+                        renderGoals();
+                        updateProfile();
                     } else {
-                        // Try loading from localStorage as fallback
-                        loadFromLocalStorage();
+                        // If the document doesn't exist, create it with initial data
+                        const initialData = {
+                            loans: [],
+                            payments: [],
+                            goals: [],
+                            achievements: [],
+                            lastUpdated: new Date().toISOString()
+                        };
+                        
+                        db.collection('users').doc(state.currentUser.uid).set(initialData)
+                            .then(() => {
+                                state.loans = [];
+                                state.payments = [];
+                                state.goals = [];
+                                state.achievements = [];
+                                
+                                state.dataLoaded = true;
+                                renderLoans();
+                                updateDashboard();
+                                updatePayments();
+                                renderGoals();
+                                updateProfile();
+                            });
                     }
-                    
-                    state.dataLoaded = true;
-                    renderLoans();
-                    updateDashboard();
-                    updatePayments();
-                    renderGoals();
-                    updateProfile();
-                })
-                .catch(error => {
+                }, error => {
                     console.error('Error loading data from Firebase: ', error);
                     loadFromLocalStorage();
                 });
