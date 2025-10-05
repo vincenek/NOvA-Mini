@@ -920,6 +920,45 @@
         .offline-indicator.active {
             display: block;
         }
+
+        /* Auth Modal Styles */
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .auth-tab.active {
+            border-bottom: 3px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .auth-error {
+            background-color: #fee2e2;
+            color: var(--danger);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -1301,9 +1340,13 @@
         <div class="modal-content">
             <button class="modal-close" id="closeAuthModal">&times;</button>
             
-            <div class="auth-tabs" style="display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--light-gray);">
-                <div class="auth-tab active" data-tab="signin" style="flex: 1; text-align: center; padding: 12px; font-weight: 600; cursor: pointer; transition: var(--transition);">Sign In</div>
-                <div class="auth-tab" data-tab="signup" style="flex: 1; text-align: center; padding: 12px; font-weight: 600; cursor: pointer; transition: var(--transition);">Sign Up</div>
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="signin">Sign In</div>
+                <div class="auth-tab" data-tab="signup">Sign Up</div>
+            </div>
+            
+            <div id="auth-error" class="auth-error">
+                <i class="fas fa-exclamation-circle"></i> <span id="error-message"></span>
             </div>
             
             <div id="signInForm" class="auth-form active">
@@ -1319,10 +1362,12 @@
                 
                 <button id="signInSubmit" class="btn" style="width: 100%;">Sign In</button>
                 
-                <div id="signInMessage" style="margin-top: 15px; padding: 10px; border-radius: 8px; text-align: center; display: none;"></div>
+                <div class="auth-footer" style="margin-top: 15px; font-size: 0.9rem; color: var(--gray);">
+                    <p>Don't have an account? <a href="#" id="switch-to-signup" style="color: var(--primary); font-weight: 600;">Sign Up</a></p>
+                </div>
             </div>
             
-            <div id="signUpForm" class="auth-form" style="display: none;">
+            <div id="signUpForm" class="auth-form">
                 <div class="form-group">
                     <label for="signUpName">Full Name</label>
                     <input type="text" id="signUpName" placeholder="Enter your full name" required>
@@ -1345,7 +1390,9 @@
                 
                 <button id="signUpSubmit" class="btn" style="width: 100%;">Create Account</button>
                 
-                <div id="signUpMessage" style="margin-top: 15px; padding: 10px; border-radius: 8px; text-align: center; display: none;"></div>
+                <div class="auth-footer" style="margin-top: 15px; font-size: 0.9rem; color: var(--gray);">
+                    <p>Already have an account? <a href="#" id="switch-to-login" style="color: var(--primary); font-weight: 600;">Sign In</a></p>
+                </div>
             </div>
         </div>
     </div>
@@ -1531,7 +1578,8 @@
     <div id="loadingSpinner" class="spinner hidden"></div>
 
     <script>
-        // Firebase Configuration
+        // ==================== FIREBASE SETUP ====================
+        // Using Code 2's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyD6uE1Up7u-9W4VsFvZbwvVuWHYV7YBR8o",
             authDomain: "debt-tracker-f1363.firebaseapp.com",
@@ -1543,10 +1591,221 @@
         };
 
         // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
         
+        // ==================== AUTHENTICATION FUNCTIONS ====================
+        // DOM Elements
+        const authModal = document.getElementById('authModal');
+        const closeAuthModal = document.getElementById('closeAuthModal');
+        const authTabs = document.querySelectorAll('.auth-tab');
+        const signInForm = document.getElementById('signInForm');
+        const signUpForm = document.getElementById('signUpForm');
+        const switchToSignup = document.getElementById('switch-to-signup');
+        const switchToLogin = document.getElementById('switch-to-login');
+        const authError = document.getElementById('auth-error');
+        const errorMessage = document.getElementById('error-message');
+        const signInSubmit = document.getElementById('signInSubmit');
+        const signUpSubmit = document.getElementById('signUpSubmit');
+        const signInEmail = document.getElementById('signInEmail');
+        const signInPassword = document.getElementById('signInPassword');
+        const signUpName = document.getElementById('signUpName');
+        const signUpEmail = document.getElementById('signUpEmail');
+        const signUpPassword = document.getElementById('signUpPassword');
+        const signUpConfirmPassword = document.getElementById('signUpConfirmPassword');
+        
+        // Switch between login/signup forms
+        authTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                authTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                if (tabId === 'signin') {
+                    signInForm.classList.add('active');
+                    signUpForm.classList.remove('active');
+                } else {
+                    signUpForm.classList.add('active');
+                    signInForm.classList.remove('active');
+                }
+                
+                authError.style.display = 'none';
+            });
+        });
+        
+        switchToSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('.auth-tab[data-tab="signup"]').click();
+        });
+        
+        switchToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('.auth-tab[data-tab="signin"]').click();
+        });
+        
+        // Show authentication error
+        function showAuthError(message) {
+            errorMessage.textContent = message;
+            authError.style.display = 'block';
+        }
+        
+        // Login function
+        signInSubmit.addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = signInEmail.value;
+            const password = signInPassword.value;
+            
+            if (!email || !password) {
+                showAuthError('Please fill in all fields');
+                return;
+            }
+            
+            showLoading(true);
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Signed in
+                    authModal.classList.remove('active');
+                    showToast('Successfully signed in!', 'success');
+                    showLoading(false);
+                    
+                    // Clear form
+                    signInEmail.value = '';
+                    signInPassword.value = '';
+                })
+                .catch((error) => {
+                    showAuthError(error.message);
+                    showLoading(false);
+                });
+        });
+        
+        // Signup function
+        signUpSubmit.addEventListener('click', (e) => {
+            e.preventDefault();
+            const name = signUpName.value;
+            const email = signUpEmail.value;
+            const password = signUpPassword.value;
+            const confirmPassword = signUpConfirmPassword.value;
+            
+            if (!name || !email || !password || !confirmPassword) {
+                showAuthError('Please fill in all fields');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showAuthError("Passwords don't match");
+                return;
+            }
+            
+            if (password.length < 6) {
+                showAuthError("Password must be at least 6 characters");
+                return;
+            }
+            
+            showLoading(true);
+            
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Signed up
+                    const user = userCredential.user;
+                    
+                    // Update user profile with display name
+                    return user.updateProfile({
+                        displayName: name
+                    });
+                })
+                .then(() => {
+                    // Save user data to Firestore in the "users" collection
+                    const user = auth.currentUser;
+                    return db.collection('users').doc(user.uid).set({
+                        name: name,
+                        email: email,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        loans: [],
+                        payments: [],
+                        goals: [],
+                        achievements: []
+                    });
+                })
+                .then(() => {
+                    authModal.classList.remove('active');
+                    showToast('Account created successfully!', 'success');
+                    showLoading(false);
+                    
+                    // Clear form
+                    signUpName.value = '';
+                    signUpEmail.value = '';
+                    signUpPassword.value = '';
+                    signUpConfirmPassword.value = '';
+                })
+                .catch((error) => {
+                    showAuthError(error.message);
+                    showLoading(false);
+                });
+        });
+        
+        // ==================== USER DATA FUNCTIONS ====================
+        // Load user data from Firestore
+        function loadUserData(userId) {
+            db.collection('users').doc(userId).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        state.loans = userData.loans || [];
+                        state.payments = userData.payments || [];
+                        state.goals = userData.goals || [];
+                        state.achievements = userData.achievements || [];
+                        
+                        // Update UI
+                        renderLoans();
+                        updateDashboard();
+                        updatePayments();
+                        renderGoals();
+                        updateProfile();
+                    } else {
+                        // Initialize data for new user
+                        const user = auth.currentUser;
+                        if (user) {
+                            db.collection('users').doc(userId).set({
+                                name: user.displayName || "User",
+                                email: user.email,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                loans: [],
+                                payments: [],
+                                goals: [],
+                                achievements: []
+                            });
+                        }
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error loading user data:", error);
+                });
+        }
+        
+        // Save user data to Firestore
+        function saveUserData() {
+            if (!auth.currentUser) return;
+            
+            const userId = auth.currentUser.uid;
+            const userData = {
+                loans: state.loans,
+                payments: state.payments,
+                goals: state.goals,
+                achievements: state.achievements,
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            // Save to the "users" collection with the user's UID as document ID
+            db.collection('users').doc(userId).set(userData, { merge: true })
+                .catch((error) => {
+                    console.error("Error saving user data:", error);
+                });
+        }
+        
+        // ==================== APPLICATION CODE ====================
         // App State
         const state = {
             currentUser: null,
@@ -1560,10 +1819,7 @@
                 createdAt: null
             },
             isOnline: navigator.onLine,
-            // Add data persistence flags
-            dataLoaded: false,
-            pendingSave: false,
-            unsubscribeUserData: null
+            dataLoaded: false
         };
 
         // DOM Elements
@@ -1572,16 +1828,6 @@
             signInBtn: document.getElementById('signInBtn'),
             signUpBtn: document.getElementById('signUpBtn'),
             signOutBtn: document.getElementById('signOutBtn'),
-            authModal: document.getElementById('authModal'),
-            closeAuthModal: document.getElementById('closeAuthModal'),
-            signInSubmit: document.getElementById('signInSubmit'),
-            signUpSubmit: document.getElementById('signUpSubmit'),
-            signInEmail: document.getElementById('signInEmail'),
-            signInPassword: document.getElementById('signInPassword'),
-            signUpName: document.getElementById('signUpName'),
-            signUpEmail: document.getElementById('signUpEmail'),
-            signUpPassword: document.getElementById('signUpPassword'),
-            signUpConfirmPassword: document.getElementById('signUpConfirmPassword'),
             userInfo: document.getElementById('userInfo'),
             userAvatar: document.getElementById('userAvatar'),
             userEmail: document.getElementById('userEmail'),
@@ -1682,7 +1928,6 @@
             setupEventListeners();
             setupAuthStateListener();
             checkOnlineStatus();
-            setupDataPersistence();
             
             // Check if user is already logged in
             const savedUser = localStorage.getItem('currentUser');
@@ -1691,7 +1936,7 @@
                     const userData = JSON.parse(savedUser);
                     state.currentUser = userData;
                     showAppContent();
-                    loadUserData();
+                    loadUserData(userData.uid);
                 } catch (e) {
                     console.error('Error parsing saved user data:', e);
                     localStorage.removeItem('currentUser');
@@ -1705,24 +1950,12 @@
         // Setup event listeners
         function setupEventListeners() {
             // Auth buttons
-            elements.signInBtn.addEventListener('click', () => showAuthModal('signin'));
-            elements.signUpBtn.addEventListener('click', () => showAuthModal('signup'));
-            elements.welcomeSignIn.addEventListener('click', () => showAuthModal('signin'));
-            elements.welcomeSignUp.addEventListener('click', () => showAuthModal('signup'));
+            elements.signInBtn.addEventListener('click', () => authModal.classList.add('active'));
+            elements.signUpBtn.addEventListener('click', () => authModal.classList.add('active'));
+            elements.welcomeSignIn.addEventListener('click', () => authModal.classList.add('active'));
+            elements.welcomeSignUp.addEventListener('click', () => authModal.classList.add('active'));
             elements.signOutBtn.addEventListener('click', signOut);
-            elements.closeAuthModal.addEventListener('click', () => elements.authModal.classList.remove('active'));
-            
-            // Auth form submissions
-            elements.signInSubmit.addEventListener('click', signIn);
-            elements.signUpSubmit.addEventListener('click', signUp);
-            
-            // Auth tabs
-            document.querySelectorAll('.auth-tab').forEach(tab => {
-                tab.addEventListener('click', (e) => {
-                    const tabId = e.target.getAttribute('data-tab');
-                    switchAuthTab(tabId);
-                });
-            });
+            closeAuthModal.addEventListener('click', () => authModal.classList.remove('active'));
             
             // Mobile navigation
             elements.mobileNavItems.forEach(item => {
@@ -1840,31 +2073,6 @@
                     elements.notificationCenter.classList.remove('active');
                 }
             });
-
-            // Add beforeunload event to save data when page is about to be closed
-            window.addEventListener('beforeunload', () => {
-                if (state.dataLoaded) {
-                    saveData();
-                }
-            });
-
-            // Add visibility change event to save data when app is backgrounded
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden && state.dataLoaded) {
-                    saveData();
-                }
-            });
-        }
-
-        // Setup data persistence
-        function setupDataPersistence() {
-            // Auto-save data every 30 seconds if there are changes
-            setInterval(() => {
-                if (state.dataLoaded && state.pendingSave) {
-                    saveData();
-                    state.pendingSave = false;
-                }
-            }, 30000);
         }
 
         // Authentication functions
@@ -1878,118 +2086,13 @@
                         displayName: user.displayName
                     }));
                     showAppContent();
-                    loadUserData();
+                    loadUserData(user.uid);
                 } else {
                     state.currentUser = null;
                     localStorage.removeItem('currentUser');
-                    // Unsubscribe from real-time updates
-                    if (state.unsubscribeUserData) {
-                        state.unsubscribeUserData();
-                        state.unsubscribeUserData = null;
-                    }
                     showWelcomeContent();
                 }
             });
-        }
-
-        function showAuthModal(tab) {
-            elements.authModal.classList.add('active');
-            switchAuthTab(tab);
-        }
-
-        function switchAuthTab(tabId) {
-            // Update tabs
-            document.querySelectorAll('.auth-tab').forEach(tab => {
-                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabId);
-            });
-            
-            // Update forms
-            elements.signInForm.style.display = tabId === 'signin' ? 'block' : 'none';
-            elements.signUpForm.style.display = tabId === 'signup' ? 'block' : 'none';
-        }
-
-        function signIn() {
-            const email = elements.signInEmail.value;
-            const password = elements.signInPassword.value;
-            
-            if (!email || !password) {
-                showToast('Please fill in all fields', 'error');
-                return;
-            }
-            
-            showLoading(true);
-            
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    elements.authModal.classList.remove('active');
-                    showToast('Successfully signed in!', 'success');
-                    showLoading(false);
-                    
-                    // Clear form
-                    elements.signInEmail.value = '';
-                    elements.signInPassword.value = '';
-                })
-                .catch((error) => {
-                    showToast(error.message, 'error');
-                    showLoading(false);
-                });
-        }
-
-        function signUp() {
-            const name = elements.signUpName.value;
-            const email = elements.signUpEmail.value;
-            const password = elements.signUpPassword.value;
-            const confirmPassword = elements.signUpConfirmPassword.value;
-            
-            if (!name || !email || !password || !confirmPassword) {
-                showToast('Please fill in all fields', 'error');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showToast('Password must be at least 6 characters', 'error');
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                showToast('Passwords do not match', 'error');
-                return;
-            }
-            
-            showLoading(true);
-            
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Update user profile with display name
-                    return userCredential.user.updateProfile({
-                        displayName: name
-                    });
-                })
-                .then(() => {
-                    // Save user profile to Firestore
-                    const user = auth.currentUser;
-                    return db.collection('users').doc(user.uid).set({
-                        name: name,
-                        email: email,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                })
-                .then(() => {
-                    elements.authModal.classList.remove('active');
-                    showToast('Account created successfully!', 'success');
-                    showLoading(false);
-                    
-                    // Clear form
-                    elements.signUpName.value = '';
-                    elements.signUpEmail.value = '';
-                    elements.signUpPassword.value = '';
-                    elements.signUpConfirmPassword.value = '';
-                })
-                .catch((error) => {
-                    showToast(error.message, 'error');
-                    showLoading(false);
-                });
         }
 
         function signOut() {
@@ -2072,7 +2175,7 @@
             };
             
             state.loans.push(loan);
-            saveData();
+            saveUserData();
             renderLoans();
             updateDashboard();
             updateProfile();
@@ -2244,7 +2347,7 @@
             // Recalculate payoff date
             loan.payoffDate = calculatePayoffDate(loan);
             
-            saveData();
+            saveUserData();
             renderLoans();
             updateDashboard();
             updatePayments();
@@ -2263,7 +2366,7 @@
             const newName = prompt('Enter new loan name:', loan.name);
             if (newName && newName !== loan.name) {
                 loan.name = newName;
-                saveData();
+                saveUserData();
                 renderLoans();
                 showToast('Loan updated successfully', 'success');
             }
@@ -2287,7 +2390,7 @@
             if (confirm('Are you sure you want to remove this loan? All payment history will be lost.')) {
                 state.loans = state.loans.filter(loan => loan.id !== loanId);
                 state.payments = state.payments.filter(payment => payment.loanId !== loanId);
-                saveData();
+                saveUserData();
                 renderLoans();
                 updateDashboard();
                 updatePayments();
@@ -2300,7 +2403,7 @@
             if (confirm('Are you sure you want to reset all loans? This cannot be undone.')) {
                 state.loans = [];
                 state.payments = [];
-                saveData();
+                saveUserData();
                 renderLoans();
                 updateDashboard();
                 updatePayments();
@@ -2331,7 +2434,7 @@
             };
 
             state.goals.push(goal);
-            saveData();
+            saveUserData();
             renderGoals();
             showToast('Goal set successfully!', 'success');
             
@@ -2394,7 +2497,7 @@
                         goal.completed = true;
                         showCelebration(`Congratulations! You've completed your ${goal.type.replace('_', ' ')} goal!`);
                     }
-                    saveData();
+                    saveUserData();
                     renderGoals();
                     showToast('Goal progress updated', 'success');
                 } else {
@@ -2406,7 +2509,7 @@
         function removeGoal(goalId) {
             if (confirm('Are you sure you want to remove this goal?')) {
                 state.goals = state.goals.filter(goal => goal.id !== goalId);
-                saveData();
+                saveUserData();
                 renderGoals();
                 showToast('Goal removed successfully', 'success');
             }
@@ -2474,7 +2577,7 @@
                             <div style="font-weight: 600;">Start by adding your first loan</div>
                         </div>
                         <p style="font-size: 0.9rem; color: var(--gray);">Add your loans to get personalized payoff recommendations and save money on interest.</p>
-                    </div>
+                        </div>
                 `;
                 return;
             }
@@ -2586,7 +2689,7 @@
                     // Remove from payments array
                     state.payments.splice(paymentIndex, 1);
                     
-                    saveData();
+                    saveUserData();
                     renderLoans();
                     updateDashboard();
                     updatePayments();
@@ -2670,138 +2773,6 @@
         }
 
         // Data management
-        function saveData() {
-            if (!state.dataLoaded) return;
-            
-            state.pendingSave = true;
-            
-            if (state.currentUser) {
-                // Save to Firebase
-                const userData = {
-                    loans: state.loans,
-                    payments: state.payments,
-                    goals: state.goals,
-                    achievements: state.achievements,
-                    lastUpdated: new Date().toISOString()
-                };
-                
-                db.collection('users').doc(state.currentUser.uid).set(userData, { merge: true })
-                    .then(() => {
-                        console.log('Data saved to Firebase');
-                        state.pendingSave = false;
-                    })
-                    .catch((error) => {
-                        console.error('Error saving data to Firebase: ', error);
-                        // Fallback to localStorage
-                        localStorage.setItem(`debtFreeCompassData_${state.currentUser.uid}`, JSON.stringify(userData));
-                        state.pendingSave = false;
-                    });
-            } else {
-                // Save to localStorage for demo
-                const userData = {
-                    loans: state.loans,
-                    payments: state.payments,
-                    goals: state.goals,
-                    achievements: state.achievements,
-                    lastUpdated: new Date().toISOString()
-                };
-                localStorage.setItem('debtFreeCompassDemoData', JSON.stringify(userData));
-                state.pendingSave = false;
-            }
-        }
-
-        function loadUserData() {
-            if (!state.currentUser) {
-                loadFromLocalStorage();
-                return;
-            }
-            
-            // Load from Firebase with real-time updates
-            state.unsubscribeUserData = db.collection('users').doc(state.currentUser.uid)
-                .onSnapshot(doc => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        state.loans = data.loans || [];
-                        state.payments = data.payments || [];
-                        state.goals = data.goals || [];
-                        state.achievements = data.achievements || [];
-                        
-                        state.dataLoaded = true;
-                        renderLoans();
-                        updateDashboard();
-                        updatePayments();
-                        renderGoals();
-                        updateProfile();
-                    } else {
-                        // If the document doesn't exist, create it with initial data
-                        const initialData = {
-                            loans: [],
-                            payments: [],
-                            goals: [],
-                            achievements: [],
-                            lastUpdated: new Date().toISOString()
-                        };
-                        
-                        db.collection('users').doc(state.currentUser.uid).set(initialData)
-                            .then(() => {
-                                state.loans = [];
-                                state.payments = [];
-                                state.goals = [];
-                                state.achievements = [];
-                                
-                                state.dataLoaded = true;
-                                renderLoans();
-                                updateDashboard();
-                                updatePayments();
-                                renderGoals();
-                                updateProfile();
-                            });
-                    }
-                }, error => {
-                    console.error('Error loading data from Firebase: ', error);
-                    loadFromLocalStorage();
-                });
-        }
-
-        function loadFromLocalStorage() {
-            let savedData;
-            if (state.currentUser) {
-                savedData = localStorage.getItem(`debtFreeCompassData_${state.currentUser.uid}`);
-            } else {
-                savedData = localStorage.getItem('debtFreeCompassDemoData');
-            }
-            
-            if (savedData) {
-                try {
-                    const data = JSON.parse(savedData);
-                    state.loans = data.loans || [];
-                    state.payments = data.payments || [];
-                    state.goals = data.goals || [];
-                    state.achievements = data.achievements || [];
-                } catch (e) {
-                    console.error('Error parsing saved data:', e);
-                    // Initialize with empty arrays if parsing fails
-                    state.loans = [];
-                    state.payments = [];
-                    state.goals = [];
-                    state.achievements = [];
-                }
-            } else {
-                // Initialize with empty arrays if no saved data
-                state.loans = [];
-                state.payments = [];
-                state.goals = [];
-                state.achievements = [];
-            }
-            
-            state.dataLoaded = true;
-            renderLoans();
-            updateDashboard();
-            updatePayments();
-            renderGoals();
-            updateProfile();
-        }
-
         function exportUserData() {
             const data = {
                 loans: state.loans,
@@ -2863,7 +2834,7 @@
                         state.goals = data.goals || [];
                         state.achievements = data.achievements || [];
                         
-                        saveData();
+                        saveUserData();
                         renderLoans();
                         updateDashboard();
                         updatePayments();
@@ -2887,7 +2858,7 @@
                 state.goals = [];
                 state.achievements = [];
                 
-                saveData();
+                saveUserData();
                 renderLoans();
                 updateDashboard();
                 updatePayments();
@@ -2995,8 +2966,8 @@
                 showToast('You are back online!', 'success');
                 
                 // Sync data if user is logged in
-                if (state.currentUser && state.dataLoaded) {
-                    saveData();
+                if (state.currentUser) {
+                    saveUserData();
                 }
             });
             
