@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cookie Consent Auditor Pro - RegTech Tool</title>
+  <title>Cookie Compliance Auditor - RegTech Tool</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
     body { background: #f8fafc; color: #0f172a; padding: 20px; max-width: 1200px; margin: 0 auto; }
@@ -15,22 +15,28 @@
     button { background: #2563eb; color: white; border: none; padding: 14px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; }
     button:hover { background: #1d4ed8; }
     button:disabled { background: #94a3b8; cursor: not-allowed; }
-    .results { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
+    .results { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; margin-top: 20px; }
+    .compliance-status { padding: 20px; text-align: center; }
+    .status-compliant { background: #dcfce7; color: #166534; }
+    .status-noncompliant { background: #fee2e2; color: #991b1b; }
+    .status-warning { background: #ffedd5; color: #9a3412; }
     .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; padding: 20px; background: #f1f5f9; }
     .metric { text-align: center; }
-    .metric-value { font-size: 28px; font-weight: bold; color: #2563eb; }
+    .metric-value { font-size: 28px; font-weight: bold; }
+    .metric-high { color: #ef4444; }
+    .metric-medium { color: #f59e0b; }
+    .metric-low { color: #10b981; }
     .metric-label { font-size: 14px; color: #64748b; }
     .cookie-list { max-height: 500px; overflow-y: auto; }
-    .cookie-item { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; }
-    .cookie-item-header { font-weight: 600; background: #f8fafc; padding: 12px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; color: #475569; }
+    .cookie-item { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 12px; }
+    .cookie-item-header { font-weight: 600; background: #f8fafc; padding: 12px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 12px; color: #475569; }
     .risk-high { color: #ef4444; font-weight: 600; }
     .risk-medium { color: #f59e0b; font-weight: 600; }
     .risk-low { color: #10b981; font-weight: 600; }
     .empty { text-align: center; padding: 40px; color: #94a3b8; }
     .instructions { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 16px; margin-bottom: 20px; border-radius: 0 8px 8px 0; }
     .instructions h3 { margin-bottom: 8px; color: #92400e; }
-    .instructions ul { padding-left: 20px; margin-top: 8px; }
-    .instructions li { margin-bottom: 6px; }
+    .instructions p { margin-bottom: 10px; }
     .code-block { 
       background: #1e293b; 
       color: #f8fafc; 
@@ -55,7 +61,7 @@
       font-size: 12px;
     }
     .copy-btn:hover { background: #475569; }
-    .export-btn { background: #10b981; margin-top: 15px; padding: 10px 20px; }
+    .export-btn { background: #10b981; margin: 20px; padding: 12px 24px; }
     .export-btn:hover { background: #0da271; }
     .url-input { display: flex; gap: 10px; margin-bottom: 20px; }
     .url-input input { flex: 1; }
@@ -64,17 +70,21 @@
     .step-number { width: 32px; height: 32px; background: #2563eb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 12px; }
     .step h3 { margin-bottom: 10px; color: #1e293b; }
     .step p { color: #64748b; line-height: 1.6; }
+    .recommendations { background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+    .recommendations h3 { margin-bottom: 12px; color: #1e40af; }
+    .recommendations ul { padding-left: 20px; }
+    .recommendations li { margin-bottom: 8px; }
   </style>
 </head>
 <body>
   <header>
-    <h1>Cookie Consent Auditor Pro</h1>
-    <p class="subtitle">The only tool that accurately scans cookies for GDPR/CCPA compliance</p>
+    <h1>Cookie Compliance Auditor</h1>
+    <p class="subtitle">Instant GDPR/CCPA compliance assessment for any website</p>
   </header>
 
   <div class="url-input">
     <input type="url" id="websiteUrl" placeholder="https://example.com" />
-    <button id="generateBtn">Generate Scanner</button>
+    <button id="generateBtn">Audit Website</button>
   </div>
 
   <div id="scannerSection" style="display:none;">
@@ -82,17 +92,17 @@
       <div class="step">
         <div class="step-number">1</div>
         <h3>Open Target Website</h3>
-        <p>Navigate to the website you want to audit in your browser.</p>
+        <p>Navigate to the website you want to audit.</p>
       </div>
       <div class="step">
         <div class="step-number">2</div>
         <h3>Open DevTools</h3>
-        <p>Press F12 (or right-click → Inspect) to open Developer Tools.</p>
+        <p>Press F12 → Console tab.</p>
       </div>
       <div class="step">
         <div class="step-number">3</div>
         <h3>Run Scanner Code</h3>
-        <p>Paste the code below into the Console tab and press Enter.</p>
+        <p>Paste and execute the code below.</p>
       </div>
     </div>
 
@@ -102,38 +112,44 @@
     </div>
 
     <div class="instructions">
-      <h3>After running the code:</h3>
-      <p>The tool will automatically analyze cookies and display results here. No need to copy/paste!</p>
+      <h3>Automatic Analysis</h3>
+      <p>Once you run the code on the target website, results will appear here automatically.</p>
     </div>
   </div>
 
   <div id="results" class="results" style="display:none;">
+    <div id="complianceStatus" class="compliance-status"></div>
+    
     <div class="summary">
       <div class="metric">
         <div class="metric-value" id="totalCookies">0</div>
         <div class="metric-label">Total Cookies</div>
       </div>
       <div class="metric">
-        <div class="metric-value" id="highRisk">0</div>
+        <div class="metric-value metric-high" id="highRisk">0</div>
         <div class="metric-label">High Risk</div>
       </div>
       <div class="metric">
-        <div class="metric-value" id="mediumRisk">0</div>
+        <div class="metric-value metric-medium" id="mediumRisk">0</div>
         <div class="metric-label">Medium Risk</div>
       </div>
       <div class="metric">
-        <div class="metric-value" id="lowRisk">0</div>
+        <div class="metric-value metric-low" id="lowRisk">0</div>
         <div class="metric-label">Low Risk</div>
       </div>
     </div>
+    
     <div class="cookie-item-header">
       <div>Name</div>
       <div>Domain</div>
       <div>Risk</div>
-      <div>Purpose</div>
+      <div>Purpose & Compliance Status</div>
     </div>
     <div class="cookie-list" id="cookieList"></div>
-    <button class="export-btn" id="exportBtn">Export Compliance Report</button>
+    
+    <div class="recommendations" id="recommendations"></div>
+    
+    <button class="export-btn" id="exportBtn">Export Full Compliance Report</button>
   </div>
 
   <script>
@@ -142,25 +158,42 @@
       'google', 'gtag', 'ga', 'analytics', 'ad', 'ads', 'doubleclick', 
       'facebook', 'fb', 'pixel', 'linkedin', 'twitter', 'tiktok', 
       'hotjar', 'mixpanel', 'amplitude', 'segment', 'hubspot', 'pardot',
-      'marketo', 'salesforce', 'adroll', 'criteo', 'taboola', 'outbrain'
+      'marketo', 'salesforce', 'adroll', 'criteo', 'taboola', 'outbrain',
+      'youtube', 'vimeo', 'soundcloud', 'spotify'
     ];
     
     // Medium-risk (functional but may identify users)
     const MEDIUM_RISK_PATTERNS = [
       'session', 'csrf', 'auth', 'token', 'user', 'id', 'uuid', 'cart',
-      'pref', 'lang', 'currency', 'ab_test', 'experiment'
+      'pref', 'lang', 'currency', 'ab_test', 'experiment', 'consent',
+      'cookie', 'banner', 'notice', 'gdpr', 'ccpa'
     ];
 
     function assessRisk(name) {
       const lower = name.toLowerCase();
       
       if (HIGH_RISK_PATTERNS.some(p => lower.includes(p))) {
-        return { level: 'high', label: 'Consent Required (GDPR/CCPA)' };
+        return { 
+          level: 'high', 
+          label: 'Marketing/Tracking', 
+          compliant: false,
+          requirement: 'Explicit consent required before setting (GDPR Art. 5(3), CCPA §1798.120)'
+        };
       }
       if (MEDIUM_RISK_PATTERNS.some(p => lower.includes(p))) {
-        return { level: 'medium', label: 'Functional (May require disclosure)' };
+        return { 
+          level: 'medium', 
+          label: 'Functional/Preferences', 
+          compliant: true,
+          requirement: 'Disclosure required in privacy policy; consent recommended'
+        };
       }
-      return { level: 'low', label: 'Strictly Necessary' };
+      return { 
+        level: 'low', 
+        label: 'Strictly Necessary', 
+        compliant: true,
+        requirement: 'Exempt from consent requirements (GDPR Recital 32)'
+      };
     }
 
     function analyzeCookies(cookieData, domain) {
@@ -170,7 +203,9 @@
           name: cookie.name,
           domain: cookie.domain || domain,
           risk: risk.level,
-          purpose: risk.label
+          purpose: risk.label,
+          compliant: risk.compliant,
+          requirement: risk.requirement
         };
       });
 
@@ -180,10 +215,34 @@
       document.getElementById('mediumRisk').textContent = results.filter(r => r.risk === 'medium').length;
       document.getElementById('lowRisk').textContent = results.filter(r => r.risk === 'low').length;
 
+      // Determine overall compliance
+      const highRiskCount = results.filter(r => r.risk === 'high').length;
+      const complianceStatusEl = document.getElementById('complianceStatus');
+      
+      if (highRiskCount === 0) {
+        complianceStatusEl.className = 'compliance-status status-compliant';
+        complianceStatusEl.innerHTML = `
+          <h2>✅ COMPLIANT</h2>
+          <p>No high-risk cookies detected. Website appears GDPR/CCPA compliant for cookie usage.</p>
+        `;
+      } else if (highRiskCount <= 2) {
+        complianceStatusEl.className = 'compliance-status status-warning';
+        complianceStatusEl.innerHTML = `
+          <h2>⚠️ ATTENTION REQUIRED</h2>
+          <p>${highRiskCount} high-risk cookie(s) detected. Explicit user consent is required before these cookies can be set.</p>
+        `;
+      } else {
+        complianceStatusEl.className = 'compliance-status status-noncompliant';
+        complianceStatusEl.innerHTML = `
+          <h2>❌ NON-COMPLIANT</h2>
+          <p>${highRiskCount} high-risk cookies detected without consent mechanism. Immediate action required to avoid GDPR/CCPA violations.</p>
+        `;
+      }
+
       // Render list
       const listEl = document.getElementById('cookieList');
       if (results.length === 0) {
-        listEl.innerHTML = '<div class="empty">No cookies found</div>';
+        listEl.innerHTML = '<div class="empty">No cookies found on this website</div>';
       } else {
         listEl.innerHTML = results.map(cookie => `
           <div class="cookie-item">
@@ -192,45 +251,101 @@
             <div class="${cookie.risk === 'high' ? 'risk-high' : cookie.risk === 'medium' ? 'risk-medium' : 'risk-low'}">
               ${cookie.risk.charAt(0).toUpperCase() + cookie.risk.slice(1)}
             </div>
-            <div>${cookie.purpose}</div>
+            <div>
+              <strong>${cookie.purpose}</strong><br>
+              ${cookie.compliant ? '✅ Compliant' : '❌ Requires Consent'}<br>
+              <small>${cookie.requirement}</small>
+            </div>
           </div>
         `).join('');
       }
 
+      // Generate recommendations
+      const recommendationsEl = document.getElementById('recommendations');
+      if (highRiskCount > 0) {
+        recommendationsEl.innerHTML = `
+          <h3>Recommended Actions</h3>
+          <ul>
+            <li>Implement a cookie consent banner that blocks high-risk cookies until explicit consent is given</li>
+            <li>Update your privacy policy to disclose all cookie purposes and data sharing practices</li>
+            <li>Provide users with granular consent options (e.g., accept analytics but reject marketing)</li>
+            <li>Regularly audit cookie usage as new third-party scripts may introduce tracking cookies</li>
+          </ul>
+        `;
+      } else {
+        recommendationsEl.innerHTML = `
+          <h3>Compliance Status</h3>
+          <ul>
+            <li>✅ No high-risk cookies detected - current implementation appears compliant</li>
+            <li>Continue monitoring for new cookies as website functionality changes</li>
+            <li>Ensure any future third-party integrations are vetted for cookie compliance</li>
+          </ul>
+        `;
+      }
+
       document.getElementById('results').style.display = 'block';
       document.getElementById('scannerSection').style.display = 'none';
+      
+      // Store for export
+      window.lastAnalysis = {
+        cookies: results,
+        domain: domain,
+        highRiskCount: highRiskCount,
+        timestamp: new Date().toISOString()
+      };
     }
 
     function exportReport() {
-      const cookies = window.lastCookieData || [];
-      const domain = window.lastDomain || 'unknown';
-      const report = `# Cookie Compliance Report
-Generated: ${new Date().toISOString().split('T')[0]}
-Audited Website: ${domain}
+      if (!window.lastAnalysis) return;
+      
+      const { cookies, domain, highRiskCount, timestamp } = window.lastAnalysis;
+      const compliant = highRiskCount === 0;
+      
+      const report = `# Cookie Compliance Audit Report
+**Website:** ${domain}
+**Audit Date:** ${new Date(timestamp).toLocaleString()}
+**Overall Status:** ${compliant ? 'COMPLIANT' : highRiskCount <= 2 ? 'ATTENTION REQUIRED' : 'NON-COMPLIANT'}
 
-## Summary
-- Total Cookies: ${document.getElementById('totalCookies').textContent}
-- High Risk (Consent Required): ${document.getElementById('highRisk').textContent}
-- Medium Risk (Disclosure Required): ${document.getElementById('mediumRisk').textContent}
-- Low Risk (Necessary): ${document.getElementById('lowRisk').textContent}
+## Executive Summary
+${compliant ? 
+  '✅ The website appears to be GDPR/CCPA compliant regarding cookie usage. No high-risk tracking cookies were detected.' :
+  `❌ The website is **non-compliant** with GDPR/CCPA cookie requirements. ${highRiskCount} high-risk cookies were detected that require explicit user consent before being set.`
+}
 
-## Detailed Findings
-| Cookie Name | Domain | Risk Level | Purpose |
-|-------------|--------|------------|---------|
-${cookies.map(c => {
-  const risk = assessRisk(c.name);
-  return `| ${c.name} | ${c.domain || domain} | ${risk.level} | ${risk.label} |`;
-}).join('\n')}
+## Detailed Cookie Analysis
+| Cookie Name | Domain | Risk Level | Purpose | Compliance Status |
+|-------------|--------|------------|---------|-------------------|
+${cookies.map(c => `| ${c.name} | ${c.domain} | ${c.risk.charAt(0).toUpperCase() + c.risk.slice(1)} | ${c.purpose} | ${c.compliant ? '✅ Compliant' : '❌ Requires Consent'} |`).join('\n')}
+
+## Regulatory Requirements
+### GDPR (General Data Protection Regulation)
+- **Article 5(3)**: Requires prior informed consent for storing/accessing information on user devices
+- **Recital 32**: Strictly necessary cookies are exempt from consent requirement
+- **Penalties**: Up to €20 million or 4% of global annual turnover
+
+### CCPA (California Consumer Privacy Act)
+- **§1798.120**: Requires opt-out mechanism for sale of personal information (includes many tracking cookies)
+- **Penalties**: Up to $7,500 per intentional violation
 
 ## Recommendations
-- Obtain explicit consent before setting High Risk cookies (GDPR Art. 5(3), CCPA §1798.120)
-- Disclose Medium Risk cookies in privacy policy with purpose specification
-- Low Risk cookies are exempt from consent requirements under GDPR
-- Implement a cookie consent banner that blocks High Risk cookies until consent is given
+${compliant ? 
+`1. **Maintain current practices** - No immediate action required
+2. **Regular monitoring** - Re-audit quarterly or after major website changes
+3. **Third-party vetting** - Ensure new integrations comply with cookie policies` :
+`1. **Implement consent mechanism** - Deploy a cookie consent banner that blocks high-risk cookies until explicit consent
+2. **Update privacy policy** - Disclose all cookie purposes, data processors, and retention periods
+3. **Granular consent** - Allow users to accept/reject cookies by category (essential, analytics, marketing)
+4. **Regular audits** - Schedule monthly cookie scans to detect new non-compliant cookies
+5. **Documentation** - Maintain records of consent for audit purposes`}
 
 ## Technical Notes
-- Scan performed on: ${new Date().toLocaleString()}
-- Tool: Cookie Consent Auditor Pro v1.0
+- **Audit Tool**: Cookie Compliance Auditor v1.0
+- **Methodology**: Direct cookie inspection via browser JavaScript
+- **Limitations**: Only detects cookies present during scan; some cookies may be set after user interaction
+- **Recommendation**: Perform multiple scans during different user journeys (homepage, product pages, checkout)
+
+---
+*This report was generated automatically. For legal advice, consult a qualified privacy attorney.*
 `;
 
       const blob = new Blob([report], { type: 'text/markdown' });
@@ -261,7 +376,7 @@ ${cookies.map(c => {
       
       const domain = new URL(url).hostname;
       const code = `(function() {
-  // Cookie Consent Auditor Pro - RegTech Tool
+  // Cookie Compliance Auditor - RegTech Tool
   const cookies = document.cookie.split(';').map(c => c.trim()).filter(c => c);
   const cookieData = cookies.map(c => {
     const [name, ...valueParts] = c.split('=');
@@ -275,8 +390,8 @@ ${cookies.map(c => {
     domain: '${domain}'
   }, '*');
   
-  console.log('✅ Cookie scan complete! Results sent to auditor tool.');
-  console.log('📊 Found ' + cookieData.length + ' cookies');
+  console.log('%c✅ Cookie Compliance Audit Complete!', 'color: green; font-weight: bold;');
+  console.log('%c📊 Found ' + cookieData.length + ' cookies. Results sent to auditor tool.', 'color: blue;');
 })();`;
 
       document.getElementById('scannerCode').textContent = code;
@@ -285,8 +400,6 @@ ${cookies.map(c => {
       // Listen for results
       window.addEventListener('message', (event) => {
         if (event.data.type === 'COOKIE_AUDIT_RESULT') {
-          window.lastCookieData = event.data.data;
-          window.lastDomain = event.data.domain;
           analyzeCookies(event.data.data, event.data.domain);
         }
       });
@@ -299,6 +412,9 @@ ${cookies.map(c => {
         const btn = document.getElementById('copyCodeBtn');
         btn.textContent = 'Copied!';
         setTimeout(() => btn.textContent = 'Copy', 2000);
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+        alert('Failed to copy code. Please select and copy manually.');
       });
     }
 
