@@ -3,22 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinTrack - Your Personal Finance Dashboard</title>
+    <title>ExpenseFlow | Real-Time Budget Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #4361ee;
-            --secondary: #3f37c9;
-            --success: #4cc9f0;
-            --warning: #f72585;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --gray: #6c757d;
-            --light-gray: #e9ecef;
-            --card-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            --transition: all 0.3s ease;
-        }
-        
         * {
             margin: 0;
             padding: 0;
@@ -26,11 +13,23 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
-            color: var(--dark);
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
             min-height: 100vh;
             padding: 20px;
+            color: var(--dark);
         }
         
         .container {
@@ -39,57 +38,74 @@
         }
         
         header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            text-align: center;
+            padding: 30px 0;
             margin-bottom: 30px;
-            padding: 20px 0;
         }
         
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
         }
         
         .logo i {
-            font-size: 28px;
+            font-size: 2.5rem;
             color: var(--primary);
+            background: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.25);
         }
         
-        .logo h1 {
-            font-size: 28px;
+        h1 {
+            font-size: 2.5rem;
             font-weight: 700;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            background: linear-gradient(to right, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            margin-bottom: 10px;
         }
         
-        .tagline {
+        .subtitle {
             color: var(--gray);
-            font-size: 16px;
-            margin-top: 5px;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
         }
         
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 25px;
             margin-bottom: 30px;
         }
         
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        
         .card {
             background: white;
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 25px;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
         }
         
         .card-header {
@@ -97,22 +113,24 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--light-gray);
         }
         
         .card-title {
-            font-size: 18px;
+            font-size: 1.4rem;
             font-weight: 600;
             color: var(--dark);
         }
         
         .card-icon {
-            width: 48px;
-            height: 48px;
+            width: 45px;
+            height: 45px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 1.2rem;
         }
         
         .income-icon {
@@ -122,6 +140,11 @@
         
         .expense-icon {
             background: rgba(247, 37, 133, 0.15);
+            color: var(--danger);
+        }
+        
+        .budget-icon {
+            background: rgba(248, 150, 30, 0.15);
             color: var(--warning);
         }
         
@@ -130,72 +153,128 @@
             color: var(--primary);
         }
         
-        .savings-icon {
-            background: rgba(46, 204, 113, 0.15);
-            color: #2ecc71;
-        }
-        
-        .metric-value {
-            font-size: 32px;
+        .amount {
+            font-size: 2.2rem;
             font-weight: 700;
-            margin: 10px 0;
+            margin: 15px 0;
         }
         
-        .income-value {
+        .income-amount {
             color: var(--success);
         }
         
-        .expense-value {
-            color: var(--warning);
+        .expense-amount {
+            color: var(--danger);
         }
         
-        .balance-value {
+        .balance-amount {
             color: var(--primary);
         }
         
-        .savings-value {
-            color: #2ecc71;
+        .progress-container {
+            margin: 20px 0;
         }
         
-        .metric-change {
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .progress-bar {
+            height: 12px;
+            background: var(--light-gray);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+        
+        .form-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--dark);
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
             display: flex;
             align-items: center;
-            gap: 5px;
-            font-size: 14px;
-            font-weight: 500;
+            justify-content: center;
+            gap: 10px;
         }
         
-        .positive {
-            color: #2ecc71;
-        }
-        
-        .negative {
-            color: var(--warning);
-        }
-        
-        .chart-container {
-            height: 200px;
-            margin: 20px 0;
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
         }
         
         .transactions {
             background: white;
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: var(--card-shadow);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
         }
         
-        .section-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 20px;
+        .transactions-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 10px;
+            margin-bottom: 25px;
         }
         
-        .section-title i {
-            color: var(--primary);
+        .transactions-title {
+            font-size: 1.5rem;
+            color: var(--dark);
         }
         
         .transaction-list {
@@ -208,60 +287,77 @@
             display: flex;
             justify-content: space-between;
             padding: 15px;
-            border-radius: 12px;
-            background: var(--light-gray);
-            transition: var(--transition);
+            border-radius: 15px;
+            background: var(--light);
+            transition: transform 0.2s;
         }
         
         .transaction-item:hover {
-            background: #dbeafe;
+            transform: translateX(5px);
         }
         
         .transaction-info {
             display: flex;
             flex-direction: column;
-            gap: 5px;
         }
         
-        .transaction-name {
+        .transaction-category {
             font-weight: 600;
-            font-size: 16px;
+            margin-bottom: 5px;
         }
         
         .transaction-date {
-            font-size: 13px;
             color: var(--gray);
+            font-size: 0.9rem;
         }
         
         .transaction-amount {
             font-weight: 700;
-            font-size: 16px;
+            font-size: 1.1rem;
         }
         
-        .expense-amount {
-            color: var(--warning);
-        }
-        
-        .income-amount {
+        .income {
             color: var(--success);
         }
         
+        .expense {
+            color: var(--danger);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--light-gray);
+        }
+        
         .insights {
-            background: white;
-            border-radius: 16px;
+            margin-top: 30px;
             padding: 25px;
-            box-shadow: var(--card-shadow);
-            margin-top: 25px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+        
+        .insights-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--dark);
+            text-align: center;
         }
         
         .insight-item {
             display: flex;
-            padding: 15px 0;
-            border-bottom: 1px solid var(--light-gray);
-        }
-        
-        .insight-item:last-child {
-            border-bottom: none;
+            align-items: center;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            background: var(--light);
         }
         
         .insight-icon {
@@ -272,59 +368,34 @@
             align-items: center;
             justify-content: center;
             margin-right: 15px;
-            background: rgba(67, 97, 238, 0.1);
-            color: var(--primary);
+            font-size: 1.2rem;
         }
         
-        .insight-content h4 {
-            font-weight: 600;
-            margin-bottom: 5px;
+        .insight-text {
+            font-weight: 500;
         }
         
-        .insight-content p {
-            font-size: 14px;
-            color: var(--gray);
+        .savings {
+            background: rgba(76, 201, 240, 0.15);
+            color: var(--success);
         }
         
-        .cta-button {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 20px;
+        .overspending {
+            background: rgba(247, 37, 133, 0.15);
+            color: var(--danger);
         }
         
-        .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.3);
+        .budget-warning {
+            background: rgba(248, 150, 30, 0.15);
+            color: var(--warning);
         }
         
         footer {
             text-align: center;
             margin-top: 40px;
-            color: var(--gray);
-            font-size: 14px;
             padding: 20px;
-        }
-        
-        @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            
-            header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
+            color: var(--gray);
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -333,249 +404,312 @@
         <header>
             <div class="logo">
                 <i class="fas fa-chart-line"></i>
-                <div>
-                    <h1>FinTrack</h1>
-                    <div class="tagline">Your personal finance dashboard</div>
-                </div>
+                <h1>ExpenseFlow</h1>
             </div>
-            <div class="user-actions">
-                <button class="cta-button" id="simulateBtn">
-                    <i class="fas fa-sync-alt"></i> Simulate New Data
-                </button>
-            </div>
+            <p class="subtitle">Real-time expense tracking with actionable insights. Take control of your finances in seconds.</p>
         </header>
         
         <div class="dashboard">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title">Total Balance</div>
-                    <div class="card-icon balance-icon">
-                        <i class="fas fa-wallet"></i>
-                    </div>
-                </div>
-                <div class="metric-value balance-value" id="totalBalance">$12,482.50</div>
-                <div class="metric-change positive">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>+5.2% from last month</span>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">Monthly Income</div>
+                    <div class="card-title">Total Income</div>
                     <div class="card-icon income-icon">
                         <i class="fas fa-arrow-down"></i>
                     </div>
                 </div>
-                <div class="metric-value income-value" id="monthlyIncome">$4,250.00</div>
-                <div class="metric-change positive">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>+2.1% from last month</span>
-                </div>
+                <div class="amount income-amount">$2,450.00</div>
+                <p>This month's total income from all sources</p>
             </div>
             
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title">Monthly Expenses</div>
+                    <div class="card-title">Total Expenses</div>
                     <div class="card-icon expense-icon">
                         <i class="fas fa-arrow-up"></i>
                     </div>
                 </div>
-                <div class="metric-value expense-value" id="monthlyExpenses">$3,120.75</div>
-                <div class="metric-change negative">
-                    <i class="fas fa-arrow-down"></i>
-                    <span>-1.8% from last month</span>
-                </div>
+                <div class="amount expense-amount">$1,820.50</div>
+                <p>This month's total spending across all categories</p>
             </div>
             
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title">Savings Rate</div>
-                    <div class="card-icon savings-icon">
-                        <i class="fas fa-piggy-bank"></i>
+                    <div class="card-title">Monthly Budget</div>
+                    <div class="card-icon budget-icon">
+                        <i class="fas fa-wallet"></i>
                     </div>
                 </div>
-                <div class="metric-value savings-value" id="savingsRate">26.6%</div>
-                <div class="metric-change positive">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>+3.2% from last month</span>
+                <div class="amount">$2,000.00</div>
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>Budget Used</span>
+                        <span>91%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 91%; background: linear-gradient(to right, var(--warning), var(--danger));"></div>
+                    </div>
                 </div>
+                <p>Stay within your monthly spending limit</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Current Balance</div>
+                    <div class="card-icon balance-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                </div>
+                <div class="amount balance-amount">$629.50</div>
+                <p>Your remaining funds after expenses</p>
             </div>
         </div>
         
+        <div class="form-container">
+            <h2 class="form-title">Add New Transaction</h2>
+            <form id="transaction-form">
+                <div class="form-group">
+                    <label for="amount">Amount ($)</label>
+                    <input type="number" id="amount" placeholder="Enter amount" min="0.01" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="type">Transaction Type</label>
+                    <select id="type" required>
+                        <option value="">Select type</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" required>
+                        <option value="">Select category</option>
+                        <option value="salary">Salary</option>
+                        <option value="freelance">Freelance</option>
+                        <option value="investment">Investment</option>
+                        <option value="groceries">Groceries</option>
+                        <option value="dining">Dining Out</option>
+                        <option value="transport">Transportation</option>
+                        <option value="utilities">Utilities</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="health">Healthcare</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" required>
+                </div>
+                
+                <button type="submit" class="btn">
+                    <i class="fas fa-plus"></i> Add Transaction
+                </button>
+            </form>
+        </div>
+        
         <div class="transactions">
-            <h3 class="section-title"><i class="fas fa-exchange-alt"></i> Recent Transactions</h3>
-            <div class="transaction-list" id="transactionList">
-                <!-- Transactions will be populated by JavaScript -->
+            <div class="transactions-header">
+                <h2 class="transactions-title">Recent Transactions</h2>
+            </div>
+            
+            <div class="transaction-list">
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-category">Groceries</div>
+                        <div class="transaction-date">May 15, 2023</div>
+                    </div>
+                    <div class="transaction-amount expense">-$85.20</div>
+                </div>
+                
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-category">Salary</div>
+                        <div class="transaction-date">May 10, 2023</div>
+                    </div>
+                    <div class="transaction-amount income">+$2,450.00</div>
+                </div>
+                
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-category">Dining Out</div>
+                        <div class="transaction-date">May 8, 2023</div>
+                    </div>
+                    <div class="transaction-amount expense">-$65.75</div>
+                </div>
+                
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-category">Utilities</div>
+                        <div class="transaction-date">May 5, 2023</div>
+                    </div>
+                    <div class="transaction-amount expense">-$120.00</div>
+                </div>
+                
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-category">Transportation</div>
+                        <div class="transaction-date">May 3, 2023</div>
+                    </div>
+                    <div class="transaction-amount expense">-$45.30</div>
+                </div>
             </div>
         </div>
         
         <div class="insights">
-            <h3 class="section-title"><i class="fas fa-lightbulb"></i> Financial Insights</h3>
+            <h2 class="insights-title">Financial Insights</h2>
             <div class="insight-item">
-                <div class="insight-icon">
+                <div class="insight-icon savings">
+                    <i class="fas fa-piggy-bank"></i>
+                </div>
+                <div class="insight-text">You've saved $629.50 this month! That's 25.7% of your income.</div>
+            </div>
+            
+            <div class="insight-item">
+                <div class="insight-icon overspending">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="insight-text">You're spending 32% more on dining out compared to last month.</div>
+            </div>
+            
+            <div class="insight-item">
+                <div class="insight-icon budget-warning">
                     <i class="fas fa-chart-pie"></i>
                 </div>
-                <div class="insight-content">
-                    <h4>Spending Pattern Detected</h4>
-                    <p>Your dining expenses increased by 18% this month. Consider meal prepping to save $120/month.</p>
-                </div>
-            </div>
-            <div class="insight-item">
-                <div class="insight-icon">
-                    <i class="fas fa-bullseye"></i>
-                </div>
-                <div class="insight-content">
-                    <h4>Savings Goal Progress</h4>
-                    <p>You're 72% towards your $5,000 emergency fund goal. Keep it up!</p>
-                </div>
-            </div>
-            <div class="insight-item">
-                <div class="insight-icon">
-                    <i class="fas fa-gift"></i>
-                </div>
-                <div class="insight-content">
-                    <h4>Subscription Alert</h4>
-                    <p>You have 3 unused subscriptions costing $24.99/month. Cancel to save $300/year.</p>
-                </div>
+                <div class="insight-text">Your budget is at 91% - consider reducing discretionary spending.</div>
             </div>
         </div>
         
         <footer>
-            <p>FinTrack - All your finances in one place. Data is simulated for demonstration purposes.</p>
-            <p>This dashboard works entirely in your browser with no data collection.</p>
+            <p>ExpenseFlow &copy; 2023 | Real-time expense tracking with actionable insights</p>
+            <p>All data is stored locally in your browser - no server required!</p>
         </footer>
     </div>
 
     <script>
-        // Sample transaction data
-        const sampleTransactions = [
-            { id: 1, name: "Salary Deposit", amount: 4250.00, date: "2023-05-01", type: "income" },
-            { id: 2, name: "Grocery Store", amount: 187.45, date: "2023-05-03", type: "expense" },
-            { id: 3, name: "Electric Bill", amount: 92.30, date: "2023-05-05", type: "expense" },
-            { id: 4, name: "Freelance Payment", amount: 350.00, date: "2023-05-07", type: "income" },
-            { id: 5, name: "Restaurant", amount: 65.80, date: "2023-05-10", type: "expense" },
-            { id: 6, name: "Gas Station", amount: 45.20, date: "2023-05-12", type: "expense" },
-            { id: 7, name: "Online Course", amount: 129.99, date: "2023-05-15", type: "expense" },
-            { id: 8, name: "Interest Earned", amount: 12.50, date: "2023-05-20", type: "income" }
-        ];
+        // Set today's date as default
+        document.getElementById('date').valueAsDate = new Date();
         
-        // Generate random financial data
-        function generateFinancialData() {
-            // Randomize income between $3800-$4700
-            const income = (Math.random() * 900 + 3800).toFixed(2);
+        // Form submission handler
+        document.getElementById('transaction-form').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            // Expenses between $2800-$3500
-            const expenses = (Math.random() * 700 + 2800).toFixed(2);
+            // Get form values
+            const amount = parseFloat(document.getElementById('amount').value);
+            const type = document.getElementById('type').value;
+            const category = document.getElementById('category').value;
+            const date = document.getElementById('date').value;
             
-            // Balance based on previous balance plus income minus expenses
-            const balance = (parseFloat(document.getElementById('totalBalance').textContent.replace(/[$,]/g, '')) + 
-                            parseFloat(income) - parseFloat(expenses)).toFixed(2);
+            // Validate
+            if (!amount || !type || !category || !date) {
+                alert('Please fill all fields');
+                return;
+            }
             
-            // Savings rate calculation
-            const savingsRate = ((income - expenses) / income * 100).toFixed(1);
+            // Create transaction element
+            const transactionList = document.querySelector('.transaction-list');
+            const transactionItem = document.createElement('div');
+            transactionItem.className = 'transaction-item';
             
-            // Update DOM elements
-            document.getElementById('monthlyIncome').textContent = `$${Number(income).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            document.getElementById('monthlyExpenses').textContent = `$${Number(expenses).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            document.getElementById('totalBalance').textContent = `$${Number(balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            document.getElementById('savingsRate').textContent = `${savingsRate}%`;
-            
-            // Update transaction list
-            updateTransactionList();
-        }
-        
-        // Update transaction list with sample data
-        function updateTransactionList() {
-            const list = document.getElementById('transactionList');
-            list.innerHTML = '';
-            
-            // Shuffle transactions for variety
-            const shuffled = [...sampleTransactions].sort(() => 0.5 - Math.random()).slice(0, 5);
-            
-            shuffled.forEach(transaction => {
-                const item = document.createElement('div');
-                item.className = 'transaction-item';
-                
-                const amountClass = transaction.type === 'income' ? 'income-amount' : 'expense-amount';
-                const amountPrefix = transaction.type === 'income' ? '+' : '-';
-                
-                item.innerHTML = `
-                    <div class="transaction-info">
-                        <div class="transaction-name">${transaction.name}</div>
-                        <div class="transaction-date">${formatDate(transaction.date)}</div>
-                    </div>
-                    <div class="transaction-amount ${amountClass}">${amountPrefix}$${transaction.amount.toFixed(2)}</div>
-                `;
-                
-                list.appendChild(item);
+            const formattedDate = new Date(date).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
             });
-        }
-        
-        // Format date to readable format
-        function formatDate(dateString) {
-            const options = { year: 'numeric', month: 'short', day: 'numeric' };
-            return new Date(dateString).toLocaleDateString('en-US', options);
-        }
-        
-        // Initialize the dashboard
-        document.addEventListener('DOMContentLoaded', () => {
-            updateTransactionList();
             
-            // Set up simulate button
-            document.getElementById('simulateBtn').addEventListener('click', () => {
-                // Add animation effect
-                const button = document.getElementById('simulateBtn');
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Simulating...';
-                button.disabled = true;
-                
-                // Simulate processing time
-                setTimeout(() => {
-                    generateFinancialData();
-                    button.innerHTML = '<i class="fas fa-sync-alt"></i> Simulate New Data';
-                    button.disabled = false;
-                    
-                    // Show notification
-                    showNotification('New financial data generated!');
-                }, 800);
-            });
+            const amountClass = type === 'income' ? 'income' : 'expense';
+            const sign = type === 'income' ? '+' : '-';
+            
+            transactionItem.innerHTML = `
+                <div class="transaction-info">
+                    <div class="transaction-category">${category.charAt(0).toUpperCase() + category.slice(1)}</div>
+                    <div class="transaction-date">${formattedDate}</div>
+                </div>
+                <div class="transaction-amount ${amountClass}">${sign}$${amount.toFixed(2)}</div>
+            `;
+            
+            // Add to top of list
+            transactionList.insertBefore(transactionItem, transactionList.firstChild);
+            
+            // Update financial data
+            updateFinancials(type, amount);
+            
+            // Reset form
+            this.reset();
+            document.getElementById('date').valueAsDate = new Date();
+            
+            // Show success message
+            alert('Transaction added successfully!');
         });
         
-        // Show temporary notification
-        function showNotification(message) {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.textContent = message;
-            notification.style.position = 'fixed';
-            notification.style.bottom = '20px';
-            notification.style.right = '20px';
-            notification.style.backgroundColor = 'var(--primary)';
-            notification.style.color = 'white';
-            notification.style.padding = '12px 20px';
-            notification.style.borderRadius = '8px';
-            notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-            notification.style.zIndex = '1000';
-            notification.style.opacity = '0';
-            notification.style.transform = 'translateY(20px)';
-            notification.style.transition = 'opacity 0.3s, transform 0.3s';
+        // Update financial data
+        function updateFinancials(type, amount) {
+            // Get current values
+            const incomeEl = document.querySelector('.income-amount');
+            const expenseEl = document.querySelector('.expense-amount');
+            const balanceEl = document.querySelector('.balance-amount');
+            const budgetEl = document.querySelector('.progress-label span:last-child');
+            const progressBar = document.querySelector('.progress-fill');
             
-            document.body.appendChild(notification);
+            // Parse current values
+            let currentIncome = parseFloat(incomeEl.textContent.replace(/[^0-9.-]+/g,""));
+            let currentExpense = parseFloat(expenseEl.textContent.replace(/[^0-9.-]+/g,""));
+            let currentBalance = parseFloat(balanceEl.textContent.replace(/[^0-9.-]+/g,""));
+            let currentBudgetPercent = parseFloat(budgetEl.textContent);
             
-            // Animate in
-            setTimeout(() => {
-                notification.style.opacity = '1';
-                notification.style.transform = 'translateY(0)';
-            }, 10);
+            // Update based on transaction type
+            if (type === 'income') {
+                currentIncome += amount;
+                currentBalance += amount;
+            } else {
+                currentExpense += amount;
+                currentBalance -= amount;
+                
+                // Update budget usage (assuming $2000 budget)
+                const budget = 2000;
+                currentBudgetPercent = Math.min(100, (currentExpense / budget) * 100);
+            }
             
-            // Remove after 3 seconds
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                notification.style.transform = 'translateY(20px)';
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
+            // Update DOM
+            incomeEl.textContent = '$' + currentIncome.toFixed(2);
+            expenseEl.textContent = '$' + currentExpense.toFixed(2);
+            balanceEl.textContent = '$' + currentBalance.toFixed(2);
+            budgetEl.textContent = currentBudgetPercent.toFixed(0) + '%';
+            progressBar.style.width = currentBudgetPercent + '%';
+            
+            // Update insights
+            updateInsights(currentIncome, currentExpense, currentBudgetPercent);
         }
+        
+        // Update insights section
+        function updateInsights(income, expense, budgetPercent) {
+            const savingsRate = ((income - expense) / income * 100).toFixed(1);
+            const insightText = document.querySelectorAll('.insight-text');
+            
+            insightText[0].textContent = `You've saved $${(income - expense).toFixed(2)} this month! That's ${savingsRate}% of your income.`;
+            insightText[2].textContent = `Your budget is at ${budgetPercent.toFixed(0)}% - consider reducing discretionary spending.`;
+            
+            // Update budget color
+            const progressBar = document.querySelector('.progress-fill');
+            if (budgetPercent < 70) {
+                progressBar.style.background = 'linear-gradient(to right, #4cc9f0, #4361ee)';
+            } else if (budgetPercent < 90) {
+                progressBar.style.background = 'linear-gradient(to right, #f8961e, #f72585)';
+            } else {
+                progressBar.style.background = 'linear-gradient(to right, #f72585, #c1121f)';
+            }
+        }
+        
+        // Initialize with sample data
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+            
+            // Initialize insights
+            updateInsights(2450, 1820.50, 91);
+        });
     </script>
 </body>
 </html>
