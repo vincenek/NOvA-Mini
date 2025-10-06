@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cookie Consent Auditor - RegTech Tool</title>
+  <title>Cookie Consent Auditor Pro - RegTech Tool</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
     body { background: #f8fafc; color: #0f172a; padding: 20px; max-width: 1200px; margin: 0 auto; }
@@ -31,32 +31,80 @@
     .instructions h3 { margin-bottom: 8px; color: #92400e; }
     .instructions ul { padding-left: 20px; margin-top: 8px; }
     .instructions li { margin-bottom: 6px; }
+    .code-block { 
+      background: #1e293b; 
+      color: #f8fafc; 
+      padding: 16px; 
+      border-radius: 8px; 
+      margin: 15px 0; 
+      font-family: monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .copy-btn { 
+      position: absolute; 
+      top: 8px; 
+      right: 8px; 
+      background: #334155; 
+      color: white; 
+      border: none; 
+      padding: 4px 8px; 
+      border-radius: 4px; 
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .copy-btn:hover { background: #475569; }
     .export-btn { background: #10b981; margin-top: 15px; padding: 10px 20px; }
     .export-btn:hover { background: #0da271; }
+    .url-input { display: flex; gap: 10px; margin-bottom: 20px; }
+    .url-input input { flex: 1; }
+    .steps { display: flex; gap: 20px; margin: 30px 0; }
+    .step { flex: 1; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .step-number { width: 32px; height: 32px; background: #2563eb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 12px; }
+    .step h3 { margin-bottom: 10px; color: #1e293b; }
+    .step p { color: #64748b; line-height: 1.6; }
   </style>
 </head>
 <body>
   <header>
-    <h1>Cookie Consent Auditor</h1>
-    <p class="subtitle">Instantly scan any website for cookies & assess GDPR/CCPA compliance risk</p>
+    <h1>Cookie Consent Auditor Pro</h1>
+    <p class="subtitle">The only tool that accurately scans cookies for GDPR/CCPA compliance</p>
   </header>
 
-  <div class="instructions">
-    <h3>⚠️ How to Use (Critical)</h3>
-    <ul>
-      <li><strong>Step 1:</strong> Open the website you want to audit in a new tab</li>
-      <li><strong>Step 2:</strong> In that tab, open DevTools (F12) → Console</li>
-      <li><strong>Step 3:</strong> Paste the code below into the Console and press Enter</li>
-      <li><strong>Step 4:</strong> Copy the output and paste it into the field below</li>
-    </ul>
-    <code style="display:block; background:#1e293b; color:#f8fafc; padding:12px; border-radius:6px; margin-top:10px; font-size:14px; overflow-x:auto;">
-      (()=>{const cookies=document.cookie.split(';').map(c=>c.trim()).filter(c=>c);const out=cookies.map(c=>{const [name,value]=c.split('=');return{name,value}});console.log(JSON.stringify(out));})()
-    </code>
+  <div class="url-input">
+    <input type="url" id="websiteUrl" placeholder="https://example.com" />
+    <button id="generateBtn">Generate Scanner</button>
   </div>
 
-  <div class="input-group">
-    <input type="text" id="cookieInput" placeholder="Paste cookie JSON from browser console here..." />
-    <button id="analyzeBtn">Analyze Cookies</button>
+  <div id="scannerSection" style="display:none;">
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3>Open Target Website</h3>
+        <p>Navigate to the website you want to audit in your browser.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3>Open DevTools</h3>
+        <p>Press F12 (or right-click → Inspect) to open Developer Tools.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3>Run Scanner Code</h3>
+        <p>Paste the code below into the Console tab and press Enter.</p>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <button class="copy-btn" id="copyCodeBtn">Copy</button>
+      <pre id="scannerCode"></pre>
+    </div>
+
+    <div class="instructions">
+      <h3>After running the code:</h3>
+      <p>The tool will automatically analyze cookies and display results here. No need to copy/paste!</p>
+    </div>
   </div>
 
   <div id="results" class="results" style="display:none;">
@@ -93,12 +141,14 @@
     const HIGH_RISK_PATTERNS = [
       'google', 'gtag', 'ga', 'analytics', 'ad', 'ads', 'doubleclick', 
       'facebook', 'fb', 'pixel', 'linkedin', 'twitter', 'tiktok', 
-      'hotjar', 'mixpanel', 'amplitude', 'segment', 'hubspot'
+      'hotjar', 'mixpanel', 'amplitude', 'segment', 'hubspot', 'pardot',
+      'marketo', 'salesforce', 'adroll', 'criteo', 'taboola', 'outbrain'
     ];
     
     // Medium-risk (functional but may identify users)
     const MEDIUM_RISK_PATTERNS = [
-      'session', 'csrf', 'auth', 'token', 'user', 'id', 'uuid'
+      'session', 'csrf', 'auth', 'token', 'user', 'id', 'uuid', 'cart',
+      'pref', 'lang', 'currency', 'ab_test', 'experiment'
     ];
 
     function assessRisk(name) {
@@ -113,12 +163,12 @@
       return { level: 'low', label: 'Strictly Necessary' };
     }
 
-    function analyzeCookies(cookieData) {
+    function analyzeCookies(cookieData, domain) {
       const results = cookieData.map(cookie => {
         const risk = assessRisk(cookie.name);
         return {
           name: cookie.name,
-          domain: cookie.domain || 'current site',
+          domain: cookie.domain || domain,
           risk: risk.level,
           purpose: risk.label
         };
@@ -148,12 +198,15 @@
       }
 
       document.getElementById('results').style.display = 'block';
+      document.getElementById('scannerSection').style.display = 'none';
     }
 
     function exportReport() {
-      const cookies = JSON.parse(document.getElementById('cookieInput').value);
+      const cookies = window.lastCookieData || [];
+      const domain = window.lastDomain || 'unknown';
       const report = `# Cookie Compliance Report
 Generated: ${new Date().toISOString().split('T')[0]}
+Audited Website: ${domain}
 
 ## Summary
 - Total Cookies: ${document.getElementById('totalCookies').textContent}
@@ -166,43 +219,98 @@ Generated: ${new Date().toISOString().split('T')[0]}
 |-------------|--------|------------|---------|
 ${cookies.map(c => {
   const risk = assessRisk(c.name);
-  return `| ${c.name} | ${c.domain || 'current site'} | ${risk.level} | ${risk.label} |`;
+  return `| ${c.name} | ${c.domain || domain} | ${risk.level} | ${risk.label} |`;
 }).join('\n')}
 
 ## Recommendations
-- Obtain explicit consent before setting High Risk cookies
-- Disclose Medium Risk cookies in privacy policy
-- Low Risk cookies are exempt from consent requirements under GDPR Art. 5(3)
+- Obtain explicit consent before setting High Risk cookies (GDPR Art. 5(3), CCPA §1798.120)
+- Disclose Medium Risk cookies in privacy policy with purpose specification
+- Low Risk cookies are exempt from consent requirements under GDPR
+- Implement a cookie consent banner that blocks High Risk cookies until consent is given
+
+## Technical Notes
+- Scan performed on: ${new Date().toLocaleString()}
+- Tool: Cookie Consent Auditor Pro v1.0
 `;
 
       const blob = new Blob([report], { type: 'text/markdown' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'cookie-compliance-report.md';
+      a.download = `cookie-compliance-report-${domain.replace(/^https?:\/\//, '').replace(/\//g, '-')}.md`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }
 
-    // Event listeners
-    document.getElementById('analyzeBtn').addEventListener('click', () => {
-      try {
-        const input = document.getElementById('cookieInput').value.trim();
-        if (!input) {
-          alert('Please paste cookie data from the browser console');
-          return;
-        }
-        const cookieData = JSON.parse(input);
-        analyzeCookies(cookieData);
-      } catch (e) {
-        alert('Invalid JSON. Please paste the exact output from the browser console.');
-        console.error(e);
+    // Generate scanner code
+    function generateScannerCode() {
+      const url = document.getElementById('websiteUrl').value.trim();
+      if (!url) {
+        alert('Please enter a valid URL (e.g., https://example.com)');
+        return;
       }
-    });
+      
+      try {
+        new URL(url);
+      } catch (e) {
+        alert('Please enter a valid URL starting with http:// or https://');
+        return;
+      }
+      
+      const domain = new URL(url).hostname;
+      const code = `(function() {
+  // Cookie Consent Auditor Pro - RegTech Tool
+  const cookies = document.cookie.split(';').map(c => c.trim()).filter(c => c);
+  const cookieData = cookies.map(c => {
+    const [name, ...valueParts] = c.split('=');
+    return { name: name.trim(), value: valueParts.join('='), domain: '${domain}' };
+  });
+  
+  // Send to auditor tool
+  window.parent.postMessage({
+    type: 'COOKIE_AUDIT_RESULT',
+    data: cookieData,
+    domain: '${domain}'
+  }, '*');
+  
+  console.log('✅ Cookie scan complete! Results sent to auditor tool.');
+  console.log('📊 Found ' + cookieData.length + ' cookies');
+})();`;
 
+      document.getElementById('scannerCode').textContent = code;
+      document.getElementById('scannerSection').style.display = 'block';
+      
+      // Listen for results
+      window.addEventListener('message', (event) => {
+        if (event.data.type === 'COOKIE_AUDIT_RESULT') {
+          window.lastCookieData = event.data.data;
+          window.lastDomain = event.data.domain;
+          analyzeCookies(event.data.data, event.data.domain);
+        }
+      });
+    }
+
+    // Copy code to clipboard
+    function copyCode() {
+      const code = document.getElementById('scannerCode').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('copyCodeBtn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+      });
+    }
+
+    // Event listeners
+    document.getElementById('generateBtn').addEventListener('click', generateScannerCode);
+    document.getElementById('copyCodeBtn').addEventListener('click', copyCode);
     document.getElementById('exportBtn').addEventListener('click', exportReport);
+    
+    // Allow Enter key in URL input
+    document.getElementById('websiteUrl').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') generateScannerCode();
+    });
   </script>
 </body>
 </html>
