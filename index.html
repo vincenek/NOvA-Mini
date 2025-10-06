@@ -1,1003 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RegTrack Pro - Regulatory Compliance Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --secondary: #0f172a;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --light: #f8fafc;
-            --gray: #94a3b8;
-            --border: #e2e8f0;
-            --card-bg: #ffffff;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --sidebar: #f1f5f9;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background-color: #f8fafc;
-            color: var(--secondary);
-            line-height: 1.6;
-            display: flex;
-            min-height: 100vh;
-        }
-        
-        /* Sidebar Styles */
-        .sidebar {
-            width: 260px;
-            background: var(--sidebar);
-            border-right: 1px solid var(--border);
-            padding: 20px 0;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 0 20px 20px;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .logo-icon {
-            background: var(--primary);
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 20px;
-        }
-        
-        .logo-text {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--secondary);
-        }
-        
-        .logo-text span {
-            color: var(--primary);
-        }
-        
-        .nav-menu {
-            padding: 20px 0;
-            flex: 1;
-        }
-        
-        .nav-item {
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--gray);
-        }
-        
-        .nav-item:hover, .nav-item.active {
-            background: rgba(37, 99, 235, 0.1);
-            color: var(--primary);
-            border-left: 3px solid var(--primary);
-        }
-        
-        .nav-item i {
-            width: 20px;
-            text-align: center;
-        }
-        
-        .user-section {
-            padding: 20px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        
-        /* Main Content Styles */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 30px;
-            border-bottom: 1px solid var(--border);
-            background: white;
-        }
-        
-        .header-title {
-            font-size: 24px;
-            font-weight: 700;
-        }
-        
-        .header-actions {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .btn {
-            padding: 10px 20px;
-            border-radius: 6px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-        
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: var(--primary-dark);
-        }
-        
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-        }
-        
-        .btn-outline:hover {
-            background: rgba(37, 99, 235, 0.05);
-        }
-        
-        .content {
-            padding: 30px;
-            overflow-y: auto;
-            flex: 1;
-        }
-        
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-        
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .card-title {
-            font-size: 20px;
-            font-weight: 700;
-        }
-        
-        .filters {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .filter-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--gray);
-        }
-        
-        select, input {
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            background: white;
-            min-width: 150px;
-        }
-        
-        .regulation-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-        }
-        
-        .regulation-card {
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 20px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-        }
-        
-        .regulation-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .regulation-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-        
-        .regulation-title {
-            font-weight: 700;
-            font-size: 18px;
-            margin-bottom: 8px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        .regulation-meta {
-            display: flex;
-            gap: 15px;
-            font-size: 14px;
-            color: var(--gray);
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-        
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        
-        .status-compliant {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--success);
-        }
-        
-        .status-review {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--warning);
-        }
-        
-        .status-noncompliant {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--danger);
-        }
-        
-        .regulation-description {
-            font-size: 15px;
-            margin-bottom: 15px;
-            color: #475569;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        .regulation-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
-        }
-        
-        .action-btn {
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            flex: 1;
-            margin: 0 5px;
-        }
-        
-        .action-update {
-            background: rgba(37, 99, 235, 0.1);
-            color: var(--primary);
-        }
-        
-        .action-dismiss {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-        }
-        
-        .action-details {
-            background: rgba(15, 23, 42, 0.05);
-            color: var(--secondary);
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--gray);
-        }
-        
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 16px;
-            display: block;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
-        
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            margin: 10px 0;
-            color: var(--primary);
-        }
-        
-        .stat-label {
-            color: var(--gray);
-            font-size: 14px;
-        }
-        
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .modal-title {
-            font-size: 20px;
-            font-weight: 700;
-        }
-        
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--gray);
-        }
-        
-        .modal-body {
-            padding: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--secondary);
-        }
-        
-        textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        .form-row {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .form-row .form-group {
-            flex: 1;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--success);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 2000;
-            transform: translateX(200%);
-            transition: transform 0.3s ease;
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            .sidebar {
-                width: 70px;
-            }
-            .logo-text, .nav-text, .user-info {
-                display: none;
-            }
-            .nav-item {
-                justify-content: center;
-                padding: 15px;
-            }
-            .user-avatar {
-                margin: 0 auto;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .regulation-list {
-                grid-template-columns: 1fr;
-            }
-            
-            .form-row {
-                flex-direction: column;
-                gap: 0;
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
-            
-            .header-actions {
-                width: 100%;
-                justify-content: space-between;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cookie Consent Auditor - RegTech Tool</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body { background: #f8fafc; color: #0f172a; padding: 20px; max-width: 1200px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px 0; }
+    h1 { font-size: 28px; margin-bottom: 8px; color: #1e293b; }
+    .subtitle { color: #64748b; margin-bottom: 20px; }
+    .input-group { display: flex; gap: 10px; margin-bottom: 25px; }
+    input { flex: 1; padding: 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; }
+    button { background: #2563eb; color: white; border: none; padding: 14px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; }
+    button:hover { background: #1d4ed8; }
+    button:disabled { background: #94a3b8; cursor: not-allowed; }
+    .results { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
+    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; padding: 20px; background: #f1f5f9; }
+    .metric { text-align: center; }
+    .metric-value { font-size: 28px; font-weight: bold; color: #2563eb; }
+    .metric-label { font-size: 14px; color: #64748b; }
+    .cookie-list { max-height: 500px; overflow-y: auto; }
+    .cookie-item { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; }
+    .cookie-item-header { font-weight: 600; background: #f8fafc; padding: 12px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; color: #475569; }
+    .risk-high { color: #ef4444; font-weight: 600; }
+    .risk-medium { color: #f59e0b; font-weight: 600; }
+    .risk-low { color: #10b981; font-weight: 600; }
+    .empty { text-align: center; padding: 40px; color: #94a3b8; }
+    .instructions { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 16px; margin-bottom: 20px; border-radius: 0 8px 8px 0; }
+    .instructions h3 { margin-bottom: 8px; color: #92400e; }
+    .instructions ul { padding-left: 20px; margin-top: 8px; }
+    .instructions li { margin-bottom: 6px; }
+    .export-btn { background: #10b981; margin-top: 15px; padding: 10px 20px; }
+    .export-btn:hover { background: #0da271; }
+  </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="logo">
-            <div class="logo-icon">RT</div>
-            <div class="logo-text">Reg<span>Track</span></div>
-        </div>
-        
-        <div class="nav-menu">
-            <div class="nav-item active">
-                <i class="fas fa-tachometer-alt"></i>
-                <span class="nav-text">Dashboard</span>
-            </div>
-            <div class="nav-item">
-                <i class="fas fa-file-alt"></i>
-                <span class="nav-text">Regulations</span>
-            </div>
-            <div class="nav-item">
-                <i class="fas fa-calendar-check"></i>
-                <span class="nav-text">Deadlines</span>
-            </div>
-            <div class="nav-item">
-                <i class="fas fa-chart-line"></i>
-                <span class="nav-text">Reports</span>
-            </div>
-            <div class="nav-item">
-                <i class="fas fa-cog"></i>
-                <span class="nav-text">Settings</span>
-            </div>
-        </div>
-        
-        <div class="user-section">
-            <div class="user-avatar">JD</div>
-            <div class="user-info">
-                <div class="user-name">John Doe</div>
-                <div class="user-role">Compliance Officer</div>
-            </div>
-        </div>
+  <header>
+    <h1>Cookie Consent Auditor</h1>
+    <p class="subtitle">Instantly scan any website for cookies & assess GDPR/CCPA compliance risk</p>
+  </header>
+
+  <div class="instructions">
+    <h3>⚠️ How to Use (Critical)</h3>
+    <ul>
+      <li><strong>Step 1:</strong> Open the website you want to audit in a new tab</li>
+      <li><strong>Step 2:</strong> In that tab, open DevTools (F12) → Console</li>
+      <li><strong>Step 3:</strong> Paste the code below into the Console and press Enter</li>
+      <li><strong>Step 4:</strong> Copy the output and paste it into the field below</li>
+    </ul>
+    <code style="display:block; background:#1e293b; color:#f8fafc; padding:12px; border-radius:6px; margin-top:10px; font-size:14px; overflow-x:auto;">
+      (()=>{const cookies=document.cookie.split(';').map(c=>c.trim()).filter(c=>c);const out=cookies.map(c=>{const [name,value]=c.split('=');return{name,value}});console.log(JSON.stringify(out));})()
+    </code>
+  </div>
+
+  <div class="input-group">
+    <input type="text" id="cookieInput" placeholder="Paste cookie JSON from browser console here..." />
+    <button id="analyzeBtn">Analyze Cookies</button>
+  </div>
+
+  <div id="results" class="results" style="display:none;">
+    <div class="summary">
+      <div class="metric">
+        <div class="metric-value" id="totalCookies">0</div>
+        <div class="metric-label">Total Cookies</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value" id="highRisk">0</div>
+        <div class="metric-label">High Risk</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value" id="mediumRisk">0</div>
+        <div class="metric-label">Medium Risk</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value" id="lowRisk">0</div>
+        <div class="metric-label">Low Risk</div>
+      </div>
     </div>
-    
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="header">
-            <h1 class="header-title">Regulatory Compliance Dashboard</h1>
-            <div class="header-actions">
-                <button class="btn btn-outline" id="exportBtn">
-                    <i class="fas fa-file-export"></i> Export Report
-                </button>
-                <button class="btn btn-primary" id="addRegulationBtn">
-                    <i class="fas fa-plus"></i> Add Regulation
-                </button>
-            </div>
-        </div>
-        
-        <div class="content">
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-label">Total Regulations</div>
-                    <div class="stat-value" id="totalRegulations">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Compliant</div>
-                    <div class="stat-value" id="compliantCount">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Requiring Review</div>
-                    <div class="stat-value" id="reviewCount">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Non-Compliant</div>
-                    <div class="stat-value" id="nonCompliantCount">0</div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Regulatory Requirements</h2>
-                </div>
-                
-                <div class="filters">
-                    <div class="filter-group">
-                        <label class="filter-label">Jurisdiction</label>
-                        <select id="jurisdictionFilter">
-                            <option value="all">All Jurisdictions</option>
-                            <option value="us">United States</option>
-                            <option value="eu">European Union</option>
-                            <option value="uk">United Kingdom</option>
-                            <option value="sg">Singapore</option>
-                            <option value="ca">Canada</option>
-                            <option value="au">Australia</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Status</label>
-                        <select id="statusFilter">
-                            <option value="all">All Statuses</option>
-                            <option value="compliant">Compliant</option>
-                            <option value="review">Requires Review</option>
-                            <option value="noncompliant">Non-Compliant</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Search</label>
-                        <input type="text" id="searchInput" placeholder="Search regulations...">
-                    </div>
-                </div>
-                
-                <div class="regulation-list" id="regulationList">
-                    <!-- Regulations will be populated here -->
-                </div>
-            </div>
-        </div>
+    <div class="cookie-item-header">
+      <div>Name</div>
+      <div>Domain</div>
+      <div>Risk</div>
+      <div>Purpose</div>
     </div>
+    <div class="cookie-list" id="cookieList"></div>
+    <button class="export-btn" id="exportBtn">Export Compliance Report</button>
+  </div>
+
+  <script>
+    // High-risk cookie patterns (tracking, advertising, analytics)
+    const HIGH_RISK_PATTERNS = [
+      'google', 'gtag', 'ga', 'analytics', 'ad', 'ads', 'doubleclick', 
+      'facebook', 'fb', 'pixel', 'linkedin', 'twitter', 'tiktok', 
+      'hotjar', 'mixpanel', 'amplitude', 'segment', 'hubspot'
+    ];
     
-    <!-- Add Regulation Modal -->
-    <div class="modal" id="addRegulationModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Add New Regulation</h3>
-                <button class="close-modal">&times;</button>
+    // Medium-risk (functional but may identify users)
+    const MEDIUM_RISK_PATTERNS = [
+      'session', 'csrf', 'auth', 'token', 'user', 'id', 'uuid'
+    ];
+
+    function assessRisk(name) {
+      const lower = name.toLowerCase();
+      
+      if (HIGH_RISK_PATTERNS.some(p => lower.includes(p))) {
+        return { level: 'high', label: 'Consent Required (GDPR/CCPA)' };
+      }
+      if (MEDIUM_RISK_PATTERNS.some(p => lower.includes(p))) {
+        return { level: 'medium', label: 'Functional (May require disclosure)' };
+      }
+      return { level: 'low', label: 'Strictly Necessary' };
+    }
+
+    function analyzeCookies(cookieData) {
+      const results = cookieData.map(cookie => {
+        const risk = assessRisk(cookie.name);
+        return {
+          name: cookie.name,
+          domain: cookie.domain || 'current site',
+          risk: risk.level,
+          purpose: risk.label
+        };
+      });
+
+      // Update summary
+      document.getElementById('totalCookies').textContent = results.length;
+      document.getElementById('highRisk').textContent = results.filter(r => r.risk === 'high').length;
+      document.getElementById('mediumRisk').textContent = results.filter(r => r.risk === 'medium').length;
+      document.getElementById('lowRisk').textContent = results.filter(r => r.risk === 'low').length;
+
+      // Render list
+      const listEl = document.getElementById('cookieList');
+      if (results.length === 0) {
+        listEl.innerHTML = '<div class="empty">No cookies found</div>';
+      } else {
+        listEl.innerHTML = results.map(cookie => `
+          <div class="cookie-item">
+            <div>${cookie.name}</div>
+            <div>${cookie.domain}</div>
+            <div class="${cookie.risk === 'high' ? 'risk-high' : cookie.risk === 'medium' ? 'risk-medium' : 'risk-low'}">
+              ${cookie.risk.charAt(0).toUpperCase() + cookie.risk.slice(1)}
             </div>
-            <div class="modal-body">
-                <form id="regulationForm">
-                    <div class="form-group">
-                        <label class="form-label">Regulation Title *</label>
-                        <input type="text" id="regulationTitle" required>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Jurisdiction *</label>
-                            <select id="regulationJurisdiction" required>
-                                <option value="">Select Jurisdiction</option>
-                                <option value="us">United States</option>
-                                <option value="eu">European Union</option>
-                                <option value="uk">United Kingdom</option>
-                                <option value="sg">Singapore</option>
-                                <option value="ca">Canada</option>
-                                <option value="au">Australia</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Status *</label>
-                            <select id="regulationStatus" required>
-                                <option value="review">Requires Review</option>
-                                <option value="compliant">Compliant</option>
-                                <option value="noncompliant">Non-Compliant</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Deadline</label>
-                            <input type="date" id="regulationDeadline">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Last Updated</label>
-                            <input type="date" id="regulationLastUpdated" value="">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Description *</label>
-                        <textarea id="regulationDescription" placeholder="Enter regulation details, requirements, and implementation notes..." required></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Save Regulation</button>
-                        <button type="button" class="btn btn-outline close-modal-btn">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Notification -->
-    <div class="notification" id="notification">Regulation added successfully!</div>
-    
-    <script>
-        // Initialize last updated date
-        document.getElementById('regulationLastUpdated').valueAsDate = new Date();
-        
-        // Sample regulation data - in production this would come from localStorage or API
-        let regulations = JSON.parse(localStorage.getItem('regulations')) || [
-            {
-                id: 1,
-                title: "GDPR Compliance",
-                jurisdiction: "eu",
-                status: "compliant",
-                lastUpdated: "2023-10-15",
-                description: "General Data Protection Regulation requirements for data handling and privacy. Includes data subject rights, breach notification, and international data transfer mechanisms.",
-                deadline: "2023-12-31"
-            },
-            {
-                id: 2,
-                title: "CCPA Implementation",
-                jurisdiction: "us",
-                status: "review",
-                lastUpdated: "2023-11-02",
-                description: "California Consumer Privacy Act compliance for data subject rights. Requires implementation of 'Do Not Sell My Personal Information' link and response mechanisms for consumer requests.",
-                deadline: "2024-01-15"
-            },
-            {
-                id: 3,
-                title: "PSD2 Requirements",
-                jurisdiction: "eu",
-                status: "compliant",
-                lastUpdated: "2023-09-28",
-                description: "Payment Services Directive 2 for open banking and payment security. Mandates strong customer authentication (SCA) and secure communication standards for third-party providers.",
-                deadline: "2023-11-30"
-            },
-            {
-                id: 4,
-                title: "DORA Compliance",
-                jurisdiction: "eu",
-                status: "noncompliant",
-                lastUpdated: "2023-10-10",
-                description: "Digital Operational Resilience Act for financial entities. Requires ICT risk management framework, incident reporting, and third-party risk management for critical ICT service providers.",
-                deadline: "2024-03-31"
-            },
-            {
-                id: 5,
-                title: "MAS Technology Risk Management",
-                jurisdiction: "sg",
-                status: "compliant",
-                lastUpdated: "2023-11-05",
-                description: "Monetary Authority of Singapore guidelines for technology risk management. Covers cyber resilience, data protection, and outsourcing risk management for financial institutions.",
-                deadline: "2023-12-15"
-            }
-        ];
-        
-        // Save to localStorage whenever regulations change
-        function saveRegulations() {
-            localStorage.setItem('regulations', JSON.stringify(regulations));
-            renderRegulations();
+            <div>${cookie.purpose}</div>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('results').style.display = 'block';
+    }
+
+    function exportReport() {
+      const cookies = JSON.parse(document.getElementById('cookieInput').value);
+      const report = `# Cookie Compliance Report
+Generated: ${new Date().toISOString().split('T')[0]}
+
+## Summary
+- Total Cookies: ${document.getElementById('totalCookies').textContent}
+- High Risk (Consent Required): ${document.getElementById('highRisk').textContent}
+- Medium Risk (Disclosure Required): ${document.getElementById('mediumRisk').textContent}
+- Low Risk (Necessary): ${document.getElementById('lowRisk').textContent}
+
+## Detailed Findings
+| Cookie Name | Domain | Risk Level | Purpose |
+|-------------|--------|------------|---------|
+${cookies.map(c => {
+  const risk = assessRisk(c.name);
+  return `| ${c.name} | ${c.domain || 'current site'} | ${risk.level} | ${risk.label} |`;
+}).join('\n')}
+
+## Recommendations
+- Obtain explicit consent before setting High Risk cookies
+- Disclose Medium Risk cookies in privacy policy
+- Low Risk cookies are exempt from consent requirements under GDPR Art. 5(3)
+`;
+
+      const blob = new Blob([report], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cookie-compliance-report.md';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Event listeners
+    document.getElementById('analyzeBtn').addEventListener('click', () => {
+      try {
+        const input = document.getElementById('cookieInput').value.trim();
+        if (!input) {
+          alert('Please paste cookie data from the browser console');
+          return;
         }
-        
-        // DOM elements
-        const regulationList = document.getElementById('regulationList');
-        const jurisdictionFilter = document.getElementById('jurisdictionFilter');
-        const statusFilter = document.getElementById('statusFilter');
-        const searchInput = document.getElementById('searchInput');
-        const totalRegulations = document.getElementById('totalRegulations');
-        const compliantCount = document.getElementById('compliantCount');
-        const reviewCount = document.getElementById('reviewCount');
-        const nonCompliantCount = document.getElementById('nonCompliantCount');
-        const addRegulationBtn = document.getElementById('addRegulationBtn');
-        const exportBtn = document.getElementById('exportBtn');
-        const addRegulationModal = document.getElementById('addRegulationModal');
-        const closeModals = document.querySelectorAll('.close-modal, .close-modal-btn');
-        const regulationForm = document.getElementById('regulationForm');
-        const notification = document.getElementById('notification');
-        
-        // Initialize the app
-        function init() {
-            renderRegulations();
-            updateStats();
-            
-            // Add event listeners
-            jurisdictionFilter.addEventListener('change', renderRegulations);
-            statusFilter.addEventListener('change', renderRegulations);
-            searchInput.addEventListener('input', renderRegulations);
-            addRegulationBtn.addEventListener('click', () => {
-                document.getElementById('regulationForm').reset();
-                document.getElementById('regulationLastUpdated').valueAsDate = new Date();
-                addRegulationModal.style.display = 'flex';
-            });
-            
-            closeModals.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    addRegulationModal.style.display = 'none';
-                });
-            });
-            
-            regulationForm.addEventListener('submit', handleFormSubmit);
-            exportBtn.addEventListener('click', exportReport);
-            
-            // Close modal when clicking outside
-            window.addEventListener('click', (e) => {
-                if (e.target === addRegulationModal) {
-                    addRegulationModal.style.display = 'none';
-                }
-            });
-        }
-        
-        // Handle form submission
-        function handleFormSubmit(e) {
-            e.preventDefault();
-            
-            const newRegulation = {
-                id: Date.now(), // Unique ID based on timestamp
-                title: document.getElementById('regulationTitle').value,
-                jurisdiction: document.getElementById('regulationJurisdiction').value,
-                status: document.getElementById('regulationStatus').value,
-                lastUpdated: document.getElementById('regulationLastUpdated').value || new Date().toISOString().split('T')[0],
-                description: document.getElementById('regulationDescription').value,
-                deadline: document.getElementById('regulationDeadline').value || null
-            };
-            
-            regulations.push(newRegulation);
-            saveRegulations();
-            
-            // Show notification
-            showNotification('Regulation added successfully!');
-            
-            // Close modal
-            addRegulationModal.style.display = 'none';
-        }
-        
-        // Render regulations based on filters
-        function renderRegulations() {
-            const jurisdiction = jurisdictionFilter.value;
-            const status = statusFilter.value;
-            const searchTerm = searchInput.value.toLowerCase();
-            
-            const filtered = regulations.filter(reg => {
-                const matchesJurisdiction = jurisdiction === 'all' || reg.jurisdiction === jurisdiction;
-                const matchesStatus = status === 'all' || reg.status === status;
-                const matchesSearch = reg.title.toLowerCase().includes(searchTerm) || 
-                                     reg.description.toLowerCase().includes(searchTerm);
-                
-                return matchesJurisdiction && matchesStatus && matchesSearch;
-            });
-            
-            if (filtered.length === 0) {
-                regulationList.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-clipboard-list"></i>
-                        <h3>No regulations found</h3>
-                        <p>Try adjusting your filters or search terms</p>
-                        <button class="btn btn-primary" style="margin-top: 20px;" onclick="document.getElementById('addRegulationBtn').click()">
-                            <i class="fas fa-plus"></i> Add New Regulation
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-            
-            regulationList.innerHTML = filtered.map(reg => {
-                const statusClass = `status-${reg.status}`;
-                const statusText = reg.status === 'compliant' ? 'Compliant' : 
-                                  reg.status === 'review' ? 'Requires Review' : 'Non-Compliant';
-                
-                return `
-                    <div class="regulation-card">
-                        <div class="regulation-header">
-                            <div class="regulation-title">${reg.title}</div>
-                            <span class="status-badge ${statusClass}">${statusText}</span>
-                        </div>
-                        <div class="regulation-meta">
-                            <span>${getJurisdictionName(reg.jurisdiction)}</span>
-                            <span>Last updated: ${formatDate(reg.lastUpdated)}</span>
-                            ${reg.deadline ? `<span>Deadline: ${formatDate(reg.deadline)}</span>` : ''}
-                        </div>
-                        <div class="regulation-description">
-                            ${reg.description}
-                        </div>
-                        <div class="regulation-actions">
-                            <button class="action-btn action-update" onclick="updateStatus(${reg.id})">
-                                <i class="fas fa-sync-alt"></i> Update Status
-                            </button>
-                            <button class="action-btn action-details" onclick="viewDetails(${reg.id})">
-                                <i class="fas fa-eye"></i> Details
-                            </button>
-                            <button class="action-btn action-dismiss" onclick="dismissRegulation(${reg.id})">
-                                <i class="fas fa-trash"></i> Dismiss
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            updateStats(filtered);
-        }
-        
-        // Update statistics
-        function updateStats(filtered = regulations) {
-            totalRegulations.textContent = filtered.length;
-            
-            const compliant = filtered.filter(r => r.status === 'compliant').length;
-            const review = filtered.filter(r => r.status === 'review').length;
-            const nonCompliant = filtered.filter(r => r.status === 'noncompliant').length;
-            
-            compliantCount.textContent = compliant;
-            reviewCount.textContent = review;
-            nonCompliantCount.textContent = nonCompliant;
-        }
-        
-        // Helper functions
-        function getJurisdictionName(code) {
-            const jurisdictions = {
-                'us': 'United States',
-                'eu': 'European Union',
-                'uk': 'United Kingdom',
-                'sg': 'Singapore',
-                'ca': 'Canada',
-                'au': 'Australia'
-            };
-            return jurisdictions[code] || code;
-        }
-        
-        function formatDate(dateString) {
-            if (!dateString) return 'No deadline';
-            const options = { year: 'numeric', month: 'short', day: 'numeric' };
-            return new Date(dateString).toLocaleDateString(undefined, options);
-        }
-        
-        // Action functions
-        function updateStatus(id) {
-            const regulation = regulations.find(r => r.id === id);
-            if (!regulation) return;
-            
-            // Cycle through statuses
-            const statuses = ['compliant', 'review', 'noncompliant'];
-            const currentIndex = statuses.indexOf(regulation.status);
-            const nextIndex = (currentIndex + 1) % statuses.length;
-            regulation.status = statuses[nextIndex];
-            regulation.lastUpdated = new Date().toISOString().split('T')[0];
-            
-            saveRegulations();
-            showNotification(`Status updated to ${regulation.status}`);
-        }
-        
-        function viewDetails(id) {
-            const regulation = regulations.find(r => r.id === id);
-            if (!regulation) return;
-            
-            alert(`Regulation Details:\n\nTitle: ${regulation.title}\nJurisdiction: ${getJurisdictionName(regulation.jurisdiction)}\nStatus: ${regulation.status}\nLast Updated: ${regulation.lastUpdated}\nDeadline: ${regulation.deadline || 'None'}\n\nDescription:\n${regulation.description}`);
-        }
-        
-        function dismissRegulation(id) {
-            if (confirm('Are you sure you want to permanently delete this regulation?')) {
-                const index = regulations.findIndex(r => r.id === id);
-                if (index !== -1) {
-                    regulations.splice(index, 1);
-                    saveRegulations();
-                    showNotification('Regulation deleted successfully');
-                }
-            }
-        }
-        
-        function exportReport() {
-            const reportData = regulations.map(reg => {
-                return {
-                    Title: reg.title,
-                    Jurisdiction: getJurisdictionName(reg.jurisdiction),
-                    Status: reg.status,
-                    'Last Updated': reg.lastUpdated,
-                    Deadline: reg.deadline || 'None',
-                    Description: reg.description
-                };
-            });
-            
-            // Convert to CSV
-            const csvContent = "text/csv;charset=utf-8," 
-                + "Title,Jurisdiction,Status,Last Updated,Deadline,Description\n"
-                + reportData.map(row => 
-                    `"${row.Title.replace(/"/g, '""')}","${row.Jurisdiction.replace(/"/g, '""')}","${row.Status}","${row['Last Updated']}","${row.Deadline}","${row.Description.replace(/"/g, '""')}"`)
-                .join("\n");
-            
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "regulatory-compliance-report.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showNotification('Report exported successfully!');
-        }
-        
-        function showNotification(message) {
-            notification.textContent = message;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-        
-        // Initialize the app when the page loads
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
+        const cookieData = JSON.parse(input);
+        analyzeCookies(cookieData);
+      } catch (e) {
+        alert('Invalid JSON. Please paste the exact output from the browser console.');
+        console.error(e);
+      }
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', exportReport);
+  </script>
 </body>
 </html>
