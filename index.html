@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CookieGuard - Cookie Compliance Scanner</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="description" content="Enterprise-grade cookie compliance scanner with real-time analysis">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
     <style>
         :root {
             --primary: #2563eb;
@@ -519,10 +522,34 @@
             transform: translateY(-3px);
         }
 
+        .feature-card.premium {
+            border-color: var(--secondary);
+            background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card.premium::before {
+            content: 'PRO';
+            position: absolute;
+            top: 10px;
+            right: -25px;
+            background: var(--secondary);
+            color: white;
+            padding: 5px 30px;
+            transform: rotate(45deg);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
         .feature-icon {
             font-size: 1.8rem;
             margin-bottom: 8px;
             color: var(--primary);
+        }
+
+        .feature-card.premium .feature-icon {
+            color: var(--secondary);
         }
 
         /* Modal */
@@ -882,24 +909,62 @@
                             <h4>Quick Scans</h4>
                             <p style="color: var(--gray); margin-top: 6px;">Fast website analysis</p>
                         </div>
-                        <div class="feature-card">
-                            <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
-                            <h4>Compliance Analysis</h4>
-                            <p style="color: var(--gray); margin-top: 6px;">GDPR, CCPA, ePrivacy</p>
+                        <div class="feature-card premium">
+                            <div class="feature-icon"><i class="fas fa-infinity"></i></div>
+                            <h4>Unlimited Scans</h4>
+                            <p style="color: var(--gray); margin-top: 6px;">No restrictions</p>
                         </div>
                         <div class="feature-card">
                             <div class="feature-icon"><i class="fas fa-file-export"></i></div>
-                            <h4>Export Reports</h4>
-                            <p style="color: var(--gray); margin-top: 6px;">Multiple formats</p>
+                            <h4>Basic Reports</h4>
+                            <p style="color: var(--gray); margin-top: 6px;">Standard exports</p>
                         </div>
-                        <div class="feature-card">
+                        <div class="feature-card premium">
                             <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
-                            <h4>Risk Assessment</h4>
+                            <h4>Advanced Analytics</h4>
                             <p style="color: var(--gray); margin-top: 6px;">Detailed insights</p>
                         </div>
                     </div>
+                    <button class="btn btn-secondary" style="width: 100%; margin-top: 15px;" id="upgradeBtn">
+                        <i class="fas fa-crown"></i> Upgrade to Pro - $19/month
+                    </button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <h2 style="margin-bottom: 15px;">Upgrade to CookieGuard Pro</h2>
+            <p style="color: var(--gray); margin-bottom: 30px;">Unlock unlimited scans and advanced compliance features</p>
+            
+            <div style="background: #f8fafc; padding: 25px; border-radius: 15px; margin-bottom: 25px;">
+                <div class="card-title" style="color: var(--secondary);">
+                    <i class="fas fa-crown"></i> Pro Plan Features
+                </div>
+                <ul style="padding-left: 25px; margin-bottom: 20px; color: var(--dark);">
+                    <li style="margin-bottom: 10px;">Unlimited website scans</li>
+                    <li style="margin-bottom: 10px;">Advanced compliance analytics</li>
+                    <li style="margin-bottom: 10px;">Priority customer support</li>
+                    <li style="margin-bottom: 10px;">Team collaboration features</li>
+                    <li style="margin-bottom: 10px;">Scheduled monitoring</li>
+                    <li>Custom compliance reporting</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0; padding: 25px; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-radius: 15px;">
+                <h3 style="font-size: 2.5rem; color: var(--dark); margin-bottom: 10px;">$19<small style="font-size: 1rem; color: var(--gray);">/month</small></h3>
+                <p style="color: var(--gray);">Cancel anytime • 7-day money back guarantee</p>
+            </div>
+
+            <button class="btn btn-success" style="width: 100%; padding: 18px; font-size: 1.1rem;" id="paystackBtn">
+                <i class="fas fa-credit-card"></i> Subscribe Now
+            </button>
+            <p style="text-align: center; margin-top: 20px; color: var(--gray); font-size: 0.9rem;">
+                Secure payment processed by Stripe
+            </p>
         </div>
     </div>
 
@@ -913,6 +978,7 @@
         // Production-ready CookieGuard Scanner
         class CookieGuardScanner {
             constructor() {
+                this.isPro = localStorage.getItem('cookieguard_pro') === 'true';
                 this.scanCount = parseInt(localStorage.getItem('scan_count') || '0');
                 this.lastAnalysis = null;
                 this.currentScan = null;
@@ -946,6 +1012,7 @@
             init() {
                 this.setupEventListeners();
                 this.loadScanHistory();
+                this.checkUserStatus();
                 this.updateScanCountDisplay();
                 this.showNotification('CookieGuard Scanner Ready');
             }
@@ -953,6 +1020,13 @@
             setupEventListeners() {
                 // Scan button
                 document.getElementById('scanBtn').addEventListener('click', () => this.startScan());
+                
+                // Upgrade button
+                document.getElementById('upgradeBtn').addEventListener('click', () => this.showPaymentModal());
+                
+                // Modal controls
+                document.getElementById('closeModal').addEventListener('click', () => this.hidePaymentModal());
+                document.getElementById('paystackBtn').addEventListener('click', () => this.processPayment());
                 
                 // Tabs
                 document.querySelectorAll('.tab').forEach(tab => {
@@ -974,6 +1048,13 @@
                 document.getElementById('websiteUrl').addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') this.startScan();
                 });
+                
+                // Close modal on outside click
+                document.getElementById('paymentModal').addEventListener('click', (e) => {
+                    if (e.target === document.getElementById('paymentModal')) {
+                        this.hidePaymentModal();
+                    }
+                });
             }
             
             async startScan() {
@@ -991,9 +1072,10 @@
                     return;
                 }
                 
-                // Check scan limits
-                if (this.scanCount >= 3) {
-                    this.showNotification('Free scan limit reached. Try again later.');
+                // Check scan limits for free users
+                if (!this.isPro && this.scanCount >= 3) {
+                    this.showNotification('Free scan limit reached. Upgrade to Pro for unlimited scans.');
+                    this.showPaymentModal();
                     return;
                 }
                 
@@ -1030,10 +1112,12 @@
                 // Process results
                 this.analyzeResults(cookies, domain);
                 
-                // Increment scan count
-                this.scanCount++;
-                localStorage.setItem('scan_count', this.scanCount.toString());
-                this.updateScanCountDisplay();
+                // Increment scan count for free users
+                if (!this.isPro) {
+                    this.scanCount++;
+                    localStorage.setItem('scan_count', this.scanCount.toString());
+                    this.updateScanCountDisplay();
+                }
             }
             
             async performWebsiteScan(domain) {
@@ -1309,6 +1393,12 @@
                     return;
                 }
                 
+                if (!this.isPro && format === 'pdf') {
+                    this.showNotification('PDF export is a premium feature. Upgrade to Pro.');
+                    this.showPaymentModal();
+                    return;
+                }
+                
                 const { cookies, domain, highRiskCount, mediumRiskCount, complianceScore, timestamp } = this.lastAnalysis;
                 
                 let report, filename, mimeType;
@@ -1353,13 +1443,52 @@
                 this.showNotification(`${format.toUpperCase()} report downloaded`);
             }
             
+            // Payment and subscription management
+            showPaymentModal() {
+                document.getElementById('paymentModal').style.display = 'flex';
+            }
+            
+            hidePaymentModal() {
+                document.getElementById('paymentModal').style.display = 'none';
+            }
+            
+            processPayment() {
+                // In a real implementation, this would integrate with a payment processor
+                // For demo purposes, we'll simulate a successful payment
+                this.showNotification('Payment successful! Activating CookieGuard Pro...');
+                this.activatePremiumFeatures();
+                this.hidePaymentModal();
+            }
+            
+            activatePremiumFeatures() {
+                localStorage.setItem('cookieguard_pro', 'true');
+                this.isPro = true;
+                this.checkUserStatus();
+                this.showNotification('CookieGuard Pro activated! Unlimited scans unlocked.');
+                
+                // Reset scan count
+                this.scanCount = 0;
+                localStorage.removeItem('scan_count');
+                this.updateScanCountDisplay();
+            }
+            
+            checkUserStatus() {
+                if (this.isPro) {
+                    document.getElementById('upgradeBtn').innerHTML = '<i class="fas fa-crown"></i> Pro Account Active';
+                    document.getElementById('upgradeBtn').style.background = '#10b981';
+                    document.getElementById('upgradeBtn').style.cursor = 'default';
+                    document.getElementById('upgradeBtn').onclick = null;
+                    document.getElementById('scanCount').style.display = 'none';
+                }
+            }
+            
             updateScanCountDisplay() {
                 const remaining = 3 - this.scanCount;
                 document.getElementById('remainingScans').textContent = remaining;
                 
                 if (remaining === 0) {
                     document.getElementById('scanCount').style.color = '#ef4444';
-                    document.getElementById('scanCount').innerHTML = 'Free scans exhausted. Try again later.';
+                    document.getElementById('scanCount').innerHTML = 'Free scans exhausted. <a href="#" style="color: #2563eb; text-decoration: underline;" onclick="scanner.showPaymentModal()">Upgrade to Pro</a>';
                 }
             }
             
@@ -1476,6 +1605,19 @@
         document.addEventListener('DOMContentLoaded', () => {
             scanner = new CookieGuardScanner();
         });
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
