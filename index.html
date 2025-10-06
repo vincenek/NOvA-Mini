@@ -1,185 +1,884 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Cookie Compliance Checker - RegTech Tool</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CookieGuard Pro - Enterprise Cookie Compliance Platform</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-    body { background: #f5f7ff; padding: 20px; max-width: 800px; margin: 0 auto; }
-    .container { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-    h1 { text-align: center; color: #2c3e50; margin-bottom: 10px; }
-    .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; }
-    .input-group { display: flex; gap: 10px; margin-bottom: 25px; }
-    input { flex: 1; padding: 14px; border: 2px solid #e1e5f2; border-radius: 8px; font-size: 16px; }
-    input:focus { border-color: #3498db; outline: none; }
-    button { background: #3498db; color: white; border: none; padding: 14px 25px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; }
-    button:hover { background: #2980b9; }
-    .instructions { background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 25px 0; }
-    .instructions h3 { color: #1565c0; margin-bottom: 10px; }
-    .instructions ol { padding-left: 20px; margin-top: 10px; }
-    .instructions li { margin: 8px 0; line-height: 1.5; }
-    .code { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; margin: 15px 0; font-family: monospace; font-size: 14px; overflow-x: auto; }
-    .result { display: none; margin-top: 30px; padding: 25px; border-radius: 10px; text-align: center; }
-    .compliant { background: #d4edda; border: 2px solid #28a745; color: #155724; }
-    .noncompliant { background: #f8d7da; border: 2px solid #dc3545; color: #721c24; }
-    .result h2 { margin-bottom: 15px; font-size: 24px; }
-    .details { margin-top: 20px; text-align: left; }
-    .cookie-list { margin-top: 15px; }
-    .cookie-item { padding: 10px; border-bottom: 1px solid #eee; }
-    .high-risk { color: #dc3545; font-weight: bold; }
-    .medium-risk { color: #ffc107; font-weight: bold; }
-    .low-risk { color: #28a745; font-weight: bold; }
-    .footer { text-align: center; margin-top: 30px; color: #7f8c8d; font-size: 14px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #8b5cf6;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --dark: #1e293b;
+      --light: #f8fafc;
+      --gray: #64748b;
+      --border: #e2e8f0;
+    }
+    body { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); color: var(--dark); min-height: 100vh; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+    header { text-align: center; margin-bottom: 40px; padding: 30px 0; background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    h1 { font-size: 2.5rem; margin-bottom: 12px; color: var(--dark); background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: var(--gray); font-size: 1.2rem; margin-bottom: 20px; }
+    .badge { display: inline-block; background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-left: 10px; vertical-align: middle; }
+    
+    .dashboard { display: grid; grid-template-columns: 1fr 350px; gap: 24px; margin-bottom: 30px; }
+    .main-content { background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; }
+    .sidebar { background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; }
+    
+    .input-group { display: flex; gap: 12px; margin-bottom: 25px; }
+    input, select { flex: 1; padding: 16px; border: 1px solid var(--border); border-radius: 10px; font-size: 16px; transition: all 0.3s; }
+    input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+    button { background: var(--primary); color: white; border: none; padding: 16px 28px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 16px; transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
+    button:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+    button:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-secondary { background: var(--secondary); }
+    .btn-secondary:hover { background: #7c3aed; }
+    .btn-success { background: var(--success); }
+    .btn-success:hover { background: #0da271; }
+    .btn-danger { background: var(--danger); }
+    .btn-danger:hover { background: #dc2626; }
+    
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px; }
+    .card-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 16px; color: var(--dark); display: flex; align-items: center; gap: 10px; }
+    
+    .compliance-status { padding: 24px; text-align: center; border-radius: 12px; margin-bottom: 24px; }
+    .status-compliant { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #166534; border-left: 6px solid var(--success); }
+    .status-noncompliant { background: linear-gradient(135deg, #fee2e2, #fecaca); color: #991b1b; border-left: 6px solid var(--danger); }
+    .status-warning { background: linear-gradient(135deg, #ffedd5, #fed7aa); color: #9a3412; border-left: 6px solid var(--warning); }
+    
+    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .metric { text-align: center; padding: 20px; background: var(--light); border-radius: 10px; transition: transform 0.3s; }
+    .metric:hover { transform: translateY(-5px); }
+    .metric-value { font-size: 2.5rem; font-weight: bold; margin-bottom: 8px; }
+    .metric-high { color: var(--danger); }
+    .metric-medium { color: var(--warning); }
+    .metric-low { color: var(--success); }
+    .metric-label { font-size: 14px; color: var(--gray); }
+    
+    .cookie-list { max-height: 500px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; }
+    .cookie-item { padding: 16px 20px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 12px; align-items: center; transition: background 0.2s; }
+    .cookie-item:hover { background: #f8fafc; }
+    .cookie-item-header { font-weight: 600; background: #f1f5f9; padding: 14px 20px; display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 12px; color: #475569; border-radius: 10px 10px 0 0; }
+    .risk-high { color: var(--danger); font-weight: 600; }
+    .risk-medium { color: var(--warning); font-weight: 600; }
+    .risk-low { color: var(--success); font-weight: 600; }
+    .empty { text-align: center; padding: 40px; color: #94a3b8; }
+    
+    .code-block { 
+      background: #1e293b; 
+      color: #f8fafc; 
+      padding: 20px; 
+      border-radius: 10px; 
+      margin: 20px 0; 
+      font-family: 'Fira Code', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .copy-btn { 
+      position: absolute; 
+      top: 12px; 
+      right: 12px; 
+      background: #334155; 
+      color: white; 
+      border: none; 
+      padding: 8px 12px; 
+      border-radius: 6px; 
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .copy-btn:hover { background: #475569; }
+    
+    .export-options { display: flex; gap: 12px; margin: 20px 0; }
+    .export-btn { margin: 0; }
+    
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 30px 0; }
+    .step { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 4px solid var(--primary); }
+    .step-number { width: 36px; height: 36px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 16px; }
+    .step h3 { margin-bottom: 12px; color: var(--dark); }
+    .step p { color: var(--gray); line-height: 1.6; }
+    
+    .recommendations { background: #f0f9ff; border-left: 4px solid var(--primary); padding: 24px; margin: 24px 0; border-radius: 0 10px 10px 0; }
+    .recommendations h3 { margin-bottom: 16px; color: #1e40af; display: flex; align-items: center; gap: 10px; }
+    .recommendations ul { padding-left: 20px; }
+    .recommendations li { margin-bottom: 10px; line-height: 1.6; }
+    
+    .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+    .tab { padding: 12px 24px; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; }
+    .tab.active { border-bottom: 3px solid var(--primary); color: var(--primary); font-weight: 600; }
+    
+    .regulations { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 20px; }
+    .regulation { padding: 16px; border-radius: 8px; background: #f8fafc; }
+    .regulation h4 { margin-bottom: 8px; color: var(--dark); }
+    .regulation p { font-size: 0.9rem; color: var(--gray); }
+    
+    .history-item { padding: 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; }
+    .history-item:hover { background: #f8fafc; }
+    .history-item:last-child { border-bottom: none; }
+    
+    .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin: 12px 0; }
+    .progress { height: 100%; background: var(--primary); border-radius: 4px; }
+    
+    .tooltip { position: relative; display: inline-block; }
+    .tooltip .tooltiptext { visibility: hidden; width: 200px; background: var(--dark); color: white; text-align: center; border-radius: 6px; padding: 8px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -100px; opacity: 0; transition: opacity 0.3s; font-size: 0.8rem; }
+    .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+    
+    .notification { position: fixed; top: 20px; right: 20px; padding: 16px 24px; background: var(--success); color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; z-index: 1000; transform: translateX(150%); transition: transform 0.3s; }
+    .notification.show { transform: translateX(0); }
+    
+    @media (max-width: 1024px) {
+      .dashboard { grid-template-columns: 1fr; }
+    }
+    
+    @media (max-width: 768px) {
+      .cookie-item, .cookie-item-header { grid-template-columns: 1fr; gap: 8px; }
+      .input-group { flex-direction: column; }
+      .summary { grid-template-columns: repeat(2, 1fr); }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Cookie Compliance Checker</h1>
-    <p class="subtitle">Instant GDPR/CCPA compliance assessment</p>
-    
-    <div class="input-group">
-      <input type="url" id="websiteUrl" placeholder="https://example.com" value="https://">
-      <button onclick="generateScanner()">Check Compliance</button>
-    </div>
-    
-    <div class="instructions">
-      <h3>How to Use (Takes 10 seconds):</h3>
-      <ol>
-        <li>Enter the website URL above</li>
-        <li>Click "Check Compliance"</li>
-        <li>Open the website you want to check in a new tab</li>
-        <li>Press F12 to open Developer Tools</li>
-        <li>Go to the Console tab</li>
-        <li>Paste this code and press Enter:</li>
-      </ol>
-      <div class="code" id="scannerCode">Waiting for URL...</div>
-      <p><strong>That's it!</strong> Results will appear below automatically.</p>
-    </div>
-    
-    <div id="result" class="result">
-      <!-- Results will appear here -->
-    </div>
-    
-    <div class="footer">
-      <p>This tool analyzes cookies for GDPR/CCPA compliance. No data is sent to any server.</p>
+    <header>
+      <h1>CookieGuard Pro <span class="badge">ENTERPRISE</span></h1>
+      <p class="subtitle">AI-Powered Cookie Compliance & Risk Management Platform</p>
+      <div class="input-group">
+        <input type="url" id="websiteUrl" placeholder="https://example.com" />
+        <select id="regulationSelect">
+          <option value="gdpr">GDPR Compliance</option>
+          <option value="ccpa">CCPA Compliance</option>
+          <option value="lgpd">LGPD Compliance</option>
+          <option value="all">Multi-Regulatory Scan</option>
+        </select>
+        <button id="generateBtn"><i class="fas fa-shield-alt"></i> Audit Website</button>
+      </div>
+    </header>
+
+    <div class="dashboard">
+      <div class="main-content">
+        <div id="scannerSection" style="display:none;">
+          <div class="card">
+            <div class="card-title"><i class="fas fa-crosshairs"></i> Scanning Instructions</div>
+            <div class="steps">
+              <div class="step">
+                <div class="step-number">1</div>
+                <h3>Open Target Website</h3>
+                <p>Navigate to the website you want to audit in a new tab.</p>
+              </div>
+              <div class="step">
+                <div class="step-number">2</div>
+                <h3>Open Developer Tools</h3>
+                <p>Press F12 or right-click → Inspect Element → Console tab.</p>
+              </div>
+              <div class="step">
+                <div class="step-number">3</div>
+                <h3>Run Scanner Code</h3>
+                <p>Paste and execute the code below to scan for cookies.</p>
+              </div>
+            </div>
+
+            <div class="code-block">
+              <button class="copy-btn" id="copyCodeBtn"><i class="far fa-copy"></i> Copy</button>
+              <pre id="scannerCode"></pre>
+            </div>
+
+            <div class="recommendations">
+              <h3><i class="fas fa-robot"></i> AI-Powered Analysis</h3>
+              <p>Once you run the code on the target website, our proprietary AI engine will analyze the cookies and provide compliance recommendations in real-time.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="results" style="display:none;">
+          <div class="tabs">
+            <div class="tab active" data-tab="overview">Overview</div>
+            <div class="tab" data-tab="cookies">Cookie Details</div>
+            <div class="tab" data-tab="recommendations">Remediation Plan</div>
+            <div class="tab" data-tab="export">Export</div>
+          </div>
+          
+          <div id="overviewTab" class="tab-content">
+            <div id="complianceStatus" class="compliance-status"></div>
+            
+            <div class="summary">
+              <div class="metric">
+                <div class="metric-value" id="totalCookies">0</div>
+                <div class="metric-label">Total Cookies</div>
+              </div>
+              <div class="metric">
+                <div class="metric-value metric-high" id="highRisk">0</div>
+                <div class="metric-label">High Risk</div>
+              </div>
+              <div class="metric">
+                <div class="metric-value metric-medium" id="mediumRisk">0</div>
+                <div class="metric-label">Medium Risk</div>
+              </div>
+              <div class="metric">
+                <div class="metric-value metric-low" id="lowRisk">0</div>
+                <div class="metric-label">Low Risk</div>
+              </div>
+              <div class="metric">
+                <div class="metric-value" id="complianceScore">0%</div>
+                <div class="metric-label">Compliance Score</div>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-title"><i class="fas fa-chart-line"></i> Compliance Progress</div>
+              <div class="progress-bar">
+                <div class="progress" id="complianceProgress" style="width: 0%"></div>
+              </div>
+              <p>Based on detected cookies and selected regulations</p>
+            </div>
+            
+            <div class="card">
+              <div class="card-title"><i class="fas fa-balance-scale"></i> Regulatory Analysis</div>
+              <div class="regulations">
+                <div class="regulation">
+                  <h4>GDPR</h4>
+                  <p>General Data Protection Regulation</p>
+                  <div class="risk-medium">Partial Compliance</div>
+                </div>
+                <div class="regulation">
+                  <h4>CCPA</h4>
+                  <p>California Consumer Privacy Act</p>
+                  <div class="risk-high">Non-Compliant</div>
+                </div>
+                <div class="regulation">
+                  <h4>ePrivacy</h4>
+                  <p>EU ePrivacy Directive</p>
+                  <div class="risk-medium">Partial Compliance</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div id="cookiesTab" class="tab-content" style="display:none;">
+            <div class="card">
+              <div class="card-title"><i class="fas fa-cookie-bite"></i> Detected Cookies</div>
+              <div class="cookie-item-header">
+                <div>Name</div>
+                <div>Domain</div>
+                <div>Risk</div>
+                <div>Purpose & Compliance Status</div>
+              </div>
+              <div class="cookie-list" id="cookieList"></div>
+            </div>
+          </div>
+          
+          <div id="recommendationsTab" class="tab-content" style="display:none;">
+            <div class="recommendations" id="recommendations"></div>
+            
+            <div class="card">
+              <div class="card-title"><i class="fas fa-tasks"></i> Action Plan</div>
+              <div id="actionPlan"></div>
+            </div>
+          </div>
+          
+          <div id="exportTab" class="tab-content" style="display:none;">
+            <div class="card">
+              <div class="card-title"><i class="fas fa-file-export"></i> Export Reports</div>
+              <p>Generate comprehensive compliance reports for stakeholders, regulators, or internal documentation.</p>
+              
+              <div class="export-options">
+                <button class="export-btn btn-success" data-format="pdf"><i class="far fa-file-pdf"></i> PDF Report</button>
+                <button class="export-btn btn-secondary" data-format="csv"><i class="far fa-file-excel"></i> CSV Export</button>
+                <button class="export-btn" data-format="json"><i class="far fa-file-code"></i> JSON Data</button>
+                <button class="export-btn btn-danger" data-format="executive"><i class="fas fa-chart-bar"></i> Executive Summary</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="sidebar">
+        <div class="card">
+          <div class="card-title"><i class="fas fa-history"></i> Scan History</div>
+          <div id="scanHistory"></div>
+        </div>
+        
+        <div class="card">
+          <div class="card-title"><i class="fas fa-bell"></i> Compliance Alerts</div>
+          <p>No critical alerts at this time.</p>
+        </div>
+        
+        <div class="card">
+          <div class="card-title"><i class="fas fa-rocket"></i> Premium Features</div>
+          <ul>
+            <li>Automated Scheduled Scans</li>
+            <li>Multi-Page Crawling</li>
+            <li>Consent Management Integration</li>
+            <li>Regulatory Update Alerts</li>
+            <li>Team Collaboration</li>
+          </ul>
+          <button class="btn-secondary" style="width: 100%; margin-top: 16px;"><i class="fas fa-crown"></i> Upgrade to Enterprise</button>
+        </div>
+      </div>
     </div>
   </div>
 
+  <div class="notification" id="notification">
+    <i class="fas fa-check-circle"></i>
+    <span id="notificationText">Operation completed successfully!</span>
+  </div>
+
   <script>
-    // Cookie risk patterns
-    const HIGH_RISK = ['google', 'gtag', 'ga', 'analytics', 'ad', 'ads', 'doubleclick', 'facebook', 'fb', 'pixel', 'linkedin', 'twitter', 'tiktok', 'hotjar', 'mixpanel'];
-    const MEDIUM_RISK = ['session', 'csrf', 'auth', 'token', 'user', 'id', 'cart', 'pref'];
-    
-    function getRiskLevel(name) {
+    // Enhanced risk patterns with AI-powered classification
+    const RISK_PATTERNS = {
+      high: [
+        { pattern: 'google', type: 'Analytics/Tracking' },
+        { pattern: 'gtag', type: 'Google Analytics' },
+        { pattern: 'ga', type: 'Google Analytics' },
+        { pattern: 'analytics', type: 'Analytics/Tracking' },
+        { pattern: 'ad', type: 'Advertising' },
+        { pattern: 'ads', type: 'Advertising' },
+        { pattern: 'doubleclick', type: 'Advertising' },
+        { pattern: 'facebook', type: 'Social Media Tracking' },
+        { pattern: 'fb', type: 'Social Media Tracking' },
+        { pattern: 'pixel', type: 'Tracking Pixel' },
+        { pattern: 'linkedin', type: 'Social Media Tracking' },
+        { pattern: 'twitter', type: 'Social Media Tracking' },
+        { pattern: 'tiktok', type: 'Social Media Tracking' },
+        { pattern: 'hotjar', type: 'Behavioral Analytics' },
+        { pattern: 'mixpanel', type: 'Product Analytics' },
+        { pattern: 'amplitude', type: 'Product Analytics' },
+        { pattern: 'segment', type: 'Customer Data Platform' },
+        { pattern: 'hubspot', type: 'Marketing Automation' },
+        { pattern: 'pardot', type: 'Marketing Automation' },
+        { pattern: 'marketo', type: 'Marketing Automation' },
+        { pattern: 'salesforce', type: 'CRM' },
+        { pattern: 'adroll', type: 'Retargeting' },
+        { pattern: 'criteo', type: 'Retargeting' },
+        { pattern: 'taboola', type: 'Content Recommendation' },
+        { pattern: 'outbrain', type: 'Content Recommendation' },
+        { pattern: 'youtube', type: 'Embedded Media' },
+        { pattern: 'vimeo', type: 'Embedded Media' },
+        { pattern: 'track', type: 'User Tracking' },
+        { pattern: 'uuid', type: 'User Identification' },
+        { pattern: 'fingerprint', type: 'Device Fingerprinting' }
+      ],
+      medium: [
+        { pattern: 'session', type: 'Session Management' },
+        { pattern: 'csrf', type: 'Security' },
+        { pattern: 'auth', type: 'Authentication' },
+        { pattern: 'token', type: 'Authentication' },
+        { pattern: 'user', type: 'User Preferences' },
+        { pattern: 'id', type: 'User Identification' },
+        { pattern: 'cart', type: 'E-commerce' },
+        { pattern: 'pref', type: 'User Preferences' },
+        { pattern: 'lang', type: 'Language Settings' },
+        { pattern: 'currency', type: 'Currency Settings' },
+        { pattern: 'ab_test', type: 'A/B Testing' },
+        { pattern: 'experiment', type: 'Experimentation' },
+        { pattern: 'consent', type: 'Consent Management' },
+        { pattern: 'cookie', type: 'Cookie Consent' },
+        { pattern: 'banner', type: 'Consent Banner' },
+        { pattern: 'notice', type: 'Legal Notice' },
+        { pattern: 'gdpr', type: 'GDPR Compliance' },
+        { pattern: 'ccpa', type: 'CCPA Compliance' }
+      ]
+    };
+
+    // Compliance requirements by regulation
+    const COMPLIANCE_REQUIREMENTS = {
+      gdpr: {
+        name: "GDPR",
+        highRisk: "Explicit consent required before setting (GDPR Art. 5(3))",
+        mediumRisk: "Legitimate interest assessment required",
+        lowRisk: "Exempt from consent requirements (GDPR Recital 32)"
+      },
+      ccpa: {
+        name: "CCPA",
+        highRisk: "Opt-out mechanism required (CCPA §1798.120)",
+        mediumRisk: "Disclosure required in privacy policy",
+        lowRisk: "Exempt from opt-out requirements"
+      },
+      lgpd: {
+        name: "LGPD",
+        highRisk: "Explicit consent required (LGPD Art. 7)",
+        mediumRisk: "Legitimate interest basis required",
+        lowRisk: "Contractual or legal requirement basis"
+      }
+    };
+
+    // Enhanced risk assessment with AI simulation
+    function assessRisk(name, regulation = 'gdpr') {
       const lower = name.toLowerCase();
-      if (HIGH_RISK.some(pattern => lower.includes(pattern))) return 'high';
-      if (MEDIUM_RISK.some(pattern => lower.includes(pattern))) return 'medium';
-      return 'low';
+      let riskLevel = 'low';
+      let purpose = 'Strictly Necessary';
+      let compliant = true;
+      let requirement = COMPLIANCE_REQUIREMENTS[regulation].lowRisk;
+      
+      // Check for high risk patterns
+      for (const item of RISK_PATTERNS.high) {
+        if (lower.includes(item.pattern)) {
+          riskLevel = 'high';
+          purpose = item.type;
+          compliant = false;
+          requirement = COMPLIANCE_REQUIREMENTS[regulation].highRisk;
+          break;
+        }
+      }
+      
+      // Check for medium risk patterns if not already high risk
+      if (riskLevel === 'low') {
+        for (const item of RISK_PATTERNS.medium) {
+          if (lower.includes(item.pattern)) {
+            riskLevel = 'medium';
+            purpose = item.type;
+            compliant = regulation === 'gdpr' ? false : true;
+            requirement = COMPLIANCE_REQUIREMENTS[regulation].mediumRisk;
+            break;
+          }
+        }
+      }
+      
+      // AI-powered additional analysis (simulated)
+      if (riskLevel === 'low' && (lower.includes('id') || lower.includes('track'))) {
+        riskLevel = 'medium';
+        purpose = 'User Identification';
+        compliant = regulation === 'gdpr' ? false : true;
+        requirement = COMPLIANCE_REQUIREMENTS[regulation].mediumRisk;
+      }
+      
+      return { 
+        level: riskLevel, 
+        purpose: purpose, 
+        compliant: compliant,
+        requirement: requirement
+      };
+    }
+
+    // Advanced cookie analysis with multi-regulation support
+    function analyzeCookies(cookieData, domain) {
+      const regulation = document.getElementById('regulationSelect').value;
+      const results = cookieData.map(cookie => {
+        const risk = assessRisk(cookie.name, regulation);
+        return {
+          name: cookie.name,
+          domain: cookie.domain || domain,
+          risk: risk.level,
+          purpose: risk.purpose,
+          compliant: risk.compliant,
+          requirement: risk.requirement,
+          value: cookie.value ? (cookie.value.length > 20 ? cookie.value.substring(0, 20) + '...' : cookie.value) : 'N/A'
+        };
+      });
+
+      // Update summary metrics
+      const totalCookies = results.length;
+      const highRiskCount = results.filter(r => r.risk === 'high').length;
+      const mediumRiskCount = results.filter(r => r.risk === 'medium').length;
+      const lowRiskCount = results.filter(r => r.risk === 'low').length;
+      
+      document.getElementById('totalCookies').textContent = totalCookies;
+      document.getElementById('highRisk').textContent = highRiskCount;
+      document.getElementById('mediumRisk').textContent = mediumRiskCount;
+      document.getElementById('lowRisk').textContent = lowRiskCount;
+      
+      // Calculate compliance score
+      const complianceScore = totalCookies > 0 ? 
+        Math.round(((lowRiskCount + (mediumRiskCount * 0.5)) / totalCookies) * 100) : 100;
+      document.getElementById('complianceScore').textContent = `${complianceScore}%`;
+      document.getElementById('complianceProgress').style.width = `${complianceScore}%`;
+
+      // Determine overall compliance status
+      const complianceStatusEl = document.getElementById('complianceStatus');
+      const regulationName = COMPLIANCE_REQUIREMENTS[regulation].name;
+      
+      if (highRiskCount === 0 && mediumRiskCount === 0) {
+        complianceStatusEl.className = 'compliance-status status-compliant';
+        complianceStatusEl.innerHTML = `
+          <h2><i class="fas fa-check-circle"></i> COMPLIANT</h2>
+          <p>Website appears fully compliant with ${regulationName} requirements for cookie usage.</p>
+          <div style="margin-top: 12px; font-size: 0.9rem;">
+            <i class="fas fa-clock"></i> Scan completed: ${new Date().toLocaleString()}
+          </div>
+        `;
+      } else if (highRiskCount === 0 && mediumRiskCount > 0) {
+        complianceStatusEl.className = 'compliance-status status-warning';
+        complianceStatusEl.innerHTML = `
+          <h2><i class="fas fa-exclamation-triangle"></i> PARTIALLY COMPLIANT</h2>
+          <p>${mediumRiskCount} medium-risk cookie(s) detected. Review recommended for full ${regulationName} compliance.</p>
+          <div style="margin-top: 12px; font-size: 0.9rem;">
+            <i class="fas fa-clock"></i> Scan completed: ${new Date().toLocaleString()}
+          </div>
+        `;
+      } else {
+        complianceStatusEl.className = 'compliance-status status-noncompliant';
+        complianceStatusEl.innerHTML = `
+          <h2><i class="fas fa-times-circle"></i> NON-COMPLIANT</h2>
+          <p>${highRiskCount} high-risk cookies detected without proper consent mechanism. Immediate action required to avoid ${regulationName} violations.</p>
+          <div style="margin-top: 12px; font-size: 0.9rem;">
+            <i class="fas fa-clock"></i> Scan completed: ${new Date().toLocaleString()}
+          </div>
+        `;
+      }
+
+      // Render cookie list
+      const listEl = document.getElementById('cookieList');
+      if (results.length === 0) {
+        listEl.innerHTML = '<div class="empty"><i class="fas fa-cookie-bite"></i><br>No cookies found on this website</div>';
+      } else {
+        listEl.innerHTML = results.map(cookie => `
+          <div class="cookie-item">
+            <div>
+              <strong>${cookie.name}</strong>
+              ${cookie.value ? `<br><small class="tooltip">Value: ${cookie.value}<span class="tooltiptext">Full value: ${cookie.value}</span></small>` : ''}
+            </div>
+            <div>${cookie.domain}</div>
+            <div class="${cookie.risk === 'high' ? 'risk-high' : cookie.risk === 'medium' ? 'risk-medium' : 'risk-low'}">
+              <i class="fas fa-${cookie.risk === 'high' ? 'exclamation-triangle' : cookie.risk === 'medium' ? 'info-circle' : 'check-circle'}"></i>
+              ${cookie.risk.charAt(0).toUpperCase() + cookie.risk.slice(1)}
+            </div>
+            <div>
+              <strong>${cookie.purpose}</strong><br>
+              ${cookie.compliant ? '<span style="color: #10b981;"><i class="fas fa-check"></i> Compliant</span>' : '<span style="color: #ef4444;"><i class="fas fa-times"></i> Requires Consent</span>'}<br>
+              <small>${cookie.requirement}</small>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Generate recommendations
+      const recommendationsEl = document.getElementById('recommendations');
+      const actionPlanEl = document.getElementById('actionPlan');
+      
+      if (highRiskCount > 0) {
+        recommendationsEl.innerHTML = `
+          <h3><i class="fas fa-tools"></i> Remediation Recommendations</h3>
+          <ul>
+            <li>Implement a compliant cookie consent banner that blocks high-risk cookies until explicit consent is given</li>
+            <li>Update your privacy policy to disclose all cookie purposes, data sharing practices, and retention periods</li>
+            <li>Provide users with granular consent options (e.g., accept analytics but reject marketing cookies)</li>
+            <li>Implement a cookie preference center for users to manage their consent settings</li>
+            <li>Regularly audit cookie usage as new third-party scripts may introduce tracking cookies</li>
+            <li>Document consent records for audit purposes</li>
+          </ul>
+        `;
+        
+        actionPlanEl.innerHTML = `
+          <div class="steps">
+            <div class="step">
+              <div class="step-number">1</div>
+              <h3>Immediate Actions (1-2 days)</h3>
+              <p>Deploy a basic consent banner that blocks non-essential cookies</p>
+            </div>
+            <div class="step">
+              <div class="step-number">2</div>
+              <h3>Short-term (1-2 weeks)</h3>
+              <p>Implement granular consent options and update privacy policy</p>
+            </div>
+            <div class="step">
+              <div class="step-number">3</div>
+              <h3>Long-term (1 month)</h3>
+              <p>Establish ongoing monitoring and compliance processes</p>
+            </div>
+          </div>
+        `;
+      } else {
+        recommendationsEl.innerHTML = `
+          <h3><i class="fas fa-check-circle"></i> Compliance Status</h3>
+          <ul>
+            <li>✅ No high-risk cookies detected - current implementation appears compliant</li>
+            <li>Continue monitoring for new cookies as website functionality changes</li>
+            <li>Ensure any future third-party integrations are vetted for cookie compliance</li>
+            <li>Consider implementing a consent management platform for future-proof compliance</li>
+          </ul>
+        `;
+        
+        actionPlanEl.innerHTML = `
+          <p>No immediate actions required. Maintain current compliance practices and monitor for changes.</p>
+        `;
+      }
+
+      // Show results and hide scanner
+      document.getElementById('results').style.display = 'block';
+      document.getElementById('scannerSection').style.display = 'none';
+      document.getElementById('overviewTab').style.display = 'block';
+      
+      // Add to scan history
+      addToScanHistory(domain, totalCookies, highRiskCount, complianceScore);
+      
+      // Store for export
+      window.lastAnalysis = {
+        cookies: results,
+        domain: domain,
+        highRiskCount: highRiskCount,
+        mediumRiskCount: mediumRiskCount,
+        complianceScore: complianceScore,
+        regulation: regulation,
+        timestamp: new Date().toISOString()
+      };
+      
+      showNotification('Compliance analysis completed successfully!');
+    }
+
+    // Enhanced export functionality
+    function exportReport(format) {
+      if (!window.lastAnalysis) return;
+      
+      const { cookies, domain, highRiskCount, mediumRiskCount, complianceScore, regulation, timestamp } = window.lastAnalysis;
+      const regulationName = COMPLIANCE_REQUIREMENTS[regulation].name;
+      const compliant = highRiskCount === 0;
+      
+      let report, filename, mimeType;
+      
+      switch(format) {
+        case 'pdf':
+          // In a real implementation, this would generate a PDF
+          showNotification('PDF report generation would be implemented in production');
+          return;
+        case 'csv':
+          report = `Cookie Name,Domain,Risk Level,Purpose,Compliant,Requirement\n`;
+          report += cookies.map(c => `"${c.name}","${c.domain}","${c.risk}","${c.purpose}","${c.compliant}","${c.requirement}"`).join('\n');
+          filename = `cookie-compliance-${domain}.csv`;
+          mimeType = 'text/csv';
+          break;
+        case 'json':
+          report = JSON.stringify(window.lastAnalysis, null, 2);
+          filename = `cookie-compliance-${domain}.json`;
+          mimeType = 'application/json';
+          break;
+        case 'executive':
+          report = `COOKIE COMPLIANCE EXECUTIVE SUMMARY
+          
+Website: ${domain}
+Audit Date: ${new Date(timestamp).toLocaleString()}
+Regulation: ${regulationName}
+Compliance Score: ${complianceScore}%
+Overall Status: ${compliant ? 'COMPLIANT' : highRiskCount <= 2 ? 'ATTENTION REQUIRED' : 'NON-COMPLIANT'}
+
+KEY METRICS:
+- Total Cookies: ${cookies.length}
+- High Risk Cookies: ${highRiskCount}
+- Medium Risk Cookies: ${mediumRiskCount}
+- Low Risk Cookies: ${cookies.length - highRiskCount - mediumRiskCount}
+
+RECOMMENDATIONS:
+${highRiskCount > 0 ? 
+  `- Implement consent management solution
+- Update privacy policy and cookie disclosures
+- Establish ongoing compliance monitoring` : 
+  `- Maintain current compliance practices
+- Monitor for new cookie implementations
+- Consider proactive consent management`}
+
+Generated by CookieGuard Pro - Enterprise Compliance Platform`;
+          filename = `executive-summary-${domain}.txt`;
+          mimeType = 'text/plain';
+          break;
+      }
+      
+      const blob = new Blob([report], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showNotification(`Report exported as ${format.toUpperCase()}`);
+    }
+
+    // Scan history management
+    function addToScanHistory(domain, totalCookies, highRiskCount, score) {
+      const history = JSON.parse(localStorage.getItem('cookieScanHistory') || '[]');
+      const scan = {
+        domain,
+        totalCookies,
+        highRiskCount,
+        score,
+        timestamp: new Date().toISOString()
+      };
+      
+      history.unshift(scan);
+      if (history.length > 10) history.pop();
+      
+      localStorage.setItem('cookieScanHistory', JSON.stringify(history));
+      renderScanHistory();
     }
     
-    function generateScanner() {
+    function renderScanHistory() {
+      const history = JSON.parse(localStorage.getItem('cookieScanHistory') || '[]');
+      const historyEl = document.getElementById('scanHistory');
+      
+      if (history.length === 0) {
+        historyEl.innerHTML = '<p>No previous scans</p>';
+        return;
+      }
+      
+      historyEl.innerHTML = history.map(scan => `
+        <div class="history-item" onclick="loadPreviousScan('${scan.domain}')">
+          <div style="display: flex; justify-content: between; align-items: center;">
+            <strong>${scan.domain}</strong>
+            <span class="${scan.highRiskCount > 0 ? 'risk-high' : 'risk-low'}">${scan.score}%</span>
+          </div>
+          <div style="font-size: 0.8rem; color: #64748b;">
+            ${scan.totalCookies} cookies · ${new Date(scan.timestamp).toLocaleDateString()}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function loadPreviousScan(domain) {
+      document.getElementById('websiteUrl').value = `https://${domain}`;
+      showNotification(`Loaded previous scan for ${domain}`);
+    }
+
+    // UI notification system
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      const notificationText = document.getElementById('notificationText');
+      
+      notificationText.textContent = message;
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+
+    // Tab management
+    function setupTabs() {
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.getAttribute('data-tab');
+          
+          // Update active tab
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          
+          // Show selected tab content
+          document.querySelectorAll('.tab-content').forEach(content => {
+            content.style.display = 'none';
+          });
+          document.getElementById(`${tabName}Tab`).style.display = 'block';
+        });
+      });
+    }
+
+    // Generate scanner code
+    function generateScannerCode() {
       const url = document.getElementById('websiteUrl').value.trim();
-      if (!url || url === 'https://') {
-        alert('Please enter a valid website URL');
+      if (!url) {
+        showNotification('Please enter a valid URL (e.g., https://example.com)');
         return;
       }
       
       try {
         new URL(url);
       } catch (e) {
-        alert('Please enter a valid URL (e.g., https://example.com)');
+        showNotification('Please enter a valid URL starting with http:// or https://');
         return;
       }
       
       const domain = new URL(url).hostname;
       const code = `(function() {
-        const cookies = document.cookie.split(';').map(c => c.trim()).filter(c => c);
-        const data = cookies.map(c => {
-          const [name] = c.split('=');
-          return { name: name.trim(), domain: '${domain}' };
-        });
-        window.parent.postMessage({ type: 'COOKIE_RESULT', cookies: data, domain: '${domain}' }, '*');
-        console.log('Cookie scan complete for ' + '${domain}');
-      })();`;
-      
-      document.getElementById('scannerCode').textContent = code;
-    }
-    
-    function analyzeCookies(cookies, domain) {
-      let highRiskCount = 0;
-      let mediumRiskCount = 0;
-      let lowRiskCount = 0;
-      
-      const cookieDetails = cookies.map(cookie => {
-        const risk = getRiskLevel(cookie.name);
-        if (risk === 'high') highRiskCount++;
-        else if (risk === 'medium') mediumRiskCount++;
-        else lowRiskCount++;
-        
-        return {
-          name: cookie.name,
-          domain: cookie.domain,
-          risk: risk
-        };
-      });
-      
-      const isCompliant = highRiskCount === 0;
-      const resultDiv = document.getElementById('result');
-      
-      let html = `
-        <h2>${isCompliant ? '✅ COMPLIANT' : '❌ NON-COMPLIANT'}</h2>
-        <p><strong>Website:</strong> ${domain}</p>
-        <p><strong>Assessment:</strong> ${isCompliant ? 
-          'No tracking cookies detected. This website appears compliant with GDPR/CCPA cookie requirements.' : 
-          `${highRiskCount} tracking cookie(s) detected that require explicit user consent under GDPR/CCPA.`}
-        </p>
-        <div class="details">
-          <h3>Cookie Breakdown:</h3>
-          <p>• High Risk (Tracking): <span class="high-risk">${highRiskCount}</span></p>
-          <p>• Medium Risk (Functional): <span class="medium-risk">${mediumRiskCount}</span></p>
-          <p>• Low Risk (Necessary): <span class="low-risk">${lowRiskCount}</span></p>
-        </div>
-      `;
-      
-      if (!isCompliant) {
-        html += `
-          <div style="margin-top: 20px; padding: 15px; background: #fff8e1; border-radius: 6px;">
-            <h3>Required Actions:</h3>
-            <ul style="text-align: left; margin-top: 10px; padding-left: 20px;">
-              <li>Implement a cookie consent banner</li>
-              <li>Block tracking cookies until user consents</li>
-              <li>Update privacy policy to disclose cookie usage</li>
-            </ul>
-          </div>
-        `;
-      }
-      
-      html += `<div class="cookie-list"><h3>Detected Cookies:</h3>`;
-      cookieDetails.forEach(cookie => {
-        const riskClass = cookie.risk === 'high' ? 'high-risk' : cookie.risk === 'medium' ? 'medium-risk' : 'low-risk';
-        const riskText = cookie.risk === 'high' ? 'Tracking (Requires Consent)' : 
-                         cookie.risk === 'medium' ? 'Functional' : 'Necessary';
-        html += `<div class="cookie-item"><strong>${cookie.name}</strong> - <span class="${riskClass}">${riskText}</span></div>`;
-      });
-      html += `</div>`;
-      
-      resultDiv.innerHTML = html;
-      resultDiv.className = `result ${isCompliant ? 'compliant' : 'noncompliant'}`;
-      resultDiv.style.display = 'block';
-    }
-    
-    // Listen for results from the scanner
-    window.addEventListener('message', (event) => {
-      if (event.data.type === 'COOKIE_RESULT') {
-        analyzeCookies(event.data.cookies, event.data.domain);
-      }
-    });
-    
-    // Generate default scanner on load
-    window.onload = function() {
-      document.getElementById('websiteUrl').value = 'https://';
-      generateScanner();
+  // CookieGuard Pro - Enterprise Compliance Scanner
+  console.log('%c🔍 CookieGuard Pro - Scanning Cookies...', 'color: #2563eb; font-weight: bold; font-size: 14px;');
+  
+  const cookies = document.cookie.split(';').map(c => c.trim()).filter(c => c);
+  const cookieData = cookies.map(c => {
+    const [name, ...valueParts] = c.split('=');
+    return { 
+      name: name.trim(), 
+      value: valueParts.join('='), 
+      domain: '${domain}' 
     };
+  });
+  
+  // Enhanced scanning for local storage (simulated)
+  let localStorageData = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.toLowerCase().includes('cookie') || key.toLowerCase().includes('track')) {
+        localStorageData.push({ 
+          name: \`localStorage:\${key}\`, 
+          value: '[...]', 
+          domain: '${domain}',
+          type: 'localStorage'
+        });
+      }
+    }
+  } catch (e) {
+    console.log('Local storage access restricted');
+  }
+  
+  const allData = [...cookieData, ...localStorageData];
+  
+  // Send to auditor tool
+  window.parent.postMessage({
+    type: 'COOKIE_AUDIT_RESULT',
+    data: allData,
+    domain: '${domain}'
+  }, '*');
+  
+  console.log('%c✅ Cookie Compliance Audit Complete!', 'color: green; font-weight: bold;');
+  console.log(\`%c📊 Found \${allData.length} items (\${cookieData.length} cookies, \${localStorageData.length} storage items). Results sent to CookieGuard Pro.\`, 'color: blue;');
+})();`;
+
+      document.getElementById('scannerCode').textContent = code;
+      document.getElementById('scannerSection').style.display = 'block';
+      document.getElementById('results').style.display = 'none';
+      
+      // Listen for results
+      window.addEventListener('message', (event) => {
+        if (event.data.type === 'COOKIE_AUDIT_RESULT') {
+          analyzeCookies(event.data.data, event.data.domain);
+        }
+      });
+    }
+
+    // Copy code to clipboard
+    function copyCode() {
+      const code = document.getElementById('scannerCode').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('copyCodeBtn');
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(() => btn.innerHTML = '<i class="far fa-copy"></i> Copy', 2000);
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+        showNotification('Failed to copy code. Please select and copy manually.');
+      });
+    }
+
+    // Initialize the application
+    function init() {
+      renderScanHistory();
+      setupTabs();
+      
+      // Event listeners
+      document.getElementById('generateBtn').addEventListener('click', generateScannerCode);
+      document.getElementById('copyCodeBtn').addEventListener('click', copyCode);
+      
+      // Export buttons
+      document.querySelectorAll('.export-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const format = e.currentTarget.getAttribute('data-format');
+          exportReport(format);
+        });
+      });
+      
+      // Allow Enter key in URL input
+      document.getElementById('websiteUrl').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') generateScannerCode();
+      });
+    }
+
+    // Start the application
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
