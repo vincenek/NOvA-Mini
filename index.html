@@ -12,11 +12,10 @@
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
     <style>
-        /* Your existing CSS remains exactly the same */
         :root {
             --primary: #3a56d4;
             --primary-light: #5b75e8;
@@ -148,6 +147,81 @@
         
         .theme-toggle:hover {
             background: rgba(58, 86, 212, 0.05);
+        }
+        
+        /* Auth Screen */
+        .auth-screen {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            max-width: 500px;
+            margin: 40px auto;
+            text-align: center;
+            display: none;
+        }
+        
+        .auth-screen.active {
+            display: block;
+        }
+        
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--light-gray);
+        }
+        
+        .auth-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+        
+        .auth-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .auth-form {
+            display: none;
+        }
+        
+        .auth-form.active {
+            display: block;
+        }
+        
+        .auth-error {
+            color: var(--danger);
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(239, 71, 111, 0.1);
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .auth-success {
+            color: var(--accent);
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(6, 214, 160, 0.1);
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: rgba(58, 86, 212, 0.1);
+            color: var(--primary);
+            font-weight: 600;
         }
         
         /* Setup Screen */
@@ -1654,8 +1728,63 @@
     </style>
 </head>
 <body>
+    <!-- Auth Screen -->
+    <div class="auth-screen" id="auth-screen">
+        <div class="setup-icon">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        <h1 class="setup-title">Welcome to BudgetWise</h1>
+        <p class="setup-description">Sign in to sync your data across devices</p>
+        
+        <div class="auth-tabs">
+            <div class="auth-tab active" data-tab="signin">Sign In</div>
+            <div class="auth-tab" data-tab="signup">Sign Up</div>
+        </div>
+        
+        <div class="auth-error" id="auth-error"></div>
+        <div class="auth-success" id="auth-success"></div>
+        
+        <div class="auth-form active" id="signin-form">
+            <div class="form-group">
+                <label for="signin-email">Email</label>
+                <input type="email" id="signin-email" placeholder="your@email.com" required>
+            </div>
+            <div class="form-group">
+                <label for="signin-password">Password</label>
+                <input type="password" id="signin-password" placeholder="••••••••" required>
+            </div>
+            <button class="btn btn-primary" id="signin-btn">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+        </div>
+        
+        <div class="auth-form" id="signup-form">
+            <div class="form-group">
+                <label for="signup-email">Email</label>
+                <input type="email" id="signup-email" placeholder="your@email.com" required>
+            </div>
+            <div class="form-group">
+                <label for="signup-password">Password</label>
+                <input type="password" id="signup-password" placeholder="••••••••" required>
+            </div>
+            <div class="form-group">
+                <label for="signup-confirm">Confirm Password</label>
+                <input type="password" id="signup-confirm" placeholder="••••••••" required>
+            </div>
+            <button class="btn btn-primary" id="signup-btn">
+                <i class="fas fa-user-plus"></i> Sign Up
+            </button>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button class="btn btn-outline" id="skip-auth-btn">
+                <i class="fas fa-arrow-right"></i> Continue Without Account
+            </button>
+        </div>
+    </div>
+    
     <!-- Setup Screen -->
-    <div class="setup-screen" id="setup-screen">
+    <div class="setup-screen" id="setup-screen" style="display:none;">
         <div class="setup-icon">
             <i class="fas fa-wallet"></i>
         </div>
@@ -1690,6 +1819,13 @@
                 <div class="logo-text">BudgetWise</div>
             </div>
             <div class="header-actions">
+                <div class="user-info" id="user-info" style="display:none;">
+                    <i class="fas fa-user"></i>
+                    <span id="user-email"></span>
+                    <button class="btn btn-outline" id="logout-btn" style="margin-left: 10px; padding: 5px 10px; font-size: 0.8rem;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
                 <div class="currency-selector" id="currency-selector">
                     <i class="fas fa-money-bill-wave"></i>
                     <span id="current-currency">USD</span>
@@ -2373,8 +2509,7 @@
     </div>
     
     <script>
-        // ==================== FIREBASE SETUP ====================
-        // Firebase configuration
+        // Firebase Configuration and Initialization
         const firebaseConfig = {
             apiKey: "AIzaSyAsIquCqRhRjdbcH5VWKY0FJOeaCslDKF8",
             authDomain: "cyber-forge-27e97.firebaseapp.com",
@@ -2387,189 +2522,11 @@
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
         const db = firebase.firestore();
-        
-        // Firebase sync variables
-        let isSyncing = false;
-        let currentUserId = null;
-        let unsubscribeFirestore = null;
 
-        // Firebase Auth with anonymous authentication for cross-device sync
-        function initializeFirebaseAuth() {
-            return new Promise((resolve, reject) => {
-                firebase.auth().onAuthStateChanged((user) => {
-                    if (user) {
-                        currentUserId = user.uid;
-                        console.log('User is signed in:', user.uid);
-                        resolve(user);
-                    } else {
-                        // Sign in anonymously for cross-device sync
-                        firebase.auth().signInAnonymously()
-                            .then((userCredential) => {
-                                currentUserId = userCredential.user.uid;
-                                console.log('Anonymous user signed in:', userCredential.user.uid);
-                                resolve(userCredential.user);
-                            })
-                            .catch((error) => {
-                                console.error('Anonymous auth failed:', error);
-                                // Continue without Firebase sync
-                                resolve(null);
-                            });
-                    }
-                });
-            });
-        }
-
-        // Save data to Firebase Firestore
-        async function saveToFirebase() {
-            if (!currentUserId || isSyncing) return;
-            
-            isSyncing = true;
-            
-            try {
-                const userData = {
-                    transactions: transactions,
-                    monthlyBudget: monthlyBudget,
-                    currency: currency,
-                    savingsGoal: savingsGoal,
-                    savingGoals: savingGoals,
-                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                
-                await db.collection('users').doc(currentUserId).set(userData);
-                console.log('Data saved to Firebase');
-            } catch (error) {
-                console.error('Error saving to Firebase:', error);
-            } finally {
-                isSyncing = false;
-            }
-        }
-
-        // Load data from Firebase Firestore
-        async function loadFromFirebase() {
-            if (!currentUserId) return;
-            
-            try {
-                const doc = await db.collection('users').doc(currentUserId).get();
-                
-                if (doc.exists) {
-                    const data = doc.data();
-                    
-                    // Only update if the Firebase data is newer
-                    if (data.transactions) {
-                        transactions = data.transactions;
-                        monthlyBudget = data.monthlyBudget || monthlyBudget;
-                        currency = data.currency || currency;
-                        savingsGoal = data.savingsGoal || savingsGoal;
-                        savingGoals = data.savingGoals || savingGoals;
-                        
-                        console.log('Data loaded from Firebase');
-                        
-                        // Update UI with loaded data
-                        calculateFinancials();
-                        renderTransactions();
-                        updateSavingGoals();
-                        
-                        // Save to localStorage as backup
-                        saveToLocalStorage();
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading from Firebase:', error);
-            }
-        }
-
-        // Set up real-time listener for data changes
-        function setupRealtimeListener() {
-            if (!currentUserId) return;
-            
-            unsubscribeFirestore = db.collection('users').doc(currentUserId)
-                .onSnapshot((doc) => {
-                    if (doc.exists && !isSyncing) {
-                        const data = doc.data();
-                        console.log('Real-time update received from Firebase');
-                        
-                        // Update local data
-                        transactions = data.transactions || transactions;
-                        monthlyBudget = data.monthlyBudget || monthlyBudget;
-                        currency = data.currency || currency;
-                        savingsGoal = data.savingsGoal || savingsGoal;
-                        savingGoals = data.savingGoals || savingGoals;
-                        
-                        // Update UI
-                        calculateFinancials();
-                        renderTransactions();
-                        updateSavingGoals();
-                        
-                        // Update localStorage
-                        saveToLocalStorage();
-                        
-                        showNotification('Data synced from cloud', false);
-                    }
-                }, (error) => {
-                    console.error('Firestore listener error:', error);
-                });
-        }
-
-        // Modified saveData function to include Firebase
-        function saveData() {
-            saveToLocalStorage();
-            saveToFirebase();
-        }
-
-        // Modified loadData function to try Firebase first
-        async function loadData() {
-            await initializeFirebaseAuth();
-            
-            // Try to load from Firebase first
-            await loadFromFirebase();
-            
-            // If no Firebase data, load from localStorage
-            const data = localStorage.getItem('budgetwise_data');
-            if (data && transactions.length === 0) {
-                try {
-                    const parsed = JSON.parse(data);
-                    transactions = parsed.transactions || [];
-                    monthlyBudget = parsed.monthlyBudget || 0;
-                    currency = parsed.currency || 'USD';
-                    savingsGoal = parsed.savingsGoal || {
-                        target: 0,
-                        saved: 0,
-                        deadline: null,
-                        name: 'Main Savings Goal'
-                    };
-                    savingGoals = parsed.savingGoals || [];
-                } catch (e) {
-                    console.error('Error loading data:', e);
-                    showNotification('Error loading data. Starting fresh.', true);
-                }
-            }
-            
-            // Set up budget if none exists
-            if (monthlyBudget === 0) {
-                monthlyBudget = currency === 'NGN' ? 150000 : 2500;
-                saveData();
-            }
-            
-            // Set up real-time listener after initial load
-            setupRealtimeListener();
-        }
-
-        // Keep the original localStorage function for backup
-        function saveToLocalStorage() {
-            const data = {
-                transactions: transactions,
-                monthlyBudget: monthlyBudget,
-                currency: currency,
-                savingsGoal: savingsGoal,
-                savingGoals: savingGoals,
-                version: '3.0'
-            };
-            localStorage.setItem('budgetwise_data', JSON.stringify(data));
-        }
-
-        // ==================== YOUR ORIGINAL CODE BELOW ====================
         // DOM Elements
+        const authScreen = document.getElementById('auth-screen');
         const setupScreen = document.getElementById('setup-screen');
         const mainApp = document.getElementById('main-app');
         const currencyOptions = document.querySelectorAll('.currency-option');
@@ -2625,6 +2582,25 @@
         const savingGoalOptions = document.getElementById('saving-goal-options');
         const transactionType = document.getElementById('type');
         
+        // Auth elements
+        const authTabs = document.querySelectorAll('.auth-tab');
+        const authForms = document.querySelectorAll('.auth-form');
+        const signinForm = document.getElementById('signin-form');
+        const signupForm = document.getElementById('signup-form');
+        const signinEmail = document.getElementById('signin-email');
+        const signinPassword = document.getElementById('signin-password');
+        const signinBtn = document.getElementById('signin-btn');
+        const signupEmail = document.getElementById('signup-email');
+        const signupPassword = document.getElementById('signup-password');
+        const signupConfirm = document.getElementById('signup-confirm');
+        const signupBtn = document.getElementById('signup-btn');
+        const skipAuthBtn = document.getElementById('skip-auth-btn');
+        const authError = document.getElementById('auth-error');
+        const authSuccess = document.getElementById('auth-success');
+        const userInfo = document.getElementById('user-info');
+        const userEmail = document.getElementById('user-email');
+        const logoutBtn = document.getElementById('logout-btn');
+
         // Main app elements
         const balanceEl = document.getElementById('balance');
         const totalIncomeEl = document.getElementById('total-income');
@@ -2691,7 +2667,9 @@
         let savingGoals = [];
         let selectedExportFormat = null;
         let selectedNewCurrency = null;
-        
+        let currentUser = null;
+        let unsubscribeFromFirestore = null;
+
         // Currency symbols for display
         const currencySymbols = {
             'USD': '$',
@@ -2702,6 +2680,236 @@
             'AUD': 'A$'
         };
         
+        // Firebase Auth State Listener
+        auth.onAuthStateChanged(user => {
+            currentUser = user;
+            if (user) {
+                // User is signed in
+                userInfo.style.display = 'flex';
+                userEmail.textContent = user.email;
+                showNotification(`Welcome back, ${user.email.split('@')[0]}!`);
+                
+                // Load data from Firestore
+                loadDataFromFirestore(user.uid);
+                
+                // Set up real-time listener
+                setupFirestoreListener(user.uid);
+                
+                // Show main app if setup is complete
+                const setupComplete = localStorage.getItem('budgetwise_setup_complete');
+                if (setupComplete) {
+                    authScreen.style.display = 'none';
+                    mainApp.style.display = 'block';
+                    initApp();
+                } else {
+                    authScreen.style.display = 'none';
+                    setupScreen.style.display = 'block';
+                }
+            } else {
+                // User is signed out
+                userInfo.style.display = 'none';
+                
+                // Stop Firestore listener
+                if (unsubscribeFromFirestore) {
+                    unsubscribeFromFirestore();
+                    unsubscribeFromFirestore = null;
+                }
+                
+                // Show auth screen
+                authScreen.style.display = 'block';
+                setupScreen.style.display = 'none';
+                mainApp.style.display = 'none';
+                
+                // Load data from localStorage
+                loadDataFromLocalStorage();
+            }
+        });
+
+        // Firebase Firestore Functions
+        function loadDataFromFirestore(uid) {
+            db.collection('users').doc(uid).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        transactions = data.transactions || [];
+                        monthlyBudget = data.monthlyBudget || 0;
+                        currency = data.currency || 'USD';
+                        savingsGoal = data.savingsGoal || {
+                            target: 0,
+                            saved: 0,
+                            deadline: null,
+                            name: 'Main Savings Goal'
+                        };
+                        savingGoals = data.savingGoals || [];
+                        
+                        // Update UI if app is initialized
+                        if (mainApp.style.display !== 'none') {
+                            calculateFinancials();
+                            renderTransactions();
+                            updateSavingGoals();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading data from Firestore:', error);
+                    showNotification('Error loading data from cloud', true);
+                });
+        }
+
+        function saveDataToFirestore() {
+            if (!currentUser) return;
+            
+            const data = {
+                transactions: transactions,
+                monthlyBudget: monthlyBudget,
+                currency: currency,
+                savingsGoal: savingsGoal,
+                savingGoals: savingGoals,
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            db.collection('users').doc(currentUser.uid).set(data)
+                .then(() => {
+                    console.log('Data saved to Firestore');
+                })
+                .catch(error => {
+                    console.error('Error saving data to Firestore:', error);
+                    showNotification('Error saving data to cloud', true);
+                });
+        }
+
+        function setupFirestoreListener(uid) {
+            unsubscribeFromFirestore = db.collection('users').doc(uid)
+                .onSnapshot(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        // Only update if the data is different from current state
+                        // This prevents unnecessary UI updates when we're the ones making changes
+                        const shouldUpdate = JSON.stringify(transactions) !== JSON.stringify(data.transactions) ||
+                                           monthlyBudget !== data.monthlyBudget ||
+                                           currency !== data.currency ||
+                                           JSON.stringify(savingsGoal) !== JSON.stringify(data.savingsGoal) ||
+                                           JSON.stringify(savingGoals) !== JSON.stringify(data.savingGoals);
+                        
+                        if (shouldUpdate) {
+                            transactions = data.transactions || [];
+                            monthlyBudget = data.monthlyBudget || 0;
+                            currency = data.currency || 'USD';
+                            savingsGoal = data.savingsGoal || {
+                                target: 0,
+                                saved: 0,
+                                deadline: null,
+                                name: 'Main Savings Goal'
+                            };
+                            savingGoals = data.savingGoals || [];
+                            
+                            // Update UI
+                            calculateFinancials();
+                            renderTransactions();
+                            updateSavingGoals();
+                            showNotification('Data updated from cloud');
+                        }
+                    }
+                }, error => {
+                    console.error('Firestore listener error:', error);
+                });
+        }
+
+        // Auth event listeners
+        authTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
+                
+                // Update tabs
+                authTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update forms
+                authForms.forEach(form => form.classList.remove('active'));
+                document.getElementById(`${tabName}-form`).classList.add('active');
+                
+                // Clear messages
+                authError.style.display = 'none';
+                authSuccess.style.display = 'none';
+            });
+        });
+
+        signinBtn.addEventListener('click', () => {
+            const email = signinEmail.value;
+            const password = signinPassword.value;
+            
+            if (!email || !password) {
+                showAuthError('Please enter both email and password');
+                return;
+            }
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Signed in successfully
+                    showAuthSuccess('Signed in successfully!');
+                })
+                .catch((error) => {
+                    showAuthError('Error signing in: ' + error.message);
+                });
+        });
+
+        signupBtn.addEventListener('click', () => {
+            const email = signupEmail.value;
+            const password = signupPassword.value;
+            const confirm = signupConfirm.value;
+            
+            if (!email || !password || !confirm) {
+                showAuthError('Please fill all fields');
+                return;
+            }
+            
+            if (password !== confirm) {
+                showAuthError('Passwords do not match');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showAuthError('Password should be at least 6 characters');
+                return;
+            }
+            
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Signed up successfully
+                    showAuthSuccess('Account created successfully!');
+                })
+                .catch((error) => {
+                    showAuthError('Error creating account: ' + error.message);
+                });
+        });
+
+        skipAuthBtn.addEventListener('click', () => {
+            authScreen.style.display = 'none';
+            setupScreen.style.display = 'block';
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut()
+                .then(() => {
+                    showNotification('Signed out successfully');
+                })
+                .catch((error) => {
+                    showNotification('Error signing out', true);
+                });
+        });
+
+        function showAuthError(message) {
+            authError.textContent = message;
+            authError.style.display = 'block';
+            authSuccess.style.display = 'none';
+        }
+
+        function showAuthSuccess(message) {
+            authSuccess.textContent = message;
+            authSuccess.style.display = 'block';
+            authError.style.display = 'none';
+        }
+
         // Currency selection
         let selectedCurrency = null;
         currencyOptions.forEach(option => {
@@ -2727,6 +2935,11 @@
                 mainApp.style.display = 'block';
                 localStorage.setItem('budgetwise_setup_complete', 'true');
                 initApp();
+                
+                // Save initial data to Firestore if user is signed in
+                if (currentUser) {
+                    saveDataToFirestore();
+                }
             }
         });
         
@@ -3094,6 +3307,53 @@
             showNotification('Transaction deleted successfully!');
         }
         
+        // Save data to localStorage and Firestore
+        function saveData() {
+            const data = {
+                transactions: transactions,
+                monthlyBudget: monthlyBudget,
+                currency: currency,
+                savingsGoal: savingsGoal,
+                savingGoals: savingGoals,
+                version: '3.0'
+            };
+            localStorage.setItem('budgetwise_data', JSON.stringify(data));
+            
+            // Also save to Firestore if user is signed in
+            if (currentUser) {
+                saveDataToFirestore();
+            }
+        }
+        
+        // Load data from localStorage
+        function loadDataFromLocalStorage() {
+            const data = localStorage.getItem('budgetwise_data');
+            if (data) {
+                try {
+                    const parsed = JSON.parse(data);
+                    transactions = parsed.transactions || [];
+                    monthlyBudget = parsed.monthlyBudget || 0;
+                    currency = parsed.currency || 'USD';
+                    savingsGoal = parsed.savingsGoal || {
+                        target: 0,
+                        saved: 0,
+                        deadline: null,
+                        name: 'Main Savings Goal'
+                    };
+                    savingGoals = parsed.savingGoals || [];
+                } catch (e) {
+                    console.error('Error loading data:', e);
+                    showNotification('Error loading data. Starting fresh.', true);
+                }
+            }
+            
+            // Set up budget if none exists
+            if (monthlyBudget === 0) {
+                monthlyBudget = currency === 'NGN' ? 150000 : 2500;
+                saveData();
+            }
+        }
+        
         // Export data
         function exportData() {
             if (!selectedExportFormat) return;
@@ -3352,19 +3612,9 @@
         // Reset all data
         function resetAllData() {
             if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
-                // Clear Firebase data
-                if (currentUserId) {
-                    db.collection('users').doc(currentUserId).delete().catch(error => {
-                        console.error('Error deleting Firebase data:', error);
-                    });
-                }
-                
-                // Clear localStorage
                 localStorage.removeItem('budgetwise_data');
                 localStorage.removeItem('budgetwise_theme');
                 localStorage.removeItem('budgetwise_setup_complete');
-                
-                // Reset app state
                 transactions = [];
                 monthlyBudget = 0;
                 currency = 'USD';
@@ -3377,6 +3627,11 @@
                 savingGoals = [];
                 darkMode = false;
                 body.classList.remove('dark-mode');
+                
+                // Also reset Firestore data if user is signed in
+                if (currentUser) {
+                    saveDataToFirestore();
+                }
                 
                 // Reload the page to show setup screen
                 location.reload();
@@ -4054,7 +4309,7 @@
         
         // Initialize the app
         function initApp() {
-            loadData();
+            loadDataFromLocalStorage();
             currentCurrencyEl.textContent = currency;
             calculateFinancials();
             renderTransactions();
@@ -4085,13 +4340,10 @@
         window.addEventListener('DOMContentLoaded', () => {
             initTheme();
             
-            // Check if setup is complete
-            const setupComplete = localStorage.getItem('budgetwise_setup_complete');
-            if (setupComplete) {
-                setupScreen.style.display = 'none';
-                mainApp.style.display = 'block';
-                initApp();
-            }
+            // Start with auth screen, Firebase will handle the rest
+            authScreen.style.display = 'block';
+            setupScreen.style.display = 'none';
+            mainApp.style.display = 'none';
         });
     </script>
 </body>
