@@ -605,6 +605,7 @@
 
         .chart-card {
             height: 250px;
+            position: relative;
         }
 
         .chart-title {
@@ -1631,9 +1632,6 @@
                 <div class="nav-buttons">
                     <button class="btn btn-outline" id="syncBtn">
                         <i class="fas fa-sync-alt"></i>
-                    </button>
-                    <button class="btn btn-primary" id="exportBtn">
-                        <i class="fas fa-download"></i>
                     </button>
                     <button class="btn btn-outline" id="settingsBtn">
                         <i class="fas fa-cog"></i>
@@ -3217,6 +3215,11 @@
         closeHistoryModal.addEventListener('click', () => historyModal.classList.remove('active'));
         closeHistory.addEventListener('click', () => historyModal.classList.remove('active'));
         
+        // Format number with commas
+        function formatNumberWithCommas(number) {
+            return number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        
         // Initialize charts with empty data
         function initCharts() {
             const spendingCtx = document.getElementById('spendingChart').getContext('2d');
@@ -3250,7 +3253,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return `${context.label}: ₦${context.raw.toFixed(2)}`;
+                                    return `${context.label}: ₦${formatNumberWithCommas(context.raw)}`;
                                 }
                             }
                         }
@@ -3290,7 +3293,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return `${context.dataset.label}: ₦${context.raw.toFixed(2)}`;
+                                    return `${context.dataset.label}: ₦${formatNumberWithCommas(context.raw)}`;
                                 }
                             }
                         }
@@ -3306,7 +3309,7 @@
                                     size: window.innerWidth < 768 ? 8 : 10
                                 },
                                 callback: function(value) {
-                                    return '₦' + value;
+                                    return '₦' + formatNumberWithCommas(value);
                                 }
                             }
                         },
@@ -3356,7 +3359,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return `${context.label}: ₦${context.raw.toFixed(2)}`;
+                                    return `${context.label}: ₦${formatNumberWithCommas(context.raw)}`;
                                 }
                             }
                         }
@@ -3396,7 +3399,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return `${context.dataset.label}: ₦${context.raw.toFixed(2)}`;
+                                    return `${context.dataset.label}: ₦${formatNumberWithCommas(context.raw)}`;
                                 }
                             }
                         }
@@ -3412,7 +3415,7 @@
                                     size: window.innerWidth < 768 ? 8 : 10
                                 },
                                 callback: function(value) {
-                                    return '₦' + value;
+                                    return '₦' + formatNumberWithCommas(value);
                                 }
                             }
                         },
@@ -3642,10 +3645,10 @@
             }, 0);
             
             // Update UI
-            owedToMeEl.textContent = owedToMeTotal.toFixed(2);
-            owedToOthersEl.textContent = owedToOthersTotal.toFixed(2);
-            owedToMeTabEl.textContent = owedToMeTotal.toFixed(2);
-            owedToOthersTabEl.textContent = owedToOthersTotal.toFixed(2);
+            owedToMeEl.textContent = formatNumberWithCommas(owedToMeTotal);
+            owedToOthersEl.textContent = formatNumberWithCommas(owedToOthersTotal);
+            owedToMeTabEl.textContent = formatNumberWithCommas(owedToMeTotal);
+            owedToOthersTabEl.textContent = formatNumberWithCommas(owedToOthersTotal);
             
             // Count only active debts
             const activeOwedToMe = debts.owedToMe.filter(d => d.amount > 0).length;
@@ -3689,7 +3692,7 @@
                 debtItem.innerHTML = `
                     <div class="debt-info">
                         <h4>${debt.type === 'owedToMe' ? 'Owed to You' : 'You Owe'}: ${debt.person}</h4>
-                        <p>Original: ₦${debt.originalAmount.toFixed(2)} | Remaining: ₦${debt.amount.toFixed(2)}</p>
+                        <p>Original: ₦${formatNumberWithCommas(debt.originalAmount)} | Remaining: ₦${formatNumberWithCommas(debt.amount)}</p>
                         <div class="debt-progress">
                             <div class="debt-progress-fill" style="width: ${progress}%"></div>
                         </div>
@@ -3756,7 +3759,7 @@
                 debtItem.innerHTML = `
                     <div class="debt-info">
                         <h4>${debt.type === 'owedToMe' ? 'Owed to You' : 'You Owe'}: ${debt.person}</h4>
-                        <p>Original: ₦${debt.originalAmount.toFixed(2)} | Remaining: ₦${debt.amount.toFixed(2)}</p>
+                        <p>Original: ₦${formatNumberWithCommas(debt.originalAmount)} | Remaining: ₦${formatNumberWithCommas(debt.amount)}</p>
                         <div class="debt-progress">
                             <div class="debt-progress-fill" style="width: ${progress}%"></div>
                         </div>
@@ -3827,8 +3830,8 @@
             
             paymentHistoryContent.innerHTML = `
                 <h4>${debt.type === 'owedToMe' ? 'Owed to You' : 'You Owe'}: ${debt.person}</h4>
-                <p>Original Amount: ₦${debt.originalAmount.toFixed(2)}</p>
-                <p>Remaining: ₦${debt.amount.toFixed(2)}</p>
+                <p>Original Amount: ₦${formatNumberWithCommas(debt.originalAmount)}</p>
+                <p>Remaining: ₦${formatNumberWithCommas(debt.amount)}</p>
                 
                 <div class="payment-history">
                     <h5 style="margin-top: 15px;">Payment History</h5>
@@ -3836,7 +3839,7 @@
                         ${debt.payments.map(payment => `
                             <div class="payment-item">
                                 <div>${formatDate(payment.date)}</div>
-                                <div>₦${payment.amount.toFixed(2)}</div>
+                                <div>₦${formatNumberWithCommas(payment.amount)}</div>
                             </div>
                         `).join('')}
                     ` : `
@@ -3998,7 +4001,7 @@
                         </div>
                     </div>
                     <div class="transaction-amount ${transaction.type === 'income' ? 'income-amount' : 'expense-amount'}">
-                        ${transaction.type === 'income' ? '+' : '-'}₦${transaction.amount.toFixed(2)}
+                        ${transaction.type === 'income' ? '+' : '-'}₦${formatNumberWithCommas(transaction.amount)}
                     </div>
                 `;
                 
@@ -4154,7 +4157,7 @@
                         </div>
                     </div>
                     <div class="transaction-amount ${transaction.type === 'income' ? 'income-amount' : 'expense-amount'}">
-                        ${transaction.type === 'income' ? '+' : '-'}₦${transaction.amount.toFixed(2)}
+                        ${transaction.type === 'income' ? '+' : '-'}₦${formatNumberWithCommas(transaction.amount)}
                     </div>
                 `;
                 
@@ -4174,12 +4177,12 @@
             
             const balance = totalIncome - totalExpense;
             
-            currentBalanceEl.textContent = balance.toFixed(2);
-            currentBalanceTabEl.textContent = balance.toFixed(2);
-            totalIncomeEl.textContent = `₦${totalIncome.toFixed(2)}`;
-            totalIncomeTabEl.textContent = `₦${totalIncome.toFixed(2)}`;
-            totalExpenseEl.textContent = `₦${totalExpense.toFixed(2)}`;
-            totalExpenseTabEl.textContent = `₦${totalExpense.toFixed(2)}`;
+            currentBalanceEl.textContent = formatNumberWithCommas(balance);
+            currentBalanceTabEl.textContent = formatNumberWithCommas(balance);
+            totalIncomeEl.textContent = `₦${formatNumberWithCommas(totalIncome)}`;
+            totalIncomeTabEl.textContent = `₦${formatNumberWithCommas(totalIncome)}`;
+            totalExpenseEl.textContent = `₦${formatNumberWithCommas(totalExpense)}`;
+            totalExpenseTabEl.textContent = `₦${formatNumberWithCommas(totalExpense)}`;
         }
         
         // Update budget display
@@ -4198,14 +4201,14 @@
                 })
                 .reduce((sum, t) => sum + t.amount, 0);
             
-            totalBudgetEl.textContent = `₦${budget.total.toFixed(2)}`;
-            totalBudgetTabEl.textContent = `₦${budget.total.toFixed(2)}`;
-            usedBudgetEl.textContent = `₦${used.toFixed(2)}`;
-            usedBudgetTabEl.textContent = `₦${used.toFixed(2)}`;
+            totalBudgetEl.textContent = `₦${formatNumberWithCommas(budget.total)}`;
+            totalBudgetTabEl.textContent = `₦${formatNumberWithCommas(budget.total)}`;
+            usedBudgetEl.textContent = `₦${formatNumberWithCommas(used)}`;
+            usedBudgetTabEl.textContent = `₦${formatNumberWithCommas(used)}`;
             
             const remaining = budget.total - used;
-            remainingBudgetEl.textContent = `₦${remaining > 0 ? remaining.toFixed(2) : '0.00'}`;
-            remainingBudgetTabEl.textContent = `₦${remaining > 0 ? remaining.toFixed(2) : '0.00'}`;
+            remainingBudgetEl.textContent = `₦${remaining > 0 ? formatNumberWithCommas(remaining) : '0.00'}`;
+            remainingBudgetTabEl.textContent = `₦${remaining > 0 ? formatNumberWithCommas(remaining) : '0.00'}`;
             
             const percentage = budget.total > 0 ? (used / budget.total) * 100 : 0;
             budgetProgressEl.style.width = `${Math.min(percentage, 100)}%`;
@@ -4374,7 +4377,7 @@
             doc.text(`Current Balance: ₦${document.getElementById('currentBalance').textContent}`, 20, 38);
             doc.text(`Total Income: ₦${document.getElementById('totalIncome').textContent.slice(1)}`, 20, 45);
             doc.text(`Total Expenses: ₦${document.getElementById('totalExpense').textContent.slice(1)}`, 20, 52);
-            doc.text(`Monthly Budget: ₦${budget.total.toFixed(2)}`, 20, 59);
+            doc.text(`Monthly Budget: ₦${formatNumberWithCommas(budget.total)}`, 20, 59);
             doc.text(`Budget Used: ₦${document.getElementById('usedBudget').textContent.slice(1)}`, 20, 66);
             
             // Transactions table
@@ -4386,7 +4389,7 @@
                 t.type.charAt(0).toUpperCase() + t.type.slice(1),
                 t.category,
                 t.description,
-                `₦${t.amount.toFixed(2)}`
+                `₦${formatNumberWithCommas(t.amount)}`
             ]);
             
             doc.autoTable({
