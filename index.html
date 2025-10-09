@@ -3038,6 +3038,7 @@
                         updateDebtDisplay();
                         renderDebtList();
                         updateCharts();
+                        updateAIInsights(); // NEW: Update AI insights when loading data
                     } else {
                         // Initialize data for new user
                         const user = auth.currentUser;
@@ -3610,6 +3611,7 @@
             renderTransactions();
             renderTransactionsTab();
             updateCharts();
+            updateAIInsights(); // NEW: Update AI insights when adding transaction
             
             transactionForm.reset();
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
@@ -3649,6 +3651,7 @@
             renderTransactions();
             renderTransactionsTab();
             updateCharts();
+            updateAIInsights(); // NEW: Update AI insights when adding transaction
             
             transactionFormTab.reset();
             document.getElementById('dateTab').value = new Date().toISOString().split('T')[0];
@@ -4740,6 +4743,7 @@
             updateDebtDisplay();
             renderDebtList();
             renderDebtListTab();
+            updateAIInsights(); // NEW: Update AI insights when resetting data
             
             resetModal.classList.remove('active');
             showNotification('All data has been reset!');
@@ -4754,6 +4758,189 @@
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
+        }
+        
+        // NEW: AI Insights function
+        function updateAIInsights() {
+            const aiRecommendations = document.getElementById('aiRecommendations');
+            const aiRecommendationsTab = document.getElementById('aiRecommendationsTab');
+            
+            if (transactions.length === 0) {
+                aiRecommendations.innerHTML = `
+                    <div class="ai-recommendation">
+                        <strong>Welcome!</strong> Start by adding your first transaction to get personalized insights.
+                    </div>
+                `;
+                aiRecommendationsTab.innerHTML = `
+                    <div class="ai-recommendation">
+                        <strong>Welcome!</strong> Start by adding your first transaction to get personalized insights.
+                    </div>
+                `;
+                return;
+            }
+            
+            // Get current date and calculate date ranges
+            const now = new Date();
+            const oneWeekAgo = new Date(now);
+            oneWeekAgo.setDate(now.getDate() - 7);
+            
+            const oneMonthAgo = new Date(now);
+            oneMonthAgo.setMonth(now.getMonth() - 1);
+            
+            // Filter transactions for different time periods
+            const thisWeekExpenses = transactions.filter(t => 
+                t.type === 'expense' && new Date(t.date) >= oneWeekAgo
+            );
+            
+            const thisMonthExpenses = transactions.filter(t => 
+                t.type === 'expense' && new Date(t.date) >= oneMonthAgo
+            );
+            
+            const thisMonthIncome = transactions.filter(t => 
+                t.type === 'income' && new Date(t.date) >= oneMonthAgo
+            );
+            
+            // Calculate totals
+            const totalThisWeek = thisWeekExpenses.reduce((sum, t) => sum + t.amount, 0);
+            const totalThisMonth = thisMonthExpenses.reduce((sum, t) => sum + t.amount, 0);
+            const totalIncomeThisMonth = thisMonthIncome.reduce((sum, t) => sum + t.amount, 0);
+            
+            // Calculate spending by category this month
+            const categorySpending = {};
+            thisMonthExpenses.forEach(t => {
+                categorySpending[t.category] = (categorySpending[t.category] || 0) + t.amount;
+            });
+            
+            // Find highest spending category
+            let highestCategory = '';
+            let highestAmount = 0;
+            for (const category in categorySpending) {
+                if (categorySpending[category] > highestAmount) {
+                    highestAmount = categorySpending[category];
+                    highestCategory = category;
+                }
+            }
+            
+            // Calculate savings rate
+            const savingsRate = totalIncomeThisMonth > 0 ? 
+                ((totalIncomeThisMonth - totalThisMonth) / totalIncomeThisMonth * 100).toFixed(1) : 0;
+            
+            // Generate insights
+            const insights = [];
+            
+            // Weekly spending insight
+            if (totalThisWeek > 0) {
+                insights.push({
+                    type: 'info',
+                    message: `You've spent ₦${formatNumberWithCommas(totalThisWeek)} this week.`
+                });
+            }
+            
+            // Highest spending category insight
+            if (highestCategory && highestAmount > 0) {
+                insights.push({
+                    type: 'warning',
+                    message: `Your highest spending is on ${formatCategory(highestCategory)} (₦${formatNumberWithCommas(highestAmount)} this month).`
+                });
+            }
+            
+            // Budget insight
+            if (budget.total > 0) {
+                const used = thisMonthExpenses.reduce((sum, t) => sum + t.amount, 0);
+                const percentage = (used / budget.total * 100).toFixed(1);
+                
+                if (percentage > 90) {
+                    insights.push({
+                        type: 'danger',
+                        message: `You've used ${percentage}% of your monthly budget. Consider reducing non-essential spending.`
+                    });
+                } else if (percentage > 75) {
+                    insights.push({
+                        type: 'warning',
+                        message: `You've used ${percentage}% of your monthly budget. You're on track but watch your spending.`
+                    });
+                } else if (percentage < 50) {
+                    insights.push({
+                        type: 'success',
+                        message: `Great! You've only used ${percentage}% of your monthly budget.`
+                    });
+                }
+            }
+            
+            // Savings rate insight
+            if (savingsRate > 0) {
+                if (savingsRate >= 20) {
+                    insights.push({
+                        type: 'success',
+                        message: `Excellent! Your savings rate is ${savingsRate}% this month.`
+                    });
+                } else if (savingsRate >= 10) {
+                    insights.push({
+                        type: 'info',
+                        message: `Good job! Your savings rate is ${savingsRate}% this month.`
+                    });
+                } else if (savingsRate < 0) {
+                    insights.push({
+                        type: 'danger',
+                        message: `You're spending more than you earn. Consider reviewing your expenses.`
+                    });
+                }
+            }
+            
+            // Daily average spending insight
+            if (totalThisMonth > 0) {
+                const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                const daysPassed = Math.min(now.getDate(), daysInMonth);
+                const dailyAverage = totalThisMonth / daysPassed;
+                
+                insights.push({
+                    type: 'info',
+                    message: `Your daily spending average is ₦${formatNumberWithCommas(dailyAverage)} this month.`
+                });
+            }
+            
+            // Nigerian-specific insights
+            const nigerianInsights = [
+                "Consider buying foodstuff in bulk to save money on groceries.",
+                "Using public transport instead of ride-hailing can save up to 60% on transport costs.",
+                "Monitor your airtime and data spending - consider switching to more cost-effective plans.",
+                "Setting aside 10% of your income for 'ajo' or savings can help build financial security.",
+                "Review your POS charges - frequent small withdrawals can add up significantly."
+            ];
+            
+            // Add a random Nigerian insight if we have few insights
+            if (insights.length < 3) {
+                const randomInsight = nigerianInsights[Math.floor(Math.random() * nigerianInsights.length)];
+                insights.push({
+                    type: 'info',
+                    message: randomInsight
+                });
+            }
+            
+            // If no insights generated, show default tips
+            if (insights.length === 0) {
+                insights.push({
+                    type: 'info',
+                    message: "Track your daily expenses to identify spending patterns and save more."
+                });
+                insights.push({
+                    type: 'info',
+                    message: "Set a monthly budget to help control your spending and achieve your financial goals."
+                });
+            }
+            
+            // Update the AI insights section
+            aiRecommendations.innerHTML = insights.map(insight => `
+                <div class="ai-recommendation" style="border-left: 4px solid ${
+                    insight.type === 'success' ? 'var(--success)' : 
+                    insight.type === 'warning' ? 'var(--warning)' : 
+                    insight.type === 'danger' ? 'var(--danger)' : 'var(--primary)'
+                };">
+                    <strong>${insight.type.charAt(0).toUpperCase() + insight.type.slice(1)}:</strong> ${insight.message}
+                </div>
+            `).join('');
+            
+            aiRecommendationsTab.innerHTML = aiRecommendations.innerHTML;
         }
         
         // Helper functions
