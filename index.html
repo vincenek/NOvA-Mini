@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DataSynthAI - Advanced Synthetic Data Generation Platform</title>
+    <meta name="description" content="Generate privacy-compliant, statistically accurate synthetic datasets for testing, development, and machine learning">
+    <meta name="theme-color" content="#6366f1">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -155,6 +164,42 @@
 
         .cta-button:hover::before {
             left: 100%;
+        }
+
+        /* PWA Install Button */
+        .pwa-button {
+            background: var(--gradient-tertiary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            margin-right: 15px;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .pwa-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(245, 158, 11, 0.4);
+        }
+
+        .pwa-button:active {
+            transform: translateY(0);
+        }
+
+        .pwa-button.hidden {
+            display: none;
+        }
+
+        .button-container {
+            display: flex;
+            align-items: center;
         }
 
         /* Hero Section */
@@ -905,6 +950,15 @@
                 max-width: 300px;
                 justify-content: center;
             }
+            
+            .button-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .pwa-button {
+                margin-right: 0;
+            }
         }
 
         @media (max-width: 600px) {
@@ -977,7 +1031,12 @@
                     <a href="#use-cases">Use Cases</a>
                     <a href="#stats">Stats</a>
                 </div>
-                <button class="cta-button" id="launchBtn">Get Started</button>
+                <div class="button-container">
+                    <button class="pwa-button hidden" id="installBtn">
+                        <i class="fas fa-download"></i> Install App
+                    </button>
+                    <button class="cta-button" id="launchBtn">Get Started</button>
+                </div>
             </nav>
         </div>
     </header>
@@ -990,6 +1049,9 @@
             <div class="hero-buttons">
                 <button class="cta-button" id="generateNowBtn">Generate Data Now</button>
                 <button class="secondary-button" id="learnMoreBtn">Learn More</button>
+                <button class="pwa-button hidden" id="installHeroBtn">
+                    <i class="fas fa-download"></i> Install App
+                </button>
             </div>
         </div>
     </section>
@@ -1181,11 +1243,12 @@
     </footer>
 
     <script>
-        // Enhanced DataSynthAI Platform - Production Ready
+        // Enhanced DataSynthAI Platform - Production Ready with PWA
         class DataSynthAI {
             constructor() {
                 this.currentData = null;
                 this.dataChart = null;
+                this.deferredPrompt = null;
                 this.fieldDefinitions = {
                     customers: [
                         { id: 'id', name: 'ID', type: 'id', default: true },
@@ -1260,6 +1323,7 @@
                 this.populateFieldOptions();
                 this.hideLoading();
                 this.setupScrollEffects();
+                this.setupPWA();
             }
 
             hideLoading() {
@@ -1278,6 +1342,62 @@
                         header.classList.remove('scrolled');
                     }
                 });
+            }
+
+            setupPWA() {
+                // Register service worker
+                if ('serviceWorker' in navigator) {
+                    window.addEventListener('load', () => {
+                        navigator.serviceWorker.register('/sw.js')
+                            .then((registration) => {
+                                console.log('SW registered: ', registration);
+                            })
+                            .catch((registrationError) => {
+                                console.log('SW registration failed: ', registrationError);
+                            });
+                    });
+                }
+
+                // Listen for beforeinstallprompt event
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    // Prevent the mini-infobar from appearing on mobile
+                    e.preventDefault();
+                    // Stash the event so it can be triggered later
+                    this.deferredPrompt = e;
+                    // Update UI to notify the user they can install the PWA
+                    this.showInstallPromotion();
+                });
+
+                // Listen for app installed event
+                window.addEventListener('appinstalled', () => {
+                    // Hide the app-provided install promotion
+                    this.hideInstallPromotion();
+                    // Clear the deferredPrompt so it can be garbage collected
+                    this.deferredPrompt = null;
+                    // Log install to analytics
+                    console.log('PWA was installed');
+                });
+
+                // Check if app is already installed
+                if (window.matchMedia('(display-mode: standalone)').matches) {
+                    this.hideInstallPromotion();
+                }
+            }
+
+            showInstallPromotion() {
+                const installBtn = document.getElementById('installBtn');
+                const installHeroBtn = document.getElementById('installHeroBtn');
+                
+                if (installBtn) installBtn.classList.remove('hidden');
+                if (installHeroBtn) installHeroBtn.classList.remove('hidden');
+            }
+
+            hideInstallPromotion() {
+                const installBtn = document.getElementById('installBtn');
+                const installHeroBtn = document.getElementById('installHeroBtn');
+                
+                if (installBtn) installBtn.classList.add('hidden');
+                if (installHeroBtn) installHeroBtn.classList.add('hidden');
             }
 
             setupEventListeners() {
@@ -1320,6 +1440,32 @@
                 document.getElementById('launchBtn').addEventListener('click', () => {
                     document.getElementById('generator').scrollIntoView({ behavior: 'smooth' });
                 });
+
+                // PWA install buttons
+                document.getElementById('installBtn').addEventListener('click', () => {
+                    this.installPWA();
+                });
+
+                document.getElementById('installHeroBtn').addEventListener('click', () => {
+                    this.installPWA();
+                });
+            }
+
+            installPWA() {
+                if (this.deferredPrompt) {
+                    // Show the install prompt
+                    this.deferredPrompt.prompt();
+                    // Wait for the user to respond to the prompt
+                    this.deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                        } else {
+                            console.log('User dismissed the install prompt');
+                        }
+                        // Clear the deferredPrompt variable
+                        this.deferredPrompt = null;
+                    });
+                }
             }
 
             populateFieldOptions() {
