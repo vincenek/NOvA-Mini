@@ -15,6 +15,7 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
     <style>
         :root {
             --primary: #6366f1;
@@ -54,7 +55,7 @@
         }
 
         .container {
-            max-width: 1300px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 0 25px;
         }
@@ -341,6 +342,51 @@
             line-height: 1.7;
         }
 
+        /* Tabs for Generator */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--gray-light);
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .generator-container {
             background: var(--card-bg);
             border-radius: 20px;
@@ -382,7 +428,7 @@
             font-size: 1rem;
         }
 
-        .control-group select, .control-group input {
+        .control-group select, .control-group input, .control-group textarea {
             background: rgba(30, 41, 59, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
@@ -392,14 +438,20 @@
             transition: all 0.3s ease;
         }
 
-        .control-group select:focus, .control-group input:focus {
+        .control-group select:focus, .control-group input:focus, .control-group textarea:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
         }
 
-        .control-group input {
+        .control-group input, .control-group textarea {
             width: 100%;
+        }
+
+        .control-group textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: monospace;
         }
 
         .field-selector {
@@ -442,6 +494,48 @@
             color: var(--gray-light);
             font-weight: 500;
             cursor: pointer;
+        }
+
+        .advanced-controls {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .advanced-title {
+            color: var(--primary-light);
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .correlation-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .correlation-item {
+            display: contents;
+        }
+
+        .remove-correlation {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: none;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .remove-correlation:hover {
+            background: rgba(239, 68, 68, 0.3);
         }
 
         .generate-button-container {
@@ -943,6 +1037,10 @@
             .hero h1 {
                 font-size: 3.2rem;
             }
+            
+            .correlation-controls {
+                grid-template-columns: 1fr 1fr;
+            }
         }
 
         @media (max-width: 900px) {
@@ -989,6 +1087,10 @@
             
             .pwa-button {
                 margin-right: 0;
+            }
+            
+            .correlation-controls {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -1094,42 +1196,209 @@
             <p class="section-subtitle">Configure your dataset parameters and generate high-quality synthetic data tailored to your specific needs. All data is generated locally in your browser for maximum privacy and security.</p>
             
             <div class="generator-container">
-                <div class="generator-controls">
-                    <div class="control-group">
-                        <label for="dataType">Data Type</label>
-                        <select id="dataType">
-                            <option value="customers">Customer Data</option>
-                            <option value="transactions">Financial Transactions</option>
-                            <option value="healthcare">Healthcare Records</option>
-                            <option value="ecommerce">E-commerce Activity</option>
-                            <option value="iot">IoT Sensor Data</option>
-                        </select>
+                <!-- Tabs for different generation modes -->
+                <div class="tabs">
+                    <div class="tab active" data-tab="basic">Basic Generation</div>
+                    <div class="tab" data-tab="advanced">Advanced Options</div>
+                    <div class="tab" data-tab="upload">Upload & Transform</div>
+                    <div class="tab" data-tab="api">API Generation</div>
+                </div>
+                
+                <!-- Basic Generation Tab -->
+                <div class="tab-content active" id="basic-tab">
+                    <div class="generator-controls">
+                        <div class="control-group">
+                            <label for="dataType">Data Type</label>
+                            <select id="dataType">
+                                <option value="customers">Customer Data</option>
+                                <option value="transactions">Financial Transactions</option>
+                                <option value="healthcare">Healthcare Records</option>
+                                <option value="ecommerce">E-commerce Activity</option>
+                                <option value="iot">IoT Sensor Data</option>
+                                <option value="custom">Custom Schema</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="recordsCount">Number of Records</label>
+                            <input type="number" id="recordsCount" min="10" max="100000" value="100">
+                        </div>
+                        <div class="control-group">
+                            <label for="dataFormat">Output Format</label>
+                            <select id="dataFormat">
+                                <option value="csv">CSV</option>
+                                <option value="json">JSON</option>
+                                <option value="sql">SQL Insert Statements</option>
+                                <option value="xml">XML</option>
+                                <option value="parquet">Parquet (Beta)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="dataQuality">Data Quality</label>
+                            <select id="dataQuality">
+                                <option value="basic">Basic</option>
+                                <option value="realistic" selected>Realistic</option>
+                                <option value="premium">Premium</option>
+                                <option value="enterprise">Enterprise</option>
+                            </select>
+                        </div>
+                        
+                        <div class="field-selector">
+                            <label>Select Fields to Include</label>
+                            <div class="field-options" id="fieldOptions">
+                                <!-- Field options will be populated by JavaScript -->
+                            </div>
+                        </div>
                     </div>
-                    <div class="control-group">
-                        <label for="recordsCount">Number of Records</label>
-                        <input type="number" id="recordsCount" min="10" max="10000" value="100">
-                    </div>
-                    <div class="control-group">
-                        <label for="dataFormat">Output Format</label>
-                        <select id="dataFormat">
-                            <option value="csv">CSV</option>
-                            <option value="json">JSON</option>
-                            <option value="sql">SQL Insert Statements</option>
-                        </select>
-                    </div>
-                    <div class="control-group">
-                        <label for="dataQuality">Data Quality</label>
-                        <select id="dataQuality">
-                            <option value="basic">Basic</option>
-                            <option value="realistic" selected>Realistic</option>
-                            <option value="premium">Premium</option>
-                        </select>
+                </div>
+                
+                <!-- Advanced Options Tab -->
+                <div class="tab-content" id="advanced-tab">
+                    <div class="generator-controls">
+                        <div class="control-group">
+                            <label for="dataDistribution">Data Distribution</label>
+                            <select id="dataDistribution">
+                                <option value="normal">Normal Distribution</option>
+                                <option value="uniform">Uniform Distribution</option>
+                                <option value="exponential">Exponential Distribution</option>
+                                <option value="lognormal">Log-Normal Distribution</option>
+                                <option value="poisson">Poisson Distribution</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="noiseLevel">Noise Level</label>
+                            <select id="noiseLevel">
+                                <option value="none">No Noise</option>
+                                <option value="low" selected>Low (5%)</option>
+                                <option value="medium">Medium (10%)</option>
+                                <option value="high">High (20%)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="missingData">Missing Data Percentage</label>
+                            <input type="range" id="missingData" min="0" max="30" value="5">
+                            <span id="missingDataValue">5%</span>
+                        </div>
+                        <div class="control-group">
+                            <label for="dataTrend">Data Trend</label>
+                            <select id="dataTrend">
+                                <option value="none">No Trend</option>
+                                <option value="upward">Upward Trend</option>
+                                <option value="downward">Downward Trend</option>
+                                <option value="seasonal">Seasonal Trend</option>
+                                <option value="cyclical">Cyclical Trend</option>
+                            </select>
+                        </div>
                     </div>
                     
-                    <div class="field-selector">
-                        <label>Select Fields to Include</label>
-                        <div class="field-options" id="fieldOptions">
-                            <!-- Field options will be populated by JavaScript -->
+                    <div class="advanced-controls">
+                        <h3 class="advanced-title"><i class="fas fa-link"></i> Field Correlations</h3>
+                        <div class="correlation-controls" id="correlationControls">
+                            <div class="control-group">
+                                <label>Field 1</label>
+                                <select id="correlationField1">
+                                    <option value="">Select Field</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>Field 2</label>
+                                <select id="correlationField2">
+                                    <option value="">Select Field</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>Correlation Strength</label>
+                                <select id="correlationStrength">
+                                    <option value="weak">Weak (0.3)</option>
+                                    <option value="moderate">Moderate (0.6)</option>
+                                    <option value="strong">Strong (0.9)</option>
+                                </select>
+                            </div>
+                            <button class="cta-button" id="addCorrelation">Add</button>
+                        </div>
+                        <div id="correlationList"></div>
+                    </div>
+                    
+                    <div class="advanced-controls">
+                        <h3 class="advanced-title"><i class="fas fa-code"></i> Custom Field Rules</h3>
+                        <div class="control-group">
+                            <label for="customRules">Define Custom Rules (JavaScript)</label>
+                            <textarea id="customRules" placeholder="// Example: if(record.age > 65) record.insurancePremium = record.insurancePremium * 1.2;"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Upload & Transform Tab -->
+                <div class="tab-content" id="upload-tab">
+                    <div class="control-group">
+                        <label for="fileUpload">Upload Existing Dataset</label>
+                        <input type="file" id="fileUpload" accept=".csv,.json,.xlsx">
+                        <p style="color: var(--gray-light); margin-top: 10px; font-size: 0.9rem;">Upload a CSV or JSON file to use as a template for generating similar data</p>
+                    </div>
+                    
+                    <div class="advanced-controls">
+                        <h3 class="advanced-title"><i class="fas fa-cogs"></i> Data Transformation</h3>
+                        <div class="control-group">
+                            <label for="transformationType">Transformation Type</label>
+                            <select id="transformationType">
+                                <option value="anonymize">Anonymize Data</option>
+                                <option value="augment">Augment Data</option>
+                                <option value="synthesize">Full Synthesis</option>
+                                <option value="corrupt">Add Noise/Corruption</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="privacyLevel">Privacy Level</label>
+                            <select id="privacyLevel">
+                                <option value="basic">Basic Anonymization</option>
+                                <option value="advanced">Advanced (k-anonymity)</option>
+                                <option value="differential">Differential Privacy</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="uploadPreview" style="margin-top: 20px; display: none;">
+                        <h3 class="advanced-title"><i class="fas fa-eye"></i> Data Preview</h3>
+                        <div class="generator-output" id="uploadPreviewOutput">
+                            <p style="text-align: center; color: #94a3b8; padding: 40px;">Uploaded data will appear here</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- API Generation Tab -->
+                <div class="tab-content" id="api-tab">
+                    <div class="control-group">
+                        <label for="apiEndpoint">API Endpoint</label>
+                        <input type="text" id="apiEndpoint" placeholder="https://api.example.com/data" value="https://api.datasynthai.com/v1/generate">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="apiKey">API Key</label>
+                        <input type="password" id="apiKey" placeholder="Enter your API key">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="apiSchema">Data Schema (JSON)</label>
+                        <textarea id="apiSchema" placeholder='{"fields": ["name", "email", "age"], "types": {"name": "string", "email": "email", "age": "number"}}'></textarea>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="apiRecords">Records to Generate</label>
+                        <input type="number" id="apiRecords" min="1" max="10000" value="100">
+                    </div>
+                    
+                    <div class="advanced-controls">
+                        <h3 class="advanced-title"><i class="fas fa-bolt"></i> API Options</h3>
+                        <div class="control-group">
+                            <label for="apiFormat">Response Format</label>
+                            <select id="apiFormat">
+                                <option value="json">JSON</option>
+                                <option value="csv">CSV</option>
+                                <option value="ndjson">NDJSON</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="apiCallback">Webhook URL (Optional)</label>
+                            <input type="text" id="apiCallback" placeholder="https://your-app.com/webhook">
                         </div>
                     </div>
                 </div>
@@ -1153,6 +1422,9 @@
                     </button>
                     <button class="action-button copy" id="copyDataBtn">
                         <i class="fas fa-copy"></i> Copy to Clipboard
+                    </button>
+                    <button class="action-button" id="saveTemplateBtn">
+                        <i class="fas fa-save"></i> Save Template
                     </button>
                 </div>
                 
@@ -1196,6 +1468,20 @@
                     <h3>Fully Customizable</h3>
                     <p>Choose from multiple data types, formats, and quality levels to get exactly the data you need for your specific use case.</p>
                 </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>AI-Powered Generation</h3>
+                    <p>Leverage advanced machine learning models to create highly realistic synthetic data that maintains statistical properties of real datasets.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-code-branch"></i>
+                    </div>
+                    <h3>Advanced Correlations</h3>
+                    <p>Define complex relationships between fields to ensure your synthetic data maintains realistic interdependencies.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -1232,6 +1518,20 @@
                     </div>
                     <h3>Education</h3>
                     <p>Teach data science and analytics with realistic datasets in classroom settings. Provide students with diverse data scenarios.</p>
+                </div>
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <h3>Research</h3>
+                    <p>Conduct experiments and simulations with synthetic data that mimics real-world distributions without privacy concerns.</p>
+                </div>
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3>Database Development</h3>
+                    <p>Populate development databases with realistic test data that maintains referential integrity and business rules.</p>
                 </div>
             </div>
         </div>
@@ -1274,12 +1574,14 @@
     </footer>
 
     <script>
-        // Enhanced DataSynthAI Platform - Professional Version
+        // Enhanced DataSynthAI Platform with Advanced Features
         class DataSynthAI {
             constructor() {
                 this.currentData = null;
                 this.dataChart = null;
                 this.deferredPrompt = null;
+                this.uploadedData = null;
+                this.correlations = [];
                 this.fieldDefinitions = {
                     customers: [
                         { id: 'id', name: 'ID', type: 'id', default: true },
@@ -1295,7 +1597,8 @@
                         { id: 'birthDate', name: 'Birth Date', type: 'date', default: false },
                         { id: 'company', name: 'Company', type: 'company', default: false },
                         { id: 'jobTitle', name: 'Job Title', type: 'job', default: false },
-                        { id: 'income', name: 'Income', type: 'income', default: false }
+                        { id: 'income', name: 'Income', type: 'income', default: false },
+                        { id: 'creditScore', name: 'Credit Score', type: 'number', default: false }
                     ],
                     transactions: [
                         { id: 'id', name: 'Transaction ID', type: 'id', default: true },
@@ -1306,7 +1609,8 @@
                         { id: 'category', name: 'Category', type: 'category', default: true },
                         { id: 'account', name: 'Account', type: 'account', default: false },
                         { id: 'status', name: 'Status', type: 'status', default: false },
-                        { id: 'location', name: 'Location', type: 'city', default: false }
+                        { id: 'location', name: 'Location', type: 'city', default: false },
+                        { id: 'customerId', name: 'Customer ID', type: 'id', default: false }
                     ],
                     healthcare: [
                         { id: 'id', name: 'Patient ID', type: 'id', default: true },
@@ -1320,7 +1624,9 @@
                         { id: 'doctor', name: 'Doctor', type: 'name', default: false },
                         { id: 'hospital', name: 'Hospital', type: 'company', default: false },
                         { id: 'visitDate', name: 'Visit Date', type: 'date', default: false },
-                        { id: 'insurance', name: 'Insurance', type: 'company', default: false }
+                        { id: 'insurance', name: 'Insurance', type: 'company', default: false },
+                        { id: 'bloodPressure', name: 'Blood Pressure', type: 'number', default: false },
+                        { id: 'cholesterol', name: 'Cholesterol', type: 'number', default: false }
                     ],
                     ecommerce: [
                         { id: 'id', name: 'Order ID', type: 'id', default: true },
@@ -1332,7 +1638,8 @@
                         { id: 'orderDate', name: 'Order Date', type: 'date', default: true },
                         { id: 'status', name: 'Status', type: 'status', default: false },
                         { id: 'paymentMethod', name: 'Payment Method', type: 'payment', default: false },
-                        { id: 'shippingAddress', name: 'Shipping Address', type: 'address', default: false }
+                        { id: 'shippingAddress', name: 'Shipping Address', type: 'address', default: false },
+                        { id: 'customerSegment', name: 'Customer Segment', type: 'category', default: false }
                     ],
                     iot: [
                         { id: 'id', name: 'Device ID', type: 'id', default: true },
@@ -1342,7 +1649,13 @@
                         { id: 'pressure', name: 'Pressure', type: 'pressure', default: false },
                         { id: 'voltage', name: 'Voltage', type: 'voltage', default: false },
                         { id: 'location', name: 'Location', type: 'coordinates', default: false },
-                        { id: 'status', name: 'Status', type: 'status', default: false }
+                        { id: 'status', name: 'Status', type: 'status', default: false },
+                        { id: 'batteryLevel', name: 'Battery Level', type: 'percentage', default: false }
+                    ],
+                    custom: [
+                        { id: 'customField1', name: 'Custom Field 1', type: 'text', default: true },
+                        { id: 'customField2', name: 'Custom Field 2', type: 'number', default: true },
+                        { id: 'customField3', name: 'Custom Field 3', type: 'date', default: false }
                     ]
                 };
                 
@@ -1355,6 +1668,8 @@
                 this.hideLoading();
                 this.setupScrollEffects();
                 this.setupPWA();
+                this.setupTabs();
+                this.setupCorrelationControls();
             }
 
             hideLoading() {
@@ -1431,10 +1746,175 @@
                 if (installHeroBtn) installHeroBtn.classList.add('hidden');
             }
 
+            setupTabs() {
+                const tabs = document.querySelectorAll('.tab');
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        // Remove active class from all tabs
+                        tabs.forEach(t => t.classList.remove('active'));
+                        // Add active class to clicked tab
+                        tab.classList.add('active');
+                        
+                        // Hide all tab contents
+                        const tabContents = document.querySelectorAll('.tab-content');
+                        tabContents.forEach(content => content.classList.remove('active'));
+                        
+                        // Show the corresponding tab content
+                        const tabId = tab.getAttribute('data-tab');
+                        document.getElementById(`${tabId}-tab`).classList.add('active');
+                    });
+                });
+            }
+
+            setupCorrelationControls() {
+                document.getElementById('addCorrelation').addEventListener('click', () => {
+                    this.addCorrelation();
+                });
+                
+                // Update correlation field options when data type changes
+                document.getElementById('dataType').addEventListener('change', () => {
+                    this.updateCorrelationFields();
+                });
+            }
+
+            updateCorrelationFields() {
+                const dataType = document.getElementById('dataType').value;
+                const fields = this.fieldDefinitions[dataType];
+                const field1Select = document.getElementById('correlationField1');
+                const field2Select = document.getElementById('correlationField2');
+                
+                // Clear existing options
+                field1Select.innerHTML = '<option value="">Select Field</option>';
+                field2Select.innerHTML = '<option value="">Select Field</option>';
+                
+                // Add numeric fields to correlation selects
+                fields.forEach(field => {
+                    if (this.isNumericField(field.type)) {
+                        const option1 = document.createElement('option');
+                        option1.value = field.id;
+                        option1.textContent = field.name;
+                        field1Select.appendChild(option1);
+                        
+                        const option2 = document.createElement('option');
+                        option2.value = field.id;
+                        option2.textContent = field.name;
+                        field2Select.appendChild(option2);
+                    }
+                });
+            }
+
+            isNumericField(fieldType) {
+                const numericTypes = ['income', 'currency', 'number', 'temperature', 'percentage', 'pressure', 'voltage'];
+                return numericTypes.includes(fieldType);
+            }
+
+            addCorrelation() {
+                const field1 = document.getElementById('correlationField1').value;
+                const field2 = document.getElementById('correlationField2').value;
+                const strength = document.getElementById('correlationStrength').value;
+                
+                if (!field1 || !field2) {
+                    this.showNotification('Please select both fields for correlation', 'error');
+                    return;
+                }
+                
+                if (field1 === field2) {
+                    this.showNotification('Please select different fields for correlation', 'error');
+                    return;
+                }
+                
+                // Check if correlation already exists
+                const exists = this.correlations.some(corr => 
+                    (corr.field1 === field1 && corr.field2 === field2) || 
+                    (corr.field1 === field2 && corr.field2 === field1)
+                );
+                
+                if (exists) {
+                    this.showNotification('Correlation between these fields already exists', 'error');
+                    return;
+                }
+                
+                // Add correlation
+                this.correlations.push({
+                    field1,
+                    field2,
+                    strength
+                });
+                
+                this.updateCorrelationList();
+                
+                // Reset form
+                document.getElementById('correlationField1').value = '';
+                document.getElementById('correlationField2').value = '';
+                
+                this.showNotification('Correlation added successfully', 'success');
+            }
+
+            updateCorrelationList() {
+                const listContainer = document.getElementById('correlationList');
+                listContainer.innerHTML = '';
+                
+                if (this.correlations.length === 0) {
+                    listContainer.innerHTML = '<p style="color: var(--gray-light); text-align: center; padding: 15px;">No correlations defined</p>';
+                    return;
+                }
+                
+                this.correlations.forEach((corr, index) => {
+                    const correlationItem = document.createElement('div');
+                    correlationItem.className = 'correlation-item';
+                    correlationItem.style.display = 'flex';
+                    correlationItem.style.justifyContent = 'space-between';
+                    correlationItem.style.alignItems = 'center';
+                    correlationItem.style.padding = '12px';
+                    correlationItem.style.background = 'rgba(30, 41, 59, 0.5)';
+                    correlationItem.style.borderRadius = '8px';
+                    correlationItem.style.marginBottom = '10px';
+                    
+                    const dataType = document.getElementById('dataType').value;
+                    const fields = this.fieldDefinitions[dataType];
+                    const field1Name = fields.find(f => f.id === corr.field1)?.name || corr.field1;
+                    const field2Name = fields.find(f => f.id === corr.field2)?.name || corr.field2;
+                    
+                    correlationItem.innerHTML = `
+                        <div>
+                            <strong>${field1Name}</strong> ↔ <strong>${field2Name}</strong>
+                            <span style="color: var(--gray-light); font-size: 0.9rem;"> (${corr.strength})</span>
+                        </div>
+                        <button class="remove-correlation" data-index="${index}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    
+                    listContainer.appendChild(correlationItem);
+                });
+                
+                // Add event listeners to remove buttons
+                document.querySelectorAll('.remove-correlation').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const index = parseInt(e.target.closest('button').getAttribute('data-index'));
+                        this.correlations.splice(index, 1);
+                        this.updateCorrelationList();
+                        this.showNotification('Correlation removed', 'success');
+                    });
+                });
+            }
+
             setupEventListeners() {
                 // Data type change
                 document.getElementById('dataType').addEventListener('change', () => {
                     this.populateFieldOptions();
+                    this.updateCorrelationFields();
+                });
+
+                // Missing data slider
+                document.getElementById('missingData').addEventListener('input', () => {
+                    document.getElementById('missingDataValue').textContent = 
+                        document.getElementById('missingData').value + '%';
+                });
+
+                // File upload
+                document.getElementById('fileUpload').addEventListener('change', (e) => {
+                    this.handleFileUpload(e);
                 });
 
                 // Generate data button
@@ -1455,6 +1935,11 @@
                 // Copy data button
                 document.getElementById('copyDataBtn').addEventListener('click', () => {
                     this.copyDataToClipboard();
+                });
+
+                // Save template button
+                document.getElementById('saveTemplateBtn').addEventListener('click', () => {
+                    this.saveTemplate();
                 });
 
                 // Generate now button
@@ -1499,6 +1984,62 @@
                 }
             }
 
+            handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    
+                    if (file.name.endsWith('.csv')) {
+                        this.uploadedData = Papa.parse(content, {
+                            header: true,
+                            skipEmptyLines: true
+                        });
+                        this.displayUploadPreview(this.uploadedData.data.slice(0, 10));
+                    } else if (file.name.endsWith('.json')) {
+                        this.uploadedData = JSON.parse(content);
+                        this.displayUploadPreview(this.uploadedData.slice(0, 10));
+                    }
+                    
+                    document.getElementById('uploadPreview').style.display = 'block';
+                    this.showNotification('File uploaded successfully', 'success');
+                };
+                
+                reader.readAsText(file);
+            }
+
+            displayUploadPreview(data) {
+                const previewOutput = document.getElementById('uploadPreviewOutput');
+                
+                if (!data || data.length === 0) {
+                    previewOutput.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 40px;">No data to display</p>';
+                    return;
+                }
+                
+                let html = '<table class="data-table"><thead><tr>';
+                
+                // Headers
+                Object.keys(data[0]).forEach(key => {
+                    html += `<th>${key}</th>`;
+                });
+                html += '</tr></thead><tbody>';
+                
+                // Data rows
+                data.forEach(record => {
+                    html += '<tr>';
+                    Object.values(record).forEach(value => {
+                        html += `<td>${value}</td>`;
+                    });
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table>';
+                
+                previewOutput.innerHTML = html;
+            }
+
             populateFieldOptions() {
                 const dataType = document.getElementById('dataType').value;
                 const fields = this.fieldDefinitions[dataType];
@@ -1533,6 +2074,18 @@
             }
 
             generateData() {
+                const activeTab = document.querySelector('.tab.active').getAttribute('data-tab');
+                
+                if (activeTab === 'upload' && !this.uploadedData) {
+                    this.showNotification('Please upload a dataset first', 'error');
+                    return;
+                }
+                
+                if (activeTab === 'api') {
+                    this.generateDataViaAPI();
+                    return;
+                }
+                
                 const dataType = document.getElementById('dataType').value;
                 const recordsCount = parseInt(document.getElementById('recordsCount').value);
                 const dataFormat = document.getElementById('dataFormat').value;
@@ -1544,8 +2097,8 @@
                     return;
                 }
                 
-                if (recordsCount < 10 || recordsCount > 10000) {
-                    this.showNotification('Please enter a number between 10 and 10,000 for records count.', 'error');
+                if (recordsCount < 10 || recordsCount > 100000) {
+                    this.showNotification('Please enter a number between 10 and 100,000 for records count.', 'error');
                     return;
                 }
                 
@@ -1560,7 +2113,14 @@
                 
                 // Simulate processing time with a more realistic delay
                 setTimeout(() => {
-                    const data = this.synthesizeData(dataType, recordsCount, selectedFields, dataQuality);
+                    let data;
+                    
+                    if (activeTab === 'upload') {
+                        data = this.synthesizeFromTemplate(this.uploadedData, recordsCount, selectedFields);
+                    } else {
+                        data = this.synthesizeData(dataType, recordsCount, selectedFields, dataQuality);
+                    }
+                    
                     this.currentData = data;
                     this.displayData(data, dataFormat);
                     
@@ -1580,15 +2140,45 @@
                 }, 1500);
             }
 
-            synthesizeData(dataType, count, fields, quality) {
+            synthesizeFromTemplate(templateData, count, fields) {
+                // This is a simplified version - in a real implementation, 
+                // you would analyze the template data and generate similar data
                 const data = [];
+                const templateRecords = templateData.data || templateData;
                 
                 for (let i = 0; i < count; i++) {
                     const record = {};
                     
                     fields.forEach(field => {
+                        // For template-based generation, we'd use the template data patterns
+                        // For now, we'll fall back to regular generation
+                        record[field.id] = this.generateFieldValue(field, i, 'realistic');
+                    });
+                    
+                    data.push(record);
+                }
+                
+                return { data, fields, dataType: 'template' };
+            }
+
+            synthesizeData(dataType, count, fields, quality) {
+                const data = [];
+                
+                // Apply correlations if any
+                const correlatedFields = this.applyCorrelations(fields);
+                
+                for (let i = 0; i < count; i++) {
+                    const record = {};
+                    
+                    correlatedFields.forEach(field => {
                         record[field.id] = this.generateFieldValue(field, i, quality);
                     });
+                    
+                    // Apply custom rules if any
+                    this.applyCustomRules(record);
+                    
+                    // Apply missing data
+                    this.applyMissingData(record, fields);
                     
                     data.push(record);
                 }
@@ -1596,7 +2186,42 @@
                 return { data, fields, dataType };
             }
 
+            applyCorrelations(fields) {
+                // In a real implementation, this would modify field generation
+                // to ensure correlations between fields
+                return fields;
+            }
+
+            applyCustomRules(record) {
+                const customRules = document.getElementById('customRules').value;
+                if (!customRules) return;
+                
+                try {
+                    // This is a simplified implementation
+                    // In a real app, you'd need a proper JavaScript parser/interpreter
+                    if (customRules.includes('record.age')) {
+                        // Example rule implementation
+                        if (record.age && record.age > 65) {
+                            record.insurancePremium = (record.insurancePremium || 100) * 1.2;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error applying custom rules:', error);
+                }
+            }
+
+            applyMissingData(record, fields) {
+                const missingPercentage = parseInt(document.getElementById('missingData').value);
+                
+                fields.forEach(field => {
+                    if (Math.random() * 100 < missingPercentage) {
+                        record[field.id] = null;
+                    }
+                });
+            }
+
             generateFieldValue(field, index, quality) {
+                // Enhanced field generation with more realistic data
                 switch(field.type) {
                     case 'id':
                         return `${field.id.toUpperCase()}_${(index + 1).toString().padStart(6, '0')}`;
@@ -1627,7 +2252,7 @@
                     case 'job':
                         return this.generateJobTitle();
                     case 'income':
-                        return this.generateIncome();
+                        return this.generateIncome(quality);
                     case 'currency':
                         return this.generateCurrency();
                     case 'transactionType':
@@ -1661,7 +2286,9 @@
                     case 'coordinates':
                         return `${(35 + Math.random() * 10).toFixed(4)}, ${(-120 + Math.random() * 40).toFixed(4)}`;
                     case 'number':
-                        return Math.floor(Math.random() * 10) + 1;
+                        return Math.floor(Math.random() * 100) + 1;
+                    case 'text':
+                        return this.generateLoremIpsum(5, 10);
                     default:
                         return 'N/A';
                 }
@@ -1672,6 +2299,54 @@
                 const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas'];
                 
                 return `${this.randomChoice(firstNames)} ${this.randomChoice(lastNames)}`;
+            }
+
+            generateIncome(quality) {
+                let baseIncome;
+                switch(quality) {
+                    case 'basic':
+                        baseIncome = 30000 + Math.random() * 70000;
+                        break;
+                    case 'realistic':
+                        baseIncome = 40000 + Math.random() * 110000;
+                        break;
+                    case 'premium':
+                        // More realistic distribution with some high earners
+                        if (Math.random() < 0.1) {
+                            baseIncome = 200000 + Math.random() * 300000;
+                        } else {
+                            baseIncome = 40000 + Math.random() * 110000;
+                        }
+                        break;
+                    case 'enterprise':
+                        // Even more realistic with different distributions
+                        const rand = Math.random();
+                        if (rand < 0.05) {
+                            baseIncome = 300000 + Math.random() * 500000;
+                        } else if (rand < 0.2) {
+                            baseIncome = 100000 + Math.random() * 150000;
+                        } else {
+                            baseIncome = 30000 + Math.random() * 70000;
+                        }
+                        break;
+                    default:
+                        baseIncome = 40000 + Math.random() * 110000;
+                }
+                
+                return `$${Math.floor(baseIncome).toLocaleString()}`;
+            }
+
+            generateLoremIpsum(minWords, maxWords) {
+                const words = ['lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit', 'sed', 'do', 'eiusmod', 'tempor', 'incididunt', 'ut', 'labore', 'et', 'dolore', 'magna', 'aliqua'];
+                const wordCount = minWords + Math.floor(Math.random() * (maxWords - minWords));
+                let result = '';
+                
+                for (let i = 0; i < wordCount; i++) {
+                    result += this.randomChoice(words);
+                    if (i < wordCount - 1) result += ' ';
+                }
+                
+                return result.charAt(0).toUpperCase() + result.slice(1) + '.';
             }
 
             generatePhone() {
@@ -1722,16 +2397,75 @@
                 return this.randomChoice(titles);
             }
 
-            generateIncome() {
-                return `$${Math.floor(30000 + Math.random() * 120000).toLocaleString()}`;
-            }
-
             generateCurrency() {
                 return `$${(Math.random() * 1000).toFixed(2)}`;
             }
 
             randomChoice(options) {
                 return options[Math.floor(Math.random() * options.length)];
+            }
+
+            generateDataViaAPI() {
+                const endpoint = document.getElementById('apiEndpoint').value;
+                const apiKey = document.getElementById('apiKey').value;
+                const schema = document.getElementById('apiSchema').value;
+                const records = document.getElementById('apiRecords').value;
+                
+                if (!endpoint || !apiKey || !schema) {
+                    this.showNotification('Please fill in all required API fields', 'error');
+                    return;
+                }
+                
+                // Show loading state
+                const generateBtn = document.getElementById('generateDataBtn');
+                const originalText = generateBtn.innerHTML;
+                generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calling API...';
+                generateBtn.disabled = true;
+                
+                // In a real implementation, this would make an actual API call
+                // For this demo, we'll simulate the API call
+                setTimeout(() => {
+                    // Simulate API response
+                    const mockData = this.simulateAPIResponse(records);
+                    this.currentData = mockData;
+                    this.displayData(mockData, 'json');
+                    
+                    // Show output actions
+                    document.getElementById('outputActions').style.display = 'flex';
+                    document.getElementById('chartContainer').style.display = 'none';
+                    
+                    // Add success class to output
+                    document.getElementById('generatorOutput').classList.add('has-data');
+                    
+                    // Reset button
+                    generateBtn.innerHTML = originalText;
+                    generateBtn.disabled = false;
+                    
+                    this.showNotification('Data generated via API successfully!', 'success');
+                }, 2000);
+            }
+
+            simulateAPIResponse(recordCount) {
+                const count = parseInt(recordCount);
+                const data = [];
+                
+                for (let i = 0; i < count; i++) {
+                    data.push({
+                        id: `API_${i + 1}`,
+                        name: this.generateName('realistic'),
+                        email: `user${i + 1}@api.example.com`,
+                        value: Math.floor(Math.random() * 1000),
+                        timestamp: new Date().toISOString()
+                    });
+                }
+                
+                return { data, fields: [
+                    { id: 'id', name: 'ID' },
+                    { id: 'name', name: 'Name' },
+                    { id: 'email', name: 'Email' },
+                    { id: 'value', name: 'Value' },
+                    { id: 'timestamp', name: 'Timestamp' }
+                ], dataType: 'api' };
             }
 
             displayData(data, format) {
@@ -1749,6 +2483,12 @@
                 } else if (format === 'sql') {
                     // Create SQL insert statements
                     html = this.dataToSQL(records, fields, data.dataType);
+                } else if (format === 'xml') {
+                    // Create XML display
+                    html = this.dataToXML(records, fields);
+                } else if (format === 'parquet') {
+                    // Parquet would require a library - for demo we'll show a message
+                    html = '<div style="text-align: center; padding: 40px;"><i class="fas fa-file-code" style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i><p>Parquet format generation is in beta. For large datasets, consider using our API.</p></div>';
                 }
                 
                 output.innerHTML = html;
@@ -1803,6 +2543,26 @@
                 return `<pre style="color: #e2e8f0; overflow-x: auto; font-size: 0.9rem;">${sql}</pre>`;
             }
 
+            dataToXML(records, fields) {
+                let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<records>\n';
+                
+                records.slice(0, 10).forEach(record => {
+                    xml += '  <record>\n';
+                    fields.forEach(field => {
+                        xml += `    <${field.id}>${record[field.id]}</${field.id}>\n`;
+                    });
+                    xml += '  </record>\n';
+                });
+                
+                xml += '</records>';
+                
+                if (records.length > 10) {
+                    xml += `\n<!-- ... and ${records.length - 10} more records -->`;
+                }
+                
+                return `<pre style="color: #e2e8f0; overflow-x: auto; font-size: 0.9rem;">${xml}</pre>`;
+            }
+
             downloadData() {
                 if (!this.currentData) {
                     this.showNotification('No data available to download. Please generate data first.', 'error');
@@ -1827,6 +2587,14 @@
                     content = this.convertToSQL(records, fields, dataType);
                     mimeType = 'text/plain';
                     extension = 'sql';
+                } else if (format === 'xml') {
+                    content = this.convertToXML(records, fields);
+                    mimeType = 'application/xml';
+                    extension = 'xml';
+                } else if (format === 'parquet') {
+                    // Parquet download would require a library
+                    this.showNotification('Parquet download is not yet implemented in the browser version. Please use our API for Parquet format.', 'error');
+                    return;
                 }
                 
                 const blob = new Blob([content], { type: mimeType });
@@ -1874,6 +2642,21 @@
                 });
                 
                 return sql;
+            }
+
+            convertToXML(records, fields) {
+                let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<records>\n';
+                
+                records.forEach(record => {
+                    xml += '  <record>\n';
+                    fields.forEach(field => {
+                        xml += `    <${field.id}>${record[field.id]}</${field.id}>\n`;
+                    });
+                    xml += '  </record>\n';
+                });
+                
+                xml += '</records>';
+                return xml;
             }
 
             visualizeData() {
@@ -1924,8 +2707,60 @@
                     data: {
                         labels: Array(10).fill(0).map((_, i) => {
                             const start = min + i * bucketSize;
+                            const end = min +) && 
+                           !sample.includes('$') && !sample.includes('-');
+                });
+                
+                if (numericFields.length === 0) {
+                    chartContainer.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 40px;">No numeric data available for visualization. Try generating data with numeric fields like amounts, temperatures, or quantities.</p>';
+                    return;
+                }
+                
+                const ctx = document.getElementById('dataChart').getContext('2d');
+                
+                if (this.dataChart) {
+                    this.dataChart.destroy();
+                }
+                
+                // Use the first numeric field for the chart
+                const field = numericFields[0];
+                const values = records.map(r => parseFloat(r[field.id]));
+                
+                // Create histogram data
+                const min = Math.min(...values);
+                const max = Math.max(...values);
+                const bucketSize = (max - min) / 10;
+                const buckets = Array(10).fill(0);
+                
+                values.forEach(value => {
+                    const bucketIndex = Math.min(9, Math.floor((value - min) / bucketSize));
+                    buckets[bucketIndex]++;
+                });
+                
+                this.dataChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Array(10).fill(0).map((_, i) => {
+                            const start = min + i * bucketSize;
                             const end = min + (i + 1) * bucketSize;
-                            return `${start.toFixed(1)} - ${end.toFixed(1)}`;
+                            return `${start.toFixed(1)} - ${end.toFixed(1 (i + 1) * bucketSize;
+                            return `${)}`;
+                        }),
+                        datasets: [{
+                            label: `Distribution of ${field.name}`,
+                            data: buckets,
+                            backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                            borderColor: '#6366f1',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#estart.toFixed(1)} - ${end.toFixed(1)}`;
                         }),
                         datasets: [{
                             label: `Distribution of ${field.name}`,
@@ -1943,10 +2778,19 @@
                                 labels: {
                                     color: '#e2e8f0',
                                     font: {
-                                        size: 14
+                                        size:2e8f0',
+                                    font: {
+                                        14
                                     }
                                 }
                             },
+                            title: {
+                                display: true,
+                                size: 14
+                                    }
+                                }
+                            text: `Distribution of ${field.name}`,
+                                color: '#f1f },
                             title: {
                                 display: true,
                                 text: `Distribution of ${field.name}`,
@@ -1976,10 +2820,46 @@
                                 },
                                 ticks: {
                                     color: '#94a3b8',
+                                   5f9',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#94a3b8',
                                     font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#94a3b8',
+                                    font: font: {
+                                        size: 11
+                                    },
+                                    {
                                         size: 11
                                     },
                                     maxRotation: 45
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                maxRotation: 45
                                 }
                             }
                         }
@@ -1998,7 +2878,19 @@
                     return;
                 }
                 
-                const { data: records, fields } = this.currentData;
+ // Scroll to chart
+                chartContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
+                this.showNotification('Data visualization generated successfully!', 'success');
+            }
+
+            copyDataToClipboard() {
+                if (!this.currentData) {
+                    this.showNotification('No data available to copy. Please generate data first.', 'error');
+                    return;
+                }
+                
+                const { data: records,                const { data: records, fields } = this fields } = this.currentData.current;
                 const format = document.getElementById('dataFormat').value;
                 
                 let content;
@@ -2009,6 +2901,27 @@
                     content = JSON.stringify(records, null, 2);
                 } else if (format === 'sql') {
                     content = this.convertToSQL(records, fields, this.currentData.dataType);
+                } else if (formatData;
+                const format = document.getElementById('dataFormat').value;
+                
+                let content;
+                
+                if (format === 'csv') {
+                    content = this.convertToCSV(records, fields);
+                } else if (format === 'json') {
+                    content = JSON.stringify(records, null, 2);
+                } else if (format === 'sql') {
+                    content = this.convertToSQL(records, fields, this.currentData.dataType);
+                } else if (format === 'xml') {
+                    content = this.convertToXML(records, fields);
+                }
+                
+                navigator.clipboard.writeText(content).then(() => {
+                    // Show success message
+                    this.showNotification('Data copied to clipboard successfully!', 'success');
+                }).catch(err => {
+                    console.error === 'xml') {
+                    content = this.convertToXML(records, fields);
                 }
                 
                 navigator.clipboard.writeText(content).then(() => {
@@ -2020,26 +2933,97 @@
                 });
             }
 
+            saveTemplate() {
+                if (!this.currentData) {
+                    this.showNotification('No data configuration to save. Please generate data first.', 'error');
+                    return;
+                }
+                
+                const template = {
+                    dataType: document.getElementById('dataType').value,
+                    recordsCount: document.getElementById('recordsCount').value,
+                    dataFormat: document.getElementById('dataFormat').value,
+                    dataQuality: document.getElementById('dataQuality').value,
+                    selectedFields: this.getSelectedFields().map(f => f.id),
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Save to localStorage
+               ('Failed to copy: ', err);
+                    this.showNotification('Failed to copy data to clipboard.', 'error');
+                });
+            }
+
+            saveTemplate() {
+                if (!this.currentData) {
+                    this.showNotification('No data configuration to save. Please generate data first.', 'error');
+                    return;
+                }
+                
+                const template = {
+                    dataType: document.getElementById('dataType').value,
+                    recordsCount: document.getElementById('recordsCount').value,
+                    dataFormat: document.getElementById('dataFormat').value,
+                    dataQuality: document.getElementById('dataQuality').value,
+                    selectedFields: this.getSelectedFields().map(f => f.id),
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Save const templates = JSON.parse(localStorage.getItem('datasynthai_templates') || '[]');
+                templates.push(template);
+                localStorage.setItem('datasynthai_templates', JSON to localStorage
+                const templates = JSON.parse(localStorage.getItem('datasynthai_templates') || '[]');
+                templates.push(template);
+                localStorage.setItem('datasynthai_templates', JSON.stringify(templates));
+                
+                this.showNotification('Template saved successfully!', 'success');
+            }
+
+            showNotification(message, type) {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.style.position = 'fixed';
+               .stringify(templates));
+                
+                this.showNotification('Template saved successfully!', 'success');
+            }
+
             showNotification(message, type) {
                 // Create notification element
                 const notification = document.createElement('div');
                 notification.style.position = 'fixed';
                 notification.style.top = '20px';
-                notification.style.right = '20px';
+                notification.style.right = notification.style.top = '20px';
+                notification.style.right = '20 '20px';
+                notification.style.padding = '16px 24px';
+                notification.style.borderRadius = '12px';
+                notification.style.color = 'white';
+                notificationpx';
                 notification.style.padding = '16px 24px';
                 notification.style.borderRadius = '12px';
                 notification.style.color = 'white';
                 notification.style.fontWeight = '600';
                 notification.style.zIndex = '10000';
                 notification.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.2)';
+                notification.style.transition = '.style.fontWeight = '600';
+                notification.style.zIndex = '10000';
+                notification.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.2)';
                 notification.style.transition = 'all 0.3s ease';
-                notification.style.transform = 'translateX(400px)';
+                notification.style.transform = 'translateXall 0.3s ease';
+                notification.style(400px)';
                 notification.style.opacity = '0';
                 notification.style.maxWidth = '400px';
-                notification.style.backdropFilter = 'blur(10px)';
+.transform = 'translateX(400px)';
+                notification.style.opacity = '0';
+                notification.style.maxWidth = '400px';
+                notification.style.backdropFilter = '                notification.style.backdropFilter = 'blur(blur(10px)';
+                
+                if (type === 'success') {
+                    notification.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 010px)';
                 
                 if (type === 'success') {
                     notification.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9))';
+.9))';
                     notification.style.border = '1px solid rgba(16, 185, 129, 0.3)';
                 } else {
                     notification.style.background = 'linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9))';
@@ -2053,6 +3037,18 @@
                     </div>
                 `;
                 
+                    notification.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                } else {
+                    notification.style.background = 'linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9))';
+                    notification.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                }
+                
+                notification.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
                 document.body.appendChild(notification);
                 
                 // Animate in
@@ -2074,7 +3070,29 @@
             }
         }
 
-        // Initialize the platform when DOM is loaded
+        // Initialize the platform when DOM                
+                document.body.appendChild(notification);
+                
+                // Animate in
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(0)';
+                    notification.style.opacity = '1';
+                }, 10);
+                
+                // Remove after 4 seconds
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(400px)';
+                    notification.style.opacity = '0';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 4000);
+            }
+        }
+
+        // Initialize the platform when DOM is is loaded
         document.addEventListener('DOMContentLoaded', function() {
             window.dataSynthAI = new DataSynthAI();
         });
