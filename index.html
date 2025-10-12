@@ -1544,6 +1544,7 @@
         /* NEW: Category Budget Progress Bars */
         .category-budget-section {
             margin-top: 15px;
+            display: none; /* Hidden by default */
         }
 
         .category-budget-item {
@@ -3543,14 +3544,9 @@
                 categoryBudgets = {};
             }
             
-            // First-time user tour
+            // First-time user tour - MODIFIED: Don't show automatically
             const hasSeenTour = localStorage.getItem('hasSeenTour') === 'true';
-            if (!hasSeenTour && auth.currentUser) {
-                // Show tour after a short delay
-                setTimeout(() => {
-                    document.getElementById('welcomeTour').classList.add('active');
-                }, 1000);
-            }
+            // We'll not show the tour automatically anymore
         }
         
         // Apply layout based on user selection
@@ -4461,7 +4457,7 @@
         nextTourStepBtn.addEventListener('click', nextTourStep);
         skipTourBtn.addEventListener('click', finishTour);
         
-        // NEW: Layout Selection
+        // NEW: Layout Selection - MODIFIED: Auto-select scroll layout and proceed
         scrollLayoutOption.addEventListener('click', () => {
             scrollLayoutOption.classList.add('selected');
             tabLayoutOption.classList.remove('selected');
@@ -4474,13 +4470,49 @@
             selectedLayout = 'tab';
         });
         
+        // MODIFIED: Auto-select scroll layout and proceed immediately
         confirmLayoutSelection.addEventListener('click', () => {
-            if (selectedLayout) {
-                applyLayout(selectedLayout);
-                layoutSelectionModal.classList.remove('active');
-                showNotification(`${selectedLayout === 'tab' ? 'Tab' : 'Scroll'} layout activated!`);
-            } else {
-                showNotification('Please select a layout first', 'error');
+            // If no layout selected, default to scroll
+            if (!selectedLayout) {
+                selectedLayout = 'scroll';
+            }
+            
+            applyLayout(selectedLayout);
+            layoutSelectionModal.classList.remove('active');
+            showNotification(`${selectedLayout === 'tab' ? 'Tab' : 'Scroll'} layout activated!`);
+            
+            // NEW: Set flag to skip the tour
+            localStorage.setItem('hasSeenTour', 'true');
+        });
+        
+        // MODIFIED: Auto-select scroll layout when modal opens
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-select scroll layout when layout modal opens
+            const layoutModal = document.getElementById('layoutSelectionModal');
+            if (layoutModal) {
+                // Use MutationObserver to detect when modal becomes active
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                            if (layoutModal.classList.contains('active')) {
+                                // Auto-select scroll layout
+                                scrollLayoutOption.classList.add('selected');
+                                tabLayoutOption.classList.remove('selected');
+                                selectedLayout = 'scroll';
+                                
+                                // Auto-confirm after a short delay (simulating one-click)
+                                setTimeout(() => {
+                                    applyLayout(selectedLayout);
+                                    layoutSelectionModal.classList.remove('active');
+                                    showNotification(`${selectedLayout === 'tab' ? 'Tab' : 'Scroll'} layout activated!`);
+                                    localStorage.setItem('hasSeenTour', 'true');
+                                }, 800);
+                            }
+                        }
+                    });
+                });
+                
+                observer.observe(layoutModal, { attributes: true });
             }
         });
         
