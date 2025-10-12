@@ -17,7 +17,11 @@
     <!-- Web App Manifest -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
-        
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="FinTrack NG">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
     <style>
         :root {
             --primary: #2563eb;
@@ -1178,8 +1182,6 @@
             border-bottom: none;
         }
 
-        /* NEW FEATURES STYLING - ADDED BY AI */
-        
         /* Settings Panel */
         .settings-panel {
             position: fixed;
@@ -5601,7 +5603,8 @@
                         <div class="category-budget-item">
                             <div class="category-budget-header">
                                 <div class="category-budget-name">${formatCategory(category)}</div>
-                                <div class="category-budget-amount">₦${formatNumberWithCommas(spent)} / ₦${formatNumberWithCommas(budgetAmount)}</div>
+                                <div class="category-budget-amount">₦${formatNumberWithCommas(spent)} /-budget-name">${formatCategory(category)}</div>
+                                <div class="category-budget-amount">₦${formatNumberWithCommas(spent ₦${formatNumberWithCommas(budgetAmount)}</div>
                             </div>
                             <div class="category-progress-bar">
                                 <div class="category-progress-fill" style="width: ${percentage}%; background: ${color};"></div>
@@ -5619,7 +5622,25 @@
             }
         }
         
-        // NEW: Update smart budget adjustment message
+)} / ₦${formatNumberWithCommas(budgetAmount)}</div>
+                            </div>
+                            <div class="category-progress-bar">
+                                <div class="category-progress-fill" style="width: ${percentage}%; background: ${color};"></div>
+                            </div>
+                            <div class="category-progress-text">${percentage.toFixed(1)}%</div>
+                        </div>
+                    `;
+                }
+                
+                categoryBudgetList.innerHTML = html;
+                categoryBudgetListTab.innerHTML = html;
+            } else {
+                categoryBudgetSection.style.display = 'none';
+                categoryBudgetSectionTab.style.display = 'none';
+            }
+        }
+        
+        // NEW:        // NEW: Update smart budget adjustment message
         function updateSmartBudgetMessage() {
             if (budget.total === 0) {
                 budgetAdjustmentMessage.style.display = 'none';
@@ -5677,7 +5698,82 @@
                         })
                         .reduce((sum, t) => sum + t.amount, 0);
                     
-                    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+                    const lastDay = new Date(currentYear, currentMonth Update smart budget adjustment message
+        function updateSmartBudgetMessage() {
+            if (budget.total === 0) {
+                budgetAdjustmentMessage.style.display = 'none';
+                budgetAdjustmentMessageTab.style.display = 'none';
+                return;
+            }
+            
+            const now = new Date();
+            let used = 0;
+            let daysPassed = 0;
+            let totalDays = 0;
+            
+            switch(budget.period) {
+                case 'daily':
+                    used = transactions
+                        .filter(t => {
+                            const tDate = new Date(t.date);
+                            return t.type === 'expense' && 
+                                   tDate.toDateString() === now.toDateString();
+                        })
+                        .reduce((sum, t) => sum + t.amount, 0);
+                    daysPassed = 1;
+                    totalDays = 1;
+                    break;
+                case 'weekly':
+                    const startOfWeek = new Date(now);
+                    startOfWeek.setDate(now.getDate() - now.getDay());
+                    startOfWeek.setHours(0, 0, 0, 0);
+                    
+                    const endOfWeek = new Date(startOfWeek);
+                    endOfWeek.setDate(startOfWeek.getDate() + 6);
+                    endOfWeek.setHours(23, 59, 59, 999);
+                    
+                    used = transactions
+                        .filter(t => {
+                            const tDate = new Date(t.date);
+                            return t.type === 'expense' && 
+                                   tDate >= startOfWeek && tDate <= endOfWeek;
+                        })
+                        .reduce((sum, t) => sum + t.amount, 0);
+                    
+                    daysPassed = now.getDay() + 1; // 1-7
+                    totalDays = 7;
+                    break;
+                case 'monthly':
+                    const currentMonth = now.getMonth();
+                    const currentYear = now.getFullYear();
+                    
+                    used = transactions
+                        .filter(t => {
+                            const tDate = new Date(t.date);
+                            return t.type === 'expense' && 
+                                   tDate.getMonth() === currentMonth && 
+                                   tDate.getFullYear() === currentYear;
+                        })
+                        .reduce((sum, t) => sum + t.amount, 0);
+                    
+                    const lastDay = new Date(currentYear + 1, 0);
+                    daysPassed = now.getDate();
+                    totalDays = lastDay.getDate();
+                    break;
+                case 'yearly':
+                    const currentYear2 = now.getFullYear();
+                    
+                    used = transactions
+                        .filter(t => {
+                            const tDate = new Date(t.date);
+                            return t.type === 'expense' && 
+                                   tDate.getFullYear() === currentYear2;
+                        })
+                        .reduce((sum, t) => sum + t.amount, 0);
+                    
+                    const startOfYear = new Date(currentYear2, 0, 1);
+                    const diffTime = Math.abs(now - startOfYear);
+                    daysPassed = Math.ceil(diffTime / (1000 * 60 * 60 * , currentMonth + 1, 0);
                     daysPassed = now.getDate();
                     totalDays = lastDay.getDate();
                     break;
@@ -5697,6 +5793,9 @@
                     daysPassed = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     totalDays = 365;
                     break;
+24));
+                    totalDays = 365;
+                    break;
             }
             
             const expectedSpending = (budget.total / totalDays) * daysPassed;
@@ -5708,16 +5807,45 @@
             
             if (difference > 0) {
                 // Over budget
-                message = `You're ₦${formatNumberWithCommas(difference)} above your expected spending. Try to spend ₦${formatNumberWithCommas(recommendedDaily)} per day for the rest of the ${budget.period} to stay on track.`;
+                message = `You're ₦${formatNumberWithCommas(difference)} above your expected spending. Try to spend ₦${formatNumberWithCommas(recommendedDaily)} per day for the rest of the ${budget.period} to stay on            }
+            
+            const expectedSpending = (budget.total / totalDays) * daysPassed;
+            const difference = used - expectedSpending;
+            const remainingDays = totalDays - daysPassed;
+            const recommendedDaily = (budget.total - used) / remainingDays;
+            
+            let message = '';
+            
+            if (difference > 0) {
+                // Over budget
+                message = `You're ₦${formatNumberWithCommas(difference)} above your expected spending. Try to spend ₦${formatNumberWithCommas(recommendedDaily)} per day for the rest of the ${budget.period} to stay on track track.`;
             } else if (difference < 0) {
                 // Under budget
                 message = `Great job! You're ₦${formatNumberWithCommas(Math.abs(difference))} below your expected spending. You can spend ₦${formatNumberWithCommas(recommendedDaily)} per day for the rest of the ${budget.period}.`;
             } else {
                 // On track
-                message = `You're right on track with your budget! Keep spending ₦${formatNumberWithCommas(recommendedDaily)} per day to stay within your ${budget.period}ly budget.`;
+                message = `You're.`;
+            } else if (difference < 0) {
+                // Under budget
+                message = `Great job! You're ₦${formatNumberWithCommas(Math.abs(difference))} below your expected spending. You can spend ₦${formatNumberWithCommas(recommendedDaily)} per day for the rest of the ${budget.period}.`;
+            } else {
+                // On track
+                message = `You're right on right on track with your budget! Keep spending ₦${formatNumberWithCommas(recommendedDaily)} per day to stay within your ${budget.period}ly budget.`;
+            }
+            
+            adjustmentMessageText.textContent = message track with your budget! Keep spending ₦${formatNumberWithCommas(recommendedDaily)} per day to stay within your ${budget.period}ly budget.`;
             }
             
             adjustmentMessageText.textContent = message;
+            adjustmentMessageTextTab.textContent = message;
+            
+            budgetAdjustmentMessage.style.display = 'block';
+            budgetAdjustmentMessageTab.style.display = 'block';
+        }
+        
+        // Update smart budget modal breakdown
+        function updateSmartBudgetModal() {
+           ;
             adjustmentMessageTextTab.textContent = message;
             
             budgetAdjustmentMessage.style.display = 'block';
@@ -5738,7 +5866,26 @@
                 switch(period) {
                     case 'daily':
                         dailyAmount = budgetAmount;
+                        weeklyAmount = budget const budgetAmount = parseFloat(budgetAmountInput.value) || 0;
+            const period = budgetPeriodSelect.value;
+            
+            if (budgetAmount > 0) {
+                let dailyAmount = 0;
+                let weeklyAmount = 0;
+                let monthlyAmount = 0;
+                let yearlyAmount = 0;
+                
+                switch(period) {
+                    case 'daily':
+                        dailyAmount = budgetAmount;
                         weeklyAmount = budgetAmount * 7;
+                        monthlyAmount = budgetAmount * 30;
+                        yearlyAmount = budgetAmount * 365;
+                        break;
+                    case 'weekly':
+                        dailyAmount = budgetAmount / 7;
+                        weeklyAmount = budgetAmount;
+                        monthlyAmount * 7;
                         monthlyAmount = budgetAmount * 30;
                         yearlyAmount = budgetAmount * 365;
                         break;
@@ -5749,6 +5896,19 @@
                         yearlyAmount = budgetAmount * 52;
                         break;
                     case 'monthly':
+                        dailyAmount = budgetAmount * 4.3;
+                        yearlyAmount = budgetAmount * 52;
+                        break;
+                    case 'monthAmount = budgetAmount / 30;
+                        weeklyAmount = budgetAmount / 4.3;
+                        monthlyAmount = budgetAmount;
+                        yearlyAmount = budgetAmount * 12;
+                        break;
+                    case 'yearly':
+                        dailyAmount = budgetAmount / 365;
+                        weeklyAmount = budgetAmount / 52;
+                        monthlyAmount = budgetAmount / 12;
+                        yearlyAmount = budgetly':
                         dailyAmount = budgetAmount / 30;
                         weeklyAmount = budgetAmount / 4.3;
                         monthlyAmount = budgetAmount;
@@ -5765,7 +5925,24 @@
                 dailyBudgetModalAmount.textContent = `₦${formatNumberWithCommas(dailyAmount)}`;
                 weeklyBudgetModalAmount.textContent = `₦${formatNumberWithCommas(weeklyAmount)}`;
                 monthlyBudgetModalAmount.textContent = `₦${formatNumberWithCommas(monthlyAmount)}`;
-                yearlyBudgetModalAmount.textContent = `₦${formatNumberWithCommas(yearlyAmount)}`;
+               Amount;
+                        break;
+                }
+                
+                dailyBudgetModalAmount.textContent = `₦${formatNumberWithCommas(dailyAmount)}`;
+                weeklyBudgetModalAmount.textContent = `₦${formatNumberWithCommas(weeklyAmount)}`;
+                monthlyBudgetModalAmount.textContent = `₦${formatNumberWithCommas(monthlyAmount)}`;
+                yearlyBudget yearlyBudgetModalAmount.textContent = `₦${formatNumberWithCommas(yearlyAmount)}`;
+                
+                smartBudgetModalSection.style.display = 'block';
+            } else {
+                smartBudgetModalSection.style.display = 'none';
+            }
+        }
+        
+        // Update charts with real data
+        function updateCharts() {
+            //ModalAmount.textContent = `₦${formatNumberWithCommas(yearlyAmount)}`;
                 
                 smartBudgetModalSection.style.display = 'block';
             } else {
@@ -5777,6 +5954,8 @@
         function updateCharts() {
             // Update spending chart
             const spendingData = {
+                housing:  Update spending chart
+            const spendingData = {
                 housing: 0,
                 food: 0,
                 transport: 0,
@@ -5785,7 +5964,24 @@
                 other: 0
             };
             
-            transactions.filter(t => t.type === 'expense').forEach(t => {
+            transactions.filter(t => t.type === 'expense').0,
+                food: 0,
+                transport: 0,
+                entertainment: 0,
+                shopping: 0,
+                other: 0
+            };
+            
+            transactions.filter(t => t.type === 'expenseforEach(t => {
+                if (spendingData[t.category] !== undefined) {
+                    spendingData[t.category] = (spendingData[t.category] || 0) + t.amount;
+                } else {
+                    spendingData.other += t.amount;
+                }
+            });
+            
+            spendingChart.data.datasets[0].data = [
+               ').forEach(t => {
                 if (spendingData[t.category] !== undefined) {
                     spendingData[t.category] = (spendingData[t.category] || 0) + t.amount;
                 } else {
@@ -5799,7 +5995,21 @@
                 spendingData.transport,
                 spendingData.entertainment,
                 spendingData.shopping,
+                spendingData. spendingData.housing,
+                spendingData.food,
+                spendingData.transport,
+                spendingData.entertainment,
+                spendingData.shopping,
                 spendingData.other
+            ];
+            spendingChart.update();
+            
+            // Update income vs expense chart
+            const monthlyData = {
+                0: { income: 0, expense: 0 }, // Jan
+                1: { income: 0, expense: 0 }, // Feb
+                2: { income: 0, expense: 0 }, // Mar
+                3: { income:other
             ];
             spendingChart.update();
             
@@ -5811,10 +6021,16 @@
                 3: { income: 0, expense: 0 }, // Apr
                 4: { income: 0, expense: 0 }, // May
                 5: { income: 0, expense: 0 }, // Jun
+                6: { income: 0, expense: 0 }, // Apr
+                4: { income: 0, expense: 0 }, // May
+                5: { income: 0, expense: 0 }, // Jun
                 6: { income: 0, expense: 0 }, // Jul
                 7: { income: 0, expense: 0 }, // Aug
                 8: { income: 0, expense: 0 }, // Sep
-                9: { income: 0, expense: 0 }, // Oct
+                9: { income: 0, expense: 0 0, expense: 0 }, // Jul
+                7: { income: 0, expense: 0 }, // Aug
+                8: { income: 0, expense: 0 }, // Sep
+                9: { income: 0, expense }, // Oct
                 10: { income: 0, expense: 0 }, // Nov
                 11: { income: 0, expense: 0 }  // Dec
             };
@@ -5824,6 +6040,23 @@
                 const month = date.getMonth();
                 
                 if (monthlyData[month]) {
+                   : 0 }, // Oct
+                10: { income: 0, expense: 0 }, // Nov
+                11: { income: 0, expense: 0 }  // Dec
+            };
+            
+            transactions.forEach(t => {
+                const date = new Date(t.date);
+                const month = date.getMonth();
+                
+                if (monthlyData[month]) monthlyData[month][t.type] += t.amount;
+                }
+            });
+            
+            // Update chart data
+            incomeChart.data.datasets[0].data = Object.values(monthlyData).map(m => m.income);
+            incomeChart.data.datasets[1].data = Object.values(monthlyData).map(m => m.expense);
+            incomeChart.update {
                     monthlyData[month][t.type] += t.amount;
                 }
             });
@@ -5831,7 +6064,20 @@
             // Update chart data
             incomeChart.data.datasets[0].data = Object.values(monthlyData).map(m => m.income);
             incomeChart.data.datasets[1].data = Object.values(monthlyData).map(m => m.expense);
-            incomeChart.update();
+();
+            
+            // Update tab layout charts
+            spendingChartTab.data.datasets[0].data = [
+                spendingData.housing,
+                spendingData.food,
+                spendingData.transport,
+                spendingData.entertainment,
+                spendingData.shopping,
+                spendingData.other
+            ];
+            spendingChartTab.update();
+            
+            incomeChart            incomeChart.update();
             
             // Update tab layout charts
             spendingChartTab.data.datasets[0].data = [
@@ -5845,6 +6091,16 @@
             spendingChartTab.update();
             
             incomeChartTab.data.datasets[0].data = Object.values(monthlyData).map(m => m.income);
+           Tab.data.datasets[0].data = Object.values(monthlyData).map(m incomeChartTab.data.datasets[1].data = Object.values(monthlyData).map(m => m.expense);
+            incomeChartTab.update();
+        }
+        
+        // Set budget
+        function setBudget() {
+            const budgetAmount = parseFloat(budgetAmountInput.value);
+            const budgetPeriod = budgetPeriodSelect.value;
+            
+            if (isNaN(budgetAmount) => m.income);
             incomeChartTab.data.datasets[1].data = Object.values(monthlyData).map(m => m.expense);
             incomeChartTab.update();
         }
@@ -5855,6 +6111,23 @@
             const budgetPeriod = budgetPeriodSelect.value;
             
             if (isNaN(budgetAmount) || budgetAmount <= 0) {
+                show || budgetAmount <= 0Notification('Please enter a valid budget amount', 'error');
+                return;
+            }
+            
+            budget.total = budgetAmount;
+            budget.period = budgetPeriod;
+            
+            saveUserData();
+            updateBudgetDisplay();
+            updateCategoryBudgetDisplay();
+            updateSmartBudgetMessage();
+            budgetModal.classList.remove('active');
+            budgetAmountInput.value = '';
+            showNotification(`${budgetPeriod.charAt(0).toUpperCase() + budgetPeriod.slice(1)} budget set successfully!`);
+        }
+        
+) {
                 showNotification('Please enter a valid budget amount', 'error');
                 return;
             }
@@ -5871,7 +6144,7 @@
             showNotification(`${budgetPeriod.charAt(0).toUpperCase() + budgetPeriod.slice(1)} budget set successfully!`);
         }
         
-        // Export to CSV
+        // Export to CSV        // Export to CSV
         function exportToCsv() {
             if (transactions.length === 0) {
                 showNotification('No transactions to export', 'error');
@@ -5881,12 +6154,29 @@
             let csvContent = 'Date,Type,Category,Description,Amount (₦)\n';
             
             transactions.forEach(t => {
-                csvContent += `${t.date},${t.type},${t.category},${t.description},${t.amount}\n`;
+                csvContent += `${t.date},${t.type
+        function exportToCsv() {
+            if (transactions.length === 0) {
+                showNotification('No transactions to export', 'error');
+                return;
+            }
+            
+            let csvContent = 'Date,Type,Category,Description,Amount (₦)\n';
+            
+            transactions.forEach(t => {
+                csvContent += `${t.date},${t.type},${t},${t.category},${t.description},${t.amount}\n`;
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+.category},${t.description},${t.amount}\n`;
             });
             
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `fintrack-export-${new Date().toISOString().slice            const link = document.createElement('a');
             link.setAttribute('href', url);
             link.setAttribute('download', `fintrack-export-${new Date().toISOString().slice(0, 10)}.csv`);
             link.style.visibility = 'hidden';
@@ -5901,7 +6191,21 @@
         function exportToPdf() {
             if (transactions.length === 0) {
                 showNotification('No transactions to export', 'error');
+               (0, 10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('CSV exported successfully!');
+        }
+        
+        // Export to PDF
+        function exportToPdf() {
+            if (transactions.length === 0) {
+                showNotification('No transactions to export', 'error');
                 return;
+            return;
             }
             
             const { jsPDF } = window.jspdf;
@@ -5909,7 +6213,22 @@
             
             // Title
             doc.setFontSize(16);
-            doc.text('FinTrack NG - Transaction Report', 105, 15, null, null, 'center');
+            doc.text('FinTrack NG - Transaction Report', 105, 15, null }
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Title
+            doc.setFontSize(16);
+            doc.text('FinTrack NG - Transaction Report', 105, 15, null, null, ', null, 'center');
+            
+            // Date
+            doc.setFontSize(10);
+            doc.text(`Generated: ${new Date().toLocaleDateString()}`, 105, 22, null, null, 'center');
+            
+            // Summary
+            doc.setFontSize(12);
+            doc.text('Financialcenter');
             
             // Date
             doc.setFontSize(10);
@@ -5921,10 +6240,27 @@
             
             doc.setFontSize(10);
             doc.text(`Current Balance: ₦${document.getElementById('currentBalance').textContent}`, 20, 38);
+            doc.text(`Total Income: ₦${document.getElementById('totalIncome').textContent.slice Summary', 15, 30);
+            
+            doc.setFontSize(10);
+            doc.text(`Current Balance: ₦${document.getElementById('currentBalance').textContent}`, 20, 38);
             doc.text(`Total Income: ₦${document.getElementById('totalIncome').textContent.slice(1)}`, 20, 45);
             doc.text(`Total Expenses: ₦${document.getElementById('totalExpense').textContent.slice(1)}`, 20, 52);
             doc.text(`Budget: ₦${formatNumberWithCommas(budget.total)} (${budget.period})`, 20, 59);
-            doc.text(`Budget Used: ₦${document.getElementById('usedBudget').textContent.slice(1)}`, 20, 66);
+            doc.text(`Budget Used: ₦${document.getElementById(1)}`, 20, 45);
+            doc.text(`Total Expenses: ₦${document.getElementById('totalExpense').textContent.slice(1)}`, 20, 52);
+            doc.text(`Budget: ₦${formatNumberWithCommas(budget.total)} (${budget.period})`, 20, 59);
+            doc.text(`Budget Used: ₦${document.getElementById('usedBudget').('usedBudget').textContent.slice(1)}`, 20, 66);
+            
+            // Transactions table
+            doc.setFontSize(12);
+            doc.text('Transaction History', 15, 75);
+            
+            const tableData = transactions.map(t => [
+                t.date,
+                t.type.charAt(0).toUpperCase() + t.type.slice(1),
+                t.category,
+                ttextContent.slice(1)}`, 20, 66);
             
             // Transactions table
             doc.setFontSize(12);
@@ -5940,7 +6276,13 @@
             
             doc.autoTable({
                 head: [['Date', 'Type', 'Category', 'Description', 'Amount']],
-                body: tableData,
+                body:.description,
+                `₦${formatNumberWithCommas(t.amount)}`
+            ]);
+            
+            doc.autoTable({
+                head: [['Date', 'Type', 'Category', 'Description', 'Amount']],
+                body tableData,
                 startY: 80,
                 theme: 'grid',
                 headStyles: { fillColor: [0, 135, 81] },
@@ -5949,7 +6291,22 @@
                     1: { cellWidth: 20 },
                     2: { cellWidth: 25 },
                     3: { cellWidth: 60 },
-                    4: { cellWidth: 25 }
+                    4: {: tableData,
+                startY: 80,
+                theme: 'grid',
+                headStyles: { fillColor: [0, 135, 81] },
+                columnStyles: {
+                    0: { cellWidth: 25 },
+                    1: { cellWidth: 20 },
+                    2: { cellWidth: 25 },
+                    3: { cellWidth: 60 },
+                    4 cellWidth: 25 }
+                }
+            });
+            
+            // Save PDF
+            doc.save(`fintrack-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+           : { cellWidth: 25 }
                 }
             });
             
@@ -5975,7 +6332,38 @@
             renderTransactions();
             renderTransactionsTab();
             updateCharts();
-            updateDebtDisplay();
+            updateDebtDisplay showNotification('PDF exported successfully!');
+        }
+        
+        // Reset all data
+        function resetAllData() {
+            transactions = [];
+            budget = { total: 0, period: 'monthly' };
+            debts = {
+                owedToMe: [],
+                owedToOthers: []
+            };
+            categoryBudgets = {};
+            
+            saveUserData();
+            
+            updateBalances();
+            updateBudgetDisplay();
+            renderTransactions();
+            renderTransactionsTab();
+            updateCharts();
+            updateDebt();
+            renderDebtList();
+            renderDebtListTab();
+            updateAIInsights();
+            updateCategoryBudgetDisplay();
+            updateSmartBudgetMessage();
+            
+            resetModal.classList.remove('active');
+            showNotification('All data has been reset!');
+        }
+        
+       Display();
             renderDebtList();
             renderDebtListTab();
             updateAIInsights();
@@ -5998,7 +6386,19 @@
         }
         
         // NEW: AI Insights function
-        function updateAIInsights() {
+        function updateAI // Show notification
+        function showNotification(message, type = 'success') {
+            notification.textContent = message;
+            notification.style.background = type === 'error' ? 'var(--danger)' : 'var(--nigerian-green)';
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // NEW: AI Insights function
+        function updateInsights() {
             const aiRecommendations = document.getElementById('aiRecommendations');
             const aiRecommendationsTab = document.getElementById('aiRecommendationsTab');
             
@@ -6007,7 +6407,26 @@
                     <div class="ai-recommendation">
                         <strong>Welcome!</strong> Start by adding your first transaction to get personalized insights.
                     </div>
+AIInsights() {
+            const aiRecommendations = document.getElementById('aiRecommendations');
+            const aiRecommendationsTab = document.getElementById('aiRecommendationsTab');
+            
+            if (transactions.length === 0) {
+                aiRecommendations.innerHTML = `
+                    <div class="ai-recommendation">
+                        <strong>Welcome!</strong> Start by adding your first transaction to get personalized insights.
+                    </div>
+                               `;
+                aiRecommendationsTab.innerHTML = `
+                    <div class="ai-recommendation">
+                        <strong>Welcome!</strong> Start by adding your first transaction to get personalized insights.
+                    </div>
                 `;
+                return;
+            }
+            
+            // Get current date and calculate date ranges
+            const now = new Date `;
                 aiRecommendationsTab.innerHTML = `
                     <div class="ai-recommendation">
                         <strong>Welcome!</strong> Start by adding your first transaction to get personalized insights.
@@ -6018,7 +6437,20 @@
             
             // Get current date and calculate date ranges
             const now = new Date();
+           ();
             const oneWeekAgo = new Date(now);
+            oneWeekAgo.setDate(now.getDate() - 7);
+            
+            const oneMonthAgo = new Date(now);
+            oneMonthAgo.setMonth(now.getMonth() - 1);
+            
+            // Filter transactions for different time periods
+            const thisWeekExpenses = transactions.filter(t => 
+                t.type === 'expense' && new Date(t.date) >= oneWeekAgo
+            );
+            
+            const thisMonthExpenses = transactions.filter(t => 
+                t.type === 'expense' && const oneWeekAgo = new Date(now);
             oneWeekAgo.setDate(now.getDate() - 7);
             
             const oneMonthAgo = new Date(now);
@@ -6038,14 +6470,29 @@
             );
             
             // Calculate totals
-            const totalThisWeek = thisWeekExpenses.reduce((sum, t) => sum + t.amount, 0);
+            new Date(t.date) >= oneMonthAgo
+            );
+            
+            const thisMonthIncome = transactions.filter(t => 
+                t.type === 'income' && new Date(t.date) >= oneMonthAgo
+            );
+            
+            // Calculate totals
+            const totalThis const totalThisWeek = thisWeekExpenses.reduce((sum, t) => sum + t.amount, 0);
             const totalThisMonth = thisMonthExpenses.reduce((sum, t) => sum + t.amount, 0);
             const totalIncomeThisMonth = thisMonthIncome.reduce((sum, t) => sum + t.amount, 0);
             
             // Calculate spending by category this month
             const categorySpending = {};
             thisMonthExpenses.forEach(t => {
-                categorySpending[t.category] = (categorySpending[t.category] || 0) + t.amount;
+                categorySpending[t.category] = (categorySpWeek = thisWeekExpenses.reduce((sum, t) => sum + t.amount, 0);
+            const totalThisMonth = thisMonthExpenses.reduce((sum, t) => sum + t.amount, 0);
+            const totalIncomeThisMonth = thisMonthIncome.reduce((sum, t) => sum + t.amount, 0);
+            
+            // Calculate spending by category this month
+            const categorySpending = {};
+            thisMonthExpenses.forEach(t => {
+               ending[t.category] || 0) + t.amount;
             });
             
             // Find highest spending category
@@ -6058,12 +6505,44 @@
                 }
             }
             
-            // Calculate savings rate
+            // categorySpending[t.category] = (categorySpending[t.category] || 0) + t.amount;
+            });
+            
+            // Find highest spending category
+            let highestCategory = '';
+            let highestAmount = 0;
+            for (const category in categorySpending) {
+                if (categorySpending[category] > highestAmount) {
+                    highestAmount = categorySpending[category];
+                    highestCategory = category;
+                }
+            }
+            
+ Calculate savings rate
+            const savingsRate = totalIncomeThisMonth > 0 ? 
+                ((totalIncomeThisMonth - totalThisMonth) / totalIncomeThisMonth * 100).toFixed(1) : 0;
+            
+            // Generate            // Calculate savings rate
             const savingsRate = totalIncomeThisMonth > 0 ? 
                 ((totalIncomeThisMonth - totalThisMonth) / totalIncomeThisMonth * 100).toFixed(1) : 0;
             
             // Generate insights
+ insights
             const insights = [];
+            
+            // Weekly spending insight
+            if (totalThisWeek > 0) {
+                insights.push({
+                    type: 'info',
+                    message: `You've spent ₦${formatNumberWithCommas(totalThisWeek)} this week.`
+                });
+            }
+            
+            // Highest spending category insight
+            if (highestCategory && highestAmount > 0) {
+                insights.push({
+                    type: 'warning',
+                    message: `Your highest spending is on ${formatCategory(highestCategory)} (₦${formatNumberWithCommas            const insights = [];
             
             // Weekly spending insight
             if (totalThisWeek > 0) {
@@ -6084,11 +6563,32 @@
             // Budget insight
             if (budget.total > 0) {
                 const used = thisMonthExpenses.reduce((sum, t) => sum + t.amount, 0);
+               (highestAmount)} this month).`
+                });
+            }
+            
+            // Budget insight
+            if (budget.total > 0) {
+                const used = thisMonthExpenses.reduce((sum, t) => sum + t.amount, 0);
                 const percentage = (used / budget.total * 100).toFixed(1);
                 
                 if (percentage > 90) {
+                    insights const percentage = (used / budget.total * 100).toFixed(1);
+                
+                if (percentage > 90) {
                     insights.push({
+                        type.push({
                         type: 'danger',
+                        message: `You've used ${percentage}% of your monthly budget. Consider reducing non-essential spending.`
+                    });
+                } else if (percentage > 75) {
+                    insights.push({
+                        type: 'warning',
+                        message: `You've used ${percentage}% of your monthly budget. You're on track but watch your spending.`
+                    });
+                } else if (percentage < 50) {
+                    insights.push({
+                        type:: 'danger',
                         message: `You've used ${percentage}% of your monthly budget. Consider reducing non-essential spending.`
                     });
                 } else if (percentage > 75) {
@@ -6108,6 +6608,16 @@
             for (const category in categoryBudgets) {
                 if (categoryBudgets[category] > 0) {
                     const spent = categorySpending[category] || 0;
+                    const percentage = (spent / categoryBudgets[category] * 100).toFixed( 'success',
+                        message: `Great! You've only used ${percentage}% of your monthly budget.`
+                    });
+                }
+            }
+            
+            // Category budget insights
+            for (const category in categoryBudgets) {
+                if (categoryBudgets[category] > 0) {
+                    const spent = categorySpending[category] || 0;
                     const percentage = (spent / categoryBudgets[category] * 100).toFixed(1);
                     
                     if (percentage > 90) {
@@ -6118,7 +6628,32 @@
                     } else if (percentage > 75) {
                         insights.push({
                             type: 'info',
+                            message: `You've used ${percentage}% of your ${formatCategory(category)} budget.1);
+                    
+                    if (percentage > 90) {
+                        insights.push({
+                            type: 'warning',
                             message: `You've used ${percentage}% of your ${formatCategory(category)} budget.`
+                        });
+                    } else if (percentage > 75) {
+                        insights.push({
+                            type: 'info',
+                            message: `You've used ${percentage}% of your ${formatCategory(category)}`
+                        });
+                    }
+                }
+            }
+            
+            // Savings rate insight
+            if (savingsRate > 0) {
+                if (savingsRate >= 20) {
+                    insights.push({
+                        type: 'success',
+                        message: `Excellent! Your savings rate is ${savingsRate}% this month.`
+                    });
+                } else if (savingsRate >= 10) {
+                    insights.push({
+                        budget.`
                         });
                     }
                 }
@@ -6162,7 +6697,41 @@
                 "Using public transport instead of ride-hailing can save up to 60% on transport costs.",
                 "Monitor your airtime and data spending - consider switching to more cost-effective plans.",
                 "Setting aside 10% of your income for 'ajo' or savings can help build financial security.",
-                "Review your POS charges - frequent small withdrawals can add up significantly."
+                "Review your POS charges - type: 'info',
+                        message: `Good job! Your savings rate is ${savingsRate}% this month.`
+                    });
+                } else if (savingsRate < 0) {
+                    insights.push({
+                        type: 'danger',
+                        message: `You're spending more than you earn. Consider reviewing your expenses.`
+                    });
+                }
+            }
+            
+            // Daily average spending insight
+            if (totalThisMonth > 0) {
+                const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                const daysPassed = Math.min(now.getDate(), daysInMonth);
+                const dailyAverage = totalThisMonth / daysPassed;
+                
+                insights.push({
+                    type: 'info',
+                    message: `Your daily spending average is ₦${formatNumberWithCommas(dailyAverage)} this month.`
+                });
+            }
+            
+            // Nigerian-specific insights
+            const nigerianInsights = [
+                "Consider buying foodstuff in bulk to save money on groceries.",
+                "Using public transport instead of ride-hailing can save up to 60% on transport costs.",
+                "Monitor your airtime and data spending - consider switching to more cost-effective plans.",
+                "Setting aside 10% of your income for 'ajo' or savings can help build financial security.",
+                "Review your POS charges - frequent frequent small withdrawals can add up significantly."
+            ];
+            
+            // Add a random Nigerian insight if we have few insights
+            if (insights.length < 3) {
+                const randomInsight = nigerianInsights[Math.floor(Math.random() * nigerianIns small withdrawals can add up significantly."
             ];
             
             // Add a random Nigerian insight if we have few insights
@@ -6182,19 +6751,54 @@
                 });
                 insights.push({
                     type: 'info',
-                    message: "Set a monthly budget to help control your spending and achieve your financial goals."
+                    message: "Setights.length)];
+                insights.push({
+                    type: 'info',
+                    message: randomInsight
+                });
+            }
+            
+            // If no insights generated, show default tips
+            if (insights.length === 0) {
+                insights.push({
+                    type: 'info',
+                    message: "Track your daily expenses to identify spending patterns and save more."
+                });
+                insights.push({
+                    type: 'info',
+                    message: "Set a a monthly budget to help control your spending and achieve your financial goals."
                 });
             }
             
             // Update the AI insights section
             aiRecommendations.innerHTML = insights.slice(0, 3).map(insight => `
-                <div class="ai-recommendation" style="border-left: 4px solid ${
+                <div class="ai-recomm monthly budget to help control your spending and achieve your financial goals."
+                });
+            }
+            
+            // Update the AI insights section
+            aiRecommendations.innerHTML = insights.slice(0, 3).map(insight => `
+                <div class="endation" style="border-left: 4px solid ${
+                    insight.type === 'success' ? 'var(--success)' : 
+                    insight.type === 'warning' ? 'var(--warning)' : 
+                    insight.type === 'danger' ? 'var(--danger)' : 'var(--primary)'
+                };">
+                    <strong>${insight.type.charAt(0).toUpperCase() + insight.type.slice(1)}:</strong> ${insai-recommendation" style="border-left: 4px solid ${
                     insight.type === 'success' ? 'var(--success)' : 
                     insight.type === 'warning' ? 'var(--warning)' : 
                     insight.type === 'danger' ? 'var(--danger)' : 'var(--primary)'
                 };">
                     <strong>${insight.type.charAt(0).toUpperCase() + insight.type.slice(1)}:</strong> ${insight.message}
+               ight.message}
                 </div>
+            `).join('');
+            
+            aiRecommendationsTab.innerHTML = aiRecommendations.innerHTML;
+        }
+        
+        // Helper functions
+        function formatDate(dateString) {
+            const </div>
             `).join('');
             
             aiRecommendationsTab.innerHTML = aiRecommendations.innerHTML;
@@ -6216,6 +6820,20 @@
             // Check if it's a Nigerian category
             const nigerianCategories = {
                 'data': 'Data',
+                ' date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        
+        function formatCategory(category) {
+            // Check if it's a custom category
+            const customCategory = customCategories.find(cat => cat.value === category);
+            if (customCategory) {
+                return customCategory.name;
+            }
+            
+            // Check if it's a Nigerian category
+            const nigerianCategories = {
+                'data': 'Data',
                 'transport': 'Transport',
                 'food': 'Food',
                 'nepa': 'NEPA Bill',
@@ -6224,12 +6842,45 @@
                 'fuel': 'Fuel'
             };
             
-            if (nigerianCategories[category]) {
+            if (transport': 'Transport',
+                'food': 'Food',
+                'nepa': 'NEPA Bill',
+                'pos': 'POS/Bank Charges',
+                'family': 'Family Support',
+                'fuel': 'Fuel'
+            };
+            
+nigerianCategories[category]) {
                 return nigerianCategories[category];
             }
             
             // Default categories
             return category.charAt(0).toUpperCase() + category.slice(1);
+        }
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) =>            if (nigerianCategories[category]) {
+                return nigerianCategories[category];
+            }
+            
+            // Default categories
+            return category.charAt(0).toUpperCase() + category.slice(1);
+        }
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
         }
     </script>
 </body>
