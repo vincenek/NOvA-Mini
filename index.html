@@ -2078,10 +2078,17 @@
             padding: 15px;
             margin-top: 15px;
             border-left: 4px solid #0ea5e9;
+            overflow: hidden;
+            transition: var(--transition);
+            max-height: 500px;
         }
 
         [data-theme="dark"] .ai-insights-advanced {
             background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+        }
+
+        .ai-insights-advanced.collapsed {
+            max-height: 60px;
         }
 
         .ai-insight-category {
@@ -2089,10 +2096,15 @@
             padding: 10px;
             background: rgba(255, 255, 255, 0.7);
             border-radius: 8px;
+            transition: var(--transition);
         }
 
         [data-theme="dark"] .ai-insight-category {
             background: rgba(30, 41, 59, 0.7);
+        }
+
+        .ai-insights-advanced.collapsed .ai-insight-category {
+            display: none;
         }
 
         .ai-insight-header {
@@ -2182,6 +2194,38 @@
 
         [data-theme="dark"] .ai-tip {
             background: #1a2e22;
+        }
+
+        /* Toggle Button for Advanced AI Insights */
+        .ai-toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px 0;
+            color: #0ea5e9;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .ai-toggle-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        .ai-toggle-btn.collapsed i {
+            transform: rotate(180deg);
+        }
+
+        .ai-insights-content {
+            transition: max-height 0.3s ease;
+            overflow: hidden;
+        }
+
+        .ai-insights-advanced.collapsed .ai-insights-content {
+            max-height: 0;
         }
 
         @media (min-width: 576px) {
@@ -2569,14 +2613,25 @@
                         </div>
                         
                         <!-- Advanced AI Insights -->
-                        <div class="ai-insights-advanced" id="advancedAIInsights">
-                            <div class="ai-title">
-                                <i class="fas fa-robot"></i>
-                                <span>Advanced AI Financial Insights</span>
-                            </div>
-                            <div id="advancedAIRecommendations">
-                                <div class="ai-recommendation">
-                                    <strong>Welcome!</strong> Add your first transaction to get personalized insights.
+                        <div class="ai-insights-advanced collapsed" id="advancedAIInsights">
+                            <button class="ai-toggle-btn collapsed" id="aiToggleBtn">
+                                <span><i class="fas fa-robot"></i> Advanced AI Financial Insights</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="ai-insights-content" id="advancedAIRecommendations">
+                                <div class="ai-insight-category">
+                                    <div class="ai-insight-header">
+                                        <div class="ai-insight-icon">
+                                            <i class="fas fa-robot"></i>
+                                        </div>
+                                        <div class="ai-insight-title">Welcome to FinTrack AI</div>
+                                    </div>
+                                    <div class="ai-insight-content">
+                                        <p>Start adding transactions to unlock personalized financial insights tailored to your spending patterns.</p>
+                                        <div class="ai-tip">
+                                            <strong>Tip:</strong> Track all your expenses for 30 days to get the most accurate financial analysis.
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2805,14 +2860,25 @@
                         </div>
                         
                         <!-- Advanced AI Insights -->
-                        <div class="ai-insights-advanced" id="advancedAIInsightsTab">
-                            <div class="ai-title">
-                                <i class="fas fa-robot"></i>
-                                <span>Advanced AI Financial Insights</span>
-                            </div>
-                            <div id="advancedAIRecommendationsTab">
-                                <div class="ai-recommendation">
-                                    <strong>Welcome!</strong> Add your first transaction to get personalized insights.
+                        <div class="ai-insights-advanced collapsed" id="advancedAIInsightsTab">
+                            <button class="ai-toggle-btn collapsed" id="aiToggleBtnTab">
+                                <span><i class="fas fa-robot"></i> Advanced AI Financial Insights</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="ai-insights-content" id="advancedAIRecommendationsTab">
+                                <div class="ai-insight-category">
+                                    <div class="ai-insight-header">
+                                        <div class="ai-insight-icon">
+                                            <i class="fas fa-robot"></i>
+                                        </div>
+                                        <div class="ai-insight-title">Welcome to FinTrack AI</div>
+                                    </div>
+                                    <div class="ai-insight-content">
+                                        <p>Start adding transactions to unlock personalized financial insights tailored to your spending patterns.</p>
+                                        <div class="ai-tip">
+                                            <strong>Tip:</strong> Track all your expenses for 30 days to get the most accurate financial analysis.
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -3631,6 +3697,9 @@
         // Layout selection
         let selectedLayout = null;
         
+        // AI Insights toggle state
+        let aiInsightsCollapsed = true;
+        
         // Initialize settings from localStorage
         function initializeSettings() {
             // Theme
@@ -3682,6 +3751,13 @@
             
             // First-time user tour
             const hasSeenTour = localStorage.getItem('hasSeenTour') === 'true';
+            
+            // AI Insights toggle state
+            const savedAIInsightsState = localStorage.getItem('aiInsightsCollapsed');
+            if (savedAIInsightsState !== null) {
+                aiInsightsCollapsed = savedAIInsightsState === 'true';
+                updateAIInsightsToggle();
+            }
         }
         
         // Apply layout based on user selection
@@ -4100,6 +4176,48 @@
                 document.getElementById('noBudgetStateTab').style.display = 'block';
                 document.getElementById('budgetDetailsTab').style.display = 'none';
             }
+        }
+        
+        // ==================== AI INSIGHTS TOGGLE FUNCTIONALITY ====================
+        
+        // Toggle AI Insights visibility
+        function toggleAIInsights() {
+            aiInsightsCollapsed = !aiInsightsCollapsed;
+            updateAIInsightsToggle();
+            localStorage.setItem('aiInsightsCollapsed', aiInsightsCollapsed);
+        }
+        
+        // Update AI Insights toggle state
+        function updateAIInsightsToggle() {
+            const aiInsightsElements = [
+                document.getElementById('advancedAIInsights'),
+                document.getElementById('advancedAIInsightsTab')
+            ];
+            
+            const toggleButtons = [
+                document.getElementById('aiToggleBtn'),
+                document.getElementById('aiToggleBtnTab')
+            ];
+            
+            aiInsightsElements.forEach(el => {
+                if (el) {
+                    if (aiInsightsCollapsed) {
+                        el.classList.add('collapsed');
+                    } else {
+                        el.classList.remove('collapsed');
+                    }
+                }
+            });
+            
+            toggleButtons.forEach(btn => {
+                if (btn) {
+                    if (aiInsightsCollapsed) {
+                        btn.classList.add('collapsed');
+                    } else {
+                        btn.classList.remove('collapsed');
+                    }
+                }
+            });
         }
         
         // ==================== DRAMATICALLY IMPROVED AI INSIGHTS ====================
@@ -5052,6 +5170,10 @@
         const tabLayoutOption = document.getElementById('tabLayoutOption');
         const confirmLayoutSelection = document.getElementById('confirmLayoutSelection');
         
+        // AI Insights Toggle Elements
+        const aiToggleBtn = document.getElementById('aiToggleBtn');
+        const aiToggleBtnTab = document.getElementById('aiToggleBtnTab');
+        
         // Initialize charts
         let spendingChart, incomeChart, spendingChartTab, incomeChartTab;
         initCharts();
@@ -5217,6 +5339,10 @@
         
         // Tab Navigation Setup
         setupTabNavigation();
+        
+        // AI Insights Toggle
+        aiToggleBtn.addEventListener('click', toggleAIInsights);
+        aiToggleBtnTab.addEventListener('click', toggleAIInsights);
         
         // ==================== EXISTING EVENT LISTENERS ====================
         transactionForm.addEventListener('submit', addTransaction);
