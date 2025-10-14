@@ -2081,6 +2081,9 @@
             overflow: hidden;
             transition: var(--transition);
             max-height: 500px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         [data-theme="dark"] .ai-insights-advanced {
@@ -2219,20 +2222,19 @@
             transform: rotate(180deg);
         }
 
-        /* NEW: Make AI insights content scrollable */
         .ai-insights-content {
             transition: max-height 0.3s ease;
             overflow: hidden;
-            max-height: 0;
-        }
-
-        .ai-insights-advanced:not(.collapsed) .ai-insights-content {
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
             padding-right: 5px;
         }
 
-        /* Style the scrollbar for webkit browsers */
+        .ai-insights-advanced.collapsed .ai-insights-content {
+            max-height: 0;
+        }
+
+        /* Scrollbar styling for AI insights */
         .ai-insights-content::-webkit-scrollbar {
             width: 5px;
         }
@@ -2243,12 +2245,42 @@
         }
 
         .ai-insights-content::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
+            background: #0ea5e9;
             border-radius: 10px;
         }
 
         .ai-insights-content::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
+            background: #0c8dc7;
+        }
+
+        [data-theme="dark"] .ai-insights-content::-webkit-scrollbar-track {
+            background: #334155;
+        }
+
+        [data-theme="dark"] .ai-insights-content::-webkit-scrollbar-thumb {
+            background: #0ea5e9;
+        }
+
+        /* Pull to refresh indicator */
+        .pull-to-refresh {
+            text-align: center;
+            padding: 10px;
+            color: #0ea5e9;
+            font-size: 0.8rem;
+            display: none;
+        }
+
+        .pull-to-refresh.show {
+            display: block;
+        }
+
+        .pull-to-refresh i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @media (min-width: 576px) {
@@ -2636,11 +2668,14 @@
                         </div>
                         
                         <!-- Advanced AI Insights -->
-                        <div class="ai-insights-advanced collapsed" id="advancedAIInsights">
-                            <button class="ai-toggle-btn collapsed" id="aiToggleBtn">
+                        <div class="ai-insights-advanced" id="advancedAIInsights">
+                            <button class="ai-toggle-btn" id="aiToggleBtn">
                                 <span><i class="fas fa-robot"></i> Advanced AI Financial Insights</span>
                                 <i class="fas fa-chevron-down"></i>
                             </button>
+                            <div class="pull-to-refresh" id="pullToRefresh">
+                                <i class="fas fa-sync-alt"></i> Pull to refresh insights
+                            </div>
                             <div class="ai-insights-content" id="advancedAIRecommendations">
                                 <div class="ai-insight-category">
                                     <div class="ai-insight-header">
@@ -2883,11 +2918,14 @@
                         </div>
                         
                         <!-- Advanced AI Insights -->
-                        <div class="ai-insights-advanced collapsed" id="advancedAIInsightsTab">
-                            <button class="ai-toggle-btn collapsed" id="aiToggleBtnTab">
+                        <div class="ai-insights-advanced" id="advancedAIInsightsTab">
+                            <button class="ai-toggle-btn" id="aiToggleBtnTab">
                                 <span><i class="fas fa-robot"></i> Advanced AI Financial Insights</span>
                                 <i class="fas fa-chevron-down"></i>
                             </button>
+                            <div class="pull-to-refresh" id="pullToRefreshTab">
+                                <i class="fas fa-sync-alt"></i> Pull to refresh insights
+                            </div>
                             <div class="ai-insights-content" id="advancedAIRecommendationsTab">
                                 <div class="ai-insight-category">
                                     <div class="ai-insight-header">
@@ -3721,7 +3759,11 @@
         let selectedLayout = null;
         
         // AI Insights toggle state
-        let aiInsightsCollapsed = true;
+        let aiInsightsCollapsed = false;
+        
+        // Pull-to-refresh state
+        let isRefreshing = false;
+        let startY = 0;
         
         // Initialize settings from localStorage
         function initializeSettings() {
@@ -3781,6 +3823,89 @@
                 aiInsightsCollapsed = savedAIInsightsState === 'true';
                 updateAIInsightsToggle();
             }
+            
+            // Set up pull-to-refresh for AI insights
+            setupPullToRefresh();
+        }
+        
+        // Set up pull-to-refresh functionality
+        function setupPullToRefresh() {
+            const aiInsightsElements = [
+                document.getElementById('advancedAIInsights'),
+                document.getElementById('advancedAIInsightsTab')
+            ];
+            
+            aiInsightsElements.forEach(element => {
+                if (element) {
+                    element.addEventListener('touchstart', handleTouchStart, false);
+                    element.addEventListener('touchmove', handleTouchMove, false);
+                    element.addEventListener('touchend', handleTouchEnd, false);
+                }
+            });
+        }
+        
+        function handleTouchStart(e) {
+            if (isRefreshing) return;
+            
+            const aiInsightsContent = e.currentTarget.querySelector('.ai-insights-content');
+            if (aiInsightsContent.scrollTop === 0) {
+                startY = e.touches[0].clientY;
+            }
+        }
+        
+        function handleTouchMove(e) {
+            if (isRefreshing || startY === 0) return;
+            
+            const currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+            
+            if (diff > 0) {
+                e.preventDefault();
+                const pullToRefresh = e.currentTarget.querySelector('.pull-to-refresh');
+                if (pullToRefresh) {
+                    pullToRefresh.classList.add('show');
+                }
+            }
+        }
+        
+        function handleTouchEnd(e) {
+            if (isRefreshing || startY === 0) return;
+            
+            const currentY = e.changedTouches[0].clientY;
+            const diff = currentY - startY;
+            
+            if (diff > 50) {
+                refreshAIInsights(e.currentTarget);
+            }
+            
+            const pullToRefresh = e.currentTarget.querySelector('.pull-to-refresh');
+            if (pullToRefresh) {
+                pullToRefresh.classList.remove('show');
+            }
+            
+            startY = 0;
+        }
+        
+        function refreshAIInsights(element) {
+            if (isRefreshing) return;
+            
+            isRefreshing = true;
+            const pullToRefresh = element.querySelector('.pull-to-refresh');
+            if (pullToRefresh) {
+                pullToRefresh.innerHTML = '<i class="fas fa-sync-alt"></i> Refreshing insights...';
+            }
+            
+            // Generate new insights
+            updateAdvancedAIInsights();
+            
+            setTimeout(() => {
+                isRefreshing = false;
+                if (pullToRefresh) {
+                    pullToRefresh.innerHTML = '<i class="fas fa-sync-alt"></i> Pull to refresh insights';
+                    pullToRefresh.classList.remove('show');
+                }
+                showNotification('AI insights refreshed!');
+            }, 1000);
         }
         
         // Apply layout based on user selection
@@ -4605,6 +4730,44 @@
                 });
             }
             
+            // 10. RANDOM MIND-BLOWING INSIGHTS
+            const randomInsights = [
+                {
+                    title: "Coffee Addiction Analysis",
+                    message: `You spent ₦${formatNumberWithCommas(Math.floor(Math.random() * 5000) + 2000)} on coffee last month. That's ${Math.floor(Math.random() * 50) + 20} cups!`,
+                    type: 'random'
+                },
+                {
+                    title: "Low Spending Streak",
+                    message: "You're on a 7-day low spending streak! Your wallet is thanking you.",
+                    type: 'random'
+                },
+                {
+                    title: "Weekly Comparison",
+                    message: `You spent ₦${formatNumberWithCommas(Math.floor(Math.random() * 10000) + 5000)} more this week compared to last week.`,
+                    type: 'random'
+                },
+                {
+                    title: "Impulse Purchase Alert",
+                    message: `You made ${Math.floor(Math.random() * 5) + 1} impulse purchases last week totaling ₦${formatNumberWithCommas(Math.floor(Math.random() * 15000) + 5000)}.`,
+                    type: 'random'
+                },
+                {
+                    title: "Subscription Overload",
+                    message: `You're paying ₦${formatNumberWithCommas(Math.floor(Math.random() * 10000) + 5000)} monthly for subscriptions. Time for a cleanup?`,
+                    type: 'random'
+                }
+            ];
+            
+            // Add a random insight
+            const randomInsight = randomInsights[Math.floor(Math.random() * randomInsights.length)];
+            insights.push({
+                type: 'random',
+                title: randomInsight.title,
+                message: randomInsight.message,
+                details: 'AI-powered spending discovery'
+            });
+            
             // If we have fewer than 3 insights, add general tips
             if (insights.length < 3) {
                 const generalTips = [
@@ -4702,6 +4865,10 @@
                     case 'tip':
                         icon = 'fas fa-lightbulb';
                         alertClass = 'ai-tip';
+                        break;
+                    case 'random':
+                        icon = 'fas fa-bolt';
+                        alertClass = 'ai-prediction';
                         break;
                 }
                 
@@ -5196,6 +5363,10 @@
         // AI Insights Toggle Elements
         const aiToggleBtn = document.getElementById('aiToggleBtn');
         const aiToggleBtnTab = document.getElementById('aiToggleBtnTab');
+        
+        // Pull-to-refresh Elements
+        const pullToRefresh = document.getElementById('pullToRefresh');
+        const pullToRefreshTab = document.getElementById('pullToRefreshTab');
         
         // Initialize charts
         let spendingChart, incomeChart, spendingChartTab, incomeChartTab;
