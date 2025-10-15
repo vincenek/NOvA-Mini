@@ -1078,6 +1078,58 @@
             color: var(--text-secondary);
             font-size: 0.9rem;
         }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark);
+            color: var(--light);
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Fix for buttons staying in cards */
+        .card-body button {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Ensure buttons don't overflow on mobile */
+        @media (max-width: 768px) {
+            .card-body button {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .invoice-actions {
+                flex-direction: column;
+            }
+            
+            .rule-actions {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1139,8 +1191,8 @@
                     <p><strong>Cash Flow Alert:</strong> Your cash flow is projected to decrease by 15% in the next 30 days based on current patterns.</p>
                     <p><strong>Opportunity:</strong> 23% of expenses could be optimized by consolidating vendor payments.</p>
                     <div class="insight-actions">
-                        <button><i class="fas fa-chart-line"></i> View Detailed Analysis</button>
-                        <button><i class="fas fa-lightbulb"></i> Get Recommendations</button>
+                        <button id="view-detailed-analysis"><i class="fas fa-chart-line"></i> View Detailed Analysis</button>
+                        <button id="get-recommendations"><i class="fas fa-lightbulb"></i> Get Recommendations</button>
                     </div>
                 </div>
             </div>
@@ -2721,6 +2773,15 @@
                     this.exportData();
                 });
                 
+                // AI Insight buttons
+                document.getElementById('view-detailed-analysis').addEventListener('click', () => {
+                    this.showNotification('Detailed analysis feature coming soon!', 'info');
+                });
+                
+                document.getElementById('get-recommendations').addEventListener('click', () => {
+                    this.showNotification('AI recommendations feature coming soon!', 'info');
+                });
+                
                 // Add transaction button
                 document.getElementById('add-transaction-btn').addEventListener('click', () => {
                     this.showTransactionModal();
@@ -3034,6 +3095,42 @@
                 document.getElementById('preview-invoice').addEventListener('click', () => {
                     this.previewInvoice();
                 });
+                
+                // Automation rule toggles
+                document.querySelectorAll('.rule-toggle input').forEach(toggle => {
+                    toggle.addEventListener('change', (e) => {
+                        const ruleName = e.target.closest('.automation-rule').querySelector('h4').textContent;
+                        const status = e.target.checked ? 'enabled' : 'disabled';
+                        this.showNotification(`${ruleName} rule ${status}`, 'success');
+                    });
+                });
+                
+                // Automation rule edit buttons
+                document.querySelectorAll('.automation-rule .btn-warning').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const ruleName = button.closest('.automation-rule').querySelector('h4').textContent;
+                        this.showNotification(`Editing ${ruleName} rule - feature coming soon!`, 'info');
+                    });
+                });
+                
+                // Automation rule delete buttons
+                document.querySelectorAll('.automation-rule .btn-danger').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const ruleName = button.closest('.automation-rule').querySelector('h4').textContent;
+                        if (confirm(`Are you sure you want to delete the "${ruleName}" rule?`)) {
+                            button.closest('.automation-rule').remove();
+                            this.showNotification(`"${ruleName}" rule deleted`, 'success');
+                        }
+                    });
+                });
+                
+                // Collaborator edit buttons
+                document.querySelectorAll('.collaborator .btn-warning').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const collaboratorName = button.closest('.collaborator').querySelector('h4').textContent;
+                        this.showNotification(`Editing ${collaboratorName} - feature coming soon!`, 'info');
+                    });
+                });
             },
             
             // Show transaction modal with proper setup
@@ -3051,6 +3148,12 @@
                 const firstEntry = entriesContainer.querySelector('.transaction-entry');
                 firstEntry.querySelector('.debit-amount').value = '';
                 firstEntry.querySelector('.credit-amount').value = '';
+                
+                // Remove any existing remove buttons from first entry
+                const existingRemoveBtn = firstEntry.querySelector('.remove-entry');
+                if (existingRemoveBtn) {
+                    existingRemoveBtn.remove();
+                }
                 
                 // Populate account dropdowns
                 this.populateAccountDropdowns();
