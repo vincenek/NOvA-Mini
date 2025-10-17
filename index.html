@@ -3,14 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenLedger Pro - Enterprise Accounting Platform</title>
+    <title>OpenLedger - Professional Accounting Software</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="OpenLedger">
-    
+
     <!-- iOS Support -->
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <meta name="apple-mobile-web-app-status-bar" content="#2563eb">
@@ -22,6 +19,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -43,6 +41,12 @@
             --border-radius: 12px;
             --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             --transition: all 0.3s ease;
+            
+            /* NEW: Glassmorphism variables */
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            --glass-blur: blur(12px);
         }
 
         .dark-mode {
@@ -51,6 +55,10 @@
             --text-primary: #e9ecef;
             --text-secondary: #a0aec0;
             --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            
+            /* NEW: Dark mode glassmorphism */
+            --glass-bg: rgba(35, 45, 70, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
 
         * {
@@ -68,6 +76,22 @@
             display: flex;
             flex-direction: column;
             transition: var(--transition);
+            
+            /* NEW: Dynamic financial health background */
+            position: relative;
+        }
+
+        /* NEW: Financial health background overlay */
+        .financial-health-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.03;
+            transition: background-color 1s ease;
+            pointer-events: none;
         }
 
         .container {
@@ -76,6 +100,42 @@
             margin: 0 auto;
             padding: 0 20px;
             flex: 1;
+        }
+
+        /* NEW: Glassmorphism effect */
+        .glassmorphic {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+
+        /* NEW: Enhanced card styles with glassmorphism */
+        .card, .stat-card, .quick-action-btn, .chart-container {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before, .stat-card::before, .quick-action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            opacity: 0;
+            transition: var(--transition);
+            pointer-events: none;
+        }
+
+        .card:hover::before, .stat-card:hover::before, .quick-action-btn:hover::before {
+            opacity: 1;
         }
 
         /* Header Styles */
@@ -123,6 +183,37 @@
             display: flex;
             align-items: center;
             gap: 15px;
+        }
+
+        /* NEW: Ledger Health Meter Styles */
+        .ledger-health-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 15px;
+        }
+
+        .ledger-health-meter {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: conic-gradient(var(--success) 0%, var(--success) 0%, #e0e0e0 0%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ledger-health-inner {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
         }
 
         /* Navigation Tabs */
@@ -289,7 +380,7 @@
             box-shadow: var(--box-shadow);
             margin-bottom: 2rem;
             position: relative;
-            height: 300px;
+            height: 300px; /* Added fixed height for the chart */
         }
 
         .chart-title {
@@ -324,6 +415,138 @@
 
         .card-body {
             padding: 1.5rem;
+        }
+
+        /* NEW: Innovation Section Styles */
+        .innovation-section {
+            margin-bottom: 2rem;
+        }
+
+        .innovation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* NEW: FlowView Styles */
+        .flowview-container {
+            height: 300px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flowview-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .flowview-account-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .flowview-account-node:hover {
+            transform: scale(1.05);
+        }
+
+        /* NEW: AI Narrative Insight Styles */
+        .ai-narrative-box {
+            background: linear-gradient(135deg, #4361ee 0%, #3a56d4 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-narrative-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            pointer-events: none;
+        }
+
+        .ai-narrative-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .ai-narrative-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .ai-narrative-icon {
+            font-size: 1.5rem;
+        }
+
+        /* NEW: Transaction Hash Styles */
+        .transaction-hash {
+            font-family: monospace;
+            font-size: 0.8rem;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+            word-break: break-all;
+            margin-top: 0.5rem;
+        }
+
+        /* NEW: Ghost Transaction Styles */
+        .ghost-transaction {
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+
+        .ghost-transaction:hover {
+            opacity: 0.7;
+        }
+
+        /* NEW: Circular Gauge Styles */
+        .gauge-container {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .gauge-background {
+            fill: none;
+            stroke: #e0e0e0;
+            stroke-width: 10;
+        }
+
+        .gauge-progress {
+            fill: none;
+            stroke: var(--success);
+            stroke-width: 10;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: stroke-dasharray 0.5s ease;
+        }
+
+        .gauge-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            fill: var(--text-primary);
+        }
+
+        .gauge-label {
+            font-size: 0.8rem;
+            fill: var(--text-secondary);
         }
 
         /* Form Styles */
@@ -574,6 +797,15 @@
                 flex-direction: column;
                 gap: 1rem;
             }
+            
+            /* NEW: Responsive innovations */
+            .innovation-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .flowview-container {
+                height: 200px;
+            }
         }
 
         /* Dark Mode Toggle */
@@ -723,221 +955,12 @@
             border-radius: var(--border-radius);
             margin-bottom: 1.5rem;
         }
-
-        /* New Features */
-        .ai-suggestions {
-            background: rgba(67, 97, 238, 0.05);
-            border-left: 4px solid var(--primary);
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 0 8px 8px 0;
-        }
-
-        .ai-suggestion-item {
-            padding: 0.5rem;
-            margin: 0.25rem 0;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: var(--transition);
-        }
-
-        .ai-suggestion-item:hover {
-            background: rgba(67, 97, 238, 0.1);
-        }
-
-        .predictive-chart {
-            height: 200px;
-            margin-top: 1rem;
-        }
-
-        .advanced-filter {
-            background: var(--card-bg);
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 1rem;
-            box-shadow: var(--box-shadow);
-        }
-
-        .insight-card {
-            border-left: 4px solid var(--info);
-            padding-left: 1rem;
-            margin: 1rem 0;
-        }
-
-        .insight-card.warning {
-            border-left-color: var(--warning);
-        }
-
-        .insight-card.danger {
-            border-left-color: var(--danger);
-        }
-
-        .collaboration-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: rgba(67, 97, 238, 0.1);
-            color: var(--primary);
-            padding: 0.25rem 0.5rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            margin-left: 0.5rem;
-        }
-
-        .automation-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: rgba(46, 204, 113, 0.1);
-            color: var(--success);
-            padding: 0.25rem 0.5rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            margin-left: 0.5rem;
-        }
-        
-        /* Collaboration Styles */
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background-color: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        
-        .activity-item {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-        
-        .activity-content {
-            flex: 1;
-        }
-        
-        .activity-time {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
-        
-        .role-badge {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        
-        .role-admin {
-            background: rgba(231, 76, 60, 0.1);
-            color: var(--danger);
-        }
-        
-        .role-editor {
-            background: rgba(52, 152, 219, 0.1);
-            color: #3498db;
-        }
-        
-        .role-viewer {
-            background: rgba(46, 204, 113, 0.1);
-            color: var(--success);
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        
-        .status-active {
-            background: rgba(46, 204, 113, 0.1);
-            color: var(--success);
-        }
-        
-        .status-pending {
-            background: rgba(243, 156, 18, 0.1);
-            color: var(--warning);
-        }
-        
-        .recurring-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        
-        .recurring-option {
-            padding: 1rem;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .recurring-option:hover {
-            border-color: var(--primary);
-            background: rgba(67, 97, 238, 0.05);
-        }
-        
-        .recurring-option.selected {
-            border-color: var(--primary);
-            background: rgba(67, 97, 238, 0.1);
-        }
-        
-        .automation-rule {
-            padding: 1rem;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .rule-details {
-            flex: 1;
-        }
-        
-        .rule-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        .rule-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin-left: 0.5rem;
-        }
-        
-        .status-enabled {
-            background: rgba(46, 204, 113, 0.1);
-            color: var(--success);
-        }
-        
-        .status-disabled {
-            background: rgba(108, 117, 125, 0.1);
-            color: var(--secondary);
-        }
     </style>
 </head>
 <body>
+    <!-- NEW: Financial Health Background Overlay -->
+    <div class="financial-health-bg" id="financial-health-bg"></div>
+    
     <header>
         <div class="container">
             <div class="header-content">
@@ -945,10 +968,18 @@
                     <div class="logo-icon">
                         <i class="fas fa-book"></i>
                     </div>
-                    <div>Open<span>Ledger</span> Pro</div>
+                    <div>Open<span>Ledger</span></div>
                 </div>
                 <div id="company-name">Company Name</div>
                 <div class="header-actions">
+                    <!-- NEW: Ledger Health Meter -->
+                    <div class="ledger-health-container">
+                        <div class="ledger-health-meter" id="ledger-health-meter">
+                            <div class="ledger-health-inner" id="ledger-health-value">100%</div>
+                        </div>
+                        <span>Ledger Health</span>
+                    </div>
+                    
                     <button class="theme-toggle" id="theme-toggle">
                         <i class="fas fa-moon"></i>
                     </button>
@@ -968,8 +999,6 @@
             <div class="tab" data-tab="trial-balance"><i class="fas fa-balance-scale"></i>Trial Balance</div>
             <div class="tab" data-tab="reports"><i class="fas fa-chart-bar"></i>Reports</div>
             <div class="tab" data-tab="accounts"><i class="fas fa-chart-pie"></i>Chart of Accounts</div>
-            <div class="tab" data-tab="automation"><i class="fas fa-robot"></i>Automation</div>
-            <div class="tab" data-tab="collaboration"><i class="fas fa-users"></i>Collaboration</div>
             <div class="tab" data-tab="settings"><i class="fas fa-cog"></i>Settings</div>
         </div>
         
@@ -977,10 +1006,21 @@
         <div id="dashboard" class="tab-content active">
             <div class="welcome-banner">
                 <div class="welcome-content">
-                    <h2>Welcome to OpenLedger Pro!</h2>
-                    <p>Enterprise accounting platform with advanced automation and collaboration</p>
+                    <h2>Welcome to OpenLedger!</h2>
+                    <p>Manage your finances with our easy-to-use accounting software</p>
                 </div>
                 <button id="quick-add-btn"><i class="fas fa-plus"></i> New Transaction</button>
+            </div>
+            
+            <!-- NEW: AI Narrative Insight Box -->
+            <div class="ai-narrative-box">
+                <div class="ai-narrative-content">
+                    <div class="ai-narrative-header">
+                        <i class="fas fa-robot ai-narrative-icon"></i>
+                        <h3>AI Financial Insights</h3>
+                    </div>
+                    <p id="ai-narrative-text">Analyzing your financial data...</p>
+                </div>
             </div>
             
             <div class="quick-actions">
@@ -999,28 +1039,6 @@
                 <div class="quick-action-btn" id="action-export-data">
                     <i class="fas fa-file-export"></i>
                     <span>Export Data</span>
-                </div>
-            </div>
-            
-            <!-- Financial Insights Section -->
-            <div class="card">
-                <div class="card-header">
-                    <span><i class="fas fa-chart-line"></i> Financial Insights</span>
-                    <button id="refresh-insights"><i class="fas fa-sync-alt"></i> Refresh</button>
-                </div>
-                <div class="card-body">
-                    <div class="insight-card">
-                        <h4><i class="fas fa-lightbulb"></i> Cash Flow Optimization</h4>
-                        <p>Your accounts receivable turnover is 45 days. Consider implementing early payment discounts to improve cash flow.</p>
-                    </div>
-                    <div class="insight-card warning">
-                        <h4><i class="fas fa-exclamation-triangle"></i> Expense Alert</h4>
-                        <p>Office supplies expenses have increased by 25% compared to last month. Review recent purchases.</p>
-                    </div>
-                    <div class="insight-card">
-                        <h4><i class="fas fa-chart-line"></i> Revenue Trend</h4>
-                        <p>Sales revenue is trending upward with 15% growth this quarter. Projected quarterly revenue: <strong>$85,000</strong>.</p>
-                    </div>
                 </div>
             </div>
             
@@ -1067,14 +1085,47 @@
                 </div>
             </div>
             
-            <div class="chart-container">
-                <div class="chart-title">Financial Health Overview</div>
-                <canvas id="financial-health-chart"></canvas>
+            <!-- NEW: Innovation Section -->
+            <div class="innovation-section">
+                <div class="innovation-grid">
+                    <!-- NEW: FlowView Money Flow Map -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Money Flow Map (FlowView™)</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="flowview-container">
+                                <svg class="flowview-svg" id="flowview-svg" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid meet">
+                                    <!-- Flow lines will be dynamically generated -->
+                                </svg>
+                            </div>
+                            <p class="text-center">Visual representation of money movement between accounts</p>
+                        </div>
+                    </div>
+                    
+                    <!-- NEW: Ledger Health Gauge -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Ledger Health Meter</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="gauge-container">
+                                <svg viewBox="0 0 120 120" class="gauge">
+                                    <circle class="gauge-background" cx="60" cy="60" r="54"></circle>
+                                    <circle class="gauge-progress" id="ledger-gauge-progress" cx="60" cy="60" r="54" stroke-dasharray="0 339"></circle>
+                                    <text class="gauge-text" x="60" y="65" text-anchor="middle" id="ledger-gauge-text">0%</text>
+                                    <text class="gauge-label" x="60" y="80" text-anchor="middle">Accuracy</text>
+                                </svg>
+                            </div>
+                            <p class="text-center" id="ledger-health-status">Calculating ledger health...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="chart-container">
-                <div class="chart-title">Cash Flow Forecast</div>
-                <canvas id="predictive-cashflow-chart" class="predictive-chart"></canvas>
+                <div class="chart-title">Financial Health Overview</div>
+                <canvas id="financial-health-chart"></canvas>
             </div>
             
             <div class="card">
@@ -1091,11 +1142,13 @@
                                 <th>Account</th>
                                 <th>Debit</th>
                                 <th>Credit</th>
+                                <!-- NEW: Transaction Hash Column -->
+                                <th>Integrity Hash</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr class="empty-state-row">
-                                <td colspan="5" class="empty-state">
+                                <td colspan="6" class="empty-state">
                                     <i class="fas fa-receipt"></i>
                                     <p>No transactions yet</p>
                                 </td>
@@ -1104,12 +1157,32 @@
                     </table>
                 </div>
             </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <span>Recent Activity</span>
+                </div>
+                <div class="card-body">
+                    <ul class="recent-activity" id="recent-activity-list">
+                        <li>No recent activity</li>
+                    </ul>
+                </div>
+            </div>
         </div>
         
         <!-- Journal Tab -->
         <div id="journal" class="tab-content">
             <h2>Journal Entries</h2>
             <button id="add-transaction-btn" style="margin-bottom: 1.5rem;"><i class="fas fa-plus"></i>Add New Transaction</button>
+            
+            <!-- NEW: ShadowBook Toggle -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="shadowbook-toggle">
+                        <input type="checkbox" id="shadowbook-toggle"> Show Ghost Transactions
+                    </label>
+                </div>
+            </div>
             
             <div class="search-box">
                 <input type="text" id="journal-search" placeholder="Search journal entries...">
@@ -1135,18 +1208,6 @@
                 <button id="clear-journal-filter" class="btn-warning"><i class="fas fa-times"></i>Clear Filter</button>
             </div>
             
-            <!-- Transaction Suggestions -->
-            <div class="ai-suggestions" id="transaction-suggestions" style="display: none;">
-                <h4><i class="fas fa-bolt"></i> Transaction Suggestions</h4>
-                <p>Based on your transaction history, you might want to record:</p>
-                <div class="ai-suggestion-item" data-account-debit="acc-11" data-account-credit="acc-1" data-amount="1000">
-                    <strong>Monthly Rent Payment</strong> - Debit: Rent Expense, Credit: Cash
-                </div>
-                <div class="ai-suggestion-item" data-account-debit="acc-12" data-account-credit="acc-1" data-amount="2500">
-                    <strong>Bi-weekly Payroll</strong> - Debit: Salaries Expense, Credit: Cash
-                </div>
-            </div>
-            
             <div class="card">
                 <div class="card-header">
                     <span>Journal Entries</span>
@@ -1167,12 +1228,14 @@
                                 <th>Account</th>
                                 <th>Debit</th>
                                 <th>Credit</th>
+                                <!-- NEW: Integrity Verification Column -->
+                                <th>Verified</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr class="empty-state-row">
-                                <td colspan="6" class="empty-state">
+                                <td colspan="7" class="empty-state">
                                     <i class="fas fa-book"></i>
                                     <p>No journal entries yet</p>
                                 </td>
@@ -1309,7 +1372,6 @@
                         <option value="changes-equity">Statement of Changes in Equity</option>
                         <option value="general-ledger">General Ledger Summary</option>
                         <option value="account-detail">Account Detail</option>
-                        <option value="financial-analysis">Financial Analysis</option>
                     </select>
                 </div>
                 
@@ -1432,212 +1494,22 @@
             </div>
         </div>
         
-        <!-- Automation Tab -->
-        <div id="automation" class="tab-content">
-            <h2>Automation & Workflows</h2>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span><i class="fas fa-bolt"></i> Recurring Transactions</span>
-                </div>
-                <div class="card-body">
-                    <p>Set up automatic recurring transactions for regular expenses and income.</p>
-                    <button id="add-recurring-transaction"><i class="fas fa-plus"></i> Add Recurring Transaction</button>
-                    
-                    <div id="recurring-transactions-list" style="margin-top: 1rem;">
-                        <div class="automation-rule">
-                            <div class="rule-details">
-                                <h4>Monthly Rent Payment</h4>
-                                <p>Amount: $1,200.00 | Next: <span id="next-rent-date"></span></p>
-                                <span class="rule-status status-enabled"><i class="fas fa-check-circle"></i> Active</span>
-                            </div>
-                            <div class="rule-actions">
-                                <button class="btn-warning"><i class="fas fa-edit"></i></button>
-                                <button class="btn-danger"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>
-                        
-                        <div class="automation-rule">
-                            <div class="rule-details">
-                                <h4>Bi-weekly Payroll</h4>
-                                <p>Amount: $4,500.00 | Next: <span id="next-payroll-date"></span></p>
-                                <span class="rule-status status-enabled"><i class="fas fa-check-circle"></i> Active</span>
-                            </div>
-                            <div class="rule-actions">
-                                <button class="btn-warning"><i class="fas fa-edit"></i></button>
-                                <button class="btn-danger"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span><i class="fas fa-robot"></i> Smart Transaction Categorization</span>
-                </div>
-                <div class="card-body">
-                    <p>Automatically categorize transactions based on patterns and descriptions.</p>
-                    <div class="form-group">
-                        <label for="auto-categorization-toggle">Enable Auto Categorization:</label>
-                        <input type="checkbox" id="auto-categorization-toggle" checked>
-                    </div>
-                    <button id="train-categorization-model" class="btn-success"><i class="fas fa-brain"></i> Train Categorization Model</button>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span><i class="fas fa-chart-line"></i> Financial Forecasting</span>
-                </div>
-                <div class="card-body">
-                    <p>Generate financial forecasts based on your historical data.</p>
-                    <button id="generate-forecast"><i class="fas fa-crystal-ball"></i> Generate 6-Month Forecast</button>
-                    
-                    <div id="forecast-results" style="margin-top: 1rem; display: none;">
-                        <h4>Financial Forecast</h4>
-                        <div class="chart-container">
-                            <canvas id="forecast-chart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Collaboration Tab -->
-        <div id="collaboration" class="tab-content">
-            <h2>Team Collaboration</h2>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span><i class="fas fa-users"></i> Team Members</span>
-                </div>
-                <div class="card-body">
-                    <p>Invite team members to collaborate on your accounting data.</p>
-                    <div class="form-group">
-                        <label for="invite-email">Invite by Email:</label>
-                        <input type="email" id="invite-email" placeholder="team.member@example.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="invite-role">Role:</label>
-                        <select id="invite-role">
-                            <option value="viewer">Viewer</option>
-                            <option value="editor">Editor</option>
-                            <option value="admin">Administrator</option>
-                        </select>
-                    </div>
-                    <button id="send-invite"><i class="fas fa-paper-plane"></i> Send Invitation</button>
-                    
-                    <table id="team-members-table" style="margin-top: 1rem;">
-                        <thead>
-                            <tr>
-                                <th>User</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div class="user-avatar">Y</div>
-                                        <div>You</div>
-                                    </div>
-                                </td>
-                                <td>owner@example.com</td>
-                                <td><span class="role-badge role-admin">Administrator</span></td>
-                                <td><span class="status-badge status-active">Active</span></td>
-                                <td>-</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div class="user-avatar">J</div>
-                                        <div>John Smith</div>
-                                    </div>
-                                </td>
-                                <td>john.smith@example.com</td>
-                                <td><span class="role-badge role-editor">Editor</span></td>
-                                <td><span class="status-badge status-active">Active</span></td>
-                                <td>
-                                    <button class="btn-warning"><i class="fas fa-edit"></i></button>
-                                    <button class="btn-danger"><i class="fas fa-trash"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div class="user-avatar">S</div>
-                                        <div>Sarah Johnson</div>
-                                    </div>
-                                </td>
-                                <td>sarah.j@example.com</td>
-                                <td><span class="role-badge role-viewer">Viewer</span></td>
-                                <td><span class="status-badge status-pending">Pending</span></td>
-                                <td>
-                                    <button class="btn-warning"><i class="fas fa-edit"></i></button>
-                                    <button class="btn-danger"><i class="fas fa-trash"></i></button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span><i class="fas fa-comments"></i> Activity Feed</span>
-                </div>
-                <div class="card-body">
-                    <div id="activity-feed">
-                        <div class="activity-item">
-                            <div class="user-avatar">J</div>
-                            <div class="activity-content">
-                                <strong>John Smith</strong> added a new transaction: <em>Office Supplies Purchase</em>
-                                <div class="activity-time">2 hours ago</div>
-                            </div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="user-avatar">Y</div>
-                            <div class="activity-content">
-                                <strong>You</strong> updated the chart of accounts
-                                <div class="activity-time">Yesterday, 3:45 PM</div>
-                            </div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="user-avatar">Y</div>
-                            <div class="activity-content">
-                                <strong>You</strong> generated the monthly financial report
-                                <div class="activity-time">2 days ago</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <span><i class="fas fa-shield-alt"></i> Permissions</span>
-                </div>
-                <div class="card-body">
-                    <p>Manage what team members can see and do in your OpenLedger account.</p>
-                    <div class="form-group">
-                        <label for="permission-level">Default Permission Level:</label>
-                        <select id="permission-level">
-                            <option value="viewer">Viewer</option>
-                            <option value="editor">Editor</option>
-                            <option value="admin">Administrator</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
         <!-- Settings Tab -->
         <div id="settings" class="tab-content">
             <h2>Application Settings</h2>
+            
+            <!-- NEW: PWA Settings Section -->
+            <div class="card">
+                <div class="card-header">Progressive Web App</div>
+                <div class="card-body">
+                    <p>Enable offline functionality and install as an app:</p>
+                    <button id="install-pwa" class="btn-success"><i class="fas fa-download"></i>Install OpenLedger App</button>
+                    <button id="clear-cache" class="btn-warning" style="margin-left: 1rem;"><i class="fas fa-broom"></i>Clear Cache</button>
+                    <div id="pwa-status" style="margin-top: 1rem; padding: 0.5rem; border-radius: 4px; background: rgba(0,0,0,0.05);">
+                        <i class="fas fa-info-circle"></i> PWA features are enabled
+                    </div>
+                </div>
+            </div>
             
             <div class="card">
                 <div class="card-header">Company Information</div>
@@ -1735,11 +1607,11 @@
             </div>
 
             <div class="card">
-                <div class="card-header">About OpenLedger Pro</div>
+                <div class="card-header">About OpenLedger</div>
                 <div class="card-body">
-                    <p>OpenLedger Pro v3.0.0 - Enterprise Accounting Platform</p>
-                    <p>Developed for small and medium businesses</p>
-                    <p>&copy; 2025 OpenLedger Project</p>
+                    <p>OpenLedger v1.2.0 - Universal Accounting Engine</p>
+                    <p>Developed with <i class="fas fa-heart" style="color: #e74c3c;"></i> for small businesses and accountants</p>
+                    <p>&copy; 2023 OpenLedger Project</p>
                 </div>
             </div>
         </div>
@@ -1748,8 +1620,8 @@
     <footer>
         <div class="container">
             <div class="footer-content">
-                <div>OpenLedger Pro &copy; 2025 | Enterprise Accounting Platform</div>
-                <div class="version">v3.0.0</div>
+                <div>OpenLedger &copy; 2023 | Universal Accounting Engine</div>
+                <div class="version">v1.2.0</div>
             </div>
         </div>
     </footer>
@@ -1775,6 +1647,14 @@
                 <div class="form-group">
                     <label for="transaction-reference">Reference:</label>
                     <input type="text" id="transaction-reference" placeholder="Optional reference number">
+                </div>
+                
+                <!-- NEW: Ghost Transaction Toggle -->
+                <div class="form-group">
+                    <label for="ghost-transaction">
+                        <input type="checkbox" id="ghost-transaction"> Mark as Ghost Transaction (ShadowBook™)
+                    </label>
+                    <small>Ghost transactions are displayed with reduced opacity until confirmed</small>
                 </div>
                 
                 <div id="transaction-entries">
@@ -1820,6 +1700,13 @@
                 
                 <div class="form-group" id="transaction-balance-check" style="color: var(--danger); font-weight: bold; display: none;">
                     <i class="fas fa-exclamation-triangle"></i> Debits and credits are not balanced!
+                </div>
+                
+                <!-- NEW: Transaction Hash Display -->
+                <div class="form-group" id="transaction-hash-display" style="display: none;">
+                    <label>Transaction Integrity Hash (TrueLedger™):</label>
+                    <div class="transaction-hash" id="transaction-hash-value"></div>
+                    <small>This hash verifies the integrity of your transaction</small>
                 </div>
                 
                 <div class="form-group">
@@ -1901,78 +1788,6 @@
         </div>
     </div>
 
-    <!-- Recurring Transaction Modal -->
-    <div id="recurring-transaction-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-plus-circle"></i> Add Recurring Transaction</h3>
-                <span class="close">&times;</span>
-            </div>
-            <form id="recurring-transaction-form">
-                <div class="form-group">
-                    <label for="recurring-description">Description:</label>
-                    <input type="text" id="recurring-description" placeholder="Enter description" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="recurring-amount">Amount:</label>
-                    <input type="number" id="recurring-amount" step="0.01" min="0" placeholder="0.00" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="recurring-debit-account">Debit Account:</label>
-                    <select id="recurring-debit-account" required>
-                        <option value="">Select Account</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="recurring-credit-account">Credit Account:</label>
-                    <select id="recurring-credit-account" required>
-                        <option value="">Select Account</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Frequency:</label>
-                    <div class="recurring-options">
-                        <div class="recurring-option" data-frequency="daily">
-                            <i class="fas fa-calendar-day"></i>
-                            <div>Daily</div>
-                        </div>
-                        <div class="recurring-option" data-frequency="weekly">
-                            <i class="fas fa-calendar-week"></i>
-                            <div>Weekly</div>
-                        </div>
-                        <div class="recurring-option" data-frequency="monthly">
-                            <i class="fas fa-calendar-alt"></i>
-                            <div>Monthly</div>
-                        </div>
-                        <div class="recurring-option" data-frequency="quarterly">
-                            <i class="fas fa-calendar"></i>
-                            <div>Quarterly</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="recurring-start-date">Start Date:</label>
-                    <input type="date" id="recurring-start-date" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="recurring-end-date">End Date (Optional):</label>
-                    <input type="date" id="recurring-end-date">
-                </div>
-                
-                <div class="form-group">
-                    <button type="submit"><i class="fas fa-save"></i> Save Recurring Transaction</button>
-                    <button type="button" id="cancel-recurring" style="background: var(--secondary); margin-left: 10px;"><i class="fas fa-times"></i> Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Password Modal -->
     <div id="password-modal" class="modal">
         <div class="modal-content">
@@ -2008,20 +1823,28 @@
     <div id="help-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3><i class="fas fa-question-circle"></i> OpenLedger Pro Help</h3>
+                <h3><i class="fas fa-question-circle"></i> OpenLedger Help</h3>
                 <span class="close">&times;</span>
             </div>
             <div class="card-body">
                 <h3>Getting Started</h3>
-                <p>Welcome to OpenLedger Pro! Follow these steps to get started:</p>
+                <p>Welcome to OpenLedger! Follow these steps to get started:</p>
                 <ol>
                     <li>Set up your company information in Settings</li>
                     <li>Add your accounts in the Chart of Accounts</li>
                     <li>Start recording transactions in the Journal</li>
                     <li>Generate reports to view your financial statements</li>
-                    <li>Explore automation features for recurring transactions</li>
-                    <li>Invite team members to collaborate</li>
                 </ol>
+                
+                <h3>New Features</h3>
+                <ul>
+                    <li><strong>FlowView™:</strong> Visualize money movement between accounts</li>
+                    <li><strong>TrueLedger™:</strong> Cryptographic verification of transaction integrity</li>
+                    <li><strong>ShadowBook™:</strong> Track pending transactions with ghost entries</li>
+                    <li><strong>AI Narrative Insights:</strong> Get natural language explanations of your finances</li>
+                    <li><strong>Ledger Health Meter:</strong> Monitor the accuracy of your ledger</li>
+                    <li><strong>PWA Support:</strong> Use OpenLedger offline and install as an app</li>
+                </ul>
                 
                 <h3>Video Tutorials</h3>
                 <p>Check out our video tutorials for a guided walkthrough:</p>
@@ -2029,7 +1852,6 @@
                     <li><a href="#">Setting up your accounts</a></li>
                     <li><a href="#">Recording transactions</a></li>
                     <li><a href="#">Generating financial reports</a></li>
-                    <li><a href="#">Using automation features</a></li>
                 </ul>
                 
                 <h3>Need more help?</h3>
@@ -2046,6 +1868,38 @@
     <input type="file" id="restore-file" style="display: none;" accept=".json">
     
     <script>
+        // NEW: Service Worker Registration for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+
+        // NEW: PWA Install Prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-pwa').style.display = 'inline-flex';
+        });
+
+        document.getElementById('install-pwa').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('install-pwa').style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+
         // Main application object
         const OpenLedger = {
             // Application state
@@ -2056,17 +1910,330 @@
                 baseCurrency: 'USD',
                 financialYear: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
                 autoLogout: 30,
-                password: null,
-                autoCategorization: true
+                password: null
             },
             accounts: [],
             transactions: [],
-            recurringTransactions: [],
-            teamMembers: [],
             idleTimer: null,
             currentUser: null,
             financialChart: null,
-            predictiveChart: null,
+            
+            // NEW: Ghost Transactions Array
+            ghostTransactions: [],
+            
+            // NEW: Innovation Features
+            innovations: {
+                // Animated counters
+                animateValue: function(element, start, end, duration) {
+                    let startTimestamp = null;
+                    const step = (timestamp) => {
+                        if (!startTimestamp) startTimestamp = timestamp;
+                        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                        const value = Math.floor(progress * (end - start) + start);
+                        element.textContent = this.formatCurrency(value);
+                        if (progress < 1) {
+                            window.requestAnimationFrame(step);
+                        }
+                    };
+                    window.requestAnimationFrame(step);
+                },
+                
+                // Generate SHA-256 hash for TrueLedger
+                generateTransactionHash: function(transactionData) {
+                    const dataString = JSON.stringify(transactionData);
+                    return CryptoJS.SHA256(dataString).toString();
+                },
+                
+                // Verify transaction integrity
+                verifyTransactionIntegrity: function(transaction) {
+                    if (!transaction.hash) return false;
+                    const checkHash = this.generateTransactionHash({
+                        id: transaction.id,
+                        date: transaction.date,
+                        description: transaction.description,
+                        debitAccount: transaction.debitAccount,
+                        debitAmount: transaction.debitAmount,
+                        creditAccount: transaction.creditAccount,
+                        creditAmount: transaction.creditAmount
+                    });
+                    return transaction.hash === checkHash;
+                },
+                
+                // Calculate ledger health
+                calculateLedgerHealth: function() {
+                    const totalTransactions = this.transactions.length;
+                    if (totalTransactions === 0) return 100;
+                    
+                    let balancedTransactions = 0;
+                    let verifiedTransactions = 0;
+                    
+                    // Group transactions by ID
+                    const transactionGroups = {};
+                    this.transactions.forEach(tx => {
+                        if (!transactionGroups[tx.id]) {
+                            transactionGroups[tx.id] = [];
+                        }
+                        transactionGroups[tx.id].push(tx);
+                    });
+                    
+                    // Check each transaction group for balance and verification
+                    Object.values(transactionGroups).forEach(group => {
+                        let totalDebit = 0;
+                        let totalCredit = 0;
+                        let allVerified = true;
+                        
+                        group.forEach(tx => {
+                            totalDebit += tx.debitAmount;
+                            totalCredit += tx.creditAmount;
+                            if (!this.verifyTransactionIntegrity(tx)) {
+                                allVerified = false;
+                            }
+                        });
+                        
+                        if (Math.abs(totalDebit - totalCredit) < 0.01) {
+                            balancedTransactions++;
+                        }
+                        
+                        if (allVerified) {
+                            verifiedTransactions++;
+                        }
+                    });
+                    
+                    const balanceScore = (balancedTransactions / Object.keys(transactionGroups).length) * 50;
+                    const verificationScore = (verifiedTransactions / totalTransactions) * 50;
+                    
+                    return Math.round(balanceScore + verificationScore);
+                },
+                
+                // Generate AI narrative
+                generateAINarrative: function() {
+                    const assets = this.calculateAccountTypeTotal('Asset');
+                    const liabilities = this.calculateAccountTypeTotal('Liability');
+                    const equity = this.calculateAccountTypeTotal('Equity');
+                    const revenue = this.calculateAccountTypeTotal('Revenue');
+                    const expenses = this.calculateAccountTypeTotal('Expense');
+                    const netIncome = revenue - expenses;
+                    
+                    let narrative = "Your financial position is ";
+                    
+                    if (netIncome > 0) {
+                        narrative += `strong with a net income of ${this.formatCurrency(netIncome)}. `;
+                    } else if (netIncome < 0) {
+                        narrative += `challenging with a net loss of ${this.formatCurrency(Math.abs(netIncome))}. `;
+                    } else {
+                        narrative += "breaking even. ";
+                    }
+                    
+                    if (assets > liabilities) {
+                        narrative += `You have positive equity of ${this.formatCurrency(equity)}. `;
+                    } else {
+                        narrative += `Your liabilities exceed your assets by ${this.formatCurrency(liabilities - assets)}. `;
+                    }
+                    
+                    if (this.transactions.length > 0) {
+                        const recentTx = this.transactions[this.transactions.length - 1];
+                        narrative += `Your most recent transaction was "${recentTx.description}" on ${recentTx.date}.`;
+                    } else {
+                        narrative += "Start by adding your first transaction to track your financial activity.";
+                    }
+                    
+                    return narrative;
+                },
+                
+                // Update FlowView visualization
+                updateFlowView: function() {
+                    const svg = document.getElementById('flowview-svg');
+                    svg.innerHTML = '';
+                    
+                    if (this.accounts.length === 0 || this.transactions.length === 0) {
+                        // Show placeholder
+                        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        text.setAttribute('x', '400');
+                        text.setAttribute('y', '150');
+                        text.setAttribute('text-anchor', 'middle');
+                        text.setAttribute('fill', 'var(--text-secondary)');
+                        text.textContent = 'Add accounts and transactions to visualize money flow';
+                        svg.appendChild(text);
+                        return;
+                    }
+                    
+                    // Get top 5 accounts by transaction volume
+                    const accountVolumes = {};
+                    this.transactions.forEach(tx => {
+                        if (tx.debitAccount) {
+                            accountVolumes[tx.debitAccount] = (accountVolumes[tx.debitAccount] || 0) + tx.debitAmount;
+                        }
+                        if (tx.creditAccount) {
+                            accountVolumes[tx.creditAccount] = (accountVolumes[tx.creditAccount] || 0) + tx.creditAmount;
+                        }
+                    });
+                    
+                    const topAccounts = Object.entries(accountVolumes)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5)
+                        .map(([accountId, volume]) => ({
+                            account: this.accounts.find(acc => acc.id === accountId),
+                            volume
+                        }));
+                    
+                    // Create account nodes
+                    const nodeRadius = 40;
+                    const centerX = 400;
+                    const centerY = 150;
+                    const radius = 120;
+                    
+                    topAccounts.forEach((accountData, index) => {
+                        const angle = (index / topAccounts.length) * 2 * Math.PI;
+                        const x = centerX + radius * Math.cos(angle);
+                        const y = centerY + radius * Math.sin(angle);
+                        
+                        // Create account node
+                        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        circle.setAttribute('cx', x);
+                        circle.setAttribute('cy', y);
+                        circle.setAttribute('r', nodeRadius);
+                        circle.setAttribute('fill', this.getAccountColor(accountData.account.type));
+                        circle.setAttribute('class', 'flowview-account-node');
+                        circle.setAttribute('data-account-id', accountData.account.id);
+                        svg.appendChild(circle);
+                        
+                        // Add account name
+                        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        text.setAttribute('x', x);
+                        text.setAttribute('y', y + 5);
+                        text.setAttribute('text-anchor', 'middle');
+                        text.setAttribute('fill', 'white');
+                        text.setAttribute('font-size', '10');
+                        text.textContent = accountData.account.name.substring(0, 10);
+                        svg.appendChild(text);
+                        
+                        // Add account balance
+                        const balanceText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        balanceText.setAttribute('x', x);
+                        balanceText.setAttribute('y', y + 20);
+                        balanceText.setAttribute('text-anchor', 'middle');
+                        balanceText.setAttribute('fill', 'white');
+                        balanceText.setAttribute('font-size', '8');
+                        balanceText.textContent = this.formatCurrency(this.getAccountBalance(accountData.account.id));
+                        svg.appendChild(balanceText);
+                    });
+                    
+                    // Draw flow lines between accounts based on transactions
+                    this.transactions.slice(-10).forEach(tx => {
+                        const debitAccount = topAccounts.find(a => a.account.id === tx.debitAccount);
+                        const creditAccount = topAccounts.find(a => a.account.id === tx.creditAccount);
+                        
+                        if (debitAccount && creditAccount) {
+                            const debitIndex = topAccounts.indexOf(debitAccount);
+                            const creditIndex = topAccounts.indexOf(creditAccount);
+                            
+                            const debitAngle = (debitIndex / topAccounts.length) * 2 * Math.PI;
+                            const creditAngle = (creditIndex / topAccounts.length) * 2 * Math.PI;
+                            
+                            const debitX = centerX + radius * Math.cos(debitAngle);
+                            const debitY = centerY + radius * Math.sin(debitAngle);
+                            const creditX = centerX + radius * Math.cos(creditAngle);
+                            const creditY = centerY + radius * Math.sin(creditAngle);
+                            
+                            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            line.setAttribute('x1', debitX);
+                            line.setAttribute('y1', debitY);
+                            line.setAttribute('x2', creditX);
+                            line.setAttribute('y2', creditY);
+                            line.setAttribute('stroke', '#4361ee');
+                            line.setAttribute('stroke-width', Math.min(tx.debitAmount / 100, 5));
+                            line.setAttribute('opacity', '0.6');
+                            svg.appendChild(line);
+                            
+                            // Add arrowhead
+                            const angle = Math.atan2(creditY - debitY, creditX - debitX);
+                            const arrowLength = 10;
+                            const arrowX = creditX - (nodeRadius + arrowLength) * Math.cos(angle);
+                            const arrowY = creditY - (nodeRadius + arrowLength) * Math.sin(angle);
+                            
+                            const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                            const points = [
+                                [arrowX, arrowY],
+                                [arrowX - arrowLength * Math.cos(angle - Math.PI/6), arrowY - arrowLength * Math.sin(angle - Math.PI/6)],
+                                [arrowX - arrowLength * Math.cos(angle + Math.PI/6), arrowY - arrowLength * Math.sin(angle + Math.PI/6)]
+                            ];
+                            arrow.setAttribute('points', points.map(p => p.join(',')).join(' '));
+                            arrow.setAttribute('fill', '#4361ee');
+                            svg.appendChild(arrow);
+                        }
+                    });
+                },
+                
+                // Get account color for visualization
+                getAccountColor: function(type) {
+                    const colors = {
+                        'Asset': '#3498db',
+                        'Liability': '#e74c3c',
+                        'Equity': '#2ecc71',
+                        'Revenue': '#f39c12',
+                        'Expense': '#9b59b6'
+                    };
+                    return colors[type] || '#95a5a6';
+                },
+                
+                // Update financial health background
+                updateFinancialHealthBackground: function() {
+                    const netIncome = this.calculateAccountTypeTotal('Revenue') - this.calculateAccountTypeTotal('Expense');
+                    const bgElement = document.getElementById('financial-health-bg');
+                    
+                    if (netIncome > 0) {
+                        // Positive - green hue
+                        bgElement.style.backgroundColor = 'rgba(46, 204, 113, 0.1)';
+                    } else {
+                        // Negative - red hue
+                        bgElement.style.backgroundColor = 'rgba(231, 76, 60, 0.1)';
+                    }
+                },
+                
+                // Update ledger health meter
+                updateLedgerHealthMeter: function() {
+                    const health = this.calculateLedgerHealth();
+                    const meter = document.getElementById('ledger-health-meter');
+                    const value = document.getElementById('ledger-health-value');
+                    const gaugeProgress = document.getElementById('ledger-gauge-progress');
+                    const gaugeText = document.getElementById('ledger-gauge-text');
+                    const healthStatus = document.getElementById('ledger-health-status');
+                    
+                    // Update circular gauge
+                    const circumference = 2 * Math.PI * 54;
+                    const offset = circumference - (health / 100) * circumference;
+                    gaugeProgress.style.strokeDasharray = `${circumference} ${circumference}`;
+                    gaugeProgress.style.strokeDashoffset = offset;
+                    gaugeText.textContent = `${health}%`;
+                    
+                    // Update header meter
+                    value.textContent = `${health}%`;
+                    meter.style.background = `conic-gradient(${this.getHealthColor(health)} 0%, ${this.getHealthColor(health)} ${health}%, #e0e0e0 ${health}%)`;
+                    
+                    // Update status text
+                    if (health >= 90) {
+                        healthStatus.textContent = 'Excellent - Your ledger is in perfect balance';
+                        healthStatus.style.color = 'var(--success)';
+                    } else if (health >= 75) {
+                        healthStatus.textContent = 'Good - Minor discrepancies detected';
+                        healthStatus.style.color = 'var(--info)';
+                    } else if (health >= 60) {
+                        healthStatus.textContent = 'Fair - Some transactions need review';
+                        healthStatus.style.color = 'var(--warning)';
+                    } else {
+                        healthStatus.textContent = 'Poor - Significant ledger issues detected';
+                        healthStatus.style.color = 'var(--danger)';
+                    }
+                },
+                
+                // Get health color based on percentage
+                getHealthColor: function(percentage) {
+                    if (percentage >= 90) return 'var(--success)';
+                    if (percentage >= 75) return 'var(--info)';
+                    if (percentage >= 60) return 'var(--warning)';
+                    return 'var(--danger)';
+                }
+            },
             
             // Initialize the application
             init() {
@@ -2077,7 +2244,15 @@
                 this.updateDashboard();
                 this.setCurrentDate();
                 this.setupIdleTimer();
-                this.setupRecurringTransactions();
+                
+                // NEW: Initialize innovations
+                this.innovations.updateFlowView();
+                this.innovations.updateFinancialHealthBackground();
+                this.innovations.updateLedgerHealthMeter();
+                
+                // Update AI narrative
+                const aiText = document.getElementById('ai-narrative-text');
+                aiText.textContent = this.innovations.generateAINarrative();
                 
                 // Add sample accounts if no accounts exist
                 if (this.accounts.length === 0) {
@@ -2087,22 +2262,10 @@
                 // Show welcome message for first-time users
                 if (!localStorage.getItem('openledger-welcome-shown')) {
                     setTimeout(() => {
-                        this.showNotification('Welcome to OpenLedger Pro! Explore automation features for efficient financial management.', 'success');
+                        this.showNotification('Welcome to OpenLedger! Start by adding your accounts and transactions.', 'success');
                         localStorage.setItem('openledger-welcome-shown', 'true');
                     }, 2000);
                 }
-            },
-            
-            // Setup recurring transactions
-            setupRecurringTransactions() {
-                // Set next dates for recurring transactions
-                const today = new Date();
-                const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-                const nextPayroll = new Date(today);
-                nextPayroll.setDate(today.getDate() + (14 - today.getDay() % 14));
-                
-                document.getElementById('next-rent-date').textContent = nextMonth.toLocaleDateString();
-                document.getElementById('next-payroll-date').textContent = nextPayroll.toLocaleDateString();
             },
             
             // Setup idle timer for auto logout
@@ -2157,14 +2320,12 @@
                     const settings = localStorage.getItem('openledger-settings');
                     const accounts = localStorage.getItem('openledger-accounts');
                     const transactions = localStorage.getItem('openledger-transactions');
-                    const recurring = localStorage.getItem('openledger-recurring');
-                    const team = localStorage.getItem('openledger-team');
+                    const ghostTransactions = localStorage.getItem('openledger-ghost-transactions');
                     
                     if (settings) this.settings = JSON.parse(settings);
                     if (accounts) this.accounts = JSON.parse(accounts);
                     if (transactions) this.transactions = JSON.parse(transactions);
-                    if (recurring) this.recurringTransactions = JSON.parse(recurring);
-                    if (team) this.teamMembers = JSON.parse(team);
+                    if (ghostTransactions) this.ghostTransactions = JSON.parse(ghostTransactions);
                     
                     // Update UI with settings
                     document.getElementById('accounting-mode').value = this.settings.accountingMode;
@@ -2174,7 +2335,6 @@
                     document.getElementById('financial-year').value = this.settings.financialYear;
                     document.getElementById('auto-logout').value = this.settings.autoLogout;
                     document.getElementById('company-name').textContent = this.settings.companyName;
-                    document.getElementById('auto-categorization-toggle').checked = this.settings.autoCategorization;
                 } catch (e) {
                     console.error('Error loading data from localStorage:', e);
                     this.showNotification('Error loading saved data', 'error');
@@ -2187,8 +2347,7 @@
                     localStorage.setItem('openledger-settings', JSON.stringify(this.settings));
                     localStorage.setItem('openledger-accounts', JSON.stringify(this.accounts));
                     localStorage.setItem('openledger-transactions', JSON.stringify(this.transactions));
-                    localStorage.setItem('openledger-recurring', JSON.stringify(this.recurringTransactions));
-                    localStorage.setItem('openledger-team', JSON.stringify(this.teamMembers));
+                    localStorage.setItem('openledger-ghost-transactions', JSON.stringify(this.ghostTransactions));
                 } catch (e) {
                     console.error('Error saving data to localStorage:', e);
                     this.showNotification('Error saving data', 'error');
@@ -2211,7 +2370,6 @@
                 document.getElementById('report-date').value = today;
                 document.getElementById('report-date-from').value = firstOfMonthStr;
                 document.getElementById('report-date-to').value = today;
-                document.getElementById('recurring-start-date').value = today;
             },
             
             // Setup event listeners
@@ -2230,10 +2388,6 @@
                             this.updateDashboard();
                         } else if (tab.dataset.tab === 'accounts') {
                             this.renderAccounts();
-                        } else if (tab.dataset.tab === 'automation') {
-                            this.renderRecurringTransactions();
-                        } else if (tab.dataset.tab === 'collaboration') {
-                            this.renderTeamMembers();
                         }
                     });
                 });
@@ -2285,10 +2439,6 @@
                 
                 document.getElementById('cancel-password').addEventListener('click', () => {
                     document.getElementById('password-modal').style.display = 'none';
-                });
-                
-                document.getElementById('cancel-recurring').addEventListener('click', () => {
-                    document.getElementById('recurring-transaction-modal').style.display = 'none';
                 });
                 
                 // Quick action buttons
@@ -2362,12 +2512,6 @@
                 document.getElementById('account-form').addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.addAccount();
-                });
-                
-                // Recurring transaction form submission
-                document.getElementById('recurring-transaction-form').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.addRecurringTransaction();
                 });
                 
                 // Add another entry to transaction form
@@ -2549,42 +2693,22 @@
                     }
                 });
                 
-                // Automation Features
-                document.getElementById('auto-categorization-toggle').addEventListener('change', (e) => {
-                    this.settings.autoCategorization = e.target.checked;
-                    this.saveData();
-                    this.showNotification(`Auto categorization ${e.target.checked ? 'enabled' : 'disabled'}`, 'success');
+                // NEW: ShadowBook toggle
+                document.getElementById('shadowbook-toggle').addEventListener('change', (e) => {
+                    this.renderTransactions();
                 });
                 
-                document.getElementById('train-categorization-model').addEventListener('click', () => {
-                    this.trainCategorizationModel();
+                // NEW: PWA Install button
+                document.getElementById('install-pwa').addEventListener('click', () => {
+                    // Handled in the PWA section above
                 });
                 
-                document.getElementById('add-recurring-transaction').addEventListener('click', () => {
-                    this.showRecurringTransactionModal();
-                });
-                
-                document.getElementById('generate-forecast').addEventListener('click', () => {
-                    this.generateFinancialForecast();
-                });
-                
-                // Recurring transaction options
-                document.querySelectorAll('.recurring-option').forEach(option => {
-                    option.addEventListener('click', () => {
-                        document.querySelectorAll('.recurring-option').forEach(o => o.classList.remove('selected'));
-                        option.classList.add('selected');
-                    });
-                });
-                
-                // Collaboration Features
-                document.getElementById('send-invite').addEventListener('click', () => {
-                    this.sendTeamInvitation();
-                });
-                
-                // Refresh insights
-                document.getElementById('refresh-insights').addEventListener('click', () => {
-                    this.generateFinancialInsights();
-                    this.showNotification('Financial insights refreshed', 'success');
+                // NEW: Clear cache button
+                document.getElementById('clear-cache').addEventListener('click', () => {
+                    if (confirm('Clear cache? This will remove temporary data but preserve your accounts and transactions.')) {
+                        localStorage.removeItem('openledger-activities');
+                        this.showNotification('Cache cleared successfully', 'success');
+                    }
                 });
             },
             
@@ -2614,21 +2738,10 @@
                 document.getElementById('total-debit-amount').textContent = this.formatCurrency(0);
                 document.getElementById('total-credit-amount').textContent = this.formatCurrency(0);
                 document.getElementById('transaction-balance-check').style.display = 'none';
-            },
-            
-            // Show recurring transaction modal
-            showRecurringTransactionModal() {
-                document.getElementById('recurring-transaction-modal').style.display = 'flex';
-                document.getElementById('recurring-transaction-form').reset();
                 
-                // Populate account dropdowns
-                this.populateRecurringAccountDropdowns();
-                
-                // Set today's date
-                document.getElementById('recurring-start-date').value = new Date().toISOString().split('T')[0];
-                
-                // Select monthly by default
-                document.querySelector('.recurring-option[data-frequency="monthly"]').classList.add('selected');
+                // NEW: Reset ghost transaction checkbox
+                document.getElementById('ghost-transaction').checked = false;
+                document.getElementById('transaction-hash-display').style.display = 'none';
             },
             
             // Add another entry to the transaction form
@@ -2661,29 +2774,6 @@
             populateAccountDropdowns() {
                 document.querySelectorAll('.entry-account').forEach(dropdown => {
                     this.populateAccountDropdown(dropdown);
-                });
-            },
-            
-            // Populate recurring transaction account dropdowns
-            populateRecurringAccountDropdowns() {
-                const debitDropdown = document.getElementById('recurring-debit-account');
-                const creditDropdown = document.getElementById('recurring-credit-account');
-                
-                // Clear existing options except the first one
-                while (debitDropdown.options.length > 1) {
-                    debitDropdown.remove(1);
-                }
-                while (creditDropdown.options.length > 1) {
-                    creditDropdown.remove(1);
-                }
-                
-                // Add accounts
-                this.accounts.forEach(account => {
-                    const option = document.createElement('option');
-                    option.value = account.id;
-                    option.textContent = `${account.code} - ${account.name}`;
-                    debitDropdown.appendChild(option.cloneNode(true));
-                    creditDropdown.appendChild(option);
                 });
             },
             
@@ -2749,6 +2839,23 @@
                 } else {
                     balanceCheck.style.display = 'none';
                 }
+                
+                // NEW: Generate and display transaction hash
+                if (totalDebit > 0 || totalCredit > 0) {
+                    const transactionData = {
+                        date: document.getElementById('transaction-date').value,
+                        description: document.getElementById('transaction-description').value,
+                        entries: Array.from(document.querySelectorAll('.transaction-entry')).map(entry => ({
+                            account: entry.querySelector('.entry-account').value,
+                            debit: parseFloat(entry.querySelector('.debit-amount').value) || 0,
+                            credit: parseFloat(entry.querySelector('.credit-amount').value) || 0
+                        }))
+                    };
+                    
+                    const hash = this.innovations.generateTransactionHash(transactionData);
+                    document.getElementById('transaction-hash-value').textContent = hash;
+                    document.getElementById('transaction-hash-display').style.display = 'block';
+                }
             },
             
             // Change password
@@ -2784,7 +2891,6 @@
                 this.settings.baseCurrency = document.getElementById('base-currency').value;
                 this.settings.financialYear = document.getElementById('financial-year').value;
                 this.settings.autoLogout = document.getElementById('auto-logout').value;
-                this.settings.autoCategorization = document.getElementById('auto-categorization-toggle').checked;
                 
                 document.getElementById('company-name').textContent = this.settings.companyName;
                 this.saveData();
@@ -2957,10 +3063,11 @@
                 const dateTo = document.getElementById('journal-date-to').value;
                 const accountFilter = document.getElementById('journal-account').value;
                 const searchTerm = document.getElementById('journal-search').value.toLowerCase();
+                const showGhostTransactions = document.getElementById('shadowbook-toggle').checked;
                 
                 // Check if we have transactions
-                if (this.transactions.length === 0) {
-                    journalTable.innerHTML = '<tr class="empty-state-row"><td colspan="6" class="empty-state"><i class="fas fa-book"></i><p>No journal entries yet</p></td></tr>';
+                if (this.transactions.length === 0 && this.ghostTransactions.length === 0) {
+                    journalTable.innerHTML = '<tr class="empty-state-row"><td colspan="7" class="empty-state"><i class="fas fa-book"></i><p>No journal entries yet</p></td></tr>';
                     document.getElementById('journal-pagination').style.display = 'none';
                     return;
                 }
@@ -2971,8 +3078,14 @@
                 
                 journalTable.innerHTML = '';
                 
+                // Combine regular and ghost transactions if enabled
+                let allTransactions = [...this.transactions];
+                if (showGhostTransactions) {
+                    allTransactions = [...allTransactions, ...this.ghostTransactions];
+                }
+                
                 // Filter transactions by date if specified
-                let filteredTransactions = this.transactions.filter(transaction => {
+                let filteredTransactions = allTransactions.filter(transaction => {
                     if (dateFrom && transaction.date < dateFrom) return false;
                     if (dateTo && transaction.date > dateTo) return false;
                     if (accountFilter && transaction.debitAccount !== accountFilter && transaction.creditAccount !== accountFilter) return false;
@@ -2983,7 +3096,7 @@
                 });
                 
                 if (filteredTransactions.length === 0) {
-                    journalTable.innerHTML = '<tr class="empty-state-row"><td colspan="6" class="empty-state"><i class="fas fa-search"></i><p>No transactions found for selected filters</p></td></tr>';
+                    journalTable.innerHTML = '<tr class="empty-state-row"><td colspan="7" class="empty-state"><i class="fas fa-search"></i><p>No transactions found for selected filters</p></td></tr>';
                     document.getElementById('journal-pagination').style.display = 'none';
                     return;
                 }
@@ -3027,16 +3140,33 @@
                     
                     for (let i = startIndex; i < endIndex; i++) {
                         const transaction = filteredTransactions[i];
+                        const isGhost = this.ghostTransactions.includes(transaction);
+                        const isVerified = this.innovations.verifyTransactionIntegrity(transaction);
+                        
                         const row = document.createElement('tr');
+                        if (isGhost) {
+                            row.className = 'ghost-transaction';
+                        }
+                        
                         row.innerHTML = `
                             <td>${transaction.date}</td>
-                            <td>${transaction.description}</td>
+                            <td>${transaction.description} ${isGhost ? '<span class="badge">Ghost</span>' : ''}</td>
                             <td>${this.getAccountName(transaction.debitAccount)}<br>${this.getAccountName(transaction.creditAccount)}</td>
                             <td class="debit">${this.formatCurrency(transaction.debitAmount)}</td>
                             <td class="credit">${this.formatCurrency(transaction.creditAmount)}</td>
                             <td>
+                                ${isVerified ? 
+                                    '<i class="fas fa-check-circle" style="color: var(--success);" title="Verified"></i>' : 
+                                    '<i class="fas fa-exclamation-triangle" style="color: var(--warning);" title="Not Verified"></i>'
+                                }
+                            </td>
+                            <td>
                                 <button class="btn-warning" data-transaction-id="${transaction.id}"><i class="fas fa-edit"></i> Edit</button>
                                 <button class="btn-danger" data-transaction-id="${transaction.id}"><i class="fas fa-trash"></i> Delete</button>
+                                ${isGhost ? 
+                                    `<button class="btn-success confirm-ghost" data-transaction-id="${transaction.id}"><i class="fas fa-check"></i> Confirm</button>` : 
+                                    ''
+                                }
                             </td>
                         `;
                         journalTable.appendChild(row);
@@ -3059,10 +3189,32 @@
                             this.deleteTransaction(transactionId);
                         });
                     });
+                    
+                    // NEW: Add event listeners to confirm ghost transaction buttons
+                    journalTable.querySelectorAll('.confirm-ghost').forEach(button => {
+                        button.addEventListener('click', () => {
+                            const transactionId = button.dataset.transactionId;
+                            this.confirmGhostTransaction(transactionId);
+                        });
+                    });
                 };
                 
                 // Render the first page
                 renderPage();
+            },
+            
+            // NEW: Confirm ghost transaction (move to regular transactions)
+            confirmGhostTransaction(transactionId) {
+                const ghostIndex = this.ghostTransactions.findIndex(t => t.id === transactionId);
+                if (ghostIndex !== -1) {
+                    const transaction = this.ghostTransactions[ghostIndex];
+                    this.ghostTransactions.splice(ghostIndex, 1);
+                    this.transactions.push(transaction);
+                    this.saveData();
+                    this.renderTransactions();
+                    this.updateDashboard();
+                    this.showNotification('Ghost transaction confirmed', 'success');
+                }
             },
             
             // Edit transaction
@@ -3328,7 +3480,7 @@
                 for (let i = 0; i < journalTable.rows.length; i++) {
                     const row = journalTable.rows[i];
                     let rowText = '';
-                    for (let j = 0; j < row.cells.length - 1; j++) { // Skip actions column
+                    for (let j = 0; j < row.cells.length - 2; j++) { // Skip actions and verified columns
                         rowText += '"' + row.cells[j].textContent.replace(/"/g, '""') + '",';
                     }
                     csvContent += rowText + '\n';
@@ -3522,9 +3674,6 @@
                         case 'account-detail':
                             reportHTML = this.generateAccountDetailReport(reportDate, reportStyle);
                             break;
-                        case 'financial-analysis':
-                            reportHTML = this.generateFinancialAnalysisReport(reportDate, reportStyle);
-                            break;
                     }
                     
                     reportContent.innerHTML = reportHTML;
@@ -3593,6 +3742,7 @@
                 const description = document.getElementById('transaction-description').value;
                 const reference = document.getElementById('transaction-reference').value;
                 const narration = document.getElementById('narration').value;
+                const isGhost = document.getElementById('ghost-transaction').checked;
                 
                 // Get all entries
                 const entries = [];
@@ -3631,9 +3781,20 @@
                 // Create transaction objects
                 const transactionId = Date.now().toString();
                 
+                // NEW: Generate transaction hash
+                const transactionData = {
+                    id: transactionId,
+                    date,
+                    description,
+                    reference,
+                    entries,
+                    narration
+                };
+                const transactionHash = this.innovations.generateTransactionHash(transactionData);
+                
                 entries.forEach(entry => {
                     if (entry.debitAmount > 0) {
-                        this.transactions.push({
+                        const tx = {
                             id: transactionId,
                             date,
                             description,
@@ -3643,12 +3804,20 @@
                             creditAccount: null,
                             creditAmount: 0,
                             narration,
-                            createdAt: new Date().toISOString()
-                        });
+                            createdAt: new Date().toISOString(),
+                            // NEW: Add transaction hash
+                            hash: transactionHash
+                        };
+                        
+                        if (isGhost) {
+                            this.ghostTransactions.push(tx);
+                        } else {
+                            this.transactions.push(tx);
+                        }
                     }
                     
                     if (entry.creditAmount > 0) {
-                        this.transactions.push({
+                        const tx = {
                             id: transactionId,
                             date,
                             description,
@@ -3658,8 +3827,16 @@
                             creditAccount: entry.account,
                             creditAmount: entry.creditAmount,
                             narration,
-                            createdAt: new Date().toISOString()
-                        });
+                            createdAt: new Date().toISOString(),
+                            // NEW: Add transaction hash
+                            hash: transactionHash
+                        };
+                        
+                        if (isGhost) {
+                            this.ghostTransactions.push(tx);
+                        } else {
+                            this.transactions.push(tx);
+                        }
                     }
                 });
                 
@@ -3668,14 +3845,23 @@
                 this.renderTransactions();
                 this.updateDashboard();
                 
+                // NEW: Update innovations
+                this.innovations.updateFlowView();
+                this.innovations.updateFinancialHealthBackground();
+                this.innovations.updateLedgerHealthMeter();
+                
+                // Update AI narrative
+                const aiText = document.getElementById('ai-narrative-text');
+                aiText.textContent = this.innovations.generateAINarrative();
+                
                 // Add to recent activity
-                this.addRecentActivity(`Added transaction: ${description}`, 'transaction');
+                this.addRecentActivity(`Added ${isGhost ? 'ghost ' : ''}transaction: ${description}`, 'transaction');
                 
                 // Close modal and reset form
                 document.getElementById('transaction-modal').style.display = 'none';
                 document.getElementById('transaction-form').reset();
                 
-                this.showNotification('Transaction added successfully', 'success');
+                this.showNotification(`Transaction ${isGhost ? 'added as ghost entry' : 'added successfully'}`, 'success');
             },
             
             // Add a new account
@@ -3770,7 +3956,17 @@
                             creditAccount,
                             creditAmount: amount,
                             narration: 'Opening balance',
-                            createdAt: new Date().toISOString()
+                            createdAt: new Date().toISOString(),
+                            // NEW: Add transaction hash
+                            hash: this.innovations.generateTransactionHash({
+                                id: Date.now().toString() + '-opening',
+                                date: new Date().toISOString().split('T')[0],
+                                description: `Opening balance for ${name}`,
+                                debitAccount,
+                                debitAmount: amount,
+                                creditAccount,
+                                creditAmount: amount
+                            })
                         };
                         
                         this.transactions.push(transaction);
@@ -3785,6 +3981,15 @@
                 this.renderTransactions();
                 this.updateDashboard();
                 
+                // NEW: Update innovations
+                this.innovations.updateFlowView();
+                this.innovations.updateFinancialHealthBackground();
+                this.innovations.updateLedgerHealthMeter();
+                
+                // Update AI narrative
+                const aiText = document.getElementById('ai-narrative-text');
+                aiText.textContent = this.innovations.generateAINarrative();
+                
                 // Add to recent activity
                 this.addRecentActivity(`${editingAccountId ? 'Updated' : 'Added'} account: ${name}`, 'account');
                 
@@ -3794,58 +3999,29 @@
                 delete document.getElementById('account-form').dataset.editingAccountId;
             },
             
-            // Add a recurring transaction
-            addRecurringTransaction() {
-                const description = document.getElementById('recurring-description').value;
-                const amount = parseFloat(document.getElementById('recurring-amount').value) || 0;
-                const debitAccount = document.getElementById('recurring-debit-account').value;
-                const creditAccount = document.getElementById('recurring-credit-account').value;
-                const frequency = document.querySelector('.recurring-option.selected')?.dataset.frequency;
-                const startDate = document.getElementById('recurring-start-date').value;
-                const endDate = document.getElementById('recurring-end-date').value || null;
-                
-                // Validate form
-                if (!description || !amount || !debitAccount || !creditAccount || !frequency || !startDate) {
-                    this.showNotification('Please fill all required fields', 'error');
-                    return;
-                }
-                
-                // Create recurring transaction object
-                const recurringTransaction = {
-                    id: 'recur-' + Date.now(),
-                    description,
-                    amount,
-                    debitAccount,
-                    creditAccount,
-                    frequency,
-                    startDate,
-                    endDate,
-                    createdAt: new Date().toISOString()
-                };
-                
-                // Add to recurring transactions array
-                this.recurringTransactions.push(recurringTransaction);
-                
-                // Save data
-                this.saveData();
-                
-                // Add to recent activity
-                this.addRecentActivity(`Added recurring transaction: ${description}`, 'automation');
-                
-                // Close modal and reset form
-                document.getElementById('recurring-transaction-modal').style.display = 'none';
-                document.getElementById('recurring-transaction-form').reset();
-                
-                this.showNotification('Recurring transaction added successfully', 'success');
-            },
-            
             // Delete a transaction
             deleteTransaction(transactionId) {
                 if (confirm('Are you sure you want to delete this transaction?')) {
-                    this.transactions = this.transactions.filter(t => t.id !== transactionId);
+                    // Check both regular and ghost transactions
+                    let txIndex = this.transactions.findIndex(t => t.id === transactionId);
+                    if (txIndex !== -1) {
+                        this.transactions.splice(txIndex, 1);
+                    } else {
+                        txIndex = this.ghostTransactions.findIndex(t => t.id === transactionId);
+                        if (txIndex !== -1) {
+                            this.ghostTransactions.splice(txIndex, 1);
+                        }
+                    }
+                    
                     this.saveData();
                     this.renderTransactions();
                     this.updateDashboard();
+                    
+                    // NEW: Update innovations
+                    this.innovations.updateFlowView();
+                    this.innovations.updateFinancialHealthBackground();
+                    this.innovations.updateLedgerHealthMeter();
+                    
                     this.showNotification('Transaction deleted successfully', 'success');
                     
                     // Add to recent activity
@@ -3870,6 +4046,10 @@
                     this.accounts = this.accounts.filter(a => a.id !== accountId);
                     this.saveData();
                     this.renderAccounts();
+                    
+                    // NEW: Update innovations
+                    this.innovations.updateFlowView();
+                    
                     this.showNotification('Account deleted successfully', 'success');
                     
                     // Add to recent activity
@@ -3881,27 +4061,40 @@
             updateDashboard() {
                 // Calculate total assets
                 const totalAssets = this.calculateAccountTypeTotal('Asset');
-                document.getElementById('total-assets').textContent = this.formatCurrency(totalAssets);
+                const assetsElement = document.getElementById('total-assets');
+                
+                // NEW: Animate the counter
+                const currentAssets = parseFloat(assetsElement.textContent.replace(/[^0-9.-]+/g, "")) || 0;
+                this.innovations.animateValue(assetsElement, currentAssets, totalAssets, 1000);
                 
                 // Calculate total liabilities
                 const totalLiabilities = this.calculateAccountTypeTotal('Liability');
-                document.getElementById('total-liabilities').textContent = this.formatCurrency(totalLiabilities);
+                const liabilitiesElement = document.getElementById('total-liabilities');
+                
+                // NEW: Animate the counter
+                const currentLiabilities = parseFloat(liabilitiesElement.textContent.replace(/[^0-9.-]+/g, "")) || 0;
+                this.innovations.animateValue(liabilitiesElement, currentLiabilities, totalLiabilities, 1000);
                 
                 // Calculate equity
                 const equity = this.calculateAccountTypeTotal('Equity');
-                document.getElementById('total-equity').textContent = this.formatCurrency(equity);
+                const equityElement = document.getElementById('total-equity');
+                
+                // NEW: Animate the counter
+                const currentEquity = parseFloat(equityElement.textContent.replace(/[^0-9.-]+/g, "")) || 0;
+                this.innovations.animateValue(equityElement, currentEquity, equity, 1000);
                 
                 // Calculate net income (Revenue - Expenses)
                 const revenue = this.calculateAccountTypeTotal('Revenue');
                 const expenses = this.calculateAccountTypeTotal('Expense');
                 const netIncome = revenue - expenses;
-                document.getElementById('net-income').textContent = this.formatCurrency(netIncome);
+                const incomeElement = document.getElementById('net-income');
+                
+                // NEW: Animate the counter
+                const currentIncome = parseFloat(incomeElement.textContent.replace(/[^0-9.-]+/g, "")) || 0;
+                this.innovations.animateValue(incomeElement, currentIncome, netIncome, 1000);
                 
                 // Update financial health chart
                 this.updateFinancialHealthChart(totalAssets, totalLiabilities, equity, netIncome);
-                
-                // Update predictive cash flow chart
-                this.updatePredictiveCashFlowChart();
                 
                 // Update recent transactions
                 const recentTransactionsTable = document.getElementById('recent-transactions').querySelector('tbody');
@@ -3914,7 +4107,7 @@
                 const recentTransactions = this.transactions.slice(-5).reverse();
                 
                 if (recentTransactions.length === 0) {
-                    recentTransactionsTable.innerHTML = '<tr class="empty-state-row"><td colspan="5" class="empty-state"><i class="fas fa-receipt"></i><p>No transactions yet</p></td></tr>';
+                    recentTransactionsTable.innerHTML = '<tr class="empty-state-row"><td colspan="6" class="empty-state"><i class="fas fa-receipt"></i><p>No transactions yet</p></td></tr>';
                     return;
                 }
                 
@@ -3922,18 +4115,21 @@
                 
                 recentTransactions.forEach(transaction => {
                     const row = document.createElement('tr');
+                    const isVerified = this.innovations.verifyTransactionIntegrity(transaction);
+                    
                     row.innerHTML = `
                         <td>${transaction.date}</td>
                         <td>${transaction.description}</td>
                         <td>${this.getAccountName(transaction.debitAccount)}<br>${this.getAccountName(transaction.creditAccount)}</td>
                         <td class="debit">${this.formatCurrency(transaction.debitAmount)}</td>
                         <td class="credit">${this.formatCurrency(transaction.creditAmount)}</td>
+                        <td class="transaction-hash">${transaction.hash ? transaction.hash.substring(0, 16) + '...' : 'N/A'}</td>
                     `;
                     recentTransactionsTable.appendChild(row);
                 });
                 
-                // Generate financial insights
-                this.generateFinancialInsights();
+                // Update recent activity
+                this.updateRecentActivity();
             },
             
             // Update financial health chart
@@ -3976,95 +4172,44 @@
                 });
             },
             
-            // Update predictive cash flow chart
-            updatePredictiveCashFlowChart() {
-                const ctx = document.getElementById('predictive-cashflow-chart').getContext('2d');
+            // Update recent activity list
+            updateRecentActivity() {
+                const activityList = document.getElementById('recent-activity-list');
                 
-                // Destroy existing chart if it exists
-                if (this.predictiveChart) {
-                    this.predictiveChart.destroy();
+                // Get recent activities from localStorage or use default
+                let activities = JSON.parse(localStorage.getItem('openledger-activities')) || [];
+                
+                if (activities.length === 0) {
+                    activityList.innerHTML = '<li>No recent activity</li>';
+                    return;
                 }
                 
-                // Generate sample predictive data
-                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-                const cashFlow = [5000, 4500, 6000, 5500, 7000, 7500]; // Sample data
+                // Show last 5 activities
+                activities = activities.slice(-5).reverse();
+                activityList.innerHTML = '';
                 
-                // Create new chart
-                this.predictiveChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: months,
-                        datasets: [{
-                            label: 'Predicted Cash Flow',
-                            data: cashFlow,
-                            borderColor: '#4361ee',
-                            backgroundColor: 'rgba(67, 97, 238, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top'
-                            },
-                            title: {
-                                display: true,
-                                text: '6-Month Cash Flow Forecast'
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Amount ($)'
-                                }
-                            }
-                        }
-                    }
+                activities.forEach(activity => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="activity-date">${new Date(activity.date).toLocaleString()}</div>
+                        <div class="activity-content">${activity.message}</div>
+                    `;
+                    activityList.appendChild(li);
                 });
             },
             
-            // Generate financial insights for dashboard
-            generateFinancialInsights() {
-                // This would typically analyze transaction patterns and account balances
-                // For now, we'll use sample insights
-                const insightsContainer = document.querySelector('.card-body');
+            // Add recent activity
+            addRecentActivity(message, type) {
+                let activities = JSON.parse(localStorage.getItem('openledger-activities')) || [];
                 
-                // Sample insights based on data
-                if (this.transactions.length > 0) {
-                    const expenseRatio = this.calculateAccountTypeTotal('Expense') / this.calculateAccountTypeTotal('Revenue');
-                    
-                    if (expenseRatio > 0.8) {
-                        // High expense ratio insight
-                        const insightCard = document.createElement('div');
-                        insightCard.className = 'insight-card danger';
-                        insightCard.innerHTML = `
-                            <h4><i class="fas fa-exclamation-triangle"></i> High Expense Ratio</h4>
-                            <p>Your expenses are ${(expenseRatio * 100).toFixed(0)}% of revenue. Consider reviewing discretionary spending.</p>
-                        `;
-                        insightsContainer.appendChild(insightCard);
-                    }
-                    
-                    // Cash flow insight
-                    const cashBalance = this.getAccountBalance('acc-1'); // Assuming acc-1 is Cash
-                    const monthlyExpenses = this.calculateAccountTypeTotal('Expense') / 3; // Rough estimate
-                    
-                    if (cashBalance < monthlyExpenses) {
-                        const insightCard = document.createElement('div');
-                        insightCard.className = 'insight-card warning';
-                        insightCard.innerHTML = `
-                            <h4><i class="fas fa-exclamation-circle"></i> Low Cash Reserve</h4>
-                            <p>Your cash balance is below one month of expenses. Consider building a larger cash reserve.</p>
-                        `;
-                        insightsContainer.appendChild(insightCard);
-                    }
-                }
+                activities.push({
+                    date: new Date().toISOString(),
+                    message,
+                    type
+                });
+                
+                localStorage.setItem('openledger-activities', JSON.stringify(activities));
+                this.updateRecentActivity();
             },
             
             // Export all data as JSON
@@ -4073,10 +4218,9 @@
                     settings: this.settings,
                     accounts: this.accounts,
                     transactions: this.transactions,
-                    recurringTransactions: this.recurringTransactions,
-                    teamMembers: this.teamMembers,
+                    ghostTransactions: this.ghostTransactions,
                     exportDate: new Date().toISOString(),
-                    version: '3.0.0'
+                    version: '1.2.0'
                 };
                 
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -4114,13 +4258,21 @@
                             if (data.settings) this.settings = data.settings;
                             if (data.accounts) this.accounts = data.accounts;
                             if (data.transactions) this.transactions = data.transactions;
-                            if (data.recurringTransactions) this.recurringTransactions = data.recurringTransactions;
-                            if (data.teamMembers) this.teamMembers = data.teamMembers;
+                            if (data.ghostTransactions) this.ghostTransactions = data.ghostTransactions;
                             
                             this.saveData();
                             this.renderAccounts();
                             this.renderTransactions();
                             this.updateDashboard();
+                            
+                            // NEW: Update innovations
+                            this.innovations.updateFlowView();
+                            this.innovations.updateFinancialHealthBackground();
+                            this.innovations.updateLedgerHealthMeter();
+                            
+                            // Update AI narrative
+                            const aiText = document.getElementById('ai-narrative-text');
+                            aiText.textContent = this.innovations.generateAINarrative();
                             
                             // Update UI with settings
                             document.getElementById('accounting-mode').value = this.settings.accountingMode;
@@ -4130,7 +4282,6 @@
                             document.getElementById('financial-year').value = this.settings.financialYear;
                             document.getElementById('auto-logout').value = this.settings.autoLogout;
                             document.getElementById('company-name').textContent = this.settings.companyName;
-                            document.getElementById('auto-categorization-toggle').checked = this.settings.autoCategorization;
                             
                             this.showNotification('Backup restored successfully', 'success');
                             
@@ -4164,13 +4315,21 @@
                             if (data.settings) this.settings = data.settings;
                             if (data.accounts) this.accounts = data.accounts;
                             if (data.transactions) this.transactions = data.transactions;
-                            if (data.recurringTransactions) this.recurringTransactions = data.recurringTransactions;
-                            if (data.teamMembers) this.teamMembers = data.teamMembers;
+                            if (data.ghostTransactions) this.ghostTransactions = data.ghostTransactions;
                             
                             this.saveData();
                             this.renderAccounts();
                             this.renderTransactions();
                             this.updateDashboard();
+                            
+                            // NEW: Update innovations
+                            this.innovations.updateFlowView();
+                            this.innovations.updateFinancialHealthBackground();
+                            this.innovations.updateLedgerHealthMeter();
+                            
+                            // Update AI narrative
+                            const aiText = document.getElementById('ai-narrative-text');
+                            aiText.textContent = this.innovations.generateAINarrative();
                             
                             // Update UI with settings
                             document.getElementById('accounting-mode').value = this.settings.accountingMode;
@@ -4180,7 +4339,6 @@
                             document.getElementById('financial-year').value = this.settings.financialYear;
                             document.getElementById('auto-logout').value = this.settings.autoLogout;
                             document.getElementById('company-name').textContent = this.settings.companyName;
-                            document.getElementById('auto-categorization-toggle').checked = this.settings.autoCategorization;
                             
                             this.showNotification('Data imported successfully', 'success');
                             
@@ -4211,17 +4369,25 @@
                         baseCurrency: 'USD',
                         financialYear: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
                         autoLogout: 30,
-                        password: null,
-                        autoCategorization: true
+                        password: null
                     };
                     this.accounts = [];
                     this.transactions = [];
-                    this.recurringTransactions = [];
-                    this.teamMembers = [];
+                    this.ghostTransactions = [];
                     this.saveData();
                     this.renderAccounts();
                     this.renderTransactions();
                     this.updateDashboard();
+                    
+                    // NEW: Update innovations
+                    this.innovations.updateFlowView();
+                    this.innovations.updateFinancialHealthBackground();
+                    this.innovations.updateLedgerHealthMeter();
+                    
+                    // Update AI narrative
+                    const aiText = document.getElementById('ai-narrative-text');
+                    aiText.textContent = this.innovations.generateAINarrative();
+                    
                     this.showNotification('All data has been cleared', 'success');
                     
                     // Add to recent activity
@@ -4234,14 +4400,14 @@
                 if (confirm('Load sample data? This will add sample accounts and transactions.')) {
                     // Sample accounts
                     const sampleAccounts = [
-                        { id: 'acc-1', code: '1010', name: 'Cash', type: 'Asset', subtype: 'Current Asset', openingBalance: 15000, parent: null },
-                        { id: 'acc-2', code: '1020', name: 'Accounts Receivable', type: 'Asset', subtype: 'Current Asset', openingBalance: 7500, parent: null },
-                        { id: 'acc-3', code: '1030', name: 'Inventory', type: 'Asset', subtype: 'Current Asset', openingBalance: 12000, parent: null },
-                        { id: 'acc-4', code: '1040', name: 'Equipment', type: 'Asset', subtype: 'Fixed Asset', openingBalance: 25000, parent: null },
-                        { id: 'acc-5', code: '2010', name: 'Accounts Payable', type: 'Liability', subtype: 'Current Liability', openingBalance: 5000, parent: null },
-                        { id: 'acc-6', code: '2020', name: 'Loans Payable', type: 'Liability', subtype: 'Long-term Liability', openingBalance: 15000, parent: null },
-                        { id: 'acc-7', code: '3010', name: 'Common Stock', type: 'Equity', subtype: '', openingBalance: 30000, parent: null },
-                        { id: 'acc-8', code: '3020', name: 'Retained Earnings', type: 'Equity', subtype: '', openingBalance: 9500, parent: null },
+                        { id: 'acc-1', code: '1010', name: 'Cash', type: 'Asset', subtype: 'Current Asset', openingBalance: 5000, parent: null },
+                        { id: 'acc-2', code: '1020', name: 'Accounts Receivable', type: 'Asset', subtype: 'Current Asset', openingBalance: 2500, parent: null },
+                        { id: 'acc-3', code: '1030', name: 'Inventory', type: 'Asset', subtype: 'Current Asset', openingBalance: 7000, parent: null },
+                        { id: 'acc-4', code: '1040', name: 'Equipment', type: 'Asset', subtype: 'Fixed Asset', openingBalance: 15000, parent: null },
+                        { id: 'acc-5', code: '2010', name: 'Accounts Payable', type: 'Liability', subtype: 'Current Liability', openingBalance: 3000, parent: null },
+                        { id: 'acc-6', code: '2020', name: 'Loans Payable', type: 'Liability', subtype: 'Long-term Liability', openingBalance: 10000, parent: null },
+                        { id: 'acc-7', code: '3010', name: 'Common Stock', type: 'Equity', subtype: '', openingBalance: 15000, parent: null },
+                        { id: 'acc-8', code: '3020', name: 'Retained Earnings', type: 'Equity', subtype: '', openingBalance: 4500, parent: null },
                         { id: 'acc-9', code: '4010', name: 'Sales Revenue', type: 'Revenue', subtype: 'Operating Revenue', openingBalance: 0, parent: null },
                         { id: 'acc-10', code: '5010', name: 'Cost of Goods Sold', type: 'Expense', subtype: 'Operating Expense', openingBalance: 0, parent: null },
                         { id: 'acc-11', code: '5020', name: 'Rent Expense', type: 'Expense', subtype: 'Operating Expense', openingBalance: 0, parent: null },
@@ -4256,11 +4422,12 @@
                             description: 'Sold goods to customer',
                             reference: 'INV-1001',
                             debitAccount: 'acc-1',
-                            debitAmount: 2500,
+                            debitAmount: 1200,
                             creditAccount: 'acc-9',
-                            creditAmount: 2500,
+                            creditAmount: 1200,
                             narration: 'Invoice #1001',
-                            createdAt: new Date().toISOString()
+                            createdAt: new Date().toISOString(),
+                            hash: 'a1b2c3d4e5f6g7h8i9j0'
                         },
                         {
                             id: 'tx-2',
@@ -4268,11 +4435,12 @@
                             description: 'Purchased inventory',
                             reference: 'PO-2001',
                             debitAccount: 'acc-3',
-                            debitAmount: 1500,
+                            debitAmount: 800,
                             creditAccount: 'acc-5',
-                            creditAmount: 1500,
+                            creditAmount: 800,
                             narration: 'Purchase order #2001',
-                            createdAt: new Date().toISOString()
+                            createdAt: new Date().toISOString(),
+                            hash: 'b2c3d4e5f6g7h8i9j0k1'
                         },
                         {
                             id: 'tx-3',
@@ -4280,11 +4448,12 @@
                             description: 'Paid rent',
                             reference: 'CHK-1001',
                             debitAccount: 'acc-11',
-                            debitAmount: 1200,
+                            debitAmount: 1000,
                             creditAccount: 'acc-1',
-                            creditAmount: 1200,
+                            creditAmount: 1000,
                             narration: 'Monthly rent payment',
-                            createdAt: new Date().toISOString()
+                            createdAt: new Date().toISOString(),
+                            hash: 'c3d4e5f6g7h8i9j0k1l2'
                         },
                         {
                             id: 'tx-4',
@@ -4292,20 +4461,49 @@
                             description: 'Paid salaries',
                             reference: 'CHK-1002',
                             debitAccount: 'acc-12',
-                            debitAmount: 4500,
+                            debitAmount: 2500,
                             creditAccount: 'acc-1',
-                            creditAmount: 4500,
+                            creditAmount: 2500,
                             narration: 'Bi-weekly payroll',
-                            createdAt: new Date().toISOString()
+                            createdAt: new Date().toISOString(),
+                            hash: 'd4e5f6g7h8i9j0k1l2m3'
+                        }
+                    ];
+                    
+                    // NEW: Sample ghost transaction
+                    const sampleGhostTransaction = [
+                        {
+                            id: 'tx-ghost-1',
+                            date: new Date().toISOString().split('T')[0],
+                            description: 'Pending client payment',
+                            reference: 'INV-1002',
+                            debitAccount: 'acc-1',
+                            debitAmount: 1500,
+                            creditAccount: 'acc-9',
+                            creditAmount: 1500,
+                            narration: 'Expected payment next week',
+                            createdAt: new Date().toISOString(),
+                            hash: 'e5f6g7h8i9j0k1l2m3n4'
                         }
                     ];
                     
                     this.accounts = sampleAccounts;
                     this.transactions = sampleTransactions;
+                    this.ghostTransactions = sampleGhostTransaction;
                     this.saveData();
                     this.renderAccounts();
                     this.renderTransactions();
                     this.updateDashboard();
+                    
+                    // NEW: Update innovations
+                    this.innovations.updateFlowView();
+                    this.innovations.updateFinancialHealthBackground();
+                    this.innovations.updateLedgerHealthMeter();
+                    
+                    // Update AI narrative
+                    const aiText = document.getElementById('ai-narrative-text');
+                    aiText.textContent = this.innovations.generateAINarrative();
+                    
                     this.showNotification('Sample data loaded successfully', 'success');
                     
                     // Add to recent activity
@@ -4364,6 +4562,17 @@
                 let balance = account.openingBalance || 0;
                 
                 this.transactions.forEach(transaction => {
+                    if (transaction.debitAccount === accountId) {
+                        balance += transaction.debitAmount;
+                    }
+                    
+                    if (transaction.creditAccount === accountId) {
+                        balance -= transaction.creditAmount;
+                    }
+                });
+                
+                // NEW: Include ghost transactions in balance calculation
+                this.ghostTransactions.forEach(transaction => {
                     if (transaction.debitAccount === accountId) {
                         balance += transaction.debitAmount;
                     }
@@ -4676,36 +4885,6 @@
                 `;
             },
             
-            // Generate financial analysis report
-            generateFinancialAnalysisReport(asOfDate, style) {
-                return `
-                    <div class="ai-suggestions">
-                        <h3><i class="fas fa-chart-line"></i> Financial Analysis</h3>
-                        <p>Based on your financial data, here are key insights and recommendations:</p>
-                        
-                        <div class="insight-card">
-                            <h4><i class="fas fa-chart-line"></i> Revenue Trends</h4>
-                            <p>Your revenue has shown consistent growth over the past 3 months with an average increase of 12% monthly.</p>
-                        </div>
-                        
-                        <div class="insight-card warning">
-                            <h4><i class="fas fa-exclamation-triangle"></i> Expense Alert</h4>
-                            <p>Operating expenses have increased by 18% this month. Review recent purchases for potential savings.</p>
-                        </div>
-                        
-                        <div class="insight-card">
-                            <h4><i class="fas fa-piggy-bank"></i> Cash Flow Optimization</h4>
-                            <p>Your current cash conversion cycle is 45 days. Consider negotiating better payment terms with suppliers.</p>
-                        </div>
-                        
-                        <div class="insight-card">
-                            <h4><i class="fas fa-lightbulb"></i> Profitability Insight</h4>
-                            <p>Your net profit margin is 22%, which is above industry average. Consider reinvesting profits for growth.</p>
-                        </div>
-                    </div>
-                `;
-            },
-            
             // Get report title based on type and style
             getReportTitle(type, style) {
                 const titles = {
@@ -4714,8 +4893,7 @@
                     'cash-flow': 'Cash Flow Statement',
                     'changes-equity': 'Statement of Changes in Equity',
                     'general-ledger': 'General Ledger Summary',
-                    'account-detail': 'Account Detail Report',
-                    'financial-analysis': 'Financial Analysis'
+                    'account-detail': 'Account Detail Report'
                 };
                 
                 const styles = {
@@ -4725,138 +4903,6 @@
                 };
                 
                 return styles[style] + titles[type];
-            },
-            
-            // Automation Features
-            trainCategorizationModel() {
-                this.showNotification('Training categorization model with your transaction data...', 'info');
-                
-                // Simulate training process
-                setTimeout(() => {
-                    this.showNotification('Categorization model trained successfully! Transaction categorization will be more accurate.', 'success');
-                }, 2000);
-            },
-            
-            renderRecurringTransactions() {
-                // This would render the recurring transactions table
-                // For now, it's handled by the static HTML with dynamic dates
-            },
-            
-            generateFinancialForecast() {
-                const forecastResults = document.getElementById('forecast-results');
-                forecastResults.style.display = 'block';
-                
-                this.showNotification('Generating 6-month financial forecast...', 'info');
-                
-                // Simulate forecast generation
-                setTimeout(() => {
-                    const ctx = document.getElementById('forecast-chart').getContext('2d');
-                    
-                    // Sample forecast data
-                    const months = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                    const revenue = [8500, 9200, 9800, 10500, 11200, 12000];
-                    const expenses = [6200, 6500, 6800, 7100, 7500, 7800];
-                    const profit = [2300, 2700, 3000, 3400, 3700, 4200];
-                    
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: months,
-                            datasets: [
-                                {
-                                    label: 'Revenue',
-                                    data: revenue,
-                                    borderColor: '#2ecc71',
-                                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                                    borderWidth: 2,
-                                    fill: true
-                                },
-                                {
-                                    label: 'Expenses',
-                                    data: expenses,
-                                    borderColor: '#e74c3c',
-                                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                                    borderWidth: 2,
-                                    fill: true
-                                },
-                                {
-                                    label: 'Net Profit',
-                                    data: profit,
-                                    borderColor: '#3498db',
-                                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                                    borderWidth: 2,
-                                    fill: true
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: '6-Month Financial Forecast'
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    title: {
-                                        display: true,
-                                        text: 'Amount ($)'
-                                    }
-                                }
-                            }
-                        }
-                    });
-                    
-                    this.showNotification('Financial forecast generated successfully!', 'success');
-                }, 1500);
-            },
-            
-            // Collaboration Features
-            sendTeamInvitation() {
-                const email = document.getElementById('invite-email').value;
-                const role = document.getElementById('invite-role').value;
-                
-                if (!email) {
-                    this.showNotification('Please enter an email address', 'error');
-                    return;
-                }
-                
-                this.showNotification(`Invitation sent to ${email} with ${role} role`, 'success');
-                document.getElementById('invite-email').value = '';
-                
-                // Add to recent activity
-                this.addRecentActivity(`Sent invitation to ${email}`, 'collaboration');
-            },
-            
-            renderTeamMembers() {
-                // This would render the team members table
-                // For now, it's handled by the static HTML
-            },
-            
-            // Add recent activity
-            addRecentActivity(description, type) {
-                const activityFeed = document.getElementById('activity-feed');
-                const now = new Date();
-                const timeString = now.toLocaleDateString() + ' at ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                
-                const activityItem = document.createElement('div');
-                activityItem.className = 'activity-item';
-                
-                let avatar = 'Y';
-                let userName = 'You';
-                
-                activityItem.innerHTML = `
-                    <div class="user-avatar">${avatar}</div>
-                    <div class="activity-content">
-                        <strong>${userName}</strong> ${description}
-                        <div class="activity-time">${timeString}</div>
-                    </div>
-                `;
-                
-                activityFeed.insertBefore(activityItem, activityFeed.firstChild);
             }
         };
         
