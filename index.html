@@ -1,2079 +1,590 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="FinOrb - Privacy-first financial health dashboard. Your data never leaves your device.">
-  <meta name="keywords" content="financial health, privacy, budgeting, savings, debt management">
-  <title>FinOrb | Privacy-First Financial Health Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root {
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --primary-light: #3b82f6;
-      --primary-bg: #eff6ff;
-      --success: #10b981;
-      --success-dark: #059669;
-      --warning: #f59e0b;
-      --warning-dark: #d97706;
-      --danger: #ef4444;
-      --danger-dark: #dc2626;
-      --gray-50: #f9fafb;
-      --gray-100: #f3f4f6;
-      --gray-200: #e5e7eb;
-      --gray-300: #d1d5db;
-      --gray-400: #9ca3af;
-      --gray-500: #6b7280;
-      --gray-600: #4b5563;
-      --gray-700: #374151;
-      --gray-800: #1f2937;
-      --gray-900: #111827;
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      --radius-sm: 4px;
-      --radius: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --radius-xl: 24px;
-    }
-    
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
-    html {
-      scroll-behavior: smooth;
-    }
-    
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      color: var(--gray-700);
-      line-height: 1.6;
-      font-size: 16px;
-      font-weight: 400;
-    }
-    
-    /* Header & Navigation */
-    header {
-      width: 100%;
-      background: white;
-      box-shadow: var(--shadow-sm);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    
-    .nav-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 70px;
-    }
-    
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 700;
-      font-size: 1.5rem;
-      color: var(--primary);
-      text-decoration: none;
-    }
-    
-    .logo-icon {
-      font-size: 1.8rem;
-    }
-    
-    .nav-links {
-      display: flex;
-      gap: 30px;
-    }
-    
-    .nav-link {
-      color: var(--gray-600);
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.2s;
-      position: relative;
-    }
-    
-    .nav-link:hover {
-      color: var(--primary);
-    }
-    
-    .nav-link.active {
-      color: var(--primary);
-    }
-    
-    .nav-link.active::after {
-      content: '';
-      position: absolute;
-      bottom: -24px;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background: var(--primary);
-      border-radius: 3px 3px 0 0;
-    }
-    
-    .auth-buttons {
-      display: flex;
-      gap: 12px;
-    }
-    
-    .btn {
-      padding: 10px 20px;
-      border-radius: var(--radius);
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: none;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    
-    .btn-outline {
-      background: transparent;
-      color: var(--primary);
-      border: 1px solid var(--primary);
-    }
-    
-    .btn-outline:hover {
-      background: var(--primary-bg);
-    }
-    
-    .btn-primary {
-      background: var(--primary);
-      color: white;
-    }
-    
-    .btn-primary:hover {
-      background: var(--primary-dark);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
-    
-    /* Main Container */
-    .container {
-      max-width: 1200px;
-      width: 100%;
-      background: white;
-      border-radius: var(--radius-xl);
-      padding: 40px;
-      box-shadow: var(--shadow-lg);
-      margin: 30px 20px;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 6px;
-      background: linear-gradient(90deg, var(--primary) 0%, var(--success) 100%);
-    }
-    
-    /* Hero Section */
-    .hero {
-      text-align: center;
-      margin-bottom: 40px;
-      padding: 0 20px;
-    }
-    
-    h1 {
-      color: var(--gray-900);
-      font-size: 2.5rem;
-      margin-bottom: 16px;
-      font-weight: 700;
-      line-height: 1.2;
-    }
-    
-    .tagline {
-      color: var(--gray-600);
-      font-size: 1.25rem;
-      max-width: 700px;
-      margin: 0 auto 30px;
-      line-height: 1.6;
-    }
-    
-    .privacy-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--primary-bg);
-      color: var(--primary);
-      padding: 10px 20px;
-      border-radius: 50px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      margin-bottom: 30px;
-    }
-    
-    /* Dashboard Layout */
-    .dashboard {
-      display: grid;
-      grid-template-columns: 1fr 1.2fr;
-      gap: 40px;
-    }
-    
-    @media (max-width: 1024px) {
-      .dashboard {
-        grid-template-columns: 1fr;
-      }
-    }
-    
-    .input-section, .visualization-section {
-      background: var(--gray-50);
-      border-radius: var(--radius-lg);
-      padding: 30px;
-      border: 1px solid var(--gray-200);
-    }
-    
-    .section-title {
-      font-size: 1.5rem;
-      margin-bottom: 24px;
-      color: var(--gray-900);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 600;
-    }
-    
-    .section-title::before {
-      content: '';
-      display: block;
-      width: 4px;
-      height: 24px;
-      background: var(--primary);
-      border-radius: 2px;
-    }
-    
-    /* Input Groups */
-    .input-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-    
-    @media (max-width: 768px) {
-      .input-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-    
-    .input-group {
-      margin-bottom: 20px;
-    }
-    
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: var(--gray-700);
-      font-size: 0.95rem;
-    }
-    
-    .input-with-icon {
-      position: relative;
-    }
-    
-    .input-icon {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--gray-400);
-    }
-    
-    input {
-      width: 100%;
-      padding: 14px 14px 14px 42px;
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius);
-      font-size: 16px;
-      transition: all 0.2s;
-      background: white;
-      font-family: inherit;
-    }
-    
-    input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    }
-    
-    .input-hint {
-      font-size: 0.85rem;
-      color: var(--gray-500);
-      margin-top: 6px;
-    }
-    
-    /* Buttons */
-    .button-group {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-top: 10px;
-    }
-    
-    button {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 16px 24px;
-      border-radius: var(--radius);
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-    
-    button:hover {
-      background: var(--primary-dark);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
-    
-    button:active {
-      transform: translateY(0);
-    }
-    
-    button:disabled {
-      background: var(--gray-400);
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-    
-    .btn-success {
-      background: var(--success);
-    }
-    
-    .btn-success:hover {
-      background: var(--success-dark);
-    }
-    
-    .btn-warning {
-      background: var(--warning);
-    }
-    
-    .btn-warning:hover {
-      background: var(--warning-dark);
-    }
-    
-    .btn-danger {
-      background: var(--danger);
-    }
-    
-    .btn-danger:hover {
-      background: var(--danger-dark);
-    }
-    
-    /* Tabs */
-    .tabs {
-      display: flex;
-      margin-bottom: 24px;
-      border-bottom: 1px solid var(--gray-200);
-      overflow-x: auto;
-    }
-    
-    .tab {
-      padding: 14px 24px;
-      cursor: pointer;
-      font-weight: 500;
-      color: var(--gray-500);
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .tab.active {
-      color: var(--primary);
-      border-bottom: 3px solid var(--primary);
-    }
-    
-    .tab:hover:not(.active) {
-      color: var(--gray-700);
-    }
-    
-    .tab-content {
-      display: none;
-    }
-    
-    .tab-content.active {
-      display: block;
-      animation: fadeIn 0.3s ease;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    /* Orb Visualization */
-    #orb-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 30px 0;
-    }
-    
-    #orb {
-      width: 300px;
-      height: 300px;
-      margin: 0 auto;
-    }
-    
-    /* Metrics Grid */
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-      margin-top: 30px;
-    }
-    
-    @media (max-width: 640px) {
-      .metrics-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-    
-    .metric-card {
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      box-shadow: var(--shadow-sm);
-      border: 1px solid var(--gray-200);
-      text-align: center;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    
-    .metric-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-md);
-    }
-    
-    .metric-icon {
-      font-size: 1.5rem;
-      margin-bottom: 12px;
-    }
-    
-    .metric-value {
-      font-size: 1.75rem;
-      font-weight: 700;
-      margin: 8px 0;
-    }
-    
-    .metric-good {
-      color: var(--success);
-    }
-    
-    .metric-warning {
-      color: var(--warning);
-    }
-    
-    .metric-danger {
-      color: var(--danger);
-    }
-    
-    .metric-label {
-      font-size: 0.9rem;
-      color: var(--gray-500);
-      margin-bottom: 6px;
-    }
-    
-    .metric-target {
-      font-size: 0.85rem;
-      color: var(--gray-400);
-    }
-    
-    /* Insights */
-    .insights {
-      margin-top: 30px;
-    }
-    
-    .insight-card {
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow-sm);
-      border: 1px solid var(--gray-200);
-      border-left: 4px solid var(--primary);
-      transition: transform 0.2s;
-    }
-    
-    .insight-card:hover {
-      transform: translateX(4px);
-    }
-    
-    .insight-title {
-      font-weight: 600;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--gray-800);
-    }
-    
-    .insight-icon {
-      font-size: 1.2rem;
-    }
-    
-    .insight-content {
-      color: var(--gray-600);
-      line-height: 1.6;
-    }
-    
-    .insight-actions {
-      margin-top: 12px;
-      display: flex;
-      gap: 10px;
-    }
-    
-    /* Goals */
-    .goal-form {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-    
-    .goal-form input {
-      flex: 1;
-      padding-left: 16px;
-    }
-    
-    .goal-item {
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow-sm);
-      border: 1px solid var(--gray-200);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: transform 0.2s;
-    }
-    
-    .goal-item:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow);
-    }
-    
-    .goal-info {
-      flex: 1;
-    }
-    
-    .goal-title {
-      font-weight: 600;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .goal-progress {
-      height: 8px;
-      background: var(--gray-200);
-      border-radius: 4px;
-      margin-top: 10px;
-      overflow: hidden;
-    }
-    
-    .goal-progress-bar {
-      height: 100%;
-      background: var(--success);
-      border-radius: 4px;
-      transition: width 0.5s ease;
-    }
-    
-    .goal-actions {
-      display: flex;
-      gap: 10px;
-    }
-    
-    .goal-btn {
-      padding: 8px 12px;
-      font-size: 0.85rem;
-    }
-    
-    /* History Chart */
-    .history-chart {
-      height: 300px;
-      margin-top: 20px;
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      box-shadow: var(--shadow-sm);
-      border: 1px solid var(--gray-200);
-    }
-    
-    /* Share Section */
-    .share-section {
-      margin-top: 40px;
-      text-align: center;
-      padding: 30px;
-      background: var(--primary-bg);
-      border-radius: var(--radius-lg);
-      border: 1px dashed var(--primary-light);
-    }
-    
-    .share-url {
-      background: white;
-      padding: 16px;
-      border-radius: var(--radius);
-      font-family: 'Monaco', 'Consolas', monospace;
-      word-break: break-all;
-      margin: 20px 0;
-      border: 1px solid var(--gray-300);
-      font-size: 0.9rem;
-      position: relative;
-    }
-    
-    .copy-btn {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: var(--gray-100);
-      color: var(--gray-700);
-      border: none;
-      padding: 6px 12px;
-      border-radius: var(--radius-sm);
-      font-size: 0.8rem;
-    }
-    
-    .copy-btn:hover {
-      background: var(--gray-200);
-    }
-    
-    /* Privacy Note */
-    .privacy-note {
-      text-align: center;
-      color: var(--gray-500);
-      font-size: 0.9rem;
-      margin-top: 40px;
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
-      line-height: 1.6;
-    }
-    
-    /* Footer */
-    footer {
-      width: 100%;
-      background: var(--gray-800);
-      color: white;
-      padding: 40px 0;
-      margin-top: 60px;
-    }
-    
-    .footer-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 20px;
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
-      gap: 40px;
-    }
-    
-    @media (max-width: 768px) {
-      .footer-content {
-        grid-template-columns: 1fr;
-        gap: 30px;
-      }
-    }
-    
-    .footer-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 700;
-      font-size: 1.5rem;
-      margin-bottom: 16px;
-    }
-    
-    .footer-description {
-      color: var(--gray-300);
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
-    
-    .footer-heading {
-      font-weight: 600;
-      margin-bottom: 20px;
-      font-size: 1.1rem;
-    }
-    
-    .footer-links {
-      list-style: none;
-    }
-    
-    .footer-link {
-      margin-bottom: 12px;
-    }
-    
-    .footer-link a {
-      color: var(--gray-300);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    
-    .footer-link a:hover {
-      color: white;
-    }
-    
-    .footer-bottom {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px 20px 0;
-      border-top: 1px solid var(--gray-700);
-      text-align: center;
-      color: var(--gray-400);
-      font-size: 0.9rem;
-    }
-    
-    /* Loading States */
-    .loading {
-      opacity: 0.7;
-      pointer-events: none;
-    }
-    
-    .spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 1s ease infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    /* Toast Notifications */
-    .toast-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 1000;
-    }
-    
-    .toast {
-      background: white;
-      border-radius: var(--radius);
-      padding: 16px 20px;
-      margin-bottom: 10px;
-      box-shadow: var(--shadow-lg);
-      border-left: 4px solid var(--success);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 300px;
-      transform: translateX(100%);
-      opacity: 0;
-      transition: transform 0.3s, opacity 0.3s;
-    }
-    
-    .toast.show {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    
-    .toast-icon {
-      font-size: 1.2rem;
-      color: var(--success);
-    }
-    
-    .toast-message {
-      flex: 1;
-      font-weight: 500;
-    }
-    
-    .toast-close {
-      background: none;
-      border: none;
-      font-size: 1.2rem;
-      cursor: pointer;
-      color: var(--gray-400);
-      padding: 0;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .toast-error {
-      border-left-color: var(--danger);
-    }
-    
-    .toast-error .toast-icon {
-      color: var(--danger);
-    }
-    
-    /* Print Styles */
-    @media print {
-      header, footer, .share-section, button {
-        display: none !important;
-      }
-      
-      .container {
-        box-shadow: none;
-        margin: 0;
-        padding: 20px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaxBud - Nigerian Tax AI Assistant</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* Header styles */
+        header {
+            background: linear-gradient(135deg, #006400, #008000);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+        
+        .logo-icon {
+            font-size: 2.5rem;
+        }
+        
+        .tagline {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Main container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Chat container */
+        .chat-container {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            overflow-y: auto;
+            max-height: 60vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message {
+            margin-bottom: 1.2rem;
+            padding: 1rem;
+            border-radius: 12px;
+            max-width: 85%;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .bot-message {
+            background-color: #e8f5e9;
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+        }
+        
+        .user-message {
+            background-color: #e3f2fd;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        
+        .message-content {
+            font-size: 1rem;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        /* Input area */
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+        }
+        
+        #user-input {
+            flex: 1;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        #user-input:focus {
+            outline: none;
+            border-color: #008000;
+        }
+        
+        #send-btn {
+            background: linear-gradient(135deg, #006400, #008000);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 1.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        #send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Tax result styles */
+        .tax-result {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #008000;
+        }
+        
+        .tax-amount {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #006400;
+            margin: 10px 0;
+        }
+        
+        .tax-breakdown {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .tax-tip, .tax-explanation {
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .tax-tip {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .tax-explanation {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        
+        /* Progress bar */
+        .progress-container {
+            margin: 15px 0;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            width: 0%;
+            transition: width 1s ease;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .logo h1 {
+                font-size: 1.8rem;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            .tax-amount {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <!-- Toast Notifications -->
-  <div class="toast-container" id="toastContainer"></div>
-
-  <!-- Header -->
-  <header>
-    <div class="nav-container">
-      <a href="#" class="logo">
-        <span class="logo-icon">🔒</span>
-        <span>FinOrb</span>
-      </a>
-      
-      <nav class="nav-links">
-        <a href="#dashboard" class="nav-link active">Dashboard</a>
-        <a href="#features" class="nav-link">Features</a>
-        <a href="#pricing" class="nav-link">Pricing</a>
-        <a href="#about" class="nav-link">About</a>
-      </nav>
-      
-      <div class="auth-buttons">
-        <a href="#" class="btn btn-outline">Log in</a>
-        <a href="#" class="btn btn-primary">Sign up</a>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main>
+    <header>
+        <div class="logo">
+            <span class="logo-icon">💰</span>
+            <h1>TaxBud</h1>
+        </div>
+        <p class="tagline">Your friendly Nigerian Tax AI Assistant for the 2025/2026 tax year</p>
+    </header>
+    
     <div class="container">
-      <!-- Hero Section -->
-      <section class="hero">
-        <h1>Take Control of Your Financial Health</h1>
-        <p class="tagline">FinOrb provides powerful financial insights while keeping your data 100% private. All calculations happen on your device—your financial data never leaves your browser.</p>
-        <div class="privacy-badge">
-          <span>🔒</span>
-          <span>Your data is private and secure</span>
+        <div class="chat-container" id="chat-container">
+            <div class="message bot-message">
+                <div class="message-content">
+                    👋 Hello! I'm TaxBud, your friendly Nigerian tax assistant. 
+                    <br><br>
+                    Tell me about your income and I'll help you understand your tax obligations under the 2025/2026 Nigerian Tax Laws.
+                    <br><br>
+                    You can say something like: <em>"I earn ₦3,000,000 from salary"</em> or <em>"₦4m business income"</em>
+                </div>
+                <div class="message-time" id="initial-time"></div>
+            </div>
         </div>
-      </section>
-
-      <!-- Dashboard -->
-      <section id="dashboard">
-        <div class="dashboard">
-          <!-- Input Section -->
-          <div class="input-section">
-            <h2 class="section-title">Your Financial Snapshot</h2>
-            
-            <div class="input-grid">
-              <div class="input-group">
-                <label for="income">Monthly Income</label>
-                <div class="input-with-icon">
-                  <span class="input-icon">$</span>
-                  <input type="number" id="income" placeholder="0.00" min="0" step="0.01">
-                </div>
-                <div class="input-hint">Your take-home pay after taxes</div>
-              </div>
-              
-              <div class="input-group">
-                <label for="expenses">Monthly Expenses</label>
-                <div class="input-with-icon">
-                  <span class="input-icon">$</span>
-                  <input type="number" id="expenses" placeholder="0.00" min="0" step="0.01">
-                </div>
-                <div class="input-hint">Housing, food, transportation, etc.</div>
-              </div>
-              
-              <div class="input-group">
-                <label for="debt">Total Debt</label>
-                <div class="input-with-icon">
-                  <span class="input-icon">$</span>
-                  <input type="number" id="debt" placeholder="0.00" min="0" step="0.01">
-                </div>
-                <div class="input-hint">Credit cards, loans, mortgages</div>
-              </div>
-              
-              <div class="input-group">
-                <label for="savings">Emergency Savings</label>
-                <div class="input-with-icon">
-                  <span class="input-icon">$</span>
-                  <input type="number" id="savings" placeholder="0.00" min="0" step="0.01">
-                </div>
-                <div class="input-hint">Liquid savings for emergencies</div>
-              </div>
-              
-              <div class="input-group">
-                <label for="investments">Investments</label>
-                <div class="input-with-icon">
-                  <span class="input-icon">$</span>
-                  <input type="number" id="investments" placeholder="0.00" min="0" step="0.01">
-                </div>
-                <div class="input-hint">Stocks, bonds, retirement accounts</div>
-              </div>
-              
-              <div class="input-group">
-                <label for="monthly-debt-payment">Monthly Debt Payments</label>
-                <div class="input-with-icon">
-                  <span class="input-icon">$</span>
-                  <input type="number" id="monthly-debt-payment" placeholder="0.00" min="0" step="0.01">
-                </div>
-                <div class="input-hint">Minimum payments on all debts</div>
-              </div>
-            </div>
-            
-            <div class="button-group">
-              <button onclick="generateOrb()" id="generateOrbBtn">
-                <span>Generate Financial Orb</span>
-              </button>
-              <button onclick="saveSnapshot()" class="btn-success" id="saveSnapshotBtn">
-                <span>Save Snapshot</span>
-              </button>
-            </div>
-          </div>
-          
-          <!-- Visualization Section -->
-          <div class="visualization-section">
-            <div class="tabs">
-              <div class="tab active" onclick="switchTab('orb')">
-                <span>📊</span>
-                <span>Financial Orb</span>
-              </div>
-              <div class="tab" onclick="switchTab('goals')">
-                <span>🎯</span>
-                <span>Goals</span>
-              </div>
-              <div class="tab" onclick="switchTab('history')">
-                <span>📈</span>
-                <span>History</span>
-              </div>
-              <div class="tab" onclick="switchTab('insights')">
-                <span>💡</span>
-                <span>Insights</span>
-              </div>
-            </div>
-            
-            <!-- Orb Tab -->
-            <div id="orb-tab" class="tab-content active">
-              <div id="orb-container">
-                <div id="orb"></div>
-                <div class="metrics-grid">
-                  <div class="metric-card">
-                    <div class="metric-icon">💰</div>
-                    <div class="metric-label">Savings Rate</div>
-                    <div id="savings-rate" class="metric-value">--%</div>
-                    <div class="metric-target">Target: >20%</div>
-                  </div>
-                  <div class="metric-card">
-                    <div class="metric-icon">📊</div>
-                    <div class="metric-label">Debt-to-Income</div>
-                    <div id="dti-ratio" class="metric-value">--%</div>
-                    <div class="metric-target">Target: <36%</div>
-                  </div>
-                  <div class="metric-card">
-                    <div class="metric-icon">🛡️</div>
-                    <div class="metric-label">Emergency Fund</div>
-                    <div id="emergency-months" class="metric-value">-- mo</div>
-                    <div class="metric-target">Target: 3-6 mo</div>
-                  </div>
-                  <div class="metric-card">
-                    <div class="metric-icon">📈</div>
-                    <div class="metric-label">Net Worth</div>
-                    <div id="net-worth" class="metric-value">$--</div>
-                    <div class="metric-target">Growing!</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Goals Tab -->
-            <div id="goals-tab" class="tab-content">
-              <h3 class="section-title">Financial Goals</h3>
-              <div class="goal-form">
-                <input type="text" id="goal-input" placeholder="e.g., Save $5000 for vacation">
-                <button onclick="addGoal()" class="btn-success" style="width: auto;">Add Goal</button>
-              </div>
-              <div id="goals-container"></div>
-            </div>
-            
-            <!-- History Tab -->
-            <div id="history-tab" class="tab-content">
-              <h3 class="section-title">Financial History</h3>
-              <p>Track your financial progress over time. Data is stored locally in your browser.</p>
-              <div class="history-chart">
-                <canvas id="trend-chart"></canvas>
-              </div>
-              <div class="button-group" style="grid-template-columns: 1fr 1fr; margin-top: 20px;">
-                <button onclick="exportData()" class="btn-outline" style="width: auto; color: var(--gray-700); border-color: var(--gray-300);">
-                  <span>Export Data</span>
-                </button>
-                <button onclick="clearHistory()" class="btn-danger" style="width: auto;">
-                  <span>Clear History</span>
-                </button>
-              </div>
-            </div>
-            
-            <!-- Insights Tab -->
-            <div id="insights-tab" class="tab-content">
-              <h3 class="section-title">Personalized Insights</h3>
-              <div id="insights-container">
-                <div class="insight-card">
-                  <div class="insight-title">
-                    <span class="insight-icon">📊</span>
-                    <span>Welcome to FinOrb!</span>
-                  </div>
-                  <div class="insight-content">
-                    Enter your financial details to get personalized insights and recommendations for improving your financial health.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type your income and category here..." autocomplete="off">
+            <button id="send-btn">Send</button>
         </div>
-      </section>
-
-      <!-- Share Section -->
-      <section class="share-section">
-        <h3>Share Your Financial Health</h3>
-        <p>Generate a privacy-safe version of your financial health to share with advisors or compare with friends—without revealing any actual numbers.</p>
-        <button onclick="shareDNA()" class="btn-primary" style="width: auto; margin-top: 15px;">
-          <span>Generate Shareable Link</span>
-        </button>
-        <div id="shareUrl" class="share-url" style="display:none;">
-          <button class="copy-btn" onclick="copyShareUrl()">Copy</button>
-        </div>
-      </section>
-
-      <!-- Privacy Note -->
-      <div class="privacy-note">
-        <p><strong>Your privacy is protected:</strong> All calculations happen in your browser. No financial data is ever transmitted to servers. The shareable link contains only a privacy-safe hash that cannot be reversed to reveal your actual financial details.</p>
-      </div>
-    </div>
-  </main>
-
-  <!-- Footer -->
-  <footer>
-    <div class="footer-content">
-      <div>
-        <div class="footer-logo">
-          <span>🔒</span>
-          <span>FinOrb</span>
-        </div>
-        <p class="footer-description">
-          FinOrb is a privacy-first financial health dashboard that helps you understand and improve your financial situation without compromising your data security.
-        </p>
-      </div>
-      
-      <div>
-        <h3 class="footer-heading">Product</h3>
-        <ul class="footer-links">
-          <li class="footer-link"><a href="#features">Features</a></li>
-          <li class="footer-link"><a href="#pricing">Pricing</a></li>
-          <li class="footer-link"><a href="#security">Security</a></li>
-          <li class="footer-link"><a href="#updates">Updates</a></li>
-        </ul>
-      </div>
-      
-      <div>
-        <h3 class="footer-heading">Company</h3>
-        <ul class="footer-links">
-          <li class="footer-link"><a href="#about">About</a></li>
-          <li class="footer-link"><a href="#blog">Blog</a></li>
-          <li class="footer-link"><a href="#careers">Careers</a></li>
-          <li class="footer-link"><a href="#contact">Contact</a></li>
-        </ul>
-      </div>
     </div>
     
-    <div class="footer-bottom">
-      <p>&copy; 2023 FinOrb. All rights reserved. | <a href="#privacy" style="color: var(--gray-400);">Privacy Policy</a> | <a href="#terms" style="color: var(--gray-400);">Terms of Service</a></p>
-    </div>
-  </footer>
+    <footer>
+        <p>TaxBud - Educational Nigerian Tax Assistant | Based on 2025/2026 Nigerian Tax Laws</p>
+    </footer>
 
-  <script>
-    // Financial data and state management
-    const FinOrb = {
-      // Application state
-      state: {
-        financialData: {
-          income: 0,
-          expenses: 0,
-          debt: 0,
-          savings: 0,
-          investments: 0,
-          monthlyDebtPayment: 0
-        },
-        goals: [],
-        history: [],
-        currentTab: 'orb',
-        isGenerating: false
-      },
-      
-      // DOM elements cache
-      elements: {},
-      
-      // Chart instance
-      chart: null,
-      
-      // Initialize the application
-      init() {
-        this.cacheElements();
-        this.loadFromStorage();
-        this.setupEventListeners();
-        this.renderGoals();
-        this.renderHistoryChart();
+    <script>
+        // Initialize with welcome message timestamp
+        document.getElementById('initial-time').textContent = getCurrentTime();
         
-        // Check for shared DNA in URL
-        const urlParams = new URLSearchParams(window.location.hash.substring(1));
-        if (urlParams.get('dna')) {
-          this.renderSharedDNA(urlParams.get('dna'));
-        }
+        // Tax bands for 2025/2026 (as per requirements)
+        const TAX_BANDS = [
+            { min: 0, max: 800000, rate: 0 },
+            { min: 800001, max: 5000000, rate: 0.18 }, // Using 18% as example rate
+            { min: 5000001, max: 50000000, rate: 0.22 }, // Using 22% as example rate
+            { min: 50000001, max: Infinity, rate: 0.25 }
+        ];
         
-        console.log('FinOrb initialized successfully');
-      },
-      
-      // Cache DOM elements for better performance
-      cacheElements() {
-        this.elements = {
-          orb: document.getElementById('orb'),
-          savingsRate: document.getElementById('savings-rate'),
-          dtiRatio: document.getElementById('dti-ratio'),
-          emergencyMonths: document.getElementById('emergency-months'),
-          netWorth: document.getElementById('net-worth'),
-          insightsContainer: document.getElementById('insights-container'),
-          goalsContainer: document.getElementById('goals-container'),
-          goalInput: document.getElementById('goal-input'),
-          shareUrl: document.getElementById('shareUrl'),
-          generateOrbBtn: document.getElementById('generateOrbBtn'),
-          saveSnapshotBtn: document.getElementById('saveSnapshotBtn'),
-          income: document.getElementById('income'),
-          expenses: document.getElementById('expenses'),
-          debt: document.getElementById('debt'),
-          savings: document.getElementById('savings'),
-          investments: document.getElementById('investments'),
-          monthlyDebtPayment: document.getElementById('monthly-debt-payment')
-        };
-      },
-      
-      // Set up event listeners
-      setupEventListeners() {
-        // Auto-save when inputs change
-        const inputs = ['income', 'expenses', 'debt', 'savings', 'investments', 'monthlyDebtPayment'];
-        inputs.forEach(id => {
-          this.elements[id].addEventListener('input', () => {
-            this.state.financialData[id] = parseFloat(this.elements[id].value) || 0;
-            this.saveToStorage();
-          });
-        });
-        
-        // Allow Enter key in goal input
-        this.elements.goalInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            this.addGoal();
-          }
-        });
-        
-        // Handle window resize for chart
-        window.addEventListener('resize', () => {
-          if (this.chart) {
-            this.chart.resize();
-          }
-        });
-      },
-      
-      // Switch between tabs
-      switchTab(tabName) {
-        // Hide all tabs
-        document.querySelectorAll('.tab-content').forEach(tab => {
-          tab.classList.remove('active');
-        });
-        
-        // Deactivate all tab buttons
-        document.querySelectorAll('.tab').forEach(tab => {
-          tab.classList.remove('active');
-        });
-        
-        // Activate selected tab
-        document.getElementById(`${tabName}-tab`).classList.add('active');
-        event.currentTarget.classList.add('active');
-        this.state.currentTab = tabName;
-      },
-      
-      // Generate the financial orb visualization
-      async generateOrb() {
-        // Validate inputs
-        if (this.state.financialData.income <= 0) {
-          this.showToast('Please enter a valid income amount.', 'error');
-          return;
-        }
-        
-        // Show loading state
-        this.setStateLoading(true);
-        
-        // Simulate processing time for better UX
-        await this.delay(800);
-        
-        // Calculate financial metrics
-        const metrics = this.calculateMetrics();
-        
-        // Update UI
-        this.updateMetricsDisplay(metrics);
-        this.generateInsights(metrics);
-        this.renderOrb(metrics);
-        
-        // Save to history
-        this.saveToHistory();
-        
-        // Hide loading state
-        this.setStateLoading(false);
-        
-        this.showToast('Financial orb generated successfully!');
-      },
-      
-      // Set loading state for buttons
-      setStateLoading(isLoading) {
-        this.state.isGenerating = isLoading;
-        
-        const buttons = [this.elements.generateOrbBtn, this.elements.saveSnapshotBtn];
-        buttons.forEach(btn => {
-          if (isLoading) {
-            btn.innerHTML = '<span class="spinner"></span>';
-            btn.disabled = true;
-          } else {
-            btn.innerHTML = '<span>Generate Financial Orb</span>';
-            btn.disabled = false;
-          }
-        });
-      },
-      
-      // Calculate financial metrics
-      calculateMetrics() {
-        const data = this.state.financialData;
-        
-        const savingsRate = ((data.income - data.expenses) / data.income) * 100;
-        const dtiRatio = (data.monthlyDebtPayment / data.income) * 100;
-        const emergencyMonths = data.savings / data.expenses;
-        const netWorth = data.savings + data.investments - data.debt;
-        
-        return {
-          savingsRate,
-          dtiRatio,
-          emergencyMonths,
-          netWorth,
-          healthScore: this.calculateHealthScore(savingsRate, dtiRatio, emergencyMonths, netWorth)
-        };
-      },
-      
-      // Calculate overall financial health score (0-100)
-      calculateHealthScore(savingsRate, dtiRatio, emergencyMonths, netWorth) {
-        return Math.max(0, Math.min(100, 
-          (Math.min(savingsRate, 30) / 30 * 25) + // Savings rate contribution (max 25 points)
-          (Math.max(0, 43 - dtiRatio) / 43 * 25) + // Debt contribution (max 25 points)
-          (Math.min(emergencyMonths, 6) / 6 * 25) + // Emergency fund contribution (max 25 points)
-          (netWorth > 0 ? 25 : Math.min(25, (netWorth + 10000) / 10000 * 25)) // Net worth contribution
-        ));
-      },
-      
-      // Update metrics display
-      updateMetricsDisplay(metrics) {
-        this.elements.savingsRate.textContent = `${metrics.savingsRate.toFixed(1)}%`;
-        this.elements.dtiRatio.textContent = `${metrics.dtiRatio.toFixed(1)}%`;
-        this.elements.emergencyMonths.textContent = `${metrics.emergencyMonths.toFixed(1)} mo`;
-        this.elements.netWorth.textContent = `$${metrics.netWorth.toLocaleString()}`;
-        
-        // Style metrics based on health
-        this.styleMetric(this.elements.savingsRate, metrics.savingsRate, 20, 10);
-        this.styleMetric(this.elements.dtiRatio, metrics.dtiRatio, 36, 43, true);
-        this.styleMetric(this.elements.emergencyMonths, metrics.emergencyMonths, 3, 1);
-        this.styleMetric(this.elements.netWorth, metrics.netWorth, 0, -1000);
-      },
-      
-      // Style metric elements based on value ranges
-      styleMetric(element, value, goodThreshold, warningThreshold, reverse = false) {
-        element.classList.remove('metric-good', 'metric-warning', 'metric-danger');
-        
-        if (reverse) {
-          // Lower is better (like debt-to-income)
-          if (value <= goodThreshold) {
-            element.classList.add('metric-good');
-          } else if (value <= warningThreshold) {
-            element.classList.add('metric-warning');
-          } else {
-            element.classList.add('metric-danger');
-          }
-        } else {
-          // Higher is better (like savings rate)
-          if (value >= goodThreshold) {
-            element.classList.add('metric-good');
-          } else if (value >= warningThreshold) {
-            element.classList.add('metric-warning');
-          } else {
-            element.classList.add('metric-danger');
-          }
-        }
-      },
-      
-      // Generate personalized financial insights
-      generateInsights(metrics) {
-        const insights = [];
-        const data = this.state.financialData;
-        
-        // Savings rate insights
-        if (metrics.savingsRate < 0) {
-          insights.push({
-            title: "🚨 Spending Exceeds Income",
-            message: "Your expenses are higher than your income. Consider reviewing your spending habits and creating a budget.",
-            priority: 1
-          });
-        } else if (metrics.savingsRate < 10) {
-          insights.push({
-            title: "📉 Low Savings Rate",
-            message: "Your savings rate is below the recommended 10-20%. Look for areas to reduce discretionary spending.",
-            priority: 2
-          });
-        } else if (metrics.savingsRate >= 20) {
-          insights.push({
-            title: "📈 Excellent Savings Rate",
-            message: "You're saving a healthy portion of your income! Consider increasing retirement contributions.",
-            priority: 3
-          });
-        }
-        
-        // Debt insights
-        if (metrics.dtiRatio > 43) {
-          insights.push({
-            title: "⚠️ High Debt Burden",
-            message: "Your debt-to-income ratio is concerning. Focus on paying down high-interest debt first.",
-            priority: 1
-          });
-        } else if (metrics.dtiRatio > 36) {
-          insights.push({
-            title: "📊 Approaching Debt Limit",
-            message: "Your debt level is approaching the recommended maximum. Avoid taking on new debt.",
-            priority: 2
-          });
-        } else if (metrics.dtiRatio === 0 && data.debt === 0) {
-          insights.push({
-            title: "✅ Debt-Free",
-            message: "You have no debt! This puts you in a strong financial position.",
-            priority: 3
-          });
-        }
-        
-        // Emergency fund insights
-        if (metrics.emergencyMonths < 1) {
-          insights.push({
-            title: "🚨 Insufficient Emergency Fund",
-            message: "Build an emergency fund covering at least 3 months of expenses as soon as possible.",
-            priority: 1
-          });
-        } else if (metrics.emergencyMonths < 3) {
-          insights.push({
-            title: "📋 Emergency Fund Building",
-            message: "Continue building your emergency fund until you have 3-6 months of expenses covered.",
-            priority: 2
-          });
-        } else if (metrics.emergencyMonths >= 6) {
-          insights.push({
-            title: "🛡️ Strong Safety Net",
-            message: "You have a robust emergency fund. Consider redirecting extra savings to investments.",
-            priority: 3
-          });
-        }
-        
-        // Net worth insights
-        if (metrics.netWorth < 0) {
-          insights.push({
-            title: "📉 Negative Net Worth",
-            message: "Focus on paying down debt to reach a positive net worth as your first financial milestone.",
-            priority: 1
-          });
-        } else if (metrics.netWorth > 0 && metrics.netWorth < data.income * 6) {
-          insights.push({
-            title: "📊 Building Wealth",
-            message: "You're building a solid financial foundation. Keep increasing your savings and investments.",
-            priority: 2
-          });
-        } else if (metrics.netWorth >= data.income * 6) {
-          insights.push({
-            title: "💰 Strong Financial Position",
-            message: "You've built significant wealth! Consider speaking with a financial advisor about advanced strategies.",
-            priority: 3
-          });
-        }
-        
-        // Sort by priority (lower number = higher priority)
-        insights.sort((a, b) => a.priority - b.priority);
-        
-        // Render insights
-        this.renderInsights(insights);
-      },
-      
-      // Render insights to the DOM
-      renderInsights(insights) {
-        this.elements.insightsContainer.innerHTML = '';
-        
-        if (insights.length === 0) {
-          this.elements.insightsContainer.innerHTML = `
-            <div class="insight-card">
-              <div class="insight-title">
-                <span class="insight-icon">📊</span>
-                <span>Financial Health Check</span>
-              </div>
-              <div class="insight-content">
-                Your financial metrics appear to be in good shape. Continue monitoring and adjusting as needed.
-              </div>
-            </div>
-          `;
-          return;
-        }
-        
-        insights.forEach(insight => {
-          const insightElement = document.createElement('div');
-          insightElement.className = 'insight-card';
-          insightElement.innerHTML = `
-            <div class="insight-title">
-              <span class="insight-icon">${insight.title.split(' ')[0]}</span>
-              <span>${insight.title}</span>
-            </div>
-            <div class="insight-content">${insight.message}</div>
-            <div class="insight-actions">
-              <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.85rem;">Dismiss</button>
-              <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;">Learn More</button>
-            </div>
-          `;
-          this.elements.insightsContainer.appendChild(insightElement);
-        });
-      },
-      
-      // Render the orb visualization
-      renderOrb(metrics) {
-        const healthScore = metrics.healthScore;
-        
-        // Determine orb color based on health score
-        let color;
-        if (healthScore >= 80) color = '#10b981'; // Green
-        else if (healthScore >= 60) color = '#f59e0b'; // Yellow
-        else if (healthScore >= 40) color = '#f97316'; // Orange
-        else color = '#ef4444'; // Red
-        
-        // Calculate pulse speed (faster pulse = better health)
-        const pulseDuration = Math.max(1, Math.min(4, 5 - (healthScore / 25)));
-        
-        // Calculate rings based on savings rate and emergency fund
-        const savingsRings = Math.min(5, Math.floor(metrics.savingsRate / 5));
-        const emergencyRings = Math.min(3, Math.floor(metrics.emergencyMonths / 2));
-        
-        // Create SVG for orb
-        let svg = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <radialGradient id="orbGradient" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="${color}" stop-opacity="0.9"/>
-              <stop offset="100%" stop-color="${color}" stop-opacity="0.2"/>
-            </radialGradient>
-            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-          </defs>
-          
-          <!-- Outer rings for emergency fund -->
-          ${Array.from({length: emergencyRings}, (_, i) => {
-            const r = 45 + i * 5;
-            return `<circle cx="50" cy="50" r="${r}" fill="none" 
-                    stroke="${color}" stroke-width="0.8" stroke-opacity="0.4" 
-                    stroke-dasharray="2,2"/>`;
-          }).join('')}
-          
-          <!-- Middle rings for savings rate -->
-          ${Array.from({length: savingsRings}, (_, i) => {
-            const r = 40 + i * 3;
-            return `<circle cx="50" cy="50" r="${r}" fill="none" 
-                    stroke="${color}" stroke-width="1" stroke-opacity="0.6"/>`;
-          }).join('')}
-          
-          <!-- Main orb -->
-          <circle cx="50" cy="50" r="35" fill="url(#orbGradient)" 
-                  filter="url(#glow)" style="animation: pulse ${pulseDuration}s infinite alternate;">
-          </circle>
-          
-          <!-- Health indicator -->
-          <circle cx="50" cy="50" r="30" fill="none" 
-                  stroke="white" stroke-width="2" stroke-opacity="0.3"/>
-          
-          <!-- Health score text -->
-          <text x="50" y="52" text-anchor="middle" fill="white" 
-                font-size="10" font-weight="bold" opacity="0.9">${Math.round(healthScore)}</text>
-          
-          <style>
-            @keyframes pulse {
-              from { r: 33; opacity: 0.8; }
-              to { r: 37; opacity: 1; }
-            }
-          </style>
-        </svg>`;
-        
-        this.elements.orb.innerHTML = svg;
-      },
-      
-      // Save current snapshot to history
-      saveSnapshot() {
-        if (this.state.financialData.income <= 0) {
-          this.showToast('Please generate your financial orb first.', 'error');
-          return;
-        }
-        
-        const metrics = this.calculateMetrics();
-        const snapshot = {
-          ...this.state.financialData,
-          timestamp: new Date().toISOString(),
-          metrics: metrics
+        // Business tax thresholds
+        const BUSINESS_THRESHOLDS = {
+            small: 50000000, // Under ₦50 million turnover
+            citRate: 0.30, // 30% CIT
+            devLevy: 0.04 // 4% Development Levy
         };
         
-        this.state.history.push(snapshot);
-        this.saveToStorage();
-        this.renderHistoryChart();
-        
-        this.showToast('Snapshot saved to your financial history!');
-      },
-      
-      // Save to browser storage
-      saveToHistory() {
-        const snapshot = {
-          ...this.state.financialData,
-          timestamp: new Date().toISOString()
-        };
-        
-        // Only keep last 12 months of history
-        const oneYearAgo = new Date();
-        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-        
-        this.state.history = this.state.history.filter(item => new Date(item.timestamp) > oneYearAgo);
-        this.state.history.push(snapshot);
-        this.saveToStorage();
-      },
-      
-      // Add a new financial goal
-      addGoal() {
-        const goalText = this.elements.goalInput.value.trim();
-        if (!goalText) {
-          this.showToast('Please enter a goal description.', 'error');
-          return;
-        }
-        
-        const goal = {
-          id: Date.now(),
-          text: goalText,
-          completed: false,
-          createdAt: new Date().toISOString(),
-          targetDate: null,
-          targetAmount: null
-        };
-        
-        this.state.goals.push(goal);
-        this.elements.goalInput.value = '';
-        this.saveToStorage();
-        this.renderGoals();
-        
-        this.showToast('Goal added successfully!');
-      },
-      
-      // Toggle goal completion
-      toggleGoal(id) {
-        const goal = this.state.goals.find(g => g.id === id);
-        if (goal) {
-          goal.completed = !goal.completed;
-          this.saveToStorage();
-          this.renderGoals();
-          
-          const status = goal.completed ? 'completed' : 'marked as incomplete';
-          this.showToast(`Goal ${status}!`);
-        }
-      },
-      
-      // Delete a goal
-      deleteGoal(id) {
-        this.state.goals = this.state.goals.filter(g => g.id !== id);
-        this.saveToStorage();
-        this.renderGoals();
-        
-        this.showToast('Goal deleted.');
-      },
-      
-      // Render goals list
-      renderGoals() {
-        this.elements.goalsContainer.innerHTML = '';
-        
-        if (this.state.goals.length === 0) {
-          this.elements.goalsContainer.innerHTML = `
-            <div class="insight-card">
-              <div class="insight-title">
-                <span class="insight-icon">🎯</span>
-                <span>No goals yet</span>
-              </div>
-              <div class="insight-content">
-                Add your first financial goal using the form above!
-              </div>
-            </div>
-          `;
-          return;
-        }
-        
-        // Sort goals: incomplete first, then by creation date
-        const sortedGoals = [...this.state.goals].sort((a, b) => {
-          if (a.completed !== b.completed) return a.completed ? 1 : -1;
-          return new Date(b.createdAt) - new Date(a.createdAt);
-        });
-        
-        sortedGoals.forEach(goal => {
-          const goalElement = document.createElement('div');
-          goalElement.className = 'goal-item';
-          goalElement.innerHTML = `
-            <div class="goal-info">
-              <div class="goal-title">
-                <input type="checkbox" ${goal.completed ? 'checked' : ''} 
-                       onchange="FinOrb.toggleGoal(${goal.id})">
-                <span style="${goal.completed ? 'text-decoration: line-through; color: #9ca3af;' : ''}">
-                  ${goal.text}
-                </span>
-              </div>
-              <div class="goal-progress">
-                <div class="goal-progress-bar" style="width: ${goal.completed ? '100' : '0'}%"></div>
-              </div>
-            </div>
-            <div class="goal-actions">
-              <button class="btn btn-danger goal-btn" onclick="FinOrb.deleteGoal(${goal.id})">
-                Delete
-              </button>
-            </div>
-          `;
-          this.elements.goalsContainer.appendChild(goalElement);
-        });
-      },
-      
-      // Render history chart
-      renderHistoryChart() {
-        const ctx = document.getElementById('trend-chart').getContext('2d');
-        
-        // Destroy existing chart if it exists
-        if (this.chart) {
-          this.chart.destroy();
-        }
-        
-        if (this.state.history.length < 2) {
-          // Show message when not enough data
-          ctx.font = '16px Inter';
-          ctx.fillStyle = '#6b7280';
-          ctx.textAlign = 'center';
-          ctx.fillText('Not enough data to show trends', 
-                      ctx.canvas.width / 2, ctx.canvas.height / 2);
-          return;
-        }
-        
-        // Sort history by date
-        const sortedHistory = [...this.state.history].sort((a, b) => 
-          new Date(a.timestamp) - new Date(b.timestamp)
-        );
-        
-        // Prepare data for chart
-        const labels = sortedHistory.map(s => {
-          const date = new Date(s.timestamp);
-          return `${date.getMonth()+1}/${date.getDate()}`;
-        });
-        
-        const netWorthData = sortedHistory.map(s => s.savings + s.investments - s.debt);
-        const savingsRateData = sortedHistory.map(s => {
-          return ((s.income - s.expenses) / s.income) * 100;
-        });
-        
-        // Create chart
-        this.chart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [
-              {
-                label: 'Net Worth',
-                data: netWorthData,
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                tension: 0.3,
-                fill: true,
-                yAxisID: 'y'
-              },
-              {
-                label: 'Savings Rate %',
-                data: savingsRateData,
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                tension: 0.3,
-                fill: false,
-                yAxisID: 'y1'
-              }
+        // Tax relief options and explanations
+        const TAX_TIPS = {
+            salary: [
+                "Claim rent relief up to ₦200,000 to lower your taxable income.",
+                "Consider contributing to a pension scheme - contributions are tax-deductible.",
+                "Maintain proper records of work-related expenses that may be deductible."
+            ],
+            business: [
+                "Small businesses with turnover under ₦50 million are exempt from CIT.",
+                "Keep detailed records of all business expenses to reduce taxable profit.",
+                "Consider registering for the VAT exemption if your turnover is below ₦25 million."
+            ],
+            general: [
+                "File your tax returns early to avoid penalties and access potential refunds.",
+                "Consult a tax professional for personalized advice on complex situations.",
+                "Keep all receipts and documentation for at least 6 years for audit purposes."
             ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-              mode: 'index',
-              intersect: false,
-            },
-            scales: {
-              x: {
-                grid: {
-                  display: false
-                }
-              },
-              y: {
-                type: 'linear',
-                display: true,
-                position: 'left',
-                title: {
-                  display: true,
-                  text: 'Net Worth ($)'
-                }
-              },
-              y1: {
-                type: 'linear',
-                display: true,
-                position: 'right',
-                title: {
-                  display: true,
-                  text: 'Savings Rate (%)'
-                },
-                grid: {
-                  drawOnChartArea: false,
-                },
-              }
-            },
-            plugins: {
-              legend: {
-                position: 'top',
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    let label = context.dataset.label || '';
-                    if (label) {
-                      label += ': ';
-                    }
-                    if (context.dataset.yAxisID === 'y') {
-                      label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
-                    } else {
-                      label += context.parsed.y.toFixed(1) + '%';
-                    }
-                    return label;
-                  }
-                }
-              }
+        };
+        
+        // DOM elements
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        
+        // Event listeners
+        sendBtn.addEventListener('click', processUserInput);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                processUserInput();
             }
-          }
         });
-      },
-      
-      // Export data as JSON
-      exportData() {
-        if (this.state.history.length === 0) {
-          this.showToast('No data to export.', 'error');
-          return;
-        }
         
-        const data = {
-          financialData: this.state.financialData,
-          goals: this.state.goals,
-          history: this.state.history,
-          exportedAt: new Date().toISOString()
-        };
-        
-        const dataStr = JSON.stringify(data, null, 2);
-        const dataBlob = new Blob([dataStr], {type: 'application/json'});
-        
-        const url = URL.createObjectURL(dataBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `finorb-data-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        
-        this.showToast('Data exported successfully!');
-      },
-      
-      // Clear history
-      clearHistory() {
-        if (confirm("Are you sure you want to clear your financial history? This cannot be undone.")) {
-          this.state.history = [];
-          this.saveToStorage();
-          this.renderHistoryChart();
-          this.showToast('History cleared.');
-        }
-      },
-      
-      // Generate a privacy-safe shareable DNA
-      async shareDNA() {
-        if (this.state.financialData.income <= 0) {
-          this.showToast('Please generate your financial orb first.', 'error');
-          return;
-        }
-        
-        // Create privacy-safe ranges
-        const privacyData = {
-          incomeRange: this.getRange(this.state.financialData.income, [2000, 4000, 6000, 8000, 10000]),
-          expensesRange: this.getRange(this.state.financialData.expenses, [1000, 2000, 3000, 4000, 5000]),
-          debtRange: this.getRange(this.state.financialData.debt, [5000, 10000, 20000, 50000, 100000]),
-          savingsRange: this.getRange(this.state.financialData.savings, [1000, 5000, 10000, 20000, 50000]),
-          investmentsRange: this.getRange(this.state.financialData.investments, [1000, 5000, 15000, 30000, 50000])
-        };
-        
-        // Generate hash
-        const dnaHash = await this.hashFinancialData(privacyData);
-        
-        // Create shareable URL
-        const shareUrl = `${window.location.origin}${window.location.pathname}#dna=${dnaHash.substring(0,12)}`;
-        this.elements.shareUrl.innerHTML = `
-          <button class="copy-btn" onclick="FinOrb.copyShareUrl()">Copy</button>
-          ${shareUrl}
-        `;
-        this.elements.shareUrl.style.display = 'block';
-        
-        // Copy to clipboard
-        this.copyToClipboard(shareUrl);
-        this.showToast('Shareable link copied to clipboard!');
-      },
-      
-      // Copy share URL to clipboard
-      copyShareUrl() {
-        const url = this.elements.shareUrl.innerText.replace('Copy', '').trim();
-        this.copyToClipboard(url);
-        this.showToast('Link copied to clipboard!');
-      },
-      
-      // Copy text to clipboard
-      copyToClipboard(text) {
-        navigator.clipboard.writeText(text).catch(err => {
-          console.error('Failed to copy: ', err);
-          // Fallback for older browsers
-          const textArea = document.createElement('textarea');
-          textArea.value = text;
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand('copy');
-          document.body.removeChild(textArea);
-        });
-      },
-      
-      // Render shared DNA (for when someone opens a shared link)
-      renderSharedDNA(dnaHash) {
-        // In a real implementation, you would map the DNA hash back to visual parameters
-        // For this demo, we'll show a generic visualization
-        const metrics = {
-          savingsRate: 15,
-          dtiRatio: 28,
-          emergencyMonths: 4.5,
-          netWorth: 25000,
-          healthScore: 65
-        };
-        
-        this.renderOrb(metrics);
-        
-        // Update metrics with placeholders
-        this.elements.savingsRate.textContent = "15.0%";
-        this.elements.dtiRatio.textContent = "28.0%";
-        this.elements.emergencyMonths.textContent = "4.5 mo";
-        this.elements.netWorth.textContent = "$25,000";
-        
-        // Show shared message
-        this.elements.insightsContainer.innerHTML = `
-          <div class="insight-card">
-            <div class="insight-title">
-              <span class="insight-icon">🔗</span>
-              <span>Shared Financial Health</span>
-            </div>
-            <div class="insight-content">
-              This is a privacy-safe representation of someone's financial health. No actual financial data is revealed.
-            </div>
-          </div>
-        `;
-        
-        // Show the orb tab
-        this.switchTab('orb');
-      },
-      
-      // Show toast notification
-      showToast(message, type = 'success') {
-        const toastContainer = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type === 'error' ? 'toast-error' : ''}`;
-        toast.innerHTML = `
-          <div class="toast-icon">${type === 'error' ? '⚠️' : '✅'}</div>
-          <div class="toast-message">${message}</div>
-          <button class="toast-close" onclick="this.parentElement.remove()">×</button>
-        `;
-        
-        toastContainer.appendChild(toast);
-        
-        // Show toast with animation
-        setTimeout(() => {
-          toast.classList.add('show');
-        }, 10);
-        
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-          if (toast.parentElement) {
-            toast.classList.remove('show');
+        // Functions
+        function processUserInput() {
+            const inputText = userInput.value.trim();
+            if (!inputText) return;
+            
+            // Add user message to chat
+            addMessage(inputText, 'user');
+            
+            // Clear input
+            userInput.value = '';
+            
+            // Process and respond
             setTimeout(() => {
-              if (toast.parentElement) {
-                toast.remove();
-              }
-            }, 300);
-          }
-        }, 5000);
-      },
-      
-      // Utility functions
-      getRange(value, thresholds) {
-        for (let i = 0; i < thresholds.length; i++) {
-          if (value <= thresholds[i]) return i;
-        }
-        return thresholds.length;
-      },
-      
-      async hashFinancialData(data) {
-        const encoder = new TextEncoder();
-        const dataStr = JSON.stringify(data);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(dataStr));
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-      },
-      
-      delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-      },
-      
-      // Storage functions
-      saveToStorage() {
-        localStorage.setItem('finOrbData', JSON.stringify(this.state.financialData));
-        localStorage.setItem('finOrbGoals', JSON.stringify(this.state.goals));
-        localStorage.setItem('finOrbHistory', JSON.stringify(this.state.history));
-      },
-      
-      loadFromStorage() {
-        const savedData = localStorage.getItem('finOrbData');
-        const savedGoals = localStorage.getItem('finOrbGoals');
-        const savedHistory = localStorage.getItem('finOrbHistory');
-        
-        if (savedData) {
-          this.state.financialData = JSON.parse(savedData);
-          this.elements.income.value = this.state.financialData.income || '';
-          this.elements.expenses.value = this.state.financialData.expenses || '';
-          this.elements.debt.value = this.state.financialData.debt || '';
-          this.elements.savings.value = this.state.financialData.savings || '';
-          this.elements.investments.value = this.state.financialData.investments || '';
-          this.elements.monthlyDebtPayment.value = this.state.financialData.monthlyDebtPayment || '';
+                const response = generateResponse(inputText);
+                addMessage(response, 'bot');
+                
+                // Scroll to bottom of chat
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }, 500);
         }
         
-        if (savedGoals) {
-          this.state.goals = JSON.parse(savedGoals);
+        function addMessage(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = content;
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            timeDiv.textContent = getCurrentTime();
+            
+            messageDiv.appendChild(contentDiv);
+            messageDiv.appendChild(timeDiv);
+            
+            chatContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
         
-        if (savedHistory) {
-          this.state.history = JSON.parse(savedHistory);
+        function getCurrentTime() {
+            const now = new Date();
+            return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
         }
-      }
-    };
-    
-    // Initialize the application when DOM is loaded
-    document.addEventListener('DOMContentLoaded', () => {
-      FinOrb.init();
-    });
-    
-    // Global functions for HTML onclick handlers
-    function generateOrb() {
-      FinOrb.generateOrb();
-    }
-    
-    function saveSnapshot() {
-      FinOrb.saveSnapshot();
-    }
-    
-    function switchTab(tabName) {
-      FinOrb.switchTab(tabName);
-    }
-    
-    function addGoal() {
-      FinOrb.addGoal();
-    }
-    
-    function toggleGoal(id) {
-      FinOrb.toggleGoal(id);
-    }
-    
-    function deleteGoal(id) {
-      FinOrb.deleteGoal(id);
-    }
-    
-    function exportData() {
-      FinOrb.exportData();
-    }
-    
-    function clearHistory() {
-      FinOrb.clearHistory();
-    }
-    
-    function shareDNA() {
-      FinOrb.shareDNA();
-    }
-    
-    function copyShareUrl() {
-      FinOrb.copyShareUrl();
-    }
-  </script>
+        
+        function generateResponse(input) {
+            // Parse income and category from input
+            const parsedData = parseInput(input);
+            
+            if (!parsedData.income) {
+                return "🤔 I didn't catch that. Could you please tell me your income and category? For example: <em>'I earn ₦3,000,000 from salary'</em> or <em>'₦4m business'</em>";
+            }
+            
+            // Calculate tax based on category
+            let taxResult;
+            if (parsedData.category === 'business') {
+                taxResult = calculateBusinessTax(parsedData.income);
+            } else {
+                taxResult = calculatePersonalTax(parsedData.income);
+            }
+            
+            // Generate response with tax calculation and tips
+            return formatTaxResponse(parsedData, taxResult);
+        }
+        
+        function parseInput(input) {
+            const result = {
+                income: null,
+                category: 'salary' // default category
+            };
+            
+            // Extract income amount (handles various formats)
+            const incomeMatch = input.match(/(₦|N|naira)?\s*(\d+(?:[.,]\d+)?)\s*(m|million|k|thousand)?/i);
+            if (incomeMatch) {
+                let income = parseFloat(incomeMatch[2].replace(/,/g, ''));
+                
+                // Handle multipliers (m/million = * 1,000,000, k/thousand = * 1,000)
+                if (incomeMatch[3] && incomeMatch[3].toLowerCase().startsWith('m')) {
+                    income *= 1000000;
+                } else if (incomeMatch[3] && incomeMatch[3].toLowerCase().startsWith('k')) {
+                    income *= 1000;
+                }
+                
+                result.income = Math.round(income);
+            }
+            
+            // Determine category
+            if (input.toLowerCase().includes('business') || input.toLowerCase().includes('self')) {
+                result.category = 'business';
+            } else if (input.toLowerCase().includes('salary') || input.toLowerCase().includes('employment')) {
+                result.category = 'salary';
+            }
+            
+            return result;
+        }
+        
+        function calculatePersonalTax(income) {
+            let tax = 0;
+            let remainingIncome = income;
+            let taxBreakdown = [];
+            let applicableRate = 0;
+            
+            // Calculate tax using progressive bands
+            for (const band of TAX_BANDS) {
+                if (remainingIncome <= 0) break;
+                
+                const taxableInBand = Math.min(remainingIncome, band.max - band.min + 1);
+                const bandTax = taxableInBand * band.rate;
+                
+                if (bandTax > 0) {
+                    taxBreakdown.push({
+                        range: `₦${band.min.toLocaleString()} - ₦${band.max === Infinity ? '∞' : band.max.toLocaleString()}`,
+                        rate: `${(band.rate * 100)}%`,
+                        amount: `₦${Math.round(bandTax).toLocaleString()}`
+                    });
+                }
+                
+                tax += bandTax;
+                remainingIncome -= taxableInBand;
+                
+                // Track the highest rate applied
+                if (band.rate > applicableRate && income > band.min) {
+                    applicableRate = band.rate;
+                }
+            }
+            
+            // Calculate effective tax rate
+            const effectiveRate = tax / income;
+            
+            return {
+                tax: Math.round(tax),
+                breakdown: taxBreakdown,
+                effectiveRate: effectiveRate,
+                applicableRate: applicableRate
+            };
+        }
+        
+        function calculateBusinessTax(income) {
+            let tax = 0;
+            let breakdown = [];
+            
+            if (income <= BUSINESS_THRESHOLDS.small) {
+                // Small business exemption
+                breakdown.push({
+                    type: "Small Business Exemption",
+                    rate: "0%",
+                    amount: "₦0"
+                });
+            } else {
+                // CIT + Development Levy
+                const cit = income * BUSINESS_THRESHOLDS.citRate;
+                const devLevy = income * BUSINESS_THRESHOLDS.devLevy;
+                
+                tax = cit + devLevy;
+                
+                breakdown.push({
+                    type: "Company Income Tax (CIT)",
+                    rate: `${BUSINESS_THRESHOLDS.citRate * 100}%`,
+                    amount: `₦${Math.round(cit).toLocaleString()}`
+                });
+                
+                breakdown.push({
+                    type: "Development Levy",
+                    rate: `${BUSINESS_THRESHOLDS.devLevy * 100}%`,
+                    amount: `₦${Math.round(devLevy).toLocaleString()}`
+                });
+            }
+            
+            return {
+                tax: Math.round(tax),
+                breakdown: breakdown,
+                effectiveRate: tax / income,
+                isSmallBusiness: income <= BUSINESS_THRESHOLDS.small
+            };
+        }
+        
+        function formatTaxResponse(parsedData, taxResult) {
+            const incomeFormatted = `₦${parsedData.income.toLocaleString()}`;
+            const categoryFormatted = parsedData.category === 'business' ? 'business' : 'employment';
+            
+            let response = `
+                <div class="tax-result">
+                    <h3>🧮 Your Tax Calculation</h3>
+                    <p>Based on your ${categoryFormatted} income of <strong>${incomeFormatted}</strong>:</p>
+                    <div class="tax-amount">Estimated Tax: ₦${taxResult.tax.toLocaleString()}</div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Tax Burden</span>
+                            <span>${(taxResult.effectiveRate * 100).toFixed(1)}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${taxResult.effectiveRate * 100}%"></div>
+                        </div>
+                    </div>
+            `;
+            
+            // Add tax breakdown
+            if (taxResult.breakdown.length > 0) {
+                response += `
+                    <div class="tax-breakdown">
+                        <h4>Tax Breakdown:</h4>
+                        <ul>
+                `;
+                
+                taxResult.breakdown.forEach(item => {
+                    const amountKey = item.amount ? item.amount : (item.range ? item.range : '');
+                    const rateKey = item.rate ? item.rate : '';
+                    const typeKey = item.type ? item.type : '';
+                    
+                    response += `<li>${typeKey || amountKey}: ${rateKey} = ${item.amount || ''}</li>`;
+                });
+                
+                response += `
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            // Add tax tip
+            const tips = [...TAX_TIPS[parsedData.category], ...TAX_TIPS.general];
+            const randomTip = tips[Math.floor(Math.random() * tips.length)];
+            
+            response += `
+                <div class="tax-tip">
+                    <strong>💡 Tip:</strong> ${randomTip}
+                </div>
+            `;
+            
+            // Add explanation
+            let explanation = "";
+            if (parsedData.category === 'business') {
+                if (taxResult.isSmallBusiness) {
+                    explanation = "Small businesses with annual turnover below ₦50 million are exempt from Company Income Tax under the 2025 Nigerian Tax Laws.";
+                } else {
+                    explanation = "Businesses with turnover above ₦50 million pay Company Income Tax at 30% plus a 4% Development Levy on turnover.";
+                }
+            } else {
+                explanation = "The Nigerian personal income tax system uses progressive bands. The first ₦800,000 is tax-free, with rates increasing up to 25% for higher income levels.";
+            }
+            
+            response += `
+                <div class="tax-explanation">
+                    <strong>📘 Explanation:</strong> ${explanation}
+                </div>
+            `;
+            
+            response += `</div>`;
+            
+            return response;
+        }
+    </script>
 </body>
 </html>
