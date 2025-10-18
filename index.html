@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaxBud | Nigerian Tax Intelligence Platform</title>
+    <title>Nigerian Tax Calculator | Professional Tax Intelligence</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -12,6 +12,7 @@
             --primary-light: #4caf50;
             --secondary: #1a237e;
             --accent: #ff9800;
+            --accent-dark: #e68900;
             --text: #333333;
             --text-light: #666666;
             --background: #f8f9fa;
@@ -19,6 +20,7 @@
             --gray-light: #e9ecef;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             --radius: 8px;
+            --transition: all 0.3s ease;
         }
 
         * {
@@ -32,6 +34,43 @@
             background-color: var(--background);
             color: var(--text);
             line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Naira Animation Styles */
+        .naira-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .naira-note {
+            position: absolute;
+            font-size: 2rem;
+            color: rgba(0, 100, 0, 0.2);
+            animation: float 15s linear infinite;
+            user-select: none;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.3;
+            }
+            90% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
         }
 
         /* Header Styles */
@@ -61,6 +100,13 @@
 
         .logo-icon {
             font-size: 2.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         .logo-text {
@@ -89,14 +135,16 @@
             color: var(--white);
             text-decoration: none;
             font-weight: 500;
-            transition: opacity 0.3s;
+            transition: var(--transition);
             display: flex;
             align-items: center;
             gap: 5px;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
         }
 
-        nav a:hover {
-            opacity: 0.8;
+        nav a:hover, nav a.active {
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .mobile-menu-btn {
@@ -114,11 +162,15 @@
             color: var(--white);
             padding: 4rem 2rem;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
         .hero-container {
             max-width: 1000px;
             margin: 0 auto;
+            position: relative;
+            z-index: 2;
         }
 
         .hero h2 {
@@ -135,6 +187,24 @@
             margin-right: auto;
         }
 
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            backdrop-filter: blur(5px);
+        }
+
         .cta-button {
             display: inline-block;
             background-color: var(--accent);
@@ -144,13 +214,36 @@
             text-decoration: none;
             font-weight: 600;
             font-size: 1.1rem;
-            transition: all 0.3s;
+            transition: var(--transition);
             box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+            position: relative;
+            overflow: hidden;
         }
 
         .cta-button:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+        }
+
+        .cta-button:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+        }
+
+        .cta-button:hover:after {
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
         }
 
         /* Main Content */
@@ -198,6 +291,14 @@
             box-shadow: var(--shadow);
             padding: 2rem;
             height: fit-content;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .calculator-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-light);
         }
 
         .calculator-card h3 {
@@ -226,12 +327,13 @@
             border: 1px solid var(--gray-light);
             border-radius: var(--radius);
             font-size: 1rem;
-            transition: border-color 0.3s;
+            transition: var(--transition);
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 100, 0, 0.1);
         }
 
         .btn {
@@ -243,7 +345,7 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: var(--transition);
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -251,6 +353,7 @@
 
         .btn:hover {
             background: var(--primary-dark);
+            transform: translateY(-2px);
         }
 
         .btn-block {
@@ -259,12 +362,27 @@
             text-align: center;
         }
 
+        .btn-accent {
+            background: var(--accent);
+        }
+
+        .btn-accent:hover {
+            background: var(--accent-dark);
+        }
+
         .result-card {
             background: var(--white);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             padding: 2rem;
             margin-top: 2rem;
+            animation: fadeIn 0.5s ease;
+            border-left: 5px solid var(--primary);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .tax-amount {
@@ -319,11 +437,12 @@
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             overflow: hidden;
-            transition: transform 0.3s;
+            transition: var(--transition);
         }
 
         .sector-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
 
         .sector-header {
@@ -381,6 +500,12 @@
             font-size: 1.5rem;
             font-weight: bold;
             flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .step:hover .step-number {
+            transform: scale(1.1);
+            background: var(--accent);
         }
 
         .step-content {
@@ -404,6 +529,11 @@
             box-shadow: var(--shadow);
             margin-bottom: 1rem;
             overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .faq-item:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .faq-question {
@@ -413,11 +543,58 @@
             justify-content: space-between;
             align-items: center;
             font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .faq-question:hover {
+            background: rgba(0, 100, 0, 0.05);
         }
 
         .faq-answer {
             padding: 0 1.5rem 1.5rem;
             border-top: 1px solid var(--gray-light);
+            display: none;
+        }
+
+        /* Cost Reduction Section */
+        .cost-reduction {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            padding: 4rem 2rem;
+            border-radius: var(--radius);
+            margin-bottom: 4rem;
+            text-align: center;
+        }
+
+        .cost-reduction h2 {
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        .cost-tips {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .cost-tip {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            backdrop-filter: blur(5px);
+            transition: var(--transition);
+        }
+
+        .cost-tip:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .cost-tip i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
         }
 
         /* Footer */
@@ -464,7 +641,7 @@
         .footer-column a {
             color: var(--gray-light);
             text-decoration: none;
-            transition: color 0.3s;
+            transition: var(--transition);
         }
 
         .footer-column a:hover {
@@ -489,6 +666,18 @@
         @media (max-width: 768px) {
             nav ul {
                 display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--primary-dark);
+                flex-direction: column;
+                padding: 1rem;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            }
+
+            nav ul.show {
+                display: flex;
             }
 
             .mobile-menu-btn {
@@ -507,28 +696,37 @@
             .step-number {
                 align-self: flex-start;
             }
+
+            .trust-badges {
+                flex-direction: column;
+                align-items: center;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Naira Animation Background -->
+    <div class="naira-animation" id="naira-animation"></div>
+
     <!-- Header -->
     <header>
         <div class="header-container">
             <div class="logo">
                 <div class="logo-icon">💰</div>
                 <div class="logo-text">
-                    <h1>TaxBud</h1>
-                    <p>Nigerian Tax Intelligence Platform</p>
+                    <h1>Nigerian Tax Calculator</h1>
+                    <p>Built for Nigerians, by Nigerians</p>
                 </div>
             </div>
             <nav>
-                <ul>
-                    <li><a href="#calculator"><i class="fas fa-calculator"></i> Calculator</a></li>
+                <ul id="nav-menu">
+                    <li><a href="#calculator" class="active"><i class="fas fa-calculator"></i> Calculator</a></li>
                     <li><a href="#sectors"><i class="fas fa-chart-pie"></i> Sector Insights</a></li>
+                    <li><a href="#cost-reduction"><i class="fas fa-piggy-bank"></i> Reduce Costs</a></li>
                     <li><a href="#payment"><i class="fas fa-credit-card"></i> Payment Guide</a></li>
                     <li><a href="#faq"><i class="fas fa-question-circle"></i> FAQ</a></li>
                 </ul>
-                <button class="mobile-menu-btn">
+                <button class="mobile-menu-btn" id="mobile-menu-btn">
                     <i class="fas fa-bars"></i>
                 </button>
             </nav>
@@ -538,9 +736,24 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-container">
-            <h2>Optimize Your Tax Strategy with Nigeria's Premier Tax Intelligence Platform</h2>
-            <p>Leverage cutting-edge analysis of the 2025/2026 Nigerian Tax Laws to minimize liabilities and maximize compliance across all sectors.</p>
+            <h2>Your Trusted Nigerian Tax Intelligence Platform</h2>
+            <p>Navigate the 2025/2026 Nigerian Tax Laws with confidence. Calculate your taxes, discover optimization strategies, and grow your business with insights built specifically for Nigerian entrepreneurs.</p>
             <a href="#calculator" class="cta-button">Calculate Your Tax Now <i class="fas fa-arrow-right"></i></a>
+            
+            <div class="trust-badges">
+                <div class="trust-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>100% Secure & Private</span>
+                </div>
+                <div class="trust-badge">
+                    <i class="fas fa-bolt"></i>
+                    <span>Instant Calculations</span>
+                </div>
+                <div class="trust-badge">
+                    <i class="fas fa-leaf"></i>
+                    <span>Tax Optimization Tips</span>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -550,6 +763,7 @@
         <section id="calculator">
             <div class="section-title">
                 <h2>Intelligent Tax Calculator</h2>
+                <p>Accurate calculations based on the latest 2025/2026 Nigerian Tax Laws</p>
             </div>
             <div class="calculator-container">
                 <div class="calculator-card">
@@ -631,6 +845,45 @@
                     <h4><i class="fas fa-lightbulb"></i> Optimization Strategy</h4>
                     <p id="optimization-tip">Based on your profile, we recommend maximizing your pension contributions to reduce taxable income.</p>
                 </div>
+                <button class="btn btn-accent" id="save-result" style="margin-top: 1rem;">
+                    <i class="fas fa-download"></i> Save This Calculation
+                </button>
+            </div>
+        </section>
+
+        <!-- Cost Reduction Section -->
+        <section id="cost-reduction">
+            <div class="section-title">
+                <h2>Reduce Your Business Costs</h2>
+                <p>Smart strategies to optimize expenses and increase profitability</p>
+            </div>
+            
+            <div class="cost-reduction">
+                <h2>Tax Efficiency Leads to Business Growth</h2>
+                <p>Implement these cost-saving strategies to keep more of your hard-earned money</p>
+                
+                <div class="cost-tips">
+                    <div class="cost-tip">
+                        <i class="fas fa-hand-holding-usd"></i>
+                        <h3>Claim All Allowable Expenses</h3>
+                        <p>Track and document all business-related expenses to reduce your taxable income.</p>
+                    </div>
+                    <div class="cost-tip">
+                        <i class="fas fa-users"></i>
+                        <h3>Hire Strategically</h3>
+                        <p>Utilize government incentives for hiring certain categories of employees.</p>
+                    </div>
+                    <div class="cost-tip">
+                        <i class="fas fa-tools"></i>
+                        <h3>Invest in Equipment</h3>
+                        <p>Take advantage of capital allowances on qualifying business equipment.</p>
+                    </div>
+                    <div class="cost-tip">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h3>Location Matters</h3>
+                        <p>Consider establishing in economic zones for tax holidays and incentives.</p>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -638,6 +891,7 @@
         <section id="sectors">
             <div class="section-title">
                 <h2>Sector-Specific Tax Strategies</h2>
+                <p>Tailored approaches for different industries in Nigeria</p>
             </div>
             <div class="sectors-grid">
                 <div class="sector-card">
@@ -689,6 +943,7 @@
         <section id="payment">
             <div class="section-title">
                 <h2>Tax Payment & Compliance Guide</h2>
+                <p>Step-by-step process to fulfill your tax obligations</p>
             </div>
             <div class="payment-steps">
                 <div class="step">
@@ -733,6 +988,7 @@
         <section id="faq">
             <div class="section-title">
                 <h2>Frequently Asked Questions</h2>
+                <p>Quick answers to common tax questions</p>
             </div>
             <div class="faq-container">
                 <div class="faq-item">
@@ -779,14 +1035,15 @@
     <footer>
         <div class="footer-container">
             <div class="footer-column">
-                <h3>TaxBud</h3>
-                <p>Nigeria's premier tax intelligence platform, providing cutting-edge analysis and optimization strategies based on the latest tax legislation.</p>
+                <h3>Nigerian Tax Calculator</h3>
+                <p>Nigeria's premier tax intelligence platform, providing cutting-edge analysis and optimization strategies based on the latest tax legislation. Built for Nigerians, by Nigerians.</p>
             </div>
             <div class="footer-column">
                 <h3>Quick Links</h3>
                 <ul>
                     <li><a href="#calculator">Tax Calculator</a></li>
                     <li><a href="#sectors">Sector Insights</a></li>
+                    <li><a href="#cost-reduction">Reduce Costs</a></li>
                     <li><a href="#payment">Payment Guide</a></li>
                     <li><a href="#faq">FAQ</a></li>
                 </ul>
@@ -803,18 +1060,38 @@
             <div class="footer-column">
                 <h3>Contact</h3>
                 <ul>
-                    <li><i class="fas fa-envelope"></i> info@taxbud.ng</li>
-                    <li><i class="fas fa-phone"></i> +234 800 TAX BUD</li>
+                    <li><i class="fas fa-envelope"></i> info@taxcalculator.ng</li>
+                    <li><i class="fas fa-phone"></i> +234 800 TAX NIGERIA</li>
                     <li><i class="fas fa-map-marker-alt"></i> Lagos, Nigeria</li>
                 </ul>
             </div>
         </div>
         <div class="copyright">
-            <p>&copy; 2025 TaxBud. All rights reserved. This tool provides estimates based on current tax laws and should not be considered as professional tax advice.</p>
+            <p>&copy; 2025 Nigerian Tax Calculator. All rights reserved. This tool provides estimates based on current tax laws and should not be considered as professional tax advice.</p>
         </div>
     </footer>
 
     <script>
+        // Create floating naira animation
+        function createNairaAnimation() {
+            const container = document.getElementById('naira-animation');
+            const nairaSymbols = ['₦', '💰', '💵', '💷'];
+            
+            for (let i = 0; i < 30; i++) {
+                const naira = document.createElement('div');
+                naira.className = 'naira-note';
+                naira.textContent = nairaSymbols[Math.floor(Math.random() * nairaSymbols.length)];
+                
+                // Random properties
+                naira.style.left = Math.random() * 100 + 'vw';
+                naira.style.fontSize = (Math.random() * 2 + 1.5) + 'rem';
+                naira.style.animationDelay = Math.random() * 15 + 's';
+                naira.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                
+                container.appendChild(naira);
+            }
+        }
+
         // Tax calculation logic
         document.getElementById('personal-tax-form').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -982,19 +1259,34 @@
         });
 
         // Mobile Menu Toggle
-        document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
-            const nav = document.querySelector('nav ul');
-            if (nav.style.display === 'flex') {
-                nav.style.display = 'none';
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            const navMenu = document.getElementById('nav-menu');
+            navMenu.classList.toggle('show');
+        });
+
+        // Close mobile menu when a link is clicked
+        document.querySelectorAll('#nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                const navMenu = document.getElementById('nav-menu');
+                navMenu.classList.remove('show');
+            });
+        });
+
+        // Save result button
+        document.getElementById('save-result').addEventListener('click', () => {
+            alert('Calculation saved! In a full implementation, this would save to your account or download as PDF.');
+        });
+
+        // Initialize animations
+        createNairaAnimation();
+
+        // Add scroll effect to header
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.1)';
             } else {
-                nav.style.display = 'flex';
-                nav.style.flexDirection = 'column';
-                nav.style.position = 'absolute';
-                nav.style.top = '100%';
-                nav.style.left = '0';
-                nav.style.right = '0';
-                nav.style.background = 'var(--primary-dark)';
-                nav.style.padding = '1rem';
+                header.style.boxShadow = 'var(--shadow)';
             }
         });
     </script>
