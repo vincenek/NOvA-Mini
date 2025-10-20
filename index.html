@@ -24,8 +24,6 @@
             --radius: 8px;
             --transition: all 0.3s ease;
             --sidebar-width: 250px;
-            --error: #d32f2f;
-            --success: #388e3c;
         }
 
         * {
@@ -293,7 +291,7 @@
         }
 
         .trend-up {
-            color: var(--success);
+            color: var(--primary-light);
         }
 
         .trend-down {
@@ -519,16 +517,6 @@
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(0, 100, 0, 0.1);
-        }
-
-        .input-control.error {
-            border-color: var(--error);
-        }
-
-        .error-message {
-            color: var(--error);
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
         }
 
         .input-hint {
@@ -1118,7 +1106,7 @@
                 <a href="#calculator" class="nav-item" data-tab="calculator">
                     <i class="fas fa-calculator"></i>
                     <span>Tax Calculator</span>
-                    <span class="nav-badge">PRO</span>
+                    <span class="nav-badge">NEW</span>
                 </a>
                 <a href="#history" class="nav-item" data-tab="history">
                     <i class="fas fa-history"></i>
@@ -1166,7 +1154,7 @@
             <div class="tab-content active" id="dashboard">
                 <div class="tab-header">
                     <h2>Tax Dashboard</h2>
-                    <p>Welcome back, John! Here's your tax overview for the current fiscal year.</p>
+                    <p>Welcome back, John! Here's your tax overview.</p>
                 </div>
 
                 <div class="stats-grid">
@@ -1353,7 +1341,6 @@
                             <div class="input-group">
                                 <label for="income-amount" id="income-label">Annual Income (₦)</label>
                                 <input type="number" id="income-amount" class="input-control" placeholder="Enter amount">
-                                <div class="error-message" id="income-error"></div>
                                 
                                 <div class="amount-options" id="income-amount-options">
                                     <!-- Amount options will be populated by JavaScript -->
@@ -1397,7 +1384,6 @@
                             <div class="input-group">
                                 <label for="allowances" id="allowances-label">Annual Allowances & Deductions (₦)</label>
                                 <input type="number" id="allowances" class="input-control" placeholder="Enter amount (optional)">
-                                <div class="error-message" id="allowances-error"></div>
                                 
                                 <div class="amount-options" id="allowances-amount-options">
                                     <!-- Amount options will be populated by JavaScript -->
@@ -1617,14 +1603,14 @@
                         <div class="resource-icon">
                             <i class="fas fa-calendar-alt"></i>
                         </div>
-                        <div class="resource-title">2024 Tax Calendar</div>
+                        <div class="resource-title">2023 Tax Calendar</div>
                         <div class="resource-description">
                             Complete tax calendar with all important deadlines for individuals and businesses.
                         </div>
                         <div class="resource-tags">
                             <span class="resource-tag">Calendar</span>
                             <span class="resource-tag">Deadlines</span>
-                            <span class="resource-tag">2024</span>
+                            <span class="resource-tag">2023</span>
                         </div>
                         <button class="btn">
                             <i class="fas fa-download"></i> Download
@@ -1777,36 +1763,15 @@
     </div>
 
     <script>
-        // Enhanced tax calculation logic and data
+        // Tax calculation logic and data
         const taxData = {
             individual: {
-                income: [300000, 500000, 1000000, 2000000, 5000000, 10000000],
-                allowances: [50000, 100000, 200000, 500000, 1000000],
-                // Nigerian Personal Income Tax brackets (2023)
-                brackets: [
-                    { min: 0, max: 300000, rate: 0.07 },
-                    { min: 300001, max: 600000, rate: 0.11 },
-                    { min: 600001, max: 1100000, rate: 0.15 },
-                    { min: 1100001, max: 1600000, rate: 0.19 },
-                    { min: 1600001, max: 3200000, rate: 0.21 },
-                    { min: 3200001, max: Infinity, rate: 0.24 }
-                ],
-                // Consolidated Relief Allowance (CRA)
-                cra: {
-                    fixed: 200000,
-                    percentage: 0.20,
-                    minPercentage: 0.01
-                }
+                income: [500000, 1000000, 2000000, 5000000, 10000000],
+                allowances: [50000, 100000, 200000, 500000, 1000000]
             },
             business: {
                 income: [1000000, 5000000, 10000000, 25000000, 50000000, 100000000],
-                allowances: [100000, 500000, 1000000, 2500000, 5000000],
-                // Company Income Tax rates
-                rates: {
-                    small: 0.20, // Turnover < ₦25M
-                    medium: 0.30, // Turnover > ₦25M
-                    large: 0.30  // Standard CIT rate
-                }
+                allowances: [100000, 500000, 1000000, 2500000, 5000000]
             }
         };
 
@@ -1993,24 +1958,6 @@
             }
         }
 
-        // Function to show error message
-        function showError(inputId, message) {
-            const input = document.getElementById(inputId);
-            const errorElement = document.getElementById(inputId + '-error');
-            
-            input.classList.add('error');
-            errorElement.textContent = message;
-        }
-
-        // Function to clear error message
-        function clearError(inputId) {
-            const input = document.getElementById(inputId);
-            const errorElement = document.getElementById(inputId + '-error');
-            
-            input.classList.remove('error');
-            errorElement.textContent = '';
-        }
-
         // Step navigation functions
         function goToStep(stepNumber) {
             // Hide all steps
@@ -2173,18 +2120,6 @@
                 const value = parseFloat(this.value) || 0;
                 userData.incomeAmount = value;
                 
-                // Validate input
-                if (value < 0) {
-                    showError('income-amount', 'Income cannot be negative');
-                    document.getElementById('step-3-next').disabled = true;
-                } else if (value === 0) {
-                    clearError('income-amount');
-                    document.getElementById('step-3-next').disabled = true;
-                } else {
-                    clearError('income-amount');
-                    document.getElementById('step-3-next').disabled = false;
-                }
-                
                 // Update amount in words
                 updateAmountInWords(value, 'income-amount-words');
                 
@@ -2197,6 +2132,9 @@
                         option.classList.remove('selected');
                     }
                 });
+                
+                // Enable next button if value is valid
+                document.getElementById('step-3-next').disabled = value <= 0;
             });
 
             // Step 3 Next Button
@@ -2256,15 +2194,6 @@
                 const value = parseFloat(this.value) || 0;
                 userData.allowances = value;
                 
-                // Validate input
-                if (value < 0) {
-                    showError('allowances', 'Allowances cannot be negative');
-                } else if (value > userData.incomeAmount) {
-                    showError('allowances', 'Allowances cannot exceed income');
-                } else {
-                    clearError('allowances');
-                }
-                
                 // Update amount in words
                 updateAmountInWords(value, 'allowances-amount-words');
                 
@@ -2281,12 +2210,6 @@
 
             // Step 4 Next Button
             document.getElementById('step-4-next').addEventListener('click', function() {
-                // Validate before proceeding
-                if (userData.allowances > userData.incomeAmount) {
-                    showError('allowances', 'Allowances cannot exceed income');
-                    return;
-                }
-                
                 goToStep(5);
                 
                 // Simulate processing delay
@@ -2328,10 +2251,6 @@
                 // Reset amount in words
                 updateAmountInWords(0, 'income-amount-words');
                 updateAmountInWords(0, 'allowances-amount-words');
-                
-                // Clear errors
-                clearError('income-amount');
-                clearError('allowances');
                 
                 // Show calculator, hide results
                 calculatorContainer.style.display = 'block';
@@ -2375,46 +2294,28 @@
             });
         });
 
-        // Enhanced Tax Calculation Function
+        // Tax Calculation Function
         function calculateTax() {
-            let taxableIncome = userData.incomeAmount;
+            let taxableIncome = userData.incomeAmount - userData.allowances;
             let tax = 0;
             let taxRate = 0;
             let tip = '';
             
             if (userData.userType === 'individual') {
-                // Apply Consolidated Relief Allowance (CRA)
-                const craFixed = taxData.individual.cra.fixed;
-                const craPercentage = taxData.individual.cra.percentage;
-                const craMinPercentage = taxData.individual.cra.minPercentage;
-                
-                // CRA is the higher of ₦200,000 or 1% of gross income, plus 20% of gross income
-                const craPart1 = Math.max(craFixed, taxableIncome * craMinPercentage);
-                const craPart2 = taxableIncome * craPercentage;
-                const totalCRA = craPart1 + craPart2;
-                
-                // Calculate taxable income after CRA and allowances
-                taxableIncome = Math.max(0, taxableIncome - totalCRA - userData.allowances);
-                
-                // Apply progressive tax brackets
-                let remainingIncome = taxableIncome;
-                
-                for (let i = 0; i < taxData.individual.brackets.length; i++) {
-                    const bracket = taxData.individual.brackets[i];
-                    
-                    if (remainingIncome <= 0) break;
-                    
-                    const bracketAmount = Math.min(
-                        remainingIncome,
-                        bracket.max === Infinity ? remainingIncome : bracket.max - bracket.min + 1
-                    );
-                    
-                    tax += bracketAmount * bracket.rate;
-                    remainingIncome -= bracketAmount;
+                // Personal income tax calculation (simplified)
+                if (taxableIncome <= 300000) {
+                    taxRate = 0.07;
+                } else if (taxableIncome <= 600000) {
+                    taxRate = 0.11;
+                } else if (taxableIncome <= 1100000) {
+                    taxRate = 0.15;
+                } else if (taxableIncome <= 1600000) {
+                    taxRate = 0.19;
+                } else {
+                    taxRate = 0.21;
                 }
                 
-                // Calculate effective tax rate
-                taxRate = (tax / userData.incomeAmount) * 100;
+                tax = taxableIncome * taxRate;
                 
                 // Generate tip based on income type
                 switch(userData.incomeType) {
@@ -2432,29 +2333,25 @@
                         break;
                 }
             } else {
-                // Business tax calculation
-                let rate;
-                
+                // Corporate tax calculation (simplified)
                 if (userData.incomeType === 'small') {
-                    rate = taxData.business.rates.small;
+                    taxRate = 0.20; // Small company rate
                     tip = "Small businesses with turnover below ₦25 million enjoy reduced tax rates and simplified compliance requirements. Consider timing equipment purchases to maximize deductions and explore available tax credits for job creation and training programs.";
                 } else if (userData.incomeType === 'medium') {
-                    rate = taxData.business.rates.medium;
+                    taxRate = 0.25; // Medium company rate
                     tip = "Medium-sized businesses can benefit from various incentives including investment allowances and industry-specific tax credits. Explore available export incentives and consider structuring investments to qualify for pioneer status where applicable.";
                 } else {
-                    rate = taxData.business.rates.large;
+                    taxRate = 0.30; // Standard CIT rate
                     tip = "Large companies should explore sector-specific incentives, transfer pricing optimization, and strategic timing of major expenses to optimize tax liability. Consider available tax treaties for cross-border transactions and explore opportunities for research and development credits.";
                 }
                 
-                taxableIncome = Math.max(0, taxableIncome - userData.allowances);
-                tax = taxableIncome * rate;
-                taxRate = rate * 100;
+                tax = taxableIncome * taxRate;
             }
             
             // Update results UI
             document.getElementById('calculated-tax').textContent = `₦${Math.round(tax).toLocaleString()}`;
             document.getElementById('taxable-income').textContent = `₦${Math.round(taxableIncome).toLocaleString()}`;
-            document.getElementById('tax-rate').textContent = `${taxRate.toFixed(1)}%`;
+            document.getElementById('tax-rate').textContent = `${(taxRate * 100).toFixed(1)}%`;
             document.getElementById('total-allowances').textContent = `₦${Math.round(userData.allowances).toLocaleString()}`;
             document.getElementById('net-tax').textContent = `₦${Math.round(tax).toLocaleString()}`;
             document.getElementById('optimization-tip').textContent = tip;
