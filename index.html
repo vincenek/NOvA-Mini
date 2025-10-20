@@ -1032,6 +1032,34 @@
             cursor: pointer;
         }
 
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast i {
+            font-size: 1.2rem;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -1095,7 +1123,7 @@
                 <div class="logo-icon">💰</div>
                 <div class="logo-text">
                     <h1>TaxIntelli</h1>
-                    <p>Tax Intelligence Platform</p>
+                    <p>Nigerian Tax Intelligence</p>
                 </div>
             </div>
             <div class="sidebar-nav">
@@ -1163,7 +1191,7 @@
                             <i class="fas fa-receipt"></i>
                         </div>
                         <div class="stat-info">
-                            <div class="stat-value">₦0</div>
+                            <div class="stat-value" id="total-tax-paid">₦0</div>
                             <div class="stat-label">Total Tax Paid (YTD)</div>
                             <div class="stat-trend trend-up">
                                 <i class="fas fa-arrow-up"></i>
@@ -1176,7 +1204,7 @@
                             <i class="fas fa-calendar-alt"></i>
                         </div>
                         <div class="stat-info">
-                            <div class="stat-value">0</div>
+                            <div class="stat-value" id="upcoming-deadlines">0</div>
                             <div class="stat-label">Upcoming Deadlines</div>
                             <div class="stat-trend trend-down">
                                 <i class="fas fa-check-circle"></i>
@@ -1189,7 +1217,7 @@
                             <i class="fas fa-chart-line"></i>
                         </div>
                         <div class="stat-info">
-                            <div class="stat-value">₦0</div>
+                            <div class="stat-value" id="estimated-savings">₦0</div>
                             <div class="stat-label">Estimated Savings</div>
                             <div class="stat-trend trend-up">
                                 <i class="fas fa-arrow-up"></i>
@@ -1205,17 +1233,8 @@
                             <div class="card-title">Upcoming Deadlines</div>
                             <a href="#" style="color: var(--primary); font-size: 0.9rem;">View All</a>
                         </div>
-                        <ul class="deadline-list">
-                            <li class="deadline-item">
-                                <div class="deadline-icon">
-                                    <i class="fas fa-file-invoice"></i>
-                                </div>
-                                <div class="deadline-info">
-                                    <div class="deadline-title">No upcoming deadlines</div>
-                                    <div class="deadline-date">You're all caught up!</div>
-                                </div>
-                                <div class="deadline-status status-upcoming">Clear</div>
-                            </li>
+                        <ul class="deadline-list" id="deadline-list">
+                            <!-- Dynamic content will be populated by JavaScript -->
                         </ul>
                     </div>
                     <div class="dashboard-card">
@@ -1223,25 +1242,8 @@
                             <div class="card-title">Recent Activity</div>
                             <a href="#" style="color: var(--primary); font-size: 0.9rem;">View All</a>
                         </div>
-                        <ul class="activity-list">
-                            <li class="activity-item">
-                                <div class="activity-icon">
-                                    <i class="fas fa-user-plus"></i>
-                                </div>
-                                <div class="activity-info">
-                                    <div class="activity-title">Account Created</div>
-                                    <div class="activity-time">Just now</div>
-                                </div>
-                            </li>
-                            <li class="activity-item">
-                                <div class="activity-icon">
-                                    <i class="fas fa-info-circle"></i>
-                                </div>
-                                <div class="activity-info">
-                                    <div class="activity-title">Welcome to TaxIntelli</div>
-                                    <div class="activity-time">Just now</div>
-                                </div>
-                            </li>
+                        <ul class="activity-list" id="activity-list">
+                            <!-- Dynamic content will be populated by JavaScript -->
                         </ul>
                     </div>
                 </div>
@@ -1520,23 +1522,23 @@
                 </div>
 
                 <div class="history-filters">
-                    <select class="filter-select">
-                        <option>All Types</option>
-                        <option>Personal Income Tax</option>
-                        <option>Company Income Tax</option>
-                        <option>Value Added Tax</option>
+                    <select class="filter-select" id="history-type-filter">
+                        <option value="all">All Types</option>
+                        <option value="individual">Personal Income Tax</option>
+                        <option value="business">Company Income Tax</option>
+                        <option value="vat">Value Added Tax</option>
                     </select>
-                    <select class="filter-select">
-                        <option>All Status</option>
-                        <option>Paid</option>
-                        <option>Pending</option>
-                        <option>Overdue</option>
+                    <select class="filter-select" id="history-status-filter">
+                        <option value="all">All Status</option>
+                        <option value="paid">Paid</option>
+                        <option value="pending">Pending</option>
+                        <option value="overdue">Overdue</option>
                     </select>
-                    <select class="filter-select">
-                        <option>Last 30 Days</option>
-                        <option>Last 3 Months</option>
-                        <option>Last 6 Months</option>
-                        <option>Last Year</option>
+                    <select class="filter-select" id="history-date-filter">
+                        <option value="30">Last 30 Days</option>
+                        <option value="90">Last 3 Months</option>
+                        <option value="180">Last 6 Months</option>
+                        <option value="365">Last Year</option>
                     </select>
                 </div>
 
@@ -1548,11 +1550,8 @@
                         <div>Status</div>
                         <div>Actions</div>
                     </div>
-                    <div class="table-row">
-                        <div colspan="5" style="text-align: center; padding: 2rem;">
-                            <i class="fas fa-history" style="font-size: 2rem; color: var(--text-light); margin-bottom: 1rem;"></i>
-                            <p>No tax history yet. Start by using the tax calculator!</p>
-                        </div>
+                    <div id="history-table-body">
+                        <!-- Dynamic content will be populated by JavaScript -->
                     </div>
                 </div>
             </div>
@@ -1762,18 +1761,54 @@
         </div>
     </div>
 
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toast-message">Operation completed successfully</span>
+    </div>
+
     <script>
-        // Tax calculation logic and data
-        const taxData = {
+        // Nigerian tax calculation logic and data
+        const nigerianTaxData = {
             individual: {
+                // Personal Income Tax (PIT) brackets for Nigeria
+                taxBrackets: [
+                    { min: 0, max: 300000, rate: 0.07 },
+                    { min: 300001, max: 600000, rate: 0.11 },
+                    { min: 600001, max: 1100000, rate: 0.15 },
+                    { min: 1100001, max: 1600000, rate: 0.19 },
+                    { min: 1600001, max: 3200000, rate: 0.21 },
+                    { min: 3200001, max: Infinity, rate: 0.24 }
+                ],
+                consolidatedReliefAllowance: (income) => {
+                    // CRA is the higher of 200,000 or 1% of gross income plus 20% of gross income
+                    return Math.max(200000, (0.01 * income) + (0.2 * income));
+                },
                 income: [500000, 1000000, 2000000, 5000000, 10000000],
                 allowances: [50000, 100000, 200000, 500000, 1000000]
             },
             business: {
+                // Company Income Tax (CIT) rates for Nigeria
+                taxRates: {
+                    small: 0.20, // For companies with turnover < ₦25M
+                    medium: 0.25, // For companies with turnover ₦25M - ₦100M
+                    large: 0.30  // For companies with turnover > ₦100M
+                },
                 income: [1000000, 5000000, 10000000, 25000000, 50000000, 100000000],
                 allowances: [100000, 500000, 1000000, 2500000, 5000000]
+            },
+            vat: {
+                rate: 0.075 // 7.5% VAT rate in Nigeria
             }
         };
+
+        // Nigerian tax deadlines
+        const nigerianDeadlines = [
+            { title: "VAT Returns Due", date: "2023-04-21", type: "vat", status: "upcoming" },
+            { title: "Personal Income Tax (Self-Assessment)", date: "2023-03-31", type: "individual", status: "due" },
+            { title: "Company Income Tax", date: "2023-06-30", type: "business", status: "upcoming" },
+            { title: "Education Tax", date: "2023-09-30", type: "business", status: "upcoming" }
+        ];
 
         // User data object to store responses
         const userData = {
@@ -1781,6 +1816,18 @@
             incomeType: null,
             incomeAmount: null,
             allowances: 0
+        };
+
+        // App state
+        const appState = {
+            taxHistory: JSON.parse(localStorage.getItem('taxHistory')) || [],
+            userProfile: JSON.parse(localStorage.getItem('userProfile')) || {
+                firstName: "John",
+                lastName: "Doe",
+                email: "john.doe@example.com",
+                phone: "+234 800 000 0000",
+                userType: "individual"
+            }
         };
 
         // DOM elements
@@ -1797,184 +1844,343 @@
         const modalTitle = document.getElementById('modal-title');
         const modalBody = document.getElementById('modal-body');
         const modalClose = document.getElementById('modal-close');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
 
-        // Tab navigation
-        navItems.forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
+        // Initialize the app
+        function initApp() {
+            updateDashboard();
+            loadTaxHistory();
+            setupEventListeners();
+        }
+
+        // Update dashboard with user data
+        function updateDashboard() {
+            // Update stats
+            const totalTax = appState.taxHistory.reduce((sum, record) => sum + record.taxAmount, 0);
+            document.getElementById('total-tax-paid').textContent = formatCurrency(totalTax);
+            
+            const upcomingCount = nigerianDeadlines.filter(d => d.status === 'upcoming').length;
+            document.getElementById('upcoming-deadlines').textContent = upcomingCount;
+            
+            // Update deadlines list
+            const deadlineList = document.getElementById('deadline-list');
+            deadlineList.innerHTML = '';
+            
+            nigerianDeadlines.forEach(deadline => {
+                const deadlineItem = document.createElement('li');
+                deadlineItem.className = 'deadline-item';
                 
-                // Remove active class from all nav items
-                navItems.forEach(nav => nav.classList.remove('active'));
+                const statusClass = deadline.status === 'due' ? 'status-due' : 'status-upcoming';
                 
-                // Add active class to clicked nav item
-                this.classList.add('active');
+                deadlineItem.innerHTML = `
+                    <div class="deadline-icon">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="deadline-info">
+                        <div class="deadline-title">${deadline.title}</div>
+                        <div class="deadline-date">Due: ${formatDate(deadline.date)}</div>
+                    </div>
+                    <div class="deadline-status ${statusClass}">${deadline.status}</div>
+                `;
                 
-                // Get the tab to show
-                const tabId = this.getAttribute('data-tab');
+                deadlineList.appendChild(deadlineItem);
+            });
+            
+            // Update activity list
+            const activityList = document.getElementById('activity-list');
+            activityList.innerHTML = '';
+            
+            // Show recent tax calculations
+            const recentCalculations = appState.taxHistory.slice(-3).reverse();
+            
+            if (recentCalculations.length === 0) {
+                activityList.innerHTML = `
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="activity-info">
+                            <div class="activity-title">No calculations yet</div>
+                            <div class="activity-time">Use the tax calculator to get started</div>
+                        </div>
+                    </li>
+                `;
+            } else {
+                recentCalculations.forEach(calc => {
+                    const activityItem = document.createElement('li');
+                    activityItem.className = 'activity-item';
+                    
+                    activityItem.innerHTML = `
+                        <div class="activity-icon">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div class="activity-info">
+                            <div class="activity-title">${calc.userType === 'individual' ? 'Personal' : 'Business'} Tax Calculated</div>
+                            <div class="activity-time">${formatDate(calc.date)} - ${formatCurrency(calc.taxAmount)}</div>
+                        </div>
+                    `;
+                    
+                    activityList.appendChild(activityItem);
+                });
+            }
+        }
+
+        // Load and display tax history
+        function loadTaxHistory() {
+            const historyTableBody = document.getElementById('history-table-body');
+            
+            if (appState.taxHistory.length === 0) {
+                historyTableBody.innerHTML = `
+                    <div class="table-row">
+                        <div colspan="5" style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-history" style="font-size: 2rem; color: var(--text-light); margin-bottom: 1rem;"></i>
+                            <p>No tax history yet. Start by using the tax calculator!</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Filter history based on selected filters
+            const typeFilter = document.getElementById('history-type-filter').value;
+            const statusFilter = document.getElementById('history-status-filter').value;
+            const dateFilter = document.getElementById('history-date-filter').value;
+            
+            const filteredHistory = appState.taxHistory.filter(record => {
+                const typeMatch = typeFilter === 'all' || record.userType === typeFilter;
+                const statusMatch = statusFilter === 'all' || record.status === statusFilter;
                 
-                // Hide all tab contents
-                tabContents.forEach(tab => tab.classList.remove('active'));
+                // Date filtering (simplified)
+                const recordDate = new Date(record.date);
+                const cutoffDate = new Date();
+                cutoffDate.setDate(cutoffDate.getDate() - parseInt(dateFilter));
                 
-                // Show the selected tab content
-                document.getElementById(tabId).classList.add('active');
+                const dateMatch = recordDate >= cutoffDate;
                 
-                // Close mobile menu if open
-                if (window.innerWidth <= 768) {
+                return typeMatch && statusMatch && dateMatch;
+            });
+            
+            // Display filtered history
+            historyTableBody.innerHTML = '';
+            
+            filteredHistory.forEach(record => {
+                const tableRow = document.createElement('div');
+                tableRow.className = 'table-row';
+                
+                const statusClass = `status-${record.status}`;
+                
+                tableRow.innerHTML = `
+                    <div>${formatDate(record.date)}</div>
+                    <div>${record.userType === 'individual' ? 'Personal Income Tax' : 'Company Income Tax'}</div>
+                    <div>${formatCurrency(record.taxAmount)}</div>
+                    <div><span class="status-badge ${statusClass}">${record.status}</span></div>
+                    <div>
+                        <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" onclick="viewCalculation('${record.id}')">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </div>
+                `;
+                
+                historyTableBody.appendChild(tableRow);
+            });
+        }
+
+        // Save tax calculation to history
+        function saveTaxCalculation(calculation) {
+            const calculationRecord = {
+                id: generateId(),
+                date: new Date().toISOString(),
+                userType: userData.userType,
+                incomeAmount: userData.incomeAmount,
+                allowances: userData.allowances,
+                taxAmount: calculation.tax,
+                taxableIncome: calculation.taxableIncome,
+                taxRate: calculation.taxRate,
+                status: 'pending'
+            };
+            
+            appState.taxHistory.unshift(calculationRecord);
+            localStorage.setItem('taxHistory', JSON.stringify(appState.taxHistory));
+            
+            // Update dashboard
+            updateDashboard();
+            
+            // Show success message
+            showToast('Tax calculation saved to history');
+        }
+
+        // View a specific calculation
+        function viewCalculation(calculationId) {
+            const calculation = appState.taxHistory.find(record => record.id === calculationId);
+            
+            if (!calculation) return;
+            
+            openModal('Tax Calculation Details', `
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--primary); margin-bottom: 1rem;">Calculation Details</h4>
+                    <div class="breakdown-item">
+                        <span>Date:</span>
+                        <span>${formatDate(calculation.date)}</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Type:</span>
+                        <span>${calculation.userType === 'individual' ? 'Personal Income Tax' : 'Company Income Tax'}</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Income:</span>
+                        <span>${formatCurrency(calculation.incomeAmount)}</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Allowances:</span>
+                        <span>${formatCurrency(calculation.allowances)}</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Taxable Income:</span>
+                        <span>${formatCurrency(calculation.taxableIncome)}</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Tax Rate:</span>
+                        <span>${(calculation.taxRate * 100).toFixed(1)}%</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span><strong>Tax Amount:</strong></span>
+                        <span><strong>${formatCurrency(calculation.taxAmount)}</strong></span>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn" onclick="reuseCalculation('${calculation.id}')">
+                        <i class="fas fa-redo"></i> Reuse This Calculation
+                    </button>
+                    <button class="btn btn-outline" onclick="closeModal()">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                </div>
+            `);
+        }
+
+        // Reuse a previous calculation
+        function reuseCalculation(calculationId) {
+            const calculation = appState.taxHistory.find(record => record.id === calculationId);
+            
+            if (!calculation) return;
+            
+            // Set user data from the calculation
+            userData.userType = calculation.userType;
+            userData.incomeAmount = calculation.incomeAmount;
+            userData.allowances = calculation.allowances;
+            
+            // Navigate to calculator tab
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            document.querySelector('[data-tab="calculator"]').classList.add('active');
+            
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById('calculator').classList.add('active');
+            
+            // Reset calculator UI
+            calculatorContainer.style.display = 'block';
+            resultsContainer.style.display = 'none';
+            
+            // Pre-populate the calculator based on the calculation
+            // This would need more complex logic to navigate through the steps
+            // For now, we'll just show a message
+            closeModal();
+            showToast('Calculation loaded. Please use the calculator to modify values.');
+        }
+
+        // Format currency for Nigerian Naira
+        function formatCurrency(amount) {
+            return '₦' + amount.toLocaleString('en-NG');
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('en-NG', options);
+        }
+
+        // Generate a unique ID
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Setup all event listeners
+        function setupEventListeners() {
+            // Tab navigation
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all nav items
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    
+                    // Add active class to clicked nav item
+                    this.classList.add('active');
+                    
+                    // Get the tab to show
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Hide all tab contents
+                    tabContents.forEach(tab => tab.classList.remove('active'));
+                    
+                    // Show the selected tab content
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Update specific tab content if needed
+                    if (tabId === 'history') {
+                        loadTaxHistory();
+                    } else if (tabId === 'dashboard') {
+                        updateDashboard();
+                    }
+                    
+                    // Close mobile menu if open
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('active');
+                    }
+                });
+            });
+
+            // Mobile menu toggle
+            mobileMenuBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+            });
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768 && 
+                    !sidebar.contains(e.target) && 
+                    !mobileMenuBtn.contains(e.target)) {
                     sidebar.classList.remove('active');
                 }
             });
-        });
 
-        // Mobile menu toggle
-        mobileMenuBtn.addEventListener('click', function() {
-            sidebar.classList.toggle('active');
-        });
-
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(e) {
-            if (window.innerWidth <= 768 && 
-                !sidebar.contains(e.target) && 
-                !mobileMenuBtn.contains(e.target)) {
-                sidebar.classList.remove('active');
-            }
-        });
-
-        // Modal functionality
-        function openModal(title, content) {
-            modalTitle.textContent = title;
-            modalBody.innerHTML = content;
-            modal.style.display = 'flex';
-        }
-
-        function closeModal() {
-            modal.style.display = 'none';
-        }
-
-        modalClose.addEventListener('click', closeModal);
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) closeModal();
-        });
-
-        // Number to words conversion function
-        function numberToWords(num) {
-            if (num === 0) return "Zero Naira";
-            
-            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
-            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-            const scales = ['', 'Thousand', 'Million', 'Billion', 'Trillion'];
-            
-            // Handle negative numbers
-            if (num < 0) {
-                return 'Negative ' + numberToWords(Math.abs(num));
-            }
-            
-            let words = '';
-            
-            // Convert number to string and split into integer and decimal parts
-            const numStr = num.toString();
-            const parts = numStr.split('.');
-            const integerPart = parseInt(parts[0]);
-            const decimalPart = parts[1] ? parseInt(parts[1].padEnd(2, '0').substring(0, 2)) : 0;
-            
-            // Convert integer part
-            if (integerPart === 0) {
-                words = 'Zero';
-            } else {
-                let count = 0;
-                let n = integerPart;
-                
-                while (n > 0) {
-                    if (n % 1000 !== 0) {
-                        let chunk = '';
-                        const x = n % 1000;
-                        
-                        if (x < 20) {
-                            chunk = ones[x];
-                        } else if (x < 100) {
-                            chunk = tens[Math.floor(x / 10)] + (x % 10 !== 0 ? '-' + ones[x % 10] : '');
-                        } else {
-                            chunk = ones[Math.floor(x / 100)] + ' Hundred ' + (x % 100 !== 0 ? 'and ' + numberToWords(x % 100) : '');
-                        }
-                        
-                        words = chunk + (scales[count] ? ' ' + scales[count] + ' ' : '') + words;
-                    }
-                    n = Math.floor(n / 1000);
-                    count++;
-                }
-                
-                // Clean up extra spaces
-                words = words.replace(/\s+/g, ' ').trim();
-            }
-            
-            // Add "Naira"
-            let result = words + ' Naira';
-            
-            // Add kobo if there's a decimal part
-            if (decimalPart > 0) {
-                let koboWords = '';
-                if (decimalPart < 20) {
-                    koboWords = ones[decimalPart];
-                } else {
-                    koboWords = tens[Math.floor(decimalPart / 10)] + (decimalPart % 10 !== 0 ? '-' + ones[decimalPart % 10] : '');
-                }
-                result += ' and ' + koboWords + ' Kobo';
-            }
-            
-            return result;
-        }
-
-        // Function to create amount options
-        function createAmountOptions(containerId, options, currentValue, onSelect) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            
-            options.forEach(amount => {
-                const option = document.createElement('div');
-                option.className = 'amount-option';
-                if (currentValue === amount) {
-                    option.classList.add('selected');
-                }
-                option.textContent = '₦' + amount.toLocaleString();
-                option.addEventListener('click', () => {
-                    onSelect(amount);
-                    
-                    // Update selected state
-                    document.querySelectorAll(`#${containerId} .amount-option`).forEach(opt => {
-                        opt.classList.remove('selected');
-                    });
-                    option.classList.add('selected');
-                });
-                container.appendChild(option);
+            // Modal functionality
+            modalClose.addEventListener('click', closeModal);
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) closeModal();
             });
+
+            // History filters
+            document.getElementById('history-type-filter').addEventListener('change', loadTaxHistory);
+            document.getElementById('history-status-filter').addEventListener('change', loadTaxHistory);
+            document.getElementById('history-date-filter').addEventListener('change', loadTaxHistory);
+
+            // Calculator event listeners
+            setupCalculatorEventListeners();
         }
 
-        // Function to update amount in words display
-        function updateAmountInWords(amount, wordsContainerId) {
-            const wordsContainer = document.getElementById(wordsContainerId);
-            if (amount && amount > 0) {
-                wordsContainer.textContent = numberToWords(amount);
-            } else {
-                wordsContainer.textContent = 'Amount in words will appear here';
-            }
-        }
-
-        // Step navigation functions
-        function goToStep(stepNumber) {
-            // Hide all steps
-            steps.forEach(step => step.classList.remove('active'));
-            stepIndicators.forEach(indicator => indicator.classList.remove('active'));
-            
-            // Show current step
-            document.getElementById(`step-${stepNumber}`).classList.add('active');
-            stepIndicators[stepNumber - 1].classList.add('active');
-            
-            // Update progress bar
-            const progressPercentage = ((stepNumber - 1) / (steps.length - 1)) * 100;
-            progressBar.style.width = `${progressPercentage}%`;
-        }
-
-        // Event Listeners for calculator
-        document.addEventListener('DOMContentLoaded', function() {
+        // Setup calculator-specific event listeners
+        function setupCalculatorEventListeners() {
             // Step 1: User Type Selection
             document.querySelectorAll('#step-1 .option-card').forEach(card => {
                 card.addEventListener('click', function() {
@@ -2078,7 +2284,7 @@
                     // Create amount options for individual income
                     createAmountOptions(
                         'income-amount-options', 
-                        taxData.individual.income, 
+                        nigerianTaxData.individual.income, 
                         userData.incomeAmount,
                         (amount) => {
                             userData.incomeAmount = amount;
@@ -2096,7 +2302,7 @@
                     // Create amount options for business income
                     createAmountOptions(
                         'income-amount-options', 
-                        taxData.business.income, 
+                        nigerianTaxData.business.income, 
                         userData.incomeAmount,
                         (amount) => {
                             userData.incomeAmount = amount;
@@ -2154,7 +2360,7 @@
                     // Create amount options for individual allowances
                     createAmountOptions(
                         'allowances-amount-options', 
-                        taxData.individual.allowances, 
+                        nigerianTaxData.individual.allowances, 
                         userData.allowances,
                         (amount) => {
                             userData.allowances = amount;
@@ -2171,7 +2377,7 @@
                     // Create amount options for business allowances
                     createAmountOptions(
                         'allowances-amount-options', 
-                        taxData.business.allowances, 
+                        nigerianTaxData.business.allowances, 
                         userData.allowances,
                         (amount) => {
                             userData.allowances = amount;
@@ -2214,7 +2420,10 @@
                 
                 // Simulate processing delay
                 setTimeout(function() {
-                    calculateTax();
+                    const calculation = calculateTax();
+                    displayResults(calculation);
+                    saveTaxCalculation(calculation);
+                    
                     calculatorContainer.style.display = 'none';
                     resultsContainer.style.display = 'block';
                 }, 2000);
@@ -2262,7 +2471,8 @@
 
             // Save Result Button
             document.getElementById('save-result').addEventListener('click', function() {
-                alert('Calculation saved! In a full implementation, this would save to your account or download as PDF.');
+                // In a real app, this would save as PDF or to account
+                showToast('Calculation saved to your history');
             });
 
             // Payment Button
@@ -2292,7 +2502,125 @@
                     </div>
                 `);
             });
-        });
+        }
+
+        // Calculator helper functions
+        function goToStep(stepNumber) {
+            // Hide all steps
+            steps.forEach(step => step.classList.remove('active'));
+            stepIndicators.forEach(indicator => indicator.classList.remove('active'));
+            
+            // Show current step
+            document.getElementById(`step-${stepNumber}`).classList.add('active');
+            stepIndicators[stepNumber - 1].classList.add('active');
+            
+            // Update progress bar
+            const progressPercentage = ((stepNumber - 1) / (steps.length - 1)) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+        }
+
+        // Number to words conversion function
+        function numberToWords(num) {
+            if (num === 0) return "Zero Naira";
+            
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            const scales = ['', 'Thousand', 'Million', 'Billion', 'Trillion'];
+            
+            // Handle negative numbers
+            if (num < 0) {
+                return 'Negative ' + numberToWords(Math.abs(num));
+            }
+            
+            let words = '';
+            
+            // Convert number to string and split into integer and decimal parts
+            const numStr = num.toString();
+            const parts = numStr.split('.');
+            const integerPart = parseInt(parts[0]);
+            const decimalPart = parts[1] ? parseInt(parts[1].padEnd(2, '0').substring(0, 2)) : 0;
+            
+            // Convert integer part
+            if (integerPart === 0) {
+                words = 'Zero';
+            } else {
+                let count = 0;
+                let n = integerPart;
+                
+                while (n > 0) {
+                    if (n % 1000 !== 0) {
+                        let chunk = '';
+                        const x = n % 1000;
+                        
+                        if (x < 20) {
+                            chunk = ones[x];
+                        } else if (x < 100) {
+                            chunk = tens[Math.floor(x / 10)] + (x % 10 !== 0 ? '-' + ones[x % 10] : '');
+                        } else {
+                            chunk = ones[Math.floor(x / 100)] + ' Hundred ' + (x % 100 !== 0 ? 'and ' + numberToWords(x % 100) : '');
+                        }
+                        
+                        words = chunk + (scales[count] ? ' ' + scales[count] + ' ' : '') + words;
+                    }
+                    n = Math.floor(n / 1000);
+                    count++;
+                }
+                
+                // Clean up extra spaces
+                words = words.replace(/\s+/g, ' ').trim();
+            }
+            
+            // Add "Naira"
+            let result = words + ' Naira';
+            
+            // Add kobo if there's a decimal part
+            if (decimalPart > 0) {
+                let koboWords = '';
+                if (decimalPart < 20) {
+                    koboWords = ones[decimalPart];
+                } else {
+                    koboWords = tens[Math.floor(decimalPart / 10)] + (decimalPart % 10 !== 0 ? '-' + ones[decimalPart % 10] : '');
+                }
+                result += ' and ' + koboWords + ' Kobo';
+            }
+            
+            return result;
+        }
+
+        // Function to create amount options
+        function createAmountOptions(containerId, options, currentValue, onSelect) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            options.forEach(amount => {
+                const option = document.createElement('div');
+                option.className = 'amount-option';
+                if (currentValue === amount) {
+                    option.classList.add('selected');
+                }
+                option.textContent = formatCurrency(amount);
+                option.addEventListener('click', () => {
+                    onSelect(amount);
+                    
+                    // Update selected state
+                    document.querySelectorAll(`#${containerId} .amount-option`).forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    option.classList.add('selected');
+                });
+                container.appendChild(option);
+            });
+        }
+
+        // Function to update amount in words display
+        function updateAmountInWords(amount, wordsContainerId) {
+            const wordsContainer = document.getElementById(wordsContainerId);
+            if (amount && amount > 0) {
+                wordsContainer.textContent = numberToWords(amount);
+            } else {
+                wordsContainer.textContent = 'Amount in words will appear here';
+            }
+        }
 
         // Tax Calculation Function
         function calculateTax() {
@@ -2302,20 +2630,27 @@
             let tip = '';
             
             if (userData.userType === 'individual') {
-                // Personal income tax calculation (simplified)
-                if (taxableIncome <= 300000) {
-                    taxRate = 0.07;
-                } else if (taxableIncome <= 600000) {
-                    taxRate = 0.11;
-                } else if (taxableIncome <= 1100000) {
-                    taxRate = 0.15;
-                } else if (taxableIncome <= 1600000) {
-                    taxRate = 0.19;
-                } else {
-                    taxRate = 0.21;
+                // Apply Consolidated Relief Allowance (CRA)
+                const cra = nigerianTaxData.individual.consolidatedReliefAllowance(userData.incomeAmount);
+                taxableIncome = Math.max(0, userData.incomeAmount - userData.allowances - cra);
+                
+                // Calculate tax using Nigerian PIT brackets
+                let remainingIncome = taxableIncome;
+                
+                for (const bracket of nigerianTaxData.individual.taxBrackets) {
+                    if (remainingIncome <= 0) break;
+                    
+                    const bracketAmount = Math.min(
+                        remainingIncome,
+                        bracket.max === Infinity ? remainingIncome : bracket.max - bracket.min + 1
+                    );
+                    
+                    tax += bracketAmount * bracket.rate;
+                    remainingIncome -= bracketAmount;
                 }
                 
-                tax = taxableIncome * taxRate;
+                // Calculate effective tax rate
+                taxRate = userData.incomeAmount > 0 ? tax / userData.incomeAmount : 0;
                 
                 // Generate tip based on income type
                 switch(userData.incomeType) {
@@ -2333,29 +2668,63 @@
                         break;
                 }
             } else {
-                // Corporate tax calculation (simplified)
-                if (userData.incomeType === 'small') {
-                    taxRate = 0.20; // Small company rate
-                    tip = "Small businesses with turnover below ₦25 million enjoy reduced tax rates and simplified compliance requirements. Consider timing equipment purchases to maximize deductions and explore available tax credits for job creation and training programs.";
-                } else if (userData.incomeType === 'medium') {
-                    taxRate = 0.25; // Medium company rate
-                    tip = "Medium-sized businesses can benefit from various incentives including investment allowances and industry-specific tax credits. Explore available export incentives and consider structuring investments to qualify for pioneer status where applicable.";
-                } else {
-                    taxRate = 0.30; // Standard CIT rate
-                    tip = "Large companies should explore sector-specific incentives, transfer pricing optimization, and strategic timing of major expenses to optimize tax liability. Consider available tax treaties for cross-border transactions and explore opportunities for research and development credits.";
+                // Corporate tax calculation
+                let companyType = 'large';
+                
+                if (userData.incomeAmount < 25000000) {
+                    companyType = 'small';
+                } else if (userData.incomeAmount <= 100000000) {
+                    companyType = 'medium';
                 }
                 
+                taxRate = nigerianTaxData.business.taxRates[companyType];
                 tax = taxableIncome * taxRate;
+                
+                // Generate tip based on company size
+                switch(companyType) {
+                    case 'small':
+                        tip = "Small businesses with turnover below ₦25 million enjoy reduced tax rates and simplified compliance requirements. Consider timing equipment purchases to maximize deductions and explore available tax credits for job creation and training programs.";
+                        break;
+                    case 'medium':
+                        tip = "Medium-sized businesses can benefit from various incentives including investment allowances and industry-specific tax credits. Explore available export incentives and consider structuring investments to qualify for pioneer status where applicable.";
+                        break;
+                    case 'large':
+                        tip = "Large companies should explore sector-specific incentives, transfer pricing optimization, and strategic timing of major expenses to optimize tax liability. Consider available tax treaties for cross-border transactions and explore opportunities for research and development credits.";
+                        break;
+                }
             }
             
-            // Update results UI
-            document.getElementById('calculated-tax').textContent = `₦${Math.round(tax).toLocaleString()}`;
-            document.getElementById('taxable-income').textContent = `₦${Math.round(taxableIncome).toLocaleString()}`;
-            document.getElementById('tax-rate').textContent = `${(taxRate * 100).toFixed(1)}%`;
-            document.getElementById('total-allowances').textContent = `₦${Math.round(userData.allowances).toLocaleString()}`;
-            document.getElementById('net-tax').textContent = `₦${Math.round(tax).toLocaleString()}`;
-            document.getElementById('optimization-tip').textContent = tip;
+            return {
+                tax: Math.round(tax),
+                taxableIncome: Math.round(taxableIncome),
+                taxRate: taxRate,
+                tip: tip
+            };
         }
+
+        // Display calculation results
+        function displayResults(calculation) {
+            document.getElementById('calculated-tax').textContent = formatCurrency(calculation.tax);
+            document.getElementById('taxable-income').textContent = formatCurrency(calculation.taxableIncome);
+            document.getElementById('tax-rate').textContent = `${(calculation.taxRate * 100).toFixed(1)}%`;
+            document.getElementById('total-allowances').textContent = formatCurrency(userData.allowances);
+            document.getElementById('net-tax').textContent = formatCurrency(calculation.tax);
+            document.getElementById('optimization-tip').textContent = calculation.tip;
+        }
+
+        // Modal functions
+        function openModal(title, content) {
+            modalTitle.textContent = title;
+            modalBody.innerHTML = content;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
