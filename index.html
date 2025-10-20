@@ -7,6 +7,12 @@
     <meta name="description" content="Professional tax intelligence platform for Nigerian individuals and businesses">
     <meta name="theme-color" content="#006400">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    
     <style>
         :root {
             --primary: #006400;
@@ -24,6 +30,8 @@
             --radius: 8px;
             --transition: all 0.3s ease;
             --sidebar-width: 250px;
+            --error: #dc3545;
+            --success: #28a745;
         }
 
         * {
@@ -43,6 +51,234 @@
         .app-container {
             display: flex;
             min-height: 100vh;
+        }
+
+        /* Authentication Styles */
+        .auth-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+
+        .auth-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: var(--white);
+        }
+
+        .auth-content {
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .auth-logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        .auth-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .auth-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .auth-features {
+            text-align: left;
+            margin-top: 2rem;
+        }
+
+        .auth-feature {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-feature i {
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+
+        .auth-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: var(--white);
+        }
+
+        .auth-form-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-light);
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
+        }
+
+        .auth-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 100, 0, 0.1);
+        }
+
+        .form-error {
+            color: var(--error);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .form-error.show {
+            display: block;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: var(--gray-light);
+            color: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-accent {
+            background: var(--accent);
+        }
+
+        .btn-accent:hover {
+            background: var(--accent-dark);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: rgba(0, 100, 0, 0.05);
+        }
+
+        .auth-divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        .auth-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--gray-light);
+        }
+
+        .auth-divider span {
+            background: var(--white);
+            padding: 0 1rem;
+            color: var(--text-light);
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .auth-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
         }
 
         /* Sidebar Styles */
@@ -68,13 +304,6 @@
 
         .logo-icon {
             font-size: 2rem;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
         }
 
         .logo-text h1 {
@@ -189,6 +418,7 @@
             align-items: center;
             gap: 10px;
             cursor: pointer;
+            position: relative;
         }
 
         .user-avatar {
@@ -201,6 +431,44 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            width: 200px;
+            padding: 0.5rem 0;
+            z-index: 1000;
+            display: none;
+        }
+
+        .user-dropdown.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.8rem 1rem;
+            color: var(--text);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .dropdown-item:hover {
+            background: var(--background);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--gray-light);
+            margin: 0.5rem 0;
         }
 
         /* Tab Content Styles */
@@ -606,51 +874,6 @@
             margin-top: 2rem;
             padding-top: 1.5rem;
             border-top: 1px solid var(--gray-light);
-        }
-
-        .btn {
-            background: var(--primary);
-            color: var(--white);
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: var(--radius);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-
-        .btn:disabled {
-            background: var(--gray-light);
-            color: var(--text-light);
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-accent {
-            background: var(--accent);
-        }
-
-        .btn-accent:hover {
-            background: var(--accent-dark);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-
-        .btn-outline:hover {
-            background: rgba(0, 100, 0, 0.05);
         }
 
         .step-indicator {
@@ -1060,7 +1283,48 @@
             font-size: 1.2rem;
         }
 
+        .toast.error {
+            background: var(--error);
+        }
+
+        .toast.success {
+            background: var(--success);
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
         @media (max-width: 768px) {
+            .auth-container {
+                flex-direction: column;
+            }
+            
+            .auth-left, .auth-right {
+                padding: 1rem;
+            }
+            
+            .auth-title {
+                font-size: 2rem;
+            }
+            
             .sidebar {
                 transform: translateX(-100%);
             }
@@ -1116,7 +1380,121 @@
     </style>
 </head>
 <body>
-    <div class="app-container">
+    <!-- Authentication Screen -->
+    <div class="auth-container" id="auth-container">
+        <div class="auth-left">
+            <div class="auth-content">
+                <div class="auth-logo">💰</div>
+                <h1 class="auth-title">TaxNaija</h1>
+                <p class="auth-subtitle">Nigeria's Smart Tax Platform</p>
+                
+                <div class="auth-features">
+                    <div class="auth-feature">
+                        <i class="fas fa-calculator"></i>
+                        <div>
+                            <h3>Smart Tax Calculator</h3>
+                            <p>Calculate your tax obligations accurately</p>
+                        </div>
+                    </div>
+                    <div class="auth-feature">
+                        <i class="fas fa-history"></i>
+                        <div>
+                            <h3>Tax History Tracking</h3>
+                            <p>Keep track of all your tax calculations</p>
+                        </div>
+                    </div>
+                    <div class="auth-feature">
+                        <i class="fas fa-file-alt"></i>
+                        <div>
+                            <h3>Official Resources</h3>
+                            <p>Access official tax documents and guidelines</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="auth-right">
+            <div class="auth-form-container">
+                <div class="auth-tabs">
+                    <div class="auth-tab active" data-tab="signin">Sign In</div>
+                    <div class="auth-tab" data-tab="signup">Sign Up</div>
+                </div>
+                
+                <!-- Sign In Form -->
+                <form class="auth-form active" id="signin-form">
+                    <div class="form-group">
+                        <label for="signin-email" class="form-label">Email Address</label>
+                        <input type="email" id="signin-email" class="form-control" placeholder="Enter your email" required>
+                        <div class="form-error" id="signin-email-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signin-password" class="form-label">Password</label>
+                        <input type="password" id="signin-password" class="form-control" placeholder="Enter your password" required>
+                        <div class="form-error" id="signin-password-error"></div>
+                    </div>
+                    <button type="submit" class="btn" id="signin-btn">
+                        <span>Sign In</span>
+                        <div class="loading" style="display: none;"></div>
+                    </button>
+                    
+                    <div class="auth-divider">
+                        <span>or</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-outline" id="google-signin-btn">
+                        <i class="fab fa-google"></i> Sign In with Google
+                    </button>
+                    
+                    <div class="auth-footer">
+                        <a href="#" id="forgot-password">Forgot your password?</a>
+                    </div>
+                </form>
+                
+                <!-- Sign Up Form -->
+                <form class="auth-form" id="signup-form">
+                    <div class="form-group">
+                        <label for="signup-name" class="form-label">Full Name</label>
+                        <input type="text" id="signup-name" class="form-control" placeholder="Enter your full name" required>
+                        <div class="form-error" id="signup-name-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email" class="form-label">Email Address</label>
+                        <input type="email" id="signup-email" class="form-control" placeholder="Enter your email" required>
+                        <div class="form-error" id="signup-email-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password" class="form-label">Password</label>
+                        <input type="password" id="signup-password" class="form-control" placeholder="Create a password" required>
+                        <div class="form-error" id="signup-password-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-confirm-password" class="form-label">Confirm Password</label>
+                        <input type="password" id="signup-confirm-password" class="form-control" placeholder="Confirm your password" required>
+                        <div class="form-error" id="signup-confirm-password-error"></div>
+                    </div>
+                    <button type="submit" class="btn" id="signup-btn">
+                        <span>Create Account</span>
+                        <div class="loading" style="display: none;"></div>
+                    </button>
+                    
+                    <div class="auth-divider">
+                        <span>or</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-outline" id="google-signup-btn">
+                        <i class="fab fa-google"></i> Sign Up with Google
+                    </button>
+                    
+                    <div class="auth-footer">
+                        By creating an account, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="app-container" id="app-container" style="display: none;">
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -1167,11 +1545,26 @@
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge">3</span>
                     </div>
-                    <div class="user-profile">
-                        <div class="user-avatar">JD</div>
+                    <div class="user-profile" id="user-profile">
+                        <div class="user-avatar" id="user-avatar">JD</div>
                         <div>
-                            <div>John Doe</div>
-                            <div style="font-size: 0.8rem; color: var(--text-light);">Individual Taxpayer</div>
+                            <div id="user-name">Loading...</div>
+                            <div style="font-size: 0.8rem; color: var(--text-light);" id="user-email">Loading...</div>
+                        </div>
+                        <div class="user-dropdown" id="user-dropdown">
+                            <a href="#" class="dropdown-item">
+                                <i class="fas fa-user"></i>
+                                <span>My Profile</span>
+                            </a>
+                            <a href="#settings" class="dropdown-item">
+                                <i class="fas fa-cog"></i>
+                                <span>Settings</span>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item" id="signout-btn">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Sign Out</span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -1182,7 +1575,7 @@
             <div class="tab-content active" id="dashboard">
                 <div class="tab-header">
                     <h2>Tax Dashboard</h2>
-                    <p>Welcome back, John! Here's your tax overview.</p>
+                    <p id="dashboard-greeting">Welcome back! Here's your tax overview.</p>
                 </div>
 
                 <div class="stats-grid">
@@ -1654,22 +2047,22 @@
                             <div class="form-row">
                                 <div class="input-group">
                                     <label for="first-name">First Name</label>
-                                    <input type="text" id="first-name" class="input-control" value="John">
+                                    <input type="text" id="first-name" class="input-control" value="Loading...">
                                 </div>
                                 <div class="input-group">
                                     <label for="last-name">Last Name</label>
-                                    <input type="text" id="last-name" class="input-control" value="Doe">
+                                    <input type="text" id="last-name" class="input-control" value="Loading...">
                                 </div>
                             </div>
                             <div class="input-group">
                                 <label for="email">Email Address</label>
-                                <input type="email" id="email" class="input-control" value="john.doe@example.com">
+                                <input type="email" id="email" class="input-control" value="Loading...">
                             </div>
                             <div class="input-group">
                                 <label for="phone">Phone Number</label>
-                                <input type="tel" id="phone" class="input-control" value="+234 800 000 0000">
+                                <input type="tel" id="phone" class="input-control" placeholder="Enter your phone number">
                             </div>
-                            <button class="btn" style="align-self: flex-start;">
+                            <button class="btn" style="align-self: flex-start;" id="save-profile-btn">
                                 <i class="fas fa-save"></i> Save Changes
                             </button>
                         </div>
@@ -1689,7 +2082,7 @@
                                     <div style="font-size: 0.9rem; color: var(--text-light);">Get notified about upcoming tax deadlines</div>
                                 </div>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" checked>
+                                    <input type="checkbox" id="deadline-reminders" checked>
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
@@ -1699,7 +2092,7 @@
                                     <div style="font-size: 0.9rem; color: var(--text-light);">Receive updates when tax laws change</div>
                                 </div>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" checked>
+                                    <input type="checkbox" id="tax-updates" checked>
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
@@ -1709,7 +2102,7 @@
                                     <div style="font-size: 0.9rem; color: var(--text-light);">Get notified about special offers and discounts</div>
                                 </div>
                                 <label class="toggle-switch">
-                                    <input type="checkbox">
+                                    <input type="checkbox" id="promotional-offers">
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
@@ -1736,7 +2129,7 @@
                                 <label for="confirm-password">Confirm New Password</label>
                                 <input type="password" id="confirm-password" class="input-control">
                             </div>
-                            <button class="btn" style="align-self: flex-start;">
+                            <button class="btn" style="align-self: flex-start;" id="update-password-btn">
                                 <i class="fas fa-key"></i> Update Password
                             </button>
                         </div>
@@ -1768,6 +2161,22 @@
     </div>
 
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4yX9v8u-wjIPeBY64cc7YASVWIcak-eM",
+            authDomain: "vault-602d2.firebaseapp.com",
+            projectId: "vault-602d2",
+            storageBucket: "vault-602d2.firebasestorage.app",
+            messagingSenderId: "397379271243",
+            appId: "1:397379271243:web:fab5914ccdca9d796d2bce",
+            measurementId: "G-4R62KV83W2"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
         // Enhanced Nigerian tax calculation logic and data
         const nigerianTaxData = {
             individual: {
@@ -1854,20 +2263,20 @@
         };
 
         // Enhanced App state
-        const appState = {
-            taxHistory: JSON.parse(localStorage.getItem('taxHistory')) || [],
-            userProfile: JSON.parse(localStorage.getItem('userProfile')) || {
-                firstName: "John",
-                lastName: "Doe",
-                email: "john.doe@example.com",
-                phone: "+234 800 000 0000",
+        let appState = {
+            taxHistory: [],
+            userProfile: {
+                firstName: "",
+                lastName: "",
+                email: "",
+                phone: "",
                 userType: "individual",
                 state: "Lagos",
                 hasTin: false,
                 dependents: 0,
                 children: 0
             },
-            settings: JSON.parse(localStorage.getItem('settings')) || {
+            settings: {
                 notifications: true,
                 taxUpdates: true,
                 darkMode: false
@@ -1875,6 +2284,8 @@
         };
 
         // DOM elements
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
         const sidebar = document.getElementById('sidebar');
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const navItems = document.querySelectorAll('.nav-item');
@@ -1890,19 +2301,302 @@
         const modalClose = document.getElementById('modal-close');
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
+        const userProfile = document.getElementById('user-profile');
+        const userDropdown = document.getElementById('user-dropdown');
+        const userAvatar = document.getElementById('user-avatar');
+        const userName = document.getElementById('user-name');
+        const userEmail = document.getElementById('user-email');
+        const dashboardGreeting = document.getElementById('dashboard-greeting');
+
+        // Authentication DOM elements
+        const authTabs = document.querySelectorAll('.auth-tab');
+        const authForms = document.querySelectorAll('.auth-form');
+        const signinForm = document.getElementById('signin-form');
+        const signupForm = document.getElementById('signup-form');
+        const signinBtn = document.getElementById('signin-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const googleSigninBtn = document.getElementById('google-signin-btn');
+        const googleSignupBtn = document.getElementById('google-signup-btn');
+        const signoutBtn = document.getElementById('signout-btn');
 
         // Initialize the app
         function initApp() {
-            updateDashboard();
-            loadTaxHistory();
             setupEventListeners();
-            applyUserSettings();
+            setupAuthEventListeners();
+            checkAuthState();
         }
 
-        // Apply user settings from localStorage
+        // Check authentication state
+        function checkAuthState() {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    // User is signed in
+                    showApp();
+                    loadUserData(user);
+                } else {
+                    // User is signed out
+                    showAuth();
+                }
+            });
+        }
+
+        // Show authentication screen
+        function showAuth() {
+            authContainer.style.display = 'flex';
+            appContainer.style.display = 'none';
+        }
+
+        // Show main app
+        function showApp() {
+            authContainer.style.display = 'none';
+            appContainer.style.display = 'flex';
+            updateDashboard();
+            loadTaxHistory();
+        }
+
+        // Load user data from Firestore
+        async function loadUserData(user) {
+            try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    appState.userProfile = { ...appState.userProfile, ...userData };
+                    
+                    // Update UI with user data
+                    updateUserUI();
+                    
+                    // Load user settings
+                    const settingsDoc = await db.collection('settings').doc(user.uid).get();
+                    if (settingsDoc.exists) {
+                        appState.settings = settingsDoc.data();
+                        applyUserSettings();
+                    }
+                    
+                    // Load user tax history
+                    const historySnapshot = await db.collection('taxHistory')
+                        .where('userId', '==', user.uid)
+                        .orderBy('date', 'desc')
+                        .get();
+                    
+                    appState.taxHistory = [];
+                    historySnapshot.forEach(doc => {
+                        appState.taxHistory.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    updateDashboard();
+                    loadTaxHistory();
+                } else {
+                    // Create new user document
+                    await db.collection('users').doc(user.uid).set({
+                        firstName: user.displayName ? user.displayName.split(' ')[0] : '',
+                        lastName: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
+                        email: user.email,
+                        phone: '',
+                        userType: 'individual',
+                        state: 'Lagos',
+                        hasTin: false,
+                        dependents: 0,
+                        children: 0,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    // Create default settings
+                    await db.collection('settings').doc(user.uid).set(appState.settings);
+                    
+                    // Update UI with basic user data
+                    updateUserUI();
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showToast('Error loading user data', 'error');
+            }
+        }
+
+        // Update UI with user data
+        function updateUserUI() {
+            const user = auth.currentUser;
+            if (user) {
+                // Update user profile in top bar
+                const firstName = appState.userProfile.firstName || user.displayName?.split(' ')[0] || 'User';
+                const lastName = appState.userProfile.lastName || user.displayName?.split(' ').slice(1).join(' ') || '';
+                const fullName = `${firstName} ${lastName}`.trim();
+                
+                userName.textContent = fullName;
+                userEmail.textContent = user.email;
+                
+                // Update user avatar with initials
+                const initials = (firstName.charAt(0) + (lastName.charAt(0) || '')).toUpperCase();
+                userAvatar.textContent = initials;
+                
+                // Update dashboard greeting
+                dashboardGreeting.textContent = `Welcome back, ${firstName}! Here's your tax overview.`;
+                
+                // Update settings form
+                document.getElementById('first-name').value = firstName;
+                document.getElementById('last-name').value = lastName;
+                document.getElementById('email').value = user.email;
+                document.getElementById('phone').value = appState.userProfile.phone || '';
+            }
+        }
+
+        // Apply user settings from Firestore
         function applyUserSettings() {
             if (appState.settings.darkMode) {
                 document.body.classList.add('dark-mode');
+            }
+            
+            document.getElementById('deadline-reminders').checked = appState.settings.notifications;
+            document.getElementById('tax-updates').checked = appState.settings.taxUpdates;
+        }
+
+        // Setup authentication event listeners
+        function setupAuthEventListeners() {
+            // Auth tabs
+            authTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    authTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding form
+                    authForms.forEach(form => form.classList.remove('active'));
+                    document.getElementById(`${tabName}-form`).classList.add('active');
+                });
+            });
+            
+            // Sign in form
+            signinForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('signin-email').value;
+                const password = document.getElementById('signin-password').value;
+                
+                // Show loading state
+                const btnText = signinBtn.querySelector('span');
+                const loading = signinBtn.querySelector('.loading');
+                btnText.style.display = 'none';
+                loading.style.display = 'inline-block';
+                signinBtn.disabled = true;
+                
+                try {
+                    await auth.signInWithEmailAndPassword(email, password);
+                    showToast('Successfully signed in!', 'success');
+                } catch (error) {
+                    console.error('Sign in error:', error);
+                    showToast(getAuthErrorMessage(error), 'error');
+                } finally {
+                    // Reset button state
+                    btnText.style.display = 'inline';
+                    loading.style.display = 'none';
+                    signinBtn.disabled = false;
+                }
+            });
+            
+            // Sign up form
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const name = document.getElementById('signup-name').value;
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                const confirmPassword = document.getElementById('signup-confirm-password').value;
+                
+                // Validate passwords match
+                if (password !== confirmPassword) {
+                    showToast('Passwords do not match', 'error');
+                    return;
+                }
+                
+                // Show loading state
+                const btnText = signupBtn.querySelector('span');
+                const loading = signupBtn.querySelector('.loading');
+                btnText.style.display = 'none';
+                loading.style.display = 'inline-block';
+                signupBtn.disabled = true;
+                
+                try {
+                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    
+                    // Update user profile with name
+                    await userCredential.user.updateProfile({
+                        displayName: name
+                    });
+                    
+                    showToast('Account created successfully!', 'success');
+                } catch (error) {
+                    console.error('Sign up error:', error);
+                    showToast(getAuthErrorMessage(error), 'error');
+                } finally {
+                    // Reset button state
+                    btnText.style.display = 'inline';
+                    loading.style.display = 'none';
+                    signupBtn.disabled = false;
+                }
+            });
+            
+            // Google sign in
+            const googleSignIn = async (btn) => {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                
+                try {
+                    await auth.signInWithPopup(provider);
+                    showToast('Successfully signed in with Google!', 'success');
+                } catch (error) {
+                    console.error('Google sign in error:', error);
+                    showToast(getAuthErrorMessage(error), 'error');
+                }
+            };
+            
+            googleSigninBtn.addEventListener('click', () => googleSignIn(googleSigninBtn));
+            googleSignupBtn.addEventListener('click', () => googleSignIn(googleSignupBtn));
+            
+            // Sign out
+            signoutBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                
+                try {
+                    await auth.signOut();
+                    showToast('Successfully signed out', 'success');
+                } catch (error) {
+                    console.error('Sign out error:', error);
+                    showToast('Error signing out', 'error');
+                }
+            });
+            
+            // User profile dropdown
+            userProfile.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdown.classList.toggle('show');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', () => {
+                userDropdown.classList.remove('show');
+            });
+        }
+
+        // Get user-friendly auth error messages
+        function getAuthErrorMessage(error) {
+            switch (error.code) {
+                case 'auth/invalid-email':
+                    return 'Invalid email address';
+                case 'auth/user-disabled':
+                    return 'This account has been disabled';
+                case 'auth/user-not-found':
+                    return 'No account found with this email';
+                case 'auth/wrong-password':
+                    return 'Incorrect password';
+                case 'auth/email-already-in-use':
+                    return 'An account with this email already exists';
+                case 'auth/weak-password':
+                    return 'Password should be at least 6 characters';
+                case 'auth/network-request-failed':
+                    return 'Network error. Please check your connection';
+                default:
+                    return 'Authentication error. Please try again';
             }
         }
 
@@ -2044,28 +2738,39 @@
             });
         }
 
-        // Save tax calculation to history
-        function saveTaxCalculation(calculation) {
-            const calculationRecord = {
-                id: generateId(),
-                date: new Date().toISOString(),
-                userType: userData.userType,
-                incomeAmount: userData.incomeAmount,
-                allowances: userData.allowances,
-                taxAmount: calculation.tax,
-                taxableIncome: calculation.taxableIncome,
-                taxRate: calculation.taxRate,
-                status: 'pending'
-            };
-            
-            appState.taxHistory.unshift(calculationRecord);
-            localStorage.setItem('taxHistory', JSON.stringify(appState.taxHistory));
-            
-            // Update dashboard
-            updateDashboard();
-            
-            // Show success message
-            showToast('Tax calculation saved to history');
+        // Save tax calculation to Firestore
+        async function saveTaxCalculation(calculation) {
+            try {
+                const user = auth.currentUser;
+                if (!user) return;
+                
+                const calculationRecord = {
+                    userId: user.uid,
+                    date: new Date().toISOString(),
+                    userType: userData.userType,
+                    incomeAmount: userData.incomeAmount,
+                    allowances: userData.allowances,
+                    taxAmount: calculation.tax,
+                    taxableIncome: calculation.taxableIncome,
+                    taxRate: calculation.taxRate,
+                    status: 'pending'
+                };
+                
+                const docRef = await db.collection('taxHistory').add(calculationRecord);
+                
+                // Add to local state
+                calculationRecord.id = docRef.id;
+                appState.taxHistory.unshift(calculationRecord);
+                
+                // Update dashboard
+                updateDashboard();
+                
+                // Show success message
+                showToast('Tax calculation saved to history', 'success');
+            } catch (error) {
+                console.error('Error saving tax calculation:', error);
+                showToast('Error saving calculation', 'error');
+            }
         }
 
         // View a specific calculation
@@ -2143,7 +2848,7 @@
             // This would need more complex logic to navigate through the steps
             // For now, we'll just show a message
             closeModal();
-            showToast('Calculation loaded. Please use the calculator to modify values.');
+            showToast('Calculation loaded. Please use the calculator to modify values.', 'success');
         }
 
         // Format currency for Nigerian Naira
@@ -2158,14 +2863,18 @@
             return new Date(dateString).toLocaleDateString('en-NG', options);
         }
 
-        // Generate a unique ID
-        function generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
-        }
-
         // Show toast notification
-        function showToast(message) {
+        function showToast(message, type = 'success') {
             toastMessage.textContent = message;
+            
+            // Set toast type
+            toast.className = 'toast';
+            if (type === 'error') {
+                toast.classList.add('error');
+            } else if (type === 'success') {
+                toast.classList.add('success');
+            }
+            
             toast.classList.add('show');
             
             setTimeout(() => {
@@ -2234,8 +2943,67 @@
             document.getElementById('history-status-filter').addEventListener('change', loadTaxHistory);
             document.getElementById('history-date-filter').addEventListener('change', loadTaxHistory);
 
+            // Settings event listeners
+            document.getElementById('save-profile-btn').addEventListener('click', saveProfile);
+            document.getElementById('update-password-btn').addEventListener('click', updatePassword);
+
             // Calculator event listeners
             setupCalculatorEventListeners();
+        }
+
+        // Save profile to Firestore
+        async function saveProfile() {
+            try {
+                const user = auth.currentUser;
+                if (!user) return;
+                
+                const profileData = {
+                    firstName: document.getElementById('first-name').value,
+                    lastName: document.getElementById('last-name').value,
+                    phone: document.getElementById('phone').value
+                };
+                
+                await db.collection('users').doc(user.uid).update(profileData);
+                
+                // Update local state
+                appState.userProfile = { ...appState.userProfile, ...profileData };
+                
+                // Update UI
+                updateUserUI();
+                
+                showToast('Profile updated successfully', 'success');
+            } catch (error) {
+                console.error('Error saving profile:', error);
+                showToast('Error saving profile', 'error');
+            }
+        }
+
+        // Update password
+        async function updatePassword() {
+            try {
+                const user = auth.currentUser;
+                if (!user) return;
+                
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+                
+                if (newPassword !== confirmPassword) {
+                    showToast('Passwords do not match', 'error');
+                    return;
+                }
+                
+                await user.updatePassword(newPassword);
+                
+                // Clear password fields
+                document.getElementById('current-password').value = '';
+                document.getElementById('new-password').value = '';
+                document.getElementById('confirm-password').value = '';
+                
+                showToast('Password updated successfully', 'success');
+            } catch (error) {
+                console.error('Error updating password:', error);
+                showToast(getAuthErrorMessage(error), 'error');
+            }
         }
 
         // Setup calculator-specific event listeners
@@ -2531,7 +3299,7 @@
             // Save Result Button
             document.getElementById('save-result').addEventListener('click', function() {
                 // In a real app, this would save as PDF or to account
-                showToast('Calculation saved to your history');
+                showToast('Calculation saved to your history', 'success');
             });
 
             // Payment Button
