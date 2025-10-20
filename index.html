@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaxIntelli | Nigerian Tax Intelligence Platform</title>
+    <title>TaxNaija | Nigeria's Smart Tax Platform</title>
     <meta name="description" content="Professional tax intelligence platform for Nigerian individuals and businesses">
     <meta name="theme-color" content="#006400">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -1122,8 +1122,8 @@
             <div class="sidebar-header">
                 <div class="logo-icon">💰</div>
                 <div class="logo-text">
-                    <h1>TaxIntelli</h1>
-                    <p>Nigerian Tax Intelligence</p>
+                    <h1>TaxNaija</h1>
+                    <p>Nigeria's Smart Tax Platform</p>
                 </div>
             </div>
             <div class="sidebar-nav">
@@ -1269,7 +1269,7 @@
                     <div class="calculator-body">
                         <!-- Step 1: Welcome -->
                         <div class="calculator-step active" id="step-1">
-                            <h3 class="step-title">Welcome to TaxIntelli</h3>
+                            <h3 class="step-title">Welcome to TaxNaija</h3>
                             <p class="step-description">We'll help you understand your tax obligations in Nigeria with simple, easy-to-understand questions.</p>
                             
                             <div class="options-grid">
@@ -1768,10 +1768,10 @@
     </div>
 
     <script>
-        // Nigerian tax calculation logic and data
+        // Enhanced Nigerian tax calculation logic and data
         const nigerianTaxData = {
             individual: {
-                // Personal Income Tax (PIT) brackets for Nigeria
+                // Personal Income Tax (PIT) brackets for Nigeria (2023 rates)
                 taxBrackets: [
                     { min: 0, max: 300000, rate: 0.07 },
                     { min: 300001, max: 600000, rate: 0.11 },
@@ -1784,41 +1784,76 @@
                     // CRA is the higher of 200,000 or 1% of gross income plus 20% of gross income
                     return Math.max(200000, (0.01 * income) + (0.2 * income));
                 },
+                standardDeductions: {
+                    pension: 0.08, // Maximum 8% of salary
+                    nhf: 0.025, // 2.5% of annual basic salary
+                    lifeInsurance: 0.1, // Up to 10% of total income
+                    dependentRelatives: 50000, // Per dependent up to 4
+                    childrenEducation: 50000 // Per child up to 4
+                },
                 income: [500000, 1000000, 2000000, 5000000, 10000000],
                 allowances: [50000, 100000, 200000, 500000, 1000000]
             },
             business: {
-                // Company Income Tax (CIT) rates for Nigeria
+                // Company Income Tax (CIT) rates for Nigeria (2023)
                 taxRates: {
                     small: 0.20, // For companies with turnover < ₦25M
                     medium: 0.25, // For companies with turnover ₦25M - ₦100M
                     large: 0.30  // For companies with turnover > ₦100M
                 },
+                turnoverThresholds: {
+                    small: 25000000,
+                    medium: 100000000
+                },
+                allowableDeductions: {
+                    capitalAllowance: 0.1, // 10% on qualifying capital expenditure
+                    staffCosts: 1.0, // 100% of staff costs
+                    rent: 1.0, // 100% of rent expenses
+                    utilities: 1.0, // 100% of utility costs
+                    professionalFees: 1.0 // 100% of professional fees
+                },
                 income: [1000000, 5000000, 10000000, 25000000, 50000000, 100000000],
                 allowances: [100000, 500000, 1000000, 2500000, 5000000]
             },
             vat: {
-                rate: 0.075 // 7.5% VAT rate in Nigeria
+                rate: 0.075, // 7.5% VAT rate in Nigeria
+                registrationThreshold: 25000000 // ₦25 million turnover
+            },
+            states: {
+                // State-level taxes and levies
+                developmentLevy: 1000, // Annual per individual
+                businessPremises: {
+                    rural: 10000,
+                    urban: 20000,
+                    metropolitan: 50000
+                }
             }
         };
 
-        // Nigerian tax deadlines
+        // Nigerian tax deadlines (updated for 2023)
         const nigerianDeadlines = [
             { title: "VAT Returns Due", date: "2023-04-21", type: "vat", status: "upcoming" },
             { title: "Personal Income Tax (Self-Assessment)", date: "2023-03-31", type: "individual", status: "due" },
             { title: "Company Income Tax", date: "2023-06-30", type: "business", status: "upcoming" },
-            { title: "Education Tax", date: "2023-09-30", type: "business", status: "upcoming" }
+            { title: "Education Tax", date: "2023-09-30", type: "business", status: "upcoming" },
+            { title: "State Development Levy", date: "2023-01-31", type: "individual", status: "overdue" }
         ];
 
-        // User data object to store responses
+        // Enhanced User data object to store responses
         const userData = {
             userType: null, // 'individual' or 'business'
             incomeType: null,
             incomeAmount: null,
-            allowances: 0
+            allowances: 0,
+            state: "Lagos", // Default state
+            hasTin: false,
+            dependents: 0,
+            children: 0,
+            businessType: null, // For business users
+            businessLocation: "urban" // For business premises levy
         };
 
-        // App state
+        // Enhanced App state
         const appState = {
             taxHistory: JSON.parse(localStorage.getItem('taxHistory')) || [],
             userProfile: JSON.parse(localStorage.getItem('userProfile')) || {
@@ -1826,7 +1861,16 @@
                 lastName: "Doe",
                 email: "john.doe@example.com",
                 phone: "+234 800 000 0000",
-                userType: "individual"
+                userType: "individual",
+                state: "Lagos",
+                hasTin: false,
+                dependents: 0,
+                children: 0
+            },
+            settings: JSON.parse(localStorage.getItem('settings')) || {
+                notifications: true,
+                taxUpdates: true,
+                darkMode: false
             }
         };
 
@@ -1852,6 +1896,14 @@
             updateDashboard();
             loadTaxHistory();
             setupEventListeners();
+            applyUserSettings();
+        }
+
+        // Apply user settings from localStorage
+        function applyUserSettings() {
+            if (appState.settings.darkMode) {
+                document.body.classList.add('dark-mode');
+            }
         }
 
         // Update dashboard with user data
@@ -1863,6 +1915,12 @@
             const upcomingCount = nigerianDeadlines.filter(d => d.status === 'upcoming').length;
             document.getElementById('upcoming-deadlines').textContent = upcomingCount;
             
+            // Calculate estimated savings (simplified)
+            const estimatedSavings = appState.taxHistory.reduce((sum, record) => {
+                return sum + (record.allowances || 0) * 0.2; // Simplified savings calculation
+            }, 0);
+            document.getElementById('estimated-savings').textContent = formatCurrency(estimatedSavings);
+            
             // Update deadlines list
             const deadlineList = document.getElementById('deadline-list');
             deadlineList.innerHTML = '';
@@ -1871,7 +1929,7 @@
                 const deadlineItem = document.createElement('li');
                 deadlineItem.className = 'deadline-item';
                 
-                const statusClass = deadline.status === 'due' ? 'status-due' : 'status-upcoming';
+                const statusClass = `status-${deadline.status}`;
                 
                 deadlineItem.innerHTML = `
                     <div class="deadline-icon">
@@ -2090,6 +2148,7 @@
 
         // Format currency for Nigerian Naira
         function formatCurrency(amount) {
+            if (isNaN(amount)) return '₦0';
             return '₦' + amount.toLocaleString('en-NG');
         }
 
@@ -2519,7 +2578,7 @@
             progressBar.style.width = `${progressPercentage}%`;
         }
 
-        // Number to words conversion function
+        // Enhanced Number to words conversion function
         function numberToWords(num) {
             if (num === 0) return "Zero Naira";
             
@@ -2535,10 +2594,10 @@
             let words = '';
             
             // Convert number to string and split into integer and decimal parts
-            const numStr = num.toString();
+            const numStr = num.toFixed(2);
             const parts = numStr.split('.');
             const integerPart = parseInt(parts[0]);
-            const decimalPart = parts[1] ? parseInt(parts[1].padEnd(2, '0').substring(0, 2)) : 0;
+            const decimalPart = parts[1] ? parseInt(parts[1]) : 0;
             
             // Convert integer part
             if (integerPart === 0) {
@@ -2622,12 +2681,13 @@
             }
         }
 
-        // Tax Calculation Function
+        // Enhanced Tax Calculation Function
         function calculateTax() {
             let taxableIncome = userData.incomeAmount - userData.allowances;
             let tax = 0;
             let taxRate = 0;
             let tip = '';
+            let additionalTaxes = [];
             
             if (userData.userType === 'individual') {
                 // Apply Consolidated Relief Allowance (CRA)
@@ -2648,6 +2708,13 @@
                     tax += bracketAmount * bracket.rate;
                     remainingIncome -= bracketAmount;
                 }
+                
+                // Add state development levy
+                additionalTaxes.push({
+                    name: "State Development Levy",
+                    amount: nigerianTaxData.states.developmentLevy
+                });
+                tax += nigerianTaxData.states.developmentLevy;
                 
                 // Calculate effective tax rate
                 taxRate = userData.incomeAmount > 0 ? tax / userData.incomeAmount : 0;
@@ -2671,14 +2738,30 @@
                 // Corporate tax calculation
                 let companyType = 'large';
                 
-                if (userData.incomeAmount < 25000000) {
+                if (userData.incomeAmount < nigerianTaxData.business.turnoverThresholds.small) {
                     companyType = 'small';
-                } else if (userData.incomeAmount <= 100000000) {
+                } else if (userData.incomeAmount <= nigerianTaxData.business.turnoverThresholds.medium) {
                     companyType = 'medium';
                 }
                 
                 taxRate = nigerianTaxData.business.taxRates[companyType];
                 tax = taxableIncome * taxRate;
+                
+                // Add business premises levy based on location
+                const premisesLevy = nigerianTaxData.states.businessPremises[userData.businessLocation || 'urban'];
+                additionalTaxes.push({
+                    name: "Business Premises Levy",
+                    amount: premisesLevy
+                });
+                tax += premisesLevy;
+                
+                // Add education tax (2% of assessable profit)
+                const educationTax = taxableIncome * 0.02;
+                additionalTaxes.push({
+                    name: "Education Tax",
+                    amount: educationTax
+                });
+                tax += educationTax;
                 
                 // Generate tip based on company size
                 switch(companyType) {
@@ -2698,11 +2781,12 @@
                 tax: Math.round(tax),
                 taxableIncome: Math.round(taxableIncome),
                 taxRate: taxRate,
-                tip: tip
+                tip: tip,
+                additionalTaxes: additionalTaxes
             };
         }
 
-        // Display calculation results
+        // Enhanced Display calculation results
         function displayResults(calculation) {
             document.getElementById('calculated-tax').textContent = formatCurrency(calculation.tax);
             document.getElementById('taxable-income').textContent = formatCurrency(calculation.taxableIncome);
@@ -2710,6 +2794,20 @@
             document.getElementById('total-allowances').textContent = formatCurrency(userData.allowances);
             document.getElementById('net-tax').textContent = formatCurrency(calculation.tax);
             document.getElementById('optimization-tip').textContent = calculation.tip;
+            
+            // Display additional taxes if any
+            if (calculation.additionalTaxes && calculation.additionalTaxes.length > 0) {
+                const breakdown = document.querySelector('.tax-breakdown');
+                calculation.additionalTaxes.forEach(additionalTax => {
+                    const taxItem = document.createElement('div');
+                    taxItem.className = 'breakdown-item';
+                    taxItem.innerHTML = `
+                        <span>${additionalTax.name}:</span>
+                        <span>${formatCurrency(additionalTax.amount)}</span>
+                    `;
+                    breakdown.appendChild(taxItem);
+                });
+            }
         }
 
         // Modal functions
