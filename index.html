@@ -8,6 +8,12 @@
     <meta name="theme-color" content="#006400">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+    
     <style>
         :root {
             --primary: #006400;
@@ -1670,6 +1676,41 @@
             100% { transform: scale(1); }
         }
 
+        /* Image Preview */
+        .image-preview {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .image-preview img {
+            max-width: 200px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .remove-image {
+            background: var(--error);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+        }
+
+        .image-preview-container {
+            position: relative;
+            display: inline-block;
+            margin-right: 1rem;
+            margin-bottom: 1rem;
+        }
+
         @media (max-width: 768px) {
             .auth-container {
                 flex-direction: column;
@@ -2469,23 +2510,27 @@
 
                 <div class="community-container">
                     <div class="post-form">
-                        <textarea class="post-input" placeholder="Share your tax tip, question, or experience..."></textarea>
+                        <textarea class="post-input" id="post-content" placeholder="Share your tax tip, question, or experience..."></textarea>
                         <div class="post-actions">
                             <div class="post-options">
-                                <div class="post-option">
+                                <div class="post-option" id="add-image-btn">
                                     <i class="fas fa-image"></i>
                                     <span>Photo</span>
+                                    <input type="file" id="image-upload" accept="image/*" style="display: none;">
                                 </div>
-                                <div class="post-option">
+                                <div class="post-option" id="add-link-btn">
                                     <i class="fas fa-link"></i>
                                     <span>Link</span>
                                 </div>
-                                <div class="post-option">
+                                <div class="post-option" id="add-tag-btn">
                                     <i class="fas fa-hashtag"></i>
                                     <span>Tag</span>
                                 </div>
                             </div>
-                            <button class="btn">Post</button>
+                            <button class="btn" id="submit-post-btn">Post</button>
+                        </div>
+                        <div class="image-preview" id="image-preview">
+                            <!-- Image previews will be added here -->
                         </div>
                     </div>
 
@@ -2769,6 +2814,23 @@
     </div>
 
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4yX9v8u-wjIPeBY64cc7YASVWIcak-eM",
+            authDomain: "vault-602d2.firebaseapp.com",
+            projectId: "vault-602d2",
+            storageBucket: "vault-602d2.firebasestorage.app",
+            messagingSenderId: "397379271243",
+            appId: "1:397379271243:web:fab5914ccdca9d796d2bce",
+            measurementId: "G-4R62KV83W2"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
         // Enhanced Nigerian tax calculation logic and data
         const nigerianTaxData = {
             individual: {
@@ -2856,11 +2918,11 @@
 
         // Enhanced App state
         let appState = {
-            taxHistory: [],
+            currentUser: null,
             userProfile: {
-                firstName: "Demo",
-                lastName: "User",
-                email: "demo@taxnaija.com",
+                firstName: "",
+                lastName: "",
+                email: "",
                 phone: "",
                 userType: "individual",
                 state: "Lagos",
@@ -2874,49 +2936,9 @@
                 darkMode: false
             },
             customResources: [],
-            notifications: [
-                { id: 1, type: "deadline", message: "VAT Returns due in 2 weeks", time: "2 hours ago", read: false },
-                { id: 2, type: "update", message: "New tax guidelines published for 2025", time: "1 day ago", read: false },
-                { id: 3, type: "tip", message: "Tax saving tip: Consider increasing your pension contributions", time: "3 days ago", read: true }
-            ],
-            communityPosts: [
-                { 
-                    id: 1, 
-                    userId: "user2", 
-                    userName: "Tax Pro", 
-                    userInitials: "TP",
-                    content: "Just discovered that you can claim up to 25% of your income as pension contribution to reduce your taxable income. This has saved me over ₦200,000 in taxes this year!",
-                    tags: ["#TaxTips", "#Pension"],
-                    likes: 15,
-                    comments: 3,
-                    time: "2 hours ago",
-                    liked: false
-                },
-                { 
-                    id: 2, 
-                    userId: "user3", 
-                    userName: "Small Business Owner", 
-                    userInitials: "SB",
-                    content: "For small businesses with turnover below ₦25 million, you qualify for the lower tax rate of 20%. Make sure to take advantage of this if you're eligible!",
-                    tags: ["#SmallBusiness", "#TaxRate"],
-                    likes: 8,
-                    comments: 2,
-                    time: "1 day ago",
-                    liked: true
-                },
-                { 
-                    id: 3, 
-                    userId: "user4", 
-                    userName: "Tax Consultant", 
-                    userInitials: "TC",
-                    content: "Important reminder: The deadline for filing personal income tax returns is March 31st. Don't wait until the last minute to avoid penalties!",
-                    tags: ["#Deadline", "#PIT"],
-                    likes: 12,
-                    comments: 5,
-                    time: "3 days ago",
-                    liked: false
-                }
-            ]
+            notifications: [],
+            communityPosts: [],
+            taxHistory: []
         };
 
         // DOM elements
@@ -2948,6 +2970,10 @@
         const notificationDropdown = document.getElementById('notification-dropdown');
         const notificationList = document.getElementById('notification-list');
         const communityFeed = document.getElementById('community-feed');
+        const postContent = document.getElementById('post-content');
+        const imageUpload = document.getElementById('image-upload');
+        const imagePreview = document.getElementById('image-preview');
+        const submitPostBtn = document.getElementById('submit-post-btn');
 
         // Authentication DOM elements
         const authTabs = document.querySelectorAll('.auth-tab');
@@ -2970,15 +2996,26 @@
             setupEventListeners();
             setupAuthEventListeners();
             setupResourceEventListeners();
+            setupCommunityEventListeners();
+            
+            // Check if user is logged in
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    // User is signed in
+                    appState.currentUser = user;
+                    loadUserProfile(user.uid);
+                    showApp();
+                } else {
+                    // User is signed out
+                    showAuth();
+                }
+            });
             
             // Check if user has completed onboarding
             const hasCompletedOnboarding = localStorage.getItem('taxNaija_onboarding_completed');
             if (!hasCompletedOnboarding) {
                 showOnboarding();
             }
-            
-            // Show demo by default
-            showApp();
         }
 
         // Show onboarding
@@ -3044,15 +3081,54 @@
             loadCommunityFeed();
         }
 
+        // Load user profile from Firestore
+        function loadUserProfile(userId) {
+            db.collection('users').doc(userId).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        appState.userProfile = { ...appState.userProfile, ...doc.data() };
+                        updateUserUI();
+                    } else {
+                        // Create a new user profile
+                        const newUserProfile = {
+                            firstName: appState.currentUser.displayName ? appState.currentUser.displayName.split(' ')[0] : 'User',
+                            lastName: appState.currentUser.displayName ? appState.currentUser.displayName.split(' ').slice(1).join(' ') : '',
+                            email: appState.currentUser.email,
+                            phone: '',
+                            userType: 'individual',
+                            state: 'Lagos',
+                            hasTin: false,
+                            dependents: 0,
+                            children: 0,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        };
+                        
+                        db.collection('users').doc(userId).set(newUserProfile)
+                            .then(() => {
+                                appState.userProfile = newUserProfile;
+                                updateUserUI();
+                            })
+                            .catch(error => {
+                                console.error('Error creating user profile:', error);
+                                showToast('Error creating user profile', 'error');
+                            });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading user profile:', error);
+                    showToast('Error loading user profile', 'error');
+                });
+        }
+
         // Update UI with user data
         function updateUserUI() {
             // Update user profile in top bar
-            const firstName = appState.userProfile.firstName || 'Demo';
-            const lastName = appState.userProfile.lastName || 'User';
+            const firstName = appState.userProfile.firstName || 'User';
+            const lastName = appState.userProfile.lastName || '';
             const fullName = `${firstName} ${lastName}`.trim();
             
             userName.textContent = fullName;
-            userEmail.textContent = appState.userProfile.email || 'demo@taxnaija.com';
+            userEmail.textContent = appState.userProfile.email || appState.currentUser.email;
             
             // Update user avatar with initials
             const initials = (firstName.charAt(0) + (lastName.charAt(0) || '')).toUpperCase();
@@ -3071,7 +3147,7 @@
             // Update settings form
             document.getElementById('first-name').value = firstName;
             document.getElementById('last-name').value = lastName;
-            document.getElementById('email').value = appState.userProfile.email || 'demo@taxnaija.com';
+            document.getElementById('email').value = appState.userProfile.email || appState.currentUser.email;
             document.getElementById('phone').value = appState.userProfile.phone || '';
         }
 
@@ -3092,22 +3168,118 @@
                 });
             });
             
+            // Sign in form
+            signinForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('signin-email').value;
+                const password = document.getElementById('signin-password').value;
+                
+                signinBtn.querySelector('span').style.display = 'none';
+                signinBtn.querySelector('.loading').style.display = 'inline-block';
+                signinBtn.disabled = true;
+                
+                auth.signInWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        // Signed in
+                        showToast('Successfully signed in!', 'success');
+                    })
+                    .catch((error) => {
+                        const errorCode = error.code;
+                        const errorMessage = error.message;
+                        showToast(errorMessage, 'error');
+                    })
+                    .finally(() => {
+                        signinBtn.querySelector('span').style.display = 'inline-block';
+                        signinBtn.querySelector('.loading').style.display = 'none';
+                        signinBtn.disabled = false;
+                    });
+            });
+            
+            // Sign up form
+            signupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const name = document.getElementById('signup-name').value;
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                const confirmPassword = document.getElementById('signup-confirm-password').value;
+                
+                if (password !== confirmPassword) {
+                    showToast('Passwords do not match', 'error');
+                    return;
+                }
+                
+                signupBtn.querySelector('span').style.display = 'none';
+                signupBtn.querySelector('.loading').style.display = 'inline-block';
+                signupBtn.disabled = true;
+                
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        // Signed up
+                        const user = userCredential.user;
+                        
+                        // Update user profile
+                        return user.updateProfile({
+                            displayName: name
+                        });
+                    })
+                    .then(() => {
+                        showToast('Account created successfully!', 'success');
+                    })
+                    .catch((error) => {
+                        const errorCode = error.code;
+                        const errorMessage = error.message;
+                        showToast(errorMessage, 'error');
+                    })
+                    .finally(() => {
+                        signupBtn.querySelector('span').style.display = 'inline-block';
+                        signupBtn.querySelector('.loading').style.display = 'none';
+                        signupBtn.disabled = false;
+                    });
+            });
+            
             // Demo sign in
             demoSigninBtn.addEventListener('click', () => {
-                showApp();
-                showToast('Welcome to TaxNaija Demo!', 'success');
+                auth.signInWithEmailAndPassword('demo@taxnaija.com', 'demopassword')
+                    .then((userCredential) => {
+                        // Signed in
+                        showToast('Welcome to TaxNaija Demo!', 'success');
+                    })
+                    .catch((error) => {
+                        // If demo account doesn't exist, create it
+                        auth.createUserWithEmailAndPassword('demo@taxnaija.com', 'demopassword')
+                            .then((userCredential) => {
+                                const user = userCredential.user;
+                                return user.updateProfile({
+                                    displayName: 'Demo User'
+                                });
+                            })
+                            .then(() => {
+                                showToast('Demo account created! Welcome to TaxNaija!', 'success');
+                            })
+                            .catch((error) => {
+                                const errorCode = error.code;
+                                const errorMessage = error.message;
+                                showToast(errorMessage, 'error');
+                            });
+                    });
             });
             
             // Demo sign up
             demoSignupBtn.addEventListener('click', () => {
-                showApp();
-                showToast('Welcome to TaxNaija Demo!', 'success');
+                demoSigninBtn.click();
             });
             
             // Sign out
             const signOutUser = () => {
-                showAuth();
-                showToast('Successfully signed out', 'success');
+                auth.signOut()
+                    .then(() => {
+                        showToast('Successfully signed out', 'success');
+                    })
+                    .catch((error) => {
+                        showToast('Error signing out', 'error');
+                    });
             };
             
             signoutBtn.addEventListener('click', (e) => {
@@ -3147,68 +3319,236 @@
                     return;
                 }
                 
-                // Add to local state
+                // Add to Firestore
                 const resourceData = {
-                    id: Date.now().toString(),
                     title: title,
                     url: url,
                     type: type,
-                    createdAt: new Date().toISOString()
+                    userId: appState.currentUser.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
-                appState.customResources.unshift(resourceData);
-                
-                // Update UI
-                loadCustomResources();
-                
-                // Clear form
-                document.getElementById('resource-title').value = '';
-                document.getElementById('resource-url').value = '';
-                
-                showToast('Resource added successfully', 'success');
+                db.collection('resources').add(resourceData)
+                    .then(() => {
+                        // Clear form
+                        document.getElementById('resource-title').value = '';
+                        document.getElementById('resource-url').value = '';
+                        
+                        showToast('Resource added successfully', 'success');
+                        loadCustomResources();
+                    })
+                    .catch(error => {
+                        console.error('Error adding resource:', error);
+                        showToast('Error adding resource', 'error');
+                    });
             });
         }
 
-        // Load custom resources
-        function loadCustomResources() {
-            if (appState.customResources.length === 0) {
-                customResourcesList.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No resources added yet. Add your first resource above.</p>';
-                return;
-            }
-            
-            customResourcesList.innerHTML = '';
-            
-            appState.customResources.forEach(resource => {
-                const resourceElement = document.createElement('div');
-                resourceElement.className = 'resource-card';
-                resourceElement.style.marginBottom = '1rem';
-                
-                const typeIcon = getResourceTypeIcon(resource.type);
-                const typeLabel = getResourceTypeLabel(resource.type);
-                
-                resourceElement.innerHTML = `
-                    <div class="resource-icon">
-                        <i class="${typeIcon}"></i>
-                    </div>
-                    <div class="resource-title">${resource.title}</div>
-                    <div class="resource-description">
-                        <a href="${resource.url}" target="_blank">${resource.url}</a>
-                    </div>
-                    <div class="resource-tags">
-                        <span class="resource-tag">${typeLabel}</span>
-                    </div>
-                    <div class="actions" style="justify-content: flex-start; margin-top: 1rem;">
-                        <button class="btn" onclick="openExternalLink('${resource.url}')" style="width: auto; padding: 0.5rem 1rem;">
-                            <i class="fas fa-external-link-alt"></i> Open
-                        </button>
-                        <button class="btn btn-outline" onclick="deleteResource('${resource.id}')" style="width: auto; padding: 0.5rem 1rem; margin-left: 0.5rem;">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </div>
-                `;
-                
-                customResourcesList.appendChild(resourceElement);
+        // Setup community event listeners
+        function setupCommunityEventListeners() {
+            // Add image button
+            document.getElementById('add-image-btn').addEventListener('click', () => {
+                imageUpload.click();
             });
+            
+            // Handle image upload
+            imageUpload.addEventListener('change', (e) => {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        const reader = new FileReader();
+                        
+                        reader.onload = (e) => {
+                            const imageContainer = document.createElement('div');
+                            imageContainer.className = 'image-preview-container';
+                            
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            
+                            const removeBtn = document.createElement('button');
+                            removeBtn.className = 'remove-image';
+                            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                            removeBtn.addEventListener('click', () => {
+                                imageContainer.remove();
+                                if (imagePreview.children.length === 0) {
+                                    imagePreview.style.display = 'none';
+                                }
+                            });
+                            
+                            imageContainer.appendChild(img);
+                            imageContainer.appendChild(removeBtn);
+                            imagePreview.appendChild(imageContainer);
+                            imagePreview.style.display = 'block';
+                        };
+                        
+                        reader.readAsDataURL(file);
+                    }
+                }
+            });
+            
+            // Submit post
+            submitPostBtn.addEventListener('click', () => {
+                const content = postContent.value.trim();
+                
+                if (!content) {
+                    showToast('Please enter some content for your post', 'error');
+                    return;
+                }
+                
+                submitPostBtn.disabled = true;
+                submitPostBtn.innerHTML = '<div class="loading"></div> Posting...';
+                
+                // Upload images first if any
+                const imageContainers = imagePreview.querySelectorAll('.image-preview-container');
+                const uploadPromises = [];
+                const imageUrls = [];
+                
+                if (imageContainers.length > 0) {
+                    imageContainers.forEach(container => {
+                        const img = container.querySelector('img');
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        // Resize image to reduce file size
+                        const MAX_WIDTH = 800;
+                        const MAX_HEIGHT = 600;
+                        let width = img.naturalWidth;
+                        let height = img.naturalHeight;
+                        
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        const promise = new Promise((resolve, reject) => {
+                            canvas.toBlob(blob => {
+                                const fileName = `posts/${appState.currentUser.uid}/${Date.now()}.jpg`;
+                                const uploadTask = storage.ref(fileName).put(blob);
+                                
+                                uploadTask.on('state_changed',
+                                    (snapshot) => {
+                                        // Progress monitoring if needed
+                                    },
+                                    (error) => {
+                                        reject(error);
+                                    },
+                                    () => {
+                                        uploadTask.snapshot.ref.getDownloadURL()
+                                            .then(url => {
+                                                imageUrls.push(url);
+                                                resolve();
+                                            })
+                                            .catch(error => reject(error));
+                                    }
+                                );
+                            }, 'image/jpeg', 0.8);
+                        });
+                        
+                        uploadPromises.push(promise);
+                    });
+                }
+                
+                // Wait for all images to upload, then create post
+                Promise.all(uploadPromises)
+                    .then(() => {
+                        const postData = {
+                            content: content,
+                            images: imageUrls,
+                            userId: appState.currentUser.uid,
+                            userName: appState.userProfile.firstName + ' ' + appState.userProfile.lastName,
+                            userInitials: (appState.userProfile.firstName.charAt(0) + (appState.userProfile.lastName.charAt(0) || '')).toUpperCase(),
+                            likes: 0,
+                            comments: 0,
+                            likedBy: [],
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        };
+                        
+                        return db.collection('posts').add(postData);
+                    })
+                    .then(() => {
+                        // Clear form
+                        postContent.value = '';
+                        imagePreview.innerHTML = '';
+                        imagePreview.style.display = 'none';
+                        
+                        showToast('Post published successfully!', 'success');
+                    })
+                    .catch(error => {
+                        console.error('Error creating post:', error);
+                        showToast('Error publishing post', 'error');
+                    })
+                    .finally(() => {
+                        submitPostBtn.disabled = false;
+                        submitPostBtn.innerHTML = 'Post';
+                    });
+            });
+        }
+
+        // Load custom resources from Firestore
+        function loadCustomResources() {
+            if (!appState.currentUser) return;
+            
+            db.collection('resources')
+                .where('userId', '==', appState.currentUser.uid)
+                .orderBy('createdAt', 'desc')
+                .get()
+                .then(querySnapshot => {
+                    if (querySnapshot.empty) {
+                        customResourcesList.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No resources added yet. Add your first resource above.</p>';
+                        return;
+                    }
+                    
+                    customResourcesList.innerHTML = '';
+                    
+                    querySnapshot.forEach(doc => {
+                        const resource = doc.data();
+                        const resourceElement = document.createElement('div');
+                        resourceElement.className = 'resource-card';
+                        resourceElement.style.marginBottom = '1rem';
+                        
+                        const typeIcon = getResourceTypeIcon(resource.type);
+                        const typeLabel = getResourceTypeLabel(resource.type);
+                        
+                        resourceElement.innerHTML = `
+                            <div class="resource-icon">
+                                <i class="${typeIcon}"></i>
+                            </div>
+                            <div class="resource-title">${resource.title}</div>
+                            <div class="resource-description">
+                                <a href="${resource.url}" target="_blank">${resource.url}</a>
+                            </div>
+                            <div class="resource-tags">
+                                <span class="resource-tag">${typeLabel}</span>
+                            </div>
+                            <div class="actions" style="justify-content: flex-start; margin-top: 1rem;">
+                                <button class="btn" onclick="openExternalLink('${resource.url}')" style="width: auto; padding: 0.5rem 1rem;">
+                                    <i class="fas fa-external-link-alt"></i> Open
+                                </button>
+                                <button class="btn btn-outline" onclick="deleteResource('${doc.id}')" style="width: auto; padding: 0.5rem 1rem; margin-left: 0.5rem;">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        `;
+                        
+                        customResourcesList.appendChild(resourceElement);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading resources:', error);
+                    showToast('Error loading resources', 'error');
+                });
         }
 
         // Get resource type icon
@@ -3235,34 +3575,177 @@
 
         // Delete resource
         function deleteResource(resourceId) {
-            // Remove from local state
-            appState.customResources = appState.customResources.filter(resource => resource.id !== resourceId);
+            db.collection('resources').doc(resourceId).delete()
+                .then(() => {
+                    showToast('Resource deleted successfully', 'success');
+                    loadCustomResources();
+                })
+                .catch(error => {
+                    console.error('Error deleting resource:', error);
+                    showToast('Error deleting resource', 'error');
+                });
+        }
+
+        // Load community posts from Firestore
+        function loadCommunityFeed() {
+            if (!appState.currentUser) return;
             
-            // Update UI
-            loadCustomResources();
+            db.collection('posts')
+                .orderBy('createdAt', 'desc')
+                .limit(20)
+                .get()
+                .then(querySnapshot => {
+                    communityFeed.innerHTML = '';
+                    
+                    if (querySnapshot.empty) {
+                        communityFeed.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No posts yet. Be the first to share something!</p>';
+                        return;
+                    }
+                    
+                    querySnapshot.forEach(doc => {
+                        const post = doc.data();
+                        const postId = doc.id;
+                        const postElement = document.createElement('div');
+                        postElement.className = 'post-card';
+                        
+                        // Format timestamp
+                        const postDate = post.createdAt ? post.createdAt.toDate() : new Date();
+                        const timeAgo = getTimeAgo(postDate);
+                        
+                        // Check if current user liked this post
+                        const isLiked = post.likedBy && post.likedBy.includes(appState.currentUser.uid);
+                        
+                        postElement.innerHTML = `
+                            <div class="post-header">
+                                <div class="post-avatar">${post.userInitials}</div>
+                                <div class="post-user">
+                                    <div class="post-name">${post.userName}</div>
+                                    <div class="post-time">${timeAgo}</div>
+                                </div>
+                            </div>
+                            <div class="post-content">
+                                ${post.content}
+                            </div>
+                            ${post.images && post.images.length > 0 ? `
+                                <div class="post-images" style="margin-bottom: 1rem;">
+                                    ${post.images.map(img => `<img src="${img}" style="max-width: 100%; border-radius: var(--radius); margin-bottom: 0.5rem;">`).join('')}
+                                </div>
+                            ` : ''}
+                            <div class="post-footer">
+                                <div class="post-actions-footer">
+                                    <div class="post-action ${isLiked ? 'liked' : ''}" data-post-id="${postId}" data-action="like">
+                                        <i class="fas fa-heart"></i>
+                                        <span>${post.likes || 0}</span>
+                                    </div>
+                                    <div class="post-action" data-post-id="${postId}" data-action="comment">
+                                        <i class="fas fa-comment"></i>
+                                        <span>${post.comments || 0}</span>
+                                    </div>
+                                    <div class="post-action" data-post-id="${postId}" data-action="share">
+                                        <i class="fas fa-share"></i>
+                                        <span>Share</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        communityFeed.appendChild(postElement);
+                    });
+                    
+                    // Add event listeners to post actions
+                    document.querySelectorAll('.post-action[data-action="like"]').forEach(action => {
+                        action.addEventListener('click', function() {
+                            const postId = this.getAttribute('data-post-id');
+                            togglePostLike(postId, this);
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading posts:', error);
+                    showToast('Error loading posts', 'error');
+                });
+        }
+
+        // Toggle post like
+        function togglePostLike(postId, likeElement) {
+            if (!appState.currentUser) return;
             
-            showToast('Resource deleted successfully', 'success');
+            const postRef = db.collection('posts').doc(postId);
+            
+            // Get current post data
+            postRef.get()
+                .then(doc => {
+                    if (!doc.exists) return;
+                    
+                    const post = doc.data();
+                    const currentLikes = post.likes || 0;
+                    const likedBy = post.likedBy || [];
+                    const isLiked = likedBy.includes(appState.currentUser.uid);
+                    
+                    let newLikes;
+                    let newLikedBy;
+                    
+                    if (isLiked) {
+                        // Unlike the post
+                        newLikes = currentLikes - 1;
+                        newLikedBy = likedBy.filter(id => id !== appState.currentUser.uid);
+                        likeElement.classList.remove('liked');
+                    } else {
+                        // Like the post
+                        newLikes = currentLikes + 1;
+                        newLikedBy = [...likedBy, appState.currentUser.uid];
+                        likeElement.classList.add('liked');
+                    }
+                    
+                    // Update the post
+                    return postRef.update({
+                        likes: newLikes,
+                        likedBy: newLikedBy
+                    });
+                })
+                .then(() => {
+                    // Update the like count in the UI
+                    const likeCount = likeElement.querySelector('span');
+                    likeCount.textContent = parseInt(likeCount.textContent) + (likeElement.classList.contains('liked') ? 1 : -1);
+                })
+                .catch(error => {
+                    console.error('Error toggling like:', error);
+                    showToast('Error updating like', 'error');
+                });
         }
 
-        // Open external link
-        function openExternalLink(url) {
-            window.open(url, '_blank');
-        }
-
-        // Download resource (placeholder function)
-        function downloadResource(title) {
-            showToast(`Downloading ${title}...`, 'success');
-            // In a real app, this would trigger an actual download
-        }
-
-        // Watch video (placeholder function)
-        function watchVideo(title) {
-            showToast(`Playing ${title}...`, 'success');
-            // In a real app, this would open a video player
+        // Get time ago string
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffSecs = Math.floor(diffMs / 1000);
+            const diffMins = Math.floor(diffSecs / 60);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+            
+            if (diffSecs < 60) {
+                return 'just now';
+            } else if (diffMins < 60) {
+                return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+            } else if (diffHours < 24) {
+                return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+            } else if (diffDays < 7) {
+                return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+            } else {
+                return date.toLocaleDateString();
+            }
         }
 
         // Load notifications
         function loadNotifications() {
+            // This would typically load from Firestore
+            // For now, we'll use static data
+            appState.notifications = [
+                { id: 1, type: "deadline", message: "VAT Returns due in 2 weeks", time: "2 hours ago", read: false },
+                { id: 2, type: "update", message: "New tax guidelines published for 2025", time: "1 day ago", read: false },
+                { id: 3, type: "tip", message: "Tax saving tip: Consider increasing your pension contributions", time: "3 days ago", read: true }
+            ];
+            
             notificationList.innerHTML = '';
             
             appState.notifications.forEach(notification => {
@@ -3285,73 +3768,6 @@
                 `;
                 
                 notificationList.appendChild(notificationItem);
-            });
-        }
-
-        // Load community feed
-        function loadCommunityFeed() {
-            communityFeed.innerHTML = '';
-            
-            appState.communityPosts.forEach(post => {
-                const postElement = document.createElement('div');
-                postElement.className = 'post-card';
-                
-                postElement.innerHTML = `
-                    <div class="post-header">
-                        <div class="post-avatar">${post.userInitials}</div>
-                        <div class="post-user">
-                            <div class="post-name">${post.userName}</div>
-                            <div class="post-time">${post.time}</div>
-                        </div>
-                    </div>
-                    <div class="post-content">
-                        ${post.content}
-                    </div>
-                    <div class="post-tags">
-                        ${post.tags.map(tag => `<span class="post-tag">${tag}</span>`).join('')}
-                    </div>
-                    <div class="post-footer">
-                        <div class="post-actions-footer">
-                            <div class="post-action ${post.liked ? 'liked' : ''}" data-post-id="${post.id}" data-action="like">
-                                <i class="fas fa-heart"></i>
-                                <span>${post.likes}</span>
-                            </div>
-                            <div class="post-action" data-post-id="${post.id}" data-action="comment">
-                                <i class="fas fa-comment"></i>
-                                <span>${post.comments}</span>
-                            </div>
-                            <div class="post-action" data-post-id="${post.id}" data-action="share">
-                                <i class="fas fa-share"></i>
-                                <span>Share</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                communityFeed.appendChild(postElement);
-            });
-            
-            // Add event listeners to post actions
-            document.querySelectorAll('.post-action[data-action="like"]').forEach(action => {
-                action.addEventListener('click', function() {
-                    const postId = this.getAttribute('data-post-id');
-                    const post = appState.communityPosts.find(p => p.id == postId);
-                    
-                    if (post) {
-                        if (post.liked) {
-                            post.likes--;
-                            post.liked = false;
-                            this.classList.remove('liked');
-                        } else {
-                            post.likes++;
-                            post.liked = true;
-                            this.classList.add('liked');
-                        }
-                        
-                        this.querySelector('span').textContent = post.likes;
-                        showToast(post.liked ? 'Post liked!' : 'Post unliked', 'success');
-                    }
-                });
             });
         }
 
@@ -3493,28 +3909,42 @@
             });
         }
 
-        // Save tax calculation to local storage
+        // Save tax calculation to Firestore
         function saveTaxCalculation(calculation) {
+            if (!appState.currentUser) return;
+            
             const calculationRecord = {
-                id: Date.now().toString(),
-                date: new Date().toISOString(),
+                userId: appState.currentUser.uid,
                 userType: userData.userType,
                 incomeAmount: userData.incomeAmount,
                 allowances: userData.allowances,
                 taxAmount: calculation.tax,
                 taxableIncome: calculation.taxableIncome,
                 taxRate: calculation.taxRate,
-                status: 'pending'
+                status: 'pending',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             
-            // Add to local state
-            appState.taxHistory.unshift(calculationRecord);
-            
-            // Update dashboard
-            updateDashboard();
-            
-            // Show success message
-            showToast('Tax calculation saved to history', 'success');
+            db.collection('taxCalculations').add(calculationRecord)
+                .then(() => {
+                    // Add to local state for immediate UI update
+                    const localRecord = {
+                        id: Date.now().toString(),
+                        date: new Date().toISOString(),
+                        ...calculationRecord
+                    };
+                    appState.taxHistory.unshift(localRecord);
+                    
+                    // Update dashboard
+                    updateDashboard();
+                    
+                    // Show success message
+                    showToast('Tax calculation saved to history', 'success');
+                })
+                .catch(error => {
+                    console.error('Error saving calculation:', error);
+                    showToast('Error saving calculation', 'error');
+                });
         }
 
         // View a specific calculation
@@ -3728,21 +4158,31 @@
             setupCalculatorEventListeners();
         }
 
-        // Save profile to local storage
+        // Save profile to Firestore
         function saveProfile() {
+            if (!appState.currentUser) return;
+            
             const profileData = {
                 firstName: document.getElementById('first-name').value,
                 lastName: document.getElementById('last-name').value,
-                phone: document.getElementById('phone').value
+                phone: document.getElementById('phone').value,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             
-            // Update local state
-            appState.userProfile = { ...appState.userProfile, ...profileData };
-            
-            // Update UI
-            updateUserUI();
-            
-            showToast('Profile updated successfully', 'success');
+            db.collection('users').doc(appState.currentUser.uid).update(profileData)
+                .then(() => {
+                    // Update local state
+                    appState.userProfile = { ...appState.userProfile, ...profileData };
+                    
+                    // Update UI
+                    updateUserUI();
+                    
+                    showToast('Profile updated successfully', 'success');
+                })
+                .catch(error => {
+                    console.error('Error updating profile:', error);
+                    showToast('Error updating profile', 'error');
+                });
         }
 
         // Update password
@@ -3755,12 +4195,19 @@
                 return;
             }
             
-            // Clear password fields
-            document.getElementById('current-password').value = '';
-            document.getElementById('new-password').value = '';
-            document.getElementById('confirm-password').value = '';
-            
-            showToast('Password updated successfully', 'success');
+            appState.currentUser.updatePassword(newPassword)
+                .then(() => {
+                    // Clear password fields
+                    document.getElementById('current-password').value = '';
+                    document.getElementById('new-password').value = '';
+                    document.getElementById('confirm-password').value = '';
+                    
+                    showToast('Password updated successfully', 'success');
+                })
+                .catch(error => {
+                    console.error('Error updating password:', error);
+                    showToast('Error updating password', 'error');
+                });
         }
 
         // Setup calculator-specific event listeners
@@ -4412,6 +4859,23 @@
 
         function closeModal() {
             modal.style.display = 'none';
+        }
+
+        // Open external link
+        function openExternalLink(url) {
+            window.open(url, '_blank');
+        }
+
+        // Download resource (placeholder function)
+        function downloadResource(title) {
+            showToast(`Downloading ${title}...`, 'success');
+            // In a real app, this would trigger an actual download
+        }
+
+        // Watch video (placeholder function)
+        function watchVideo(title) {
+            showToast(`Playing ${title}...`, 'success');
+            // In a real app, this would open a video player
         }
 
         // Initialize the app when DOM is loaded
