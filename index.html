@@ -8,11 +8,6 @@
     <meta name="theme-color" content="#006400">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-    
     <style>
         :root {
             --primary: #006400;
@@ -1640,8 +1635,8 @@
                         <span>or</span>
                     </div>
                     
-                    <button type="button" class="btn btn-outline" id="google-signin-btn">
-                        <i class="fab fa-google"></i> Sign In with Google
+                    <button type="button" class="btn btn-outline" id="demo-signin-btn">
+                        <i class="fas fa-user"></i> Try Demo Account
                     </button>
                     
                     <div class="auth-footer">
@@ -1680,8 +1675,8 @@
                         <span>or</span>
                     </div>
                     
-                    <button type="button" class="btn btn-outline" id="google-signup-btn">
-                        <i class="fab fa-google"></i> Sign Up with Google
+                    <button type="button" class="btn btn-outline" id="demo-signup-btn">
+                        <i class="fas fa-user"></i> Try Demo Account
                     </button>
                     
                     <div class="auth-footer">
@@ -1747,8 +1742,8 @@
                     <div class="user-profile" id="user-profile">
                         <div class="user-avatar" id="user-avatar">JD</div>
                         <div>
-                            <div id="user-name">Loading...</div>
-                            <div style="font-size: 0.8rem; color: var(--text-light);" id="user-email">Loading...</div>
+                            <div id="user-name">Demo User</div>
+                            <div style="font-size: 0.8rem; color: var(--text-light);" id="user-email">demo@taxnaija.com</div>
                         </div>
                         <div class="user-dropdown" id="user-dropdown">
                             <a href="#" class="dropdown-item">
@@ -2293,16 +2288,16 @@
                             <div class="form-row">
                                 <div class="input-group">
                                     <label for="first-name">First Name</label>
-                                    <input type="text" id="first-name" class="input-control" value="Loading...">
+                                    <input type="text" id="first-name" class="input-control" value="Demo">
                                 </div>
                                 <div class="input-group">
                                     <label for="last-name">Last Name</label>
-                                    <input type="text" id="last-name" class="input-control" value="Loading...">
+                                    <input type="text" id="last-name" class="input-control" value="User">
                                 </div>
                             </div>
                             <div class="input-group">
                                 <label for="email">Email Address</label>
-                                <input type="email" id="email" class="input-control" value="Loading...">
+                                <input type="email" id="email" class="input-control" value="demo@taxnaija.com">
                             </div>
                             <div class="input-group">
                                 <label for="phone">Phone Number</label>
@@ -2422,22 +2417,6 @@
     </div>
 
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyA4yX9v8u-wjIPeBY64cc7YASVWIcak-eM",
-            authDomain: "vault-602d2.firebaseapp.com",
-            projectId: "vault-602d2",
-            storageBucket: "vault-602d2.firebasestorage.app",
-            messagingSenderId: "397379271243",
-            appId: "1:397379271243:web:fab5914ccdca9d796d2bce",
-            measurementId: "G-4R62KV83W2"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
         // Enhanced Nigerian tax calculation logic and data
         const nigerianTaxData = {
             individual: {
@@ -2527,9 +2506,9 @@
         let appState = {
             taxHistory: [],
             userProfile: {
-                firstName: "",
-                lastName: "",
-                email: "",
+                firstName: "Demo",
+                lastName: "User",
+                email: "demo@taxnaija.com",
                 phone: "",
                 userType: "individual",
                 state: "Lagos",
@@ -2578,8 +2557,8 @@
         const signupForm = document.getElementById('signup-form');
         const signinBtn = document.getElementById('signin-btn');
         const signupBtn = document.getElementById('signup-btn');
-        const googleSigninBtn = document.getElementById('google-signin-btn');
-        const googleSignupBtn = document.getElementById('google-signup-btn');
+        const demoSigninBtn = document.getElementById('demo-signin-btn');
+        const demoSignupBtn = document.getElementById('demo-signup-btn');
         const signoutBtn = document.getElementById('signout-btn');
         const settingsLogoutBtn = document.getElementById('settings-logout-btn');
 
@@ -2592,27 +2571,15 @@
             setupEventListeners();
             setupAuthEventListeners();
             setupResourceEventListeners();
-            checkAuthState();
-        }
-
-        // Check authentication state
-        function checkAuthState() {
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    // User is signed in
-                    showApp();
-                    loadUserData(user);
-                    
-                    // Check if user has completed onboarding
-                    const hasCompletedOnboarding = localStorage.getItem('taxNaija_onboarding_completed');
-                    if (!hasCompletedOnboarding) {
-                        showOnboarding();
-                    }
-                } else {
-                    // User is signed out
-                    showAuth();
-                }
-            });
+            
+            // Check if user has completed onboarding
+            const hasCompletedOnboarding = localStorage.getItem('taxNaija_onboarding_completed');
+            if (!hasCompletedOnboarding) {
+                showOnboarding();
+            }
+            
+            // Show demo by default
+            showApp();
         }
 
         // Show onboarding
@@ -2673,121 +2640,38 @@
             updateDashboard();
             loadTaxHistory();
             loadCustomResources();
-        }
-
-        // Load user data from Firestore
-        async function loadUserData(user) {
-            try {
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    appState.userProfile = { ...appState.userProfile, ...userData };
-                    
-                    // Update UI with user data
-                    updateUserUI();
-                    
-                    // Load user settings
-                    const settingsDoc = await db.collection('settings').doc(user.uid).get();
-                    if (settingsDoc.exists) {
-                        appState.settings = settingsDoc.data();
-                        applyUserSettings();
-                    }
-                    
-                    // Load user tax history
-                    const historySnapshot = await db.collection('taxHistory')
-                        .where('userId', '==', user.uid)
-                        .orderBy('date', 'desc')
-                        .get();
-                    
-                    appState.taxHistory = [];
-                    historySnapshot.forEach(doc => {
-                        appState.taxHistory.push({ id: doc.id, ...doc.data() });
-                    });
-                    
-                    // Load custom resources
-                    const resourcesSnapshot = await db.collection('resources')
-                        .where('userId', '==', user.uid)
-                        .orderBy('createdAt', 'desc')
-                        .get();
-                    
-                    appState.customResources = [];
-                    resourcesSnapshot.forEach(doc => {
-                        appState.customResources.push({ id: doc.id, ...doc.data() });
-                    });
-                    
-                    updateDashboard();
-                    loadTaxHistory();
-                    loadCustomResources();
-                } else {
-                    // Create new user document
-                    await db.collection('users').doc(user.uid).set({
-                        firstName: user.displayName ? user.displayName.split(' ')[0] : '',
-                        lastName: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
-                        email: user.email,
-                        phone: '',
-                        userType: 'individual',
-                        state: 'Lagos',
-                        hasTin: false,
-                        dependents: 0,
-                        children: 0,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    // Create default settings
-                    await db.collection('settings').doc(user.uid).set(appState.settings);
-                    
-                    // Update UI with basic user data
-                    updateUserUI();
-                }
-            } catch (error) {
-                console.error('Error loading user data:', error);
-                showToast('Error loading user data', 'error');
-            }
+            updateUserUI();
         }
 
         // Update UI with user data
         function updateUserUI() {
-            const user = auth.currentUser;
-            if (user) {
-                // Update user profile in top bar
-                const firstName = appState.userProfile.firstName || user.displayName?.split(' ')[0] || 'User';
-                const lastName = appState.userProfile.lastName || user.displayName?.split(' ').slice(1).join(' ') || '';
-                const fullName = `${firstName} ${lastName}`.trim();
-                
-                userName.textContent = fullName;
-                userEmail.textContent = user.email;
-                
-                // Update user avatar with initials
-                const initials = (firstName.charAt(0) + (lastName.charAt(0) || '')).toUpperCase();
-                userAvatar.textContent = initials;
-                
-                // Update dashboard greeting
-                const now = new Date();
-                const hour = now.getHours();
-                let greeting = 'Good evening';
-                
-                if (hour < 12) greeting = 'Good morning';
-                else if (hour < 18) greeting = 'Good afternoon';
-                
-                dashboardGreeting.textContent = `${greeting}, ${firstName}! Here's your tax overview.`;
-                
-                // Update settings form
-                document.getElementById('first-name').value = firstName;
-                document.getElementById('last-name').value = lastName;
-                document.getElementById('email').value = user.email;
-                document.getElementById('phone').value = appState.userProfile.phone || '';
-            }
-        }
-
-        // Apply user settings from Firestore
-        function applyUserSettings() {
-            if (appState.settings.darkMode) {
-                document.body.classList.add('dark-mode');
-            }
+            // Update user profile in top bar
+            const firstName = appState.userProfile.firstName || 'Demo';
+            const lastName = appState.userProfile.lastName || 'User';
+            const fullName = `${firstName} ${lastName}`.trim();
             
-            document.getElementById('deadline-reminders').checked = appState.settings.notifications;
-            document.getElementById('tax-updates').checked = appState.settings.taxUpdates;
+            userName.textContent = fullName;
+            userEmail.textContent = appState.userProfile.email || 'demo@taxnaija.com';
+            
+            // Update user avatar with initials
+            const initials = (firstName.charAt(0) + (lastName.charAt(0) || '')).toUpperCase();
+            userAvatar.textContent = initials;
+            
+            // Update dashboard greeting
+            const now = new Date();
+            const hour = now.getHours();
+            let greeting = 'Good evening';
+            
+            if (hour < 12) greeting = 'Good morning';
+            else if (hour < 18) greeting = 'Good afternoon';
+            
+            dashboardGreeting.textContent = `${greeting}, ${firstName}! Here's your tax overview.`;
+            
+            // Update settings form
+            document.getElementById('first-name').value = firstName;
+            document.getElementById('last-name').value = lastName;
+            document.getElementById('email').value = appState.userProfile.email || 'demo@taxnaija.com';
+            document.getElementById('phone').value = appState.userProfile.phone || '';
         }
 
         // Setup authentication event listeners
@@ -2807,101 +2691,22 @@
                 });
             });
             
-            // Sign in form
-            signinForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const email = document.getElementById('signin-email').value;
-                const password = document.getElementById('signin-password').value;
-                
-                // Show loading state
-                const btnText = signinBtn.querySelector('span');
-                const loading = signinBtn.querySelector('.loading');
-                btnText.style.display = 'none';
-                loading.style.display = 'inline-block';
-                signinBtn.disabled = true;
-                
-                try {
-                    await auth.signInWithEmailAndPassword(email, password);
-                    showToast('Successfully signed in!', 'success');
-                } catch (error) {
-                    console.error('Sign in error:', error);
-                    showToast(getAuthErrorMessage(error), 'error');
-                } finally {
-                    // Reset button state
-                    btnText.style.display = 'inline';
-                    loading.style.display = 'none';
-                    signinBtn.disabled = false;
-                }
+            // Demo sign in
+            demoSigninBtn.addEventListener('click', () => {
+                showApp();
+                showToast('Welcome to TaxNaija Demo!', 'success');
             });
             
-            // Sign up form
-            signupForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const name = document.getElementById('signup-name').value;
-                const email = document.getElementById('signup-email').value;
-                const password = document.getElementById('signup-password').value;
-                const confirmPassword = document.getElementById('signup-confirm-password').value;
-                
-                // Validate passwords match
-                if (password !== confirmPassword) {
-                    showToast('Passwords do not match', 'error');
-                    return;
-                }
-                
-                // Show loading state
-                const btnText = signupBtn.querySelector('span');
-                const loading = signupBtn.querySelector('.loading');
-                btnText.style.display = 'none';
-                loading.style.display = 'inline-block';
-                signupBtn.disabled = true;
-                
-                try {
-                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                    
-                    // Update user profile with name
-                    await userCredential.user.updateProfile({
-                        displayName: name
-                    });
-                    
-                    showToast('Account created successfully!', 'success');
-                } catch (error) {
-                    console.error('Sign up error:', error);
-                    showToast(getAuthErrorMessage(error), 'error');
-                } finally {
-                    // Reset button state
-                    btnText.style.display = 'inline';
-                    loading.style.display = 'none';
-                    signupBtn.disabled = false;
-                }
+            // Demo sign up
+            demoSignupBtn.addEventListener('click', () => {
+                showApp();
+                showToast('Welcome to TaxNaija Demo!', 'success');
             });
-            
-            // Google sign in
-            const googleSignIn = async (btn) => {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                
-                try {
-                    await auth.signInWithPopup(provider);
-                    showToast('Successfully signed in with Google!', 'success');
-                } catch (error) {
-                    console.error('Google sign in error:', error);
-                    showToast(getAuthErrorMessage(error), 'error');
-                }
-            };
-            
-            googleSigninBtn.addEventListener('click', () => googleSignIn(googleSigninBtn));
-            googleSignupBtn.addEventListener('click', () => googleSignIn(googleSignupBtn));
             
             // Sign out
-            const signOutUser = async () => {
-                try {
-                    await auth.signOut();
-                    showToast('Successfully signed out', 'success');
-                } catch (error) {
-                    console.error('Sign out error:', error);
-                    showToast('Error signing out', 'error');
-                }
+            const signOutUser = () => {
+                showAuth();
+                showToast('Successfully signed out', 'success');
             };
             
             signoutBtn.addEventListener('click', (e) => {
@@ -2929,7 +2734,7 @@
         // Setup resource event listeners
         function setupResourceEventListeners() {
             // Add resource button
-            addResourceBtn.addEventListener('click', async (e) => {
+            addResourceBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 
                 const title = document.getElementById('resource-title').value;
@@ -2941,36 +2746,25 @@
                     return;
                 }
                 
-                try {
-                    const user = auth.currentUser;
-                    if (!user) return;
-                    
-                    const resourceData = {
-                        userId: user.uid,
-                        title: title,
-                        url: url,
-                        type: type,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-                    
-                    await db.collection('resources').add(resourceData);
-                    
-                    // Add to local state
-                    resourceData.id = 'temp'; // Will be replaced with actual ID on reload
-                    appState.customResources.unshift(resourceData);
-                    
-                    // Update UI
-                    loadCustomResources();
-                    
-                    // Clear form
-                    document.getElementById('resource-title').value = '';
-                    document.getElementById('resource-url').value = '';
-                    
-                    showToast('Resource added successfully', 'success');
-                } catch (error) {
-                    console.error('Error adding resource:', error);
-                    showToast('Error adding resource', 'error');
-                }
+                // Add to local state
+                const resourceData = {
+                    id: Date.now().toString(),
+                    title: title,
+                    url: url,
+                    type: type,
+                    createdAt: new Date().toISOString()
+                };
+                
+                appState.customResources.unshift(resourceData);
+                
+                // Update UI
+                loadCustomResources();
+                
+                // Clear form
+                document.getElementById('resource-title').value = '';
+                document.getElementById('resource-url').value = '';
+                
+                showToast('Resource added successfully', 'success');
             });
         }
 
@@ -3039,21 +2833,14 @@
         }
 
         // Delete resource
-        async function deleteResource(resourceId) {
-            try {
-                await db.collection('resources').doc(resourceId).delete();
-                
-                // Remove from local state
-                appState.customResources = appState.customResources.filter(resource => resource.id !== resourceId);
-                
-                // Update UI
-                loadCustomResources();
-                
-                showToast('Resource deleted successfully', 'success');
-            } catch (error) {
-                console.error('Error deleting resource:', error);
-                showToast('Error deleting resource', 'error');
-            }
+        function deleteResource(resourceId) {
+            // Remove from local state
+            appState.customResources = appState.customResources.filter(resource => resource.id !== resourceId);
+            
+            // Update UI
+            loadCustomResources();
+            
+            showToast('Resource deleted successfully', 'success');
         }
 
         // Open external link
@@ -3071,28 +2858,6 @@
         function watchVideo(title) {
             showToast(`Playing ${title}...`, 'success');
             // In a real app, this would open a video player
-        }
-
-        // Get user-friendly auth error messages
-        function getAuthErrorMessage(error) {
-            switch (error.code) {
-                case 'auth/invalid-email':
-                    return 'Invalid email address';
-                case 'auth/user-disabled':
-                    return 'This account has been disabled';
-                case 'auth/user-not-found':
-                    return 'No account found with this email';
-                case 'auth/wrong-password':
-                    return 'Incorrect password';
-                case 'auth/email-already-in-use':
-                    return 'An account with this email already exists';
-                case 'auth/weak-password':
-                    return 'Password should be at least 6 characters';
-                case 'auth/network-request-failed':
-                    return 'Network error. Please check your connection';
-                default:
-                    return 'Authentication error. Please try again';
-            }
         }
 
         // Update dashboard with user data
@@ -3233,39 +2998,28 @@
             });
         }
 
-        // Save tax calculation to Firestore
-        async function saveTaxCalculation(calculation) {
-            try {
-                const user = auth.currentUser;
-                if (!user) return;
-                
-                const calculationRecord = {
-                    userId: user.uid,
-                    date: new Date().toISOString(),
-                    userType: userData.userType,
-                    incomeAmount: userData.incomeAmount,
-                    allowances: userData.allowances,
-                    taxAmount: calculation.tax,
-                    taxableIncome: calculation.taxableIncome,
-                    taxRate: calculation.taxRate,
-                    status: 'pending'
-                };
-                
-                const docRef = await db.collection('taxHistory').add(calculationRecord);
-                
-                // Add to local state
-                calculationRecord.id = docRef.id;
-                appState.taxHistory.unshift(calculationRecord);
-                
-                // Update dashboard
-                updateDashboard();
-                
-                // Show success message
-                showToast('Tax calculation saved to history', 'success');
-            } catch (error) {
-                console.error('Error saving tax calculation:', error);
-                showToast('Error saving calculation', 'error');
-            }
+        // Save tax calculation to local storage
+        function saveTaxCalculation(calculation) {
+            const calculationRecord = {
+                id: Date.now().toString(),
+                date: new Date().toISOString(),
+                userType: userData.userType,
+                incomeAmount: userData.incomeAmount,
+                allowances: userData.allowances,
+                taxAmount: calculation.tax,
+                taxableIncome: calculation.taxableIncome,
+                taxRate: calculation.taxRate,
+                status: 'pending'
+            };
+            
+            // Add to local state
+            appState.taxHistory.unshift(calculationRecord);
+            
+            // Update dashboard
+            updateDashboard();
+            
+            // Show success message
+            showToast('Tax calculation saved to history', 'success');
         }
 
         // View a specific calculation
@@ -3448,59 +3202,39 @@
             setupCalculatorEventListeners();
         }
 
-        // Save profile to Firestore
-        async function saveProfile() {
-            try {
-                const user = auth.currentUser;
-                if (!user) return;
-                
-                const profileData = {
-                    firstName: document.getElementById('first-name').value,
-                    lastName: document.getElementById('last-name').value,
-                    phone: document.getElementById('phone').value
-                };
-                
-                await db.collection('users').doc(user.uid).update(profileData);
-                
-                // Update local state
-                appState.userProfile = { ...appState.userProfile, ...profileData };
-                
-                // Update UI
-                updateUserUI();
-                
-                showToast('Profile updated successfully', 'success');
-            } catch (error) {
-                console.error('Error saving profile:', error);
-                showToast('Error saving profile', 'error');
-            }
+        // Save profile to local storage
+        function saveProfile() {
+            const profileData = {
+                firstName: document.getElementById('first-name').value,
+                lastName: document.getElementById('last-name').value,
+                phone: document.getElementById('phone').value
+            };
+            
+            // Update local state
+            appState.userProfile = { ...appState.userProfile, ...profileData };
+            
+            // Update UI
+            updateUserUI();
+            
+            showToast('Profile updated successfully', 'success');
         }
 
         // Update password
-        async function updatePassword() {
-            try {
-                const user = auth.currentUser;
-                if (!user) return;
-                
-                const newPassword = document.getElementById('new-password').value;
-                const confirmPassword = document.getElementById('confirm-password').value;
-                
-                if (newPassword !== confirmPassword) {
-                    showToast('Passwords do not match', 'error');
-                    return;
-                }
-                
-                await user.updatePassword(newPassword);
-                
-                // Clear password fields
-                document.getElementById('current-password').value = '';
-                document.getElementById('new-password').value = '';
-                document.getElementById('confirm-password').value = '';
-                
-                showToast('Password updated successfully', 'success');
-            } catch (error) {
-                console.error('Error updating password:', error);
-                showToast(getAuthErrorMessage(error), 'error');
+        function updatePassword() {
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (newPassword !== confirmPassword) {
+                showToast('Passwords do not match', 'error');
+                return;
             }
+            
+            // Clear password fields
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
+            
+            showToast('Password updated successfully', 'success');
         }
 
         // Setup calculator-specific event listeners
@@ -3795,7 +3529,6 @@
 
             // Save Result Button
             document.getElementById('save-result').addEventListener('click', function() {
-                // In a real app, this would save as PDF or to account
                 showToast('Calculation saved to your history', 'success');
             });
 
