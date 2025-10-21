@@ -8,11 +8,11 @@
     <meta name="theme-color" content="#006400">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+    <!-- Import Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
     <style>
         :root {
@@ -931,6 +931,12 @@
             line-height: 1.6;
         }
 
+        .post-image {
+            max-width: 100%;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+
         .post-tags {
             display: flex;
             flex-wrap: wrap;
@@ -1609,6 +1615,49 @@
             color: var(--text-light);
         }
 
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--white);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .bottom-nav-items {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.8rem 0.5rem;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .bottom-nav-item.active {
+            color: var(--primary);
+        }
+
+        .bottom-nav-icon {
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .bottom-nav-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
         /* Mobile Styles */
         .mobile-menu-btn {
             display: none;
@@ -1676,39 +1725,34 @@
             100% { transform: scale(1); }
         }
 
-        /* Image Preview */
+        /* Image Upload Styles */
+        .image-upload-container {
+            margin-bottom: 1rem;
+        }
+
         .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: var(--radius);
             margin-top: 1rem;
             display: none;
         }
 
-        .image-preview img {
-            max-width: 200px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
+        .upload-progress {
+            width: 100%;
+            height: 6px;
+            background: var(--gray-light);
+            border-radius: 3px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+            display: none;
         }
 
-        .remove-image {
-            background: var(--error);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            position: absolute;
-            top: -8px;
-            right: -8px;
-        }
-
-        .image-preview-container {
-            position: relative;
-            display: inline-block;
-            margin-right: 1rem;
-            margin-bottom: 1rem;
+        .upload-progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
         }
 
         @media (max-width: 768px) {
@@ -1734,6 +1778,7 @@
 
             .main-content {
                 margin-left: 0;
+                padding-bottom: 70px; /* Space for bottom nav */
             }
 
             .mobile-menu-btn {
@@ -1794,6 +1839,10 @@
             .post-options {
                 width: 100%;
                 justify-content: space-between;
+            }
+
+            .bottom-nav {
+                display: block;
             }
         }
     </style>
@@ -2104,7 +2153,7 @@
                             <div style="font-size: 0.8rem; color: var(--text-light);" id="user-email">demo@taxnaija.com</div>
                         </div>
                         <div class="user-dropdown" id="user-dropdown">
-                            <a href="#" class="dropdown-item" data-tab="dashboard">
+                            <a href="#" class="dropdown-item" id="profile-btn">
                                 <i class="fas fa-user"></i>
                                 <span>My Profile</span>
                             </a>
@@ -2511,12 +2560,13 @@
                 <div class="community-container">
                     <div class="post-form">
                         <textarea class="post-input" id="post-content" placeholder="Share your tax tip, question, or experience..."></textarea>
-                        <div class="post-actions">
+                        
+                        <div class="image-upload-container">
+                            <input type="file" id="post-image" accept="image/*" style="display: none;">
                             <div class="post-options">
-                                <div class="post-option" id="add-image-btn">
+                                <div class="post-option" id="upload-image-btn">
                                     <i class="fas fa-image"></i>
                                     <span>Photo</span>
-                                    <input type="file" id="image-upload" accept="image/*" style="display: none;">
                                 </div>
                                 <div class="post-option" id="add-link-btn">
                                     <i class="fas fa-link"></i>
@@ -2527,10 +2577,17 @@
                                     <span>Tag</span>
                                 </div>
                             </div>
-                            <button class="btn" id="submit-post-btn">Post</button>
+                            <img id="image-preview" class="image-preview">
+                            <div id="upload-progress" class="upload-progress">
+                                <div class="upload-progress-bar"></div>
+                            </div>
                         </div>
-                        <div class="image-preview" id="image-preview">
-                            <!-- Image previews will be added here -->
+                        
+                        <div class="post-actions">
+                            <div id="post-tags" class="post-tags">
+                                <!-- Tags will be added here -->
+                            </div>
+                            <button class="btn" id="submit-post">Post</button>
                         </div>
                     </div>
 
@@ -2792,6 +2849,42 @@
         </div>
     </div>
 
+    <!-- Bottom Navigation Bar for Mobile -->
+    <div class="bottom-nav" id="bottom-nav">
+        <div class="bottom-nav-items">
+            <div class="bottom-nav-item active" data-tab="dashboard">
+                <div class="bottom-nav-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="bottom-nav-label">Dashboard</div>
+            </div>
+            <div class="bottom-nav-item" data-tab="calculator">
+                <div class="bottom-nav-icon">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <div class="bottom-nav-label">Calculator</div>
+            </div>
+            <div class="bottom-nav-item" data-tab="community">
+                <div class="bottom-nav-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="bottom-nav-label">Community</div>
+            </div>
+            <div class="bottom-nav-item" data-tab="resources">
+                <div class="bottom-nav-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="bottom-nav-label">Resources</div>
+            </div>
+            <div class="bottom-nav-item" data-tab="settings">
+                <div class="bottom-nav-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div class="bottom-nav-label">Settings</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal for menu items -->
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -2803,6 +2896,77 @@
             </div>
             <div class="modal-body" id="modal-body">
                 <!-- Modal content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profile-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="profile-modal-title">User Profile</h3>
+                <button class="modal-close" id="profile-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="profile-modal-body">
+                <!-- Profile content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Link Input Modal -->
+    <div class="modal" id="link-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Link</h3>
+                <button class="modal-close" id="link-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="link-url">URL</label>
+                    <input type="url" id="link-url" class="input-control" placeholder="https://example.com">
+                </div>
+                <div class="input-group">
+                    <label for="link-text">Link Text (Optional)</label>
+                    <input type="text" id="link-text" class="input-control" placeholder="Link description">
+                </div>
+                <div class="actions" style="margin-top: 1.5rem;">
+                    <button class="btn" id="add-link-confirm">
+                        <i class="fas fa-plus"></i> Add Link
+                    </button>
+                    <button class="btn btn-outline" id="cancel-link">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tag Input Modal -->
+    <div class="modal" id="tag-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Tag</h3>
+                <button class="modal-close" id="tag-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="tag-name">Tag Name</label>
+                    <input type="text" id="tag-name" class="input-control" placeholder="#TaxTips">
+                </div>
+                <div class="actions" style="margin-top: 1.5rem;">
+                    <button class="btn" id="add-tag-confirm">
+                        <i class="fas fa-plus"></i> Add Tag
+                    </button>
+                    <button class="btn btn-outline" id="cancel-tag">
+                        Cancel
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -2936,9 +3100,12 @@
                 darkMode: false
             },
             customResources: [],
-            notifications: [],
-            communityPosts: [],
-            taxHistory: []
+            notifications: [
+                { id: 1, type: "deadline", message: "VAT Returns due in 2 weeks", time: "2 hours ago", read: false },
+                { id: 2, type: "update", message: "New tax guidelines published for 2025", time: "1 day ago", read: false },
+                { id: 3, type: "tip", message: "Tax saving tip: Consider increasing your pension contributions", time: "3 days ago", read: true }
+            ],
+            communityPosts: []
         };
 
         // DOM elements
@@ -2957,6 +3124,12 @@
         const modalTitle = document.getElementById('modal-title');
         const modalBody = document.getElementById('modal-body');
         const modalClose = document.getElementById('modal-close');
+        const profileModal = document.getElementById('profile-modal');
+        const profileModalTitle = document.getElementById('profile-modal-title');
+        const profileModalBody = document.getElementById('profile-modal-body');
+        const profileModalClose = document.getElementById('profile-modal-close');
+        const linkModal = document.getElementById('link-modal');
+        const tagModal = document.getElementById('tag-modal');
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
         const userProfile = document.getElementById('user-profile');
@@ -2970,10 +3143,8 @@
         const notificationDropdown = document.getElementById('notification-dropdown');
         const notificationList = document.getElementById('notification-list');
         const communityFeed = document.getElementById('community-feed');
-        const postContent = document.getElementById('post-content');
-        const imageUpload = document.getElementById('image-upload');
-        const imagePreview = document.getElementById('image-preview');
-        const submitPostBtn = document.getElementById('submit-post-btn');
+        const bottomNav = document.getElementById('bottom-nav');
+        const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
 
         // Authentication DOM elements
         const authTabs = document.querySelectorAll('.auth-tab');
@@ -2986,6 +3157,19 @@
         const demoSignupBtn = document.getElementById('demo-signup-btn');
         const signoutBtn = document.getElementById('signout-btn');
         const settingsLogoutBtn = document.getElementById('settings-logout-btn');
+        const profileBtn = document.getElementById('profile-btn');
+
+        // Community DOM elements
+        const postContent = document.getElementById('post-content');
+        const postImage = document.getElementById('post-image');
+        const imagePreview = document.getElementById('image-preview');
+        const uploadImageBtn = document.getElementById('upload-image-btn');
+        const addLinkBtn = document.getElementById('add-link-btn');
+        const addTagBtn = document.getElementById('add-tag-btn');
+        const postTags = document.getElementById('post-tags');
+        const submitPost = document.getElementById('submit-post');
+        const uploadProgress = document.getElementById('upload-progress');
+        const uploadProgressBar = document.querySelector('.upload-progress-bar');
 
         // Resource management elements
         const addResourceBtn = document.getElementById('add-resource-btn');
@@ -2998,7 +3182,13 @@
             setupResourceEventListeners();
             setupCommunityEventListeners();
             
-            // Check if user is logged in
+            // Check if user has completed onboarding
+            const hasCompletedOnboarding = localStorage.getItem('taxNaija_onboarding_completed');
+            if (!hasCompletedOnboarding) {
+                showOnboarding();
+            }
+            
+            // Check authentication state
             auth.onAuthStateChanged(user => {
                 if (user) {
                     // User is signed in
@@ -3010,12 +3200,6 @@
                     showAuth();
                 }
             });
-            
-            // Check if user has completed onboarding
-            const hasCompletedOnboarding = localStorage.getItem('taxNaija_onboarding_completed');
-            if (!hasCompletedOnboarding) {
-                showOnboarding();
-            }
         }
 
         // Show onboarding
@@ -3076,9 +3260,9 @@
             updateDashboard();
             loadTaxHistory();
             loadCustomResources();
+            loadCommunityPosts();
             updateUserUI();
             loadNotifications();
-            loadCommunityFeed();
         }
 
         // Load user profile from Firestore
@@ -3090,9 +3274,9 @@
                         updateUserUI();
                     } else {
                         // Create a new user profile
-                        const newUserProfile = {
+                        const userData = {
                             firstName: appState.currentUser.displayName ? appState.currentUser.displayName.split(' ')[0] : 'User',
-                            lastName: appState.currentUser.displayName ? appState.currentUser.displayName.split(' ').slice(1).join(' ') : '',
+                            lastName: appState.currentUser.displayName ? appState.currentUser.displayName.split(' ')[1] || '' : '',
                             email: appState.currentUser.email,
                             phone: '',
                             userType: 'individual',
@@ -3103,20 +3287,20 @@
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         };
                         
-                        db.collection('users').doc(userId).set(newUserProfile)
+                        db.collection('users').doc(userId).set(userData)
                             .then(() => {
-                                appState.userProfile = newUserProfile;
+                                appState.userProfile = userData;
                                 updateUserUI();
                             })
                             .catch(error => {
                                 console.error('Error creating user profile:', error);
-                                showToast('Error creating user profile', 'error');
+                                showToast('Error creating profile', 'error');
                             });
                     }
                 })
                 .catch(error => {
                     console.error('Error loading user profile:', error);
-                    showToast('Error loading user profile', 'error');
+                    showToast('Error loading profile', 'error');
                 });
         }
 
@@ -3171,7 +3355,6 @@
             // Sign in form
             signinForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                
                 const email = document.getElementById('signin-email').value;
                 const password = document.getElementById('signin-password').value;
                 
@@ -3187,7 +3370,7 @@
                     .catch((error) => {
                         const errorCode = error.code;
                         const errorMessage = error.message;
-                        showToast(errorMessage, 'error');
+                        showToast(`Sign in failed: ${errorMessage}`, 'error');
                     })
                     .finally(() => {
                         signinBtn.querySelector('span').style.display = 'inline-block';
@@ -3199,7 +3382,6 @@
             // Sign up form
             signupForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                
                 const name = document.getElementById('signup-name').value;
                 const email = document.getElementById('signup-email').value;
                 const password = document.getElementById('signup-password').value;
@@ -3230,7 +3412,7 @@
                     .catch((error) => {
                         const errorCode = error.code;
                         const errorMessage = error.message;
-                        showToast(errorMessage, 'error');
+                        showToast(`Sign up failed: ${errorMessage}`, 'error');
                     })
                     .finally(() => {
                         signupBtn.querySelector('span').style.display = 'inline-block';
@@ -3241,34 +3423,34 @@
             
             // Demo sign in
             demoSigninBtn.addEventListener('click', () => {
-                auth.signInWithEmailAndPassword('demo@taxnaija.com', 'demopassword')
+                // Sign in with demo account
+                auth.signInWithEmailAndPassword('demo@taxnaija.com', 'demopassword123')
                     .then((userCredential) => {
-                        // Signed in
                         showToast('Welcome to TaxNaija Demo!', 'success');
                     })
                     .catch((error) => {
-                        // If demo account doesn't exist, create it
-                        auth.createUserWithEmailAndPassword('demo@taxnaija.com', 'demopassword')
-                            .then((userCredential) => {
-                                const user = userCredential.user;
-                                return user.updateProfile({
-                                    displayName: 'Demo User'
-                                });
-                            })
-                            .then(() => {
-                                showToast('Demo account created! Welcome to TaxNaija!', 'success');
-                            })
-                            .catch((error) => {
-                                const errorCode = error.code;
-                                const errorMessage = error.message;
-                                showToast(errorMessage, 'error');
-                            });
+                        showToast('Demo account not available. Please create your own account.', 'error');
                     });
             });
             
             // Demo sign up
             demoSignupBtn.addEventListener('click', () => {
-                demoSigninBtn.click();
+                // Create a demo account
+                auth.createUserWithEmailAndPassword('demo@taxnaija.com', 'demopassword123')
+                    .then((userCredential) => {
+                        showToast('Demo account created!', 'success');
+                    })
+                    .catch((error) => {
+                        // If account already exists, sign in instead
+                        if (error.code === 'auth/email-already-in-use') {
+                            auth.signInWithEmailAndPassword('demo@taxnaija.com', 'demopassword123')
+                                .then((userCredential) => {
+                                    showToast('Welcome to TaxNaija Demo!', 'success');
+                                });
+                        } else {
+                            showToast('Error creating demo account', 'error');
+                        }
+                    });
             });
             
             // Sign out
@@ -3298,10 +3480,71 @@
                 userDropdown.classList.toggle('show');
             });
             
+            // Profile button
+            profileBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                userDropdown.classList.remove('show');
+                showProfileModal();
+            });
+            
             // Close dropdown when clicking outside
             document.addEventListener('click', () => {
                 userDropdown.classList.remove('show');
             });
+        }
+
+        // Show profile modal
+        function showProfileModal() {
+            const firstName = appState.userProfile.firstName || 'User';
+            const lastName = appState.userProfile.lastName || '';
+            const fullName = `${firstName} ${lastName}`.trim();
+            
+            profileModalTitle.textContent = 'User Profile';
+            profileModalBody.innerHTML = `
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div class="user-avatar" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1rem;">
+                        ${(firstName.charAt(0) + (lastName.charAt(0) || '')).toUpperCase()}
+                    </div>
+                    <h3 style="color: var(--primary); margin-bottom: 0.5rem;">${fullName}</h3>
+                    <p style="color: var(--text-light);">${appState.userProfile.email || appState.currentUser.email}</p>
+                </div>
+                
+                <div class="breakdown-item">
+                    <span><strong>User Type:</strong></span>
+                    <span>${appState.userProfile.userType === 'individual' ? 'Individual Taxpayer' : 'Business Owner'}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span><strong>State:</strong></span>
+                    <span>${appState.userProfile.state}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span><strong>Tax Identification Number:</strong></span>
+                    <span>${appState.userProfile.hasTin ? 'Registered' : 'Not Registered'}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span><strong>Dependents:</strong></span>
+                    <span>${appState.userProfile.dependents}</span>
+                </div>
+                ${appState.userProfile.userType === 'individual' ? `
+                <div class="breakdown-item">
+                    <span><strong>Children:</strong></span>
+                    <span>${appState.userProfile.children}</span>
+                </div>
+                ` : ''}
+                
+                <div class="actions" style="margin-top: 2rem;">
+                    <button class="btn" onclick="closeProfileModal()">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                </div>
+            `;
+            
+            profileModal.style.display = 'flex';
+        }
+
+        // Close profile modal
+        function closeProfileModal() {
+            profileModal.style.display = 'none';
         }
 
         // Setup resource event listeners
@@ -3319,7 +3562,7 @@
                     return;
                 }
                 
-                // Add to Firestore
+                // Add to Firebase
                 const resourceData = {
                     title: title,
                     url: url,
@@ -3330,12 +3573,14 @@
                 
                 db.collection('resources').add(resourceData)
                     .then(() => {
+                        // Update UI
+                        loadCustomResources();
+                        
                         // Clear form
                         document.getElementById('resource-title').value = '';
                         document.getElementById('resource-url').value = '';
                         
                         showToast('Resource added successfully', 'success');
-                        loadCustomResources();
                     })
                     .catch(error => {
                         console.error('Error adding resource:', error);
@@ -3344,159 +3589,7 @@
             });
         }
 
-        // Setup community event listeners
-        function setupCommunityEventListeners() {
-            // Add image button
-            document.getElementById('add-image-btn').addEventListener('click', () => {
-                imageUpload.click();
-            });
-            
-            // Handle image upload
-            imageUpload.addEventListener('change', (e) => {
-                const files = e.target.files;
-                if (files.length > 0) {
-                    for (let i = 0; i < files.length; i++) {
-                        const file = files[i];
-                        const reader = new FileReader();
-                        
-                        reader.onload = (e) => {
-                            const imageContainer = document.createElement('div');
-                            imageContainer.className = 'image-preview-container';
-                            
-                            const img = document.createElement('img');
-                            img.src = e.target.result;
-                            
-                            const removeBtn = document.createElement('button');
-                            removeBtn.className = 'remove-image';
-                            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-                            removeBtn.addEventListener('click', () => {
-                                imageContainer.remove();
-                                if (imagePreview.children.length === 0) {
-                                    imagePreview.style.display = 'none';
-                                }
-                            });
-                            
-                            imageContainer.appendChild(img);
-                            imageContainer.appendChild(removeBtn);
-                            imagePreview.appendChild(imageContainer);
-                            imagePreview.style.display = 'block';
-                        };
-                        
-                        reader.readAsDataURL(file);
-                    }
-                }
-            });
-            
-            // Submit post
-            submitPostBtn.addEventListener('click', () => {
-                const content = postContent.value.trim();
-                
-                if (!content) {
-                    showToast('Please enter some content for your post', 'error');
-                    return;
-                }
-                
-                submitPostBtn.disabled = true;
-                submitPostBtn.innerHTML = '<div class="loading"></div> Posting...';
-                
-                // Upload images first if any
-                const imageContainers = imagePreview.querySelectorAll('.image-preview-container');
-                const uploadPromises = [];
-                const imageUrls = [];
-                
-                if (imageContainers.length > 0) {
-                    imageContainers.forEach(container => {
-                        const img = container.querySelector('img');
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        
-                        // Resize image to reduce file size
-                        const MAX_WIDTH = 800;
-                        const MAX_HEIGHT = 600;
-                        let width = img.naturalWidth;
-                        let height = img.naturalHeight;
-                        
-                        if (width > height) {
-                            if (width > MAX_WIDTH) {
-                                height *= MAX_WIDTH / width;
-                                width = MAX_WIDTH;
-                            }
-                        } else {
-                            if (height > MAX_HEIGHT) {
-                                width *= MAX_HEIGHT / height;
-                                height = MAX_HEIGHT;
-                            }
-                        }
-                        
-                        canvas.width = width;
-                        canvas.height = height;
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        const promise = new Promise((resolve, reject) => {
-                            canvas.toBlob(blob => {
-                                const fileName = `posts/${appState.currentUser.uid}/${Date.now()}.jpg`;
-                                const uploadTask = storage.ref(fileName).put(blob);
-                                
-                                uploadTask.on('state_changed',
-                                    (snapshot) => {
-                                        // Progress monitoring if needed
-                                    },
-                                    (error) => {
-                                        reject(error);
-                                    },
-                                    () => {
-                                        uploadTask.snapshot.ref.getDownloadURL()
-                                            .then(url => {
-                                                imageUrls.push(url);
-                                                resolve();
-                                            })
-                                            .catch(error => reject(error));
-                                    }
-                                );
-                            }, 'image/jpeg', 0.8);
-                        });
-                        
-                        uploadPromises.push(promise);
-                    });
-                }
-                
-                // Wait for all images to upload, then create post
-                Promise.all(uploadPromises)
-                    .then(() => {
-                        const postData = {
-                            content: content,
-                            images: imageUrls,
-                            userId: appState.currentUser.uid,
-                            userName: appState.userProfile.firstName + ' ' + appState.userProfile.lastName,
-                            userInitials: (appState.userProfile.firstName.charAt(0) + (appState.userProfile.lastName.charAt(0) || '')).toUpperCase(),
-                            likes: 0,
-                            comments: 0,
-                            likedBy: [],
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                        };
-                        
-                        return db.collection('posts').add(postData);
-                    })
-                    .then(() => {
-                        // Clear form
-                        postContent.value = '';
-                        imagePreview.innerHTML = '';
-                        imagePreview.style.display = 'none';
-                        
-                        showToast('Post published successfully!', 'success');
-                    })
-                    .catch(error => {
-                        console.error('Error creating post:', error);
-                        showToast('Error publishing post', 'error');
-                    })
-                    .finally(() => {
-                        submitPostBtn.disabled = false;
-                        submitPostBtn.innerHTML = 'Post';
-                    });
-            });
-        }
-
-        // Load custom resources from Firestore
+        // Load custom resources from Firebase
         function loadCustomResources() {
             if (!appState.currentUser) return;
             
@@ -3577,8 +3670,9 @@
         function deleteResource(resourceId) {
             db.collection('resources').doc(resourceId).delete()
                 .then(() => {
-                    showToast('Resource deleted successfully', 'success');
+                    // Update UI
                     loadCustomResources();
+                    showToast('Resource deleted successfully', 'success');
                 })
                 .catch(error => {
                     console.error('Error deleting resource:', error);
@@ -3586,11 +3680,211 @@
                 });
         }
 
-        // Load community posts from Firestore
-        function loadCommunityFeed() {
+        // Setup community event listeners
+        function setupCommunityEventListeners() {
+            // Upload image button
+            uploadImageBtn.addEventListener('click', () => {
+                postImage.click();
+            });
+            
+            // Image upload
+            postImage.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        imagePreview.src = event.target.result;
+                        imagePreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Add link button
+            addLinkBtn.addEventListener('click', () => {
+                linkModal.style.display = 'flex';
+            });
+            
+            // Add tag button
+            addTagBtn.addEventListener('click', () => {
+                tagModal.style.display = 'flex';
+            });
+            
+            // Submit post
+            submitPost.addEventListener('click', () => {
+                const content = postContent.value.trim();
+                if (!content) {
+                    showToast('Please enter post content', 'error');
+                    return;
+                }
+                
+                submitPost.disabled = true;
+                submitPost.innerHTML = '<div class="loading"></div> Posting...';
+                
+                // Prepare post data
+                const postData = {
+                    content: content,
+                    userId: appState.currentUser.uid,
+                    userName: `${appState.userProfile.firstName} ${appState.userProfile.lastName}`.trim(),
+                    userInitials: (appState.userProfile.firstName.charAt(0) + (appState.userProfile.lastName.charAt(0) || '')).toUpperCase(),
+                    tags: Array.from(postTags.querySelectorAll('.post-tag')).map(tag => tag.textContent),
+                    likes: 0,
+                    comments: 0,
+                    likedBy: [],
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // If there's an image, upload it first
+                if (postImage.files[0]) {
+                    uploadProgress.style.display = 'block';
+                    const file = postImage.files[0];
+                    const storageRef = storage.ref(`community-posts/${Date.now()}-${file.name}`);
+                    const uploadTask = storageRef.put(file);
+                    
+                    uploadTask.on('state_changed', 
+                        (snapshot) => {
+                            // Progress
+                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            uploadProgressBar.style.width = progress + '%';
+                        },
+                        (error) => {
+                            // Error
+                            console.error('Error uploading image:', error);
+                            showToast('Error uploading image', 'error');
+                            submitPost.disabled = false;
+                            submitPost.innerHTML = '<i class="fas fa-paper-plane"></i> Post';
+                        },
+                        () => {
+                            // Complete
+                            uploadTask.snapshot.ref.getDownloadURL()
+                                .then((downloadURL) => {
+                                    postData.imageUrl = downloadURL;
+                                    // Save post to Firestore
+                                    return db.collection('community-posts').add(postData);
+                                })
+                                .then(() => {
+                                    // Reset form
+                                    resetPostForm();
+                                    showToast('Post published successfully!', 'success');
+                                })
+                                .catch(error => {
+                                    console.error('Error saving post:', error);
+                                    showToast('Error publishing post', 'error');
+                                })
+                                .finally(() => {
+                                    submitPost.disabled = false;
+                                    submitPost.innerHTML = '<i class="fas fa-paper-plane"></i> Post';
+                                    uploadProgress.style.display = 'none';
+                                });
+                        }
+                    );
+                } else {
+                    // No image, just save the post
+                    db.collection('community-posts').add(postData)
+                        .then(() => {
+                            // Reset form
+                            resetPostForm();
+                            showToast('Post published successfully!', 'success');
+                        })
+                        .catch(error => {
+                            console.error('Error saving post:', error);
+                            showToast('Error publishing post', 'error');
+                        })
+                        .finally(() => {
+                            submitPost.disabled = false;
+                            submitPost.innerHTML = '<i class="fas fa-paper-plane"></i> Post';
+                        });
+                }
+            });
+            
+            // Link modal events
+            document.getElementById('add-link-confirm').addEventListener('click', () => {
+                const url = document.getElementById('link-url').value;
+                const text = document.getElementById('link-text').value || url;
+                
+                if (!url) {
+                    showToast('Please enter a URL', 'error');
+                    return;
+                }
+                
+                // Add link to post content
+                if (postContent.value) {
+                    postContent.value += ' ';
+                }
+                postContent.value += `[${text}](${url})`;
+                
+                // Close modal and reset
+                linkModal.style.display = 'none';
+                document.getElementById('link-url').value = '';
+                document.getElementById('link-text').value = '';
+            });
+            
+            document.getElementById('cancel-link').addEventListener('click', () => {
+                linkModal.style.display = 'none';
+                document.getElementById('link-url').value = '';
+                document.getElementById('link-text').value = '';
+            });
+            
+            document.getElementById('link-modal-close').addEventListener('click', () => {
+                linkModal.style.display = 'none';
+                document.getElementById('link-url').value = '';
+                document.getElementById('link-text').value = '';
+            });
+            
+            // Tag modal events
+            document.getElementById('add-tag-confirm').addEventListener('click', () => {
+                const tagName = document.getElementById('tag-name').value;
+                
+                if (!tagName) {
+                    showToast('Please enter a tag name', 'error');
+                    return;
+                }
+                
+                // Add tag to post
+                const tagElement = document.createElement('span');
+                tagElement.className = 'post-tag';
+                tagElement.textContent = tagName.startsWith('#') ? tagName : `#${tagName}`;
+                
+                const removeBtn = document.createElement('span');
+                removeBtn.innerHTML = ' &times;';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.style.marginLeft = '5px';
+                removeBtn.addEventListener('click', () => {
+                    tagElement.remove();
+                });
+                
+                tagElement.appendChild(removeBtn);
+                postTags.appendChild(tagElement);
+                
+                // Close modal and reset
+                tagModal.style.display = 'none';
+                document.getElementById('tag-name').value = '';
+            });
+            
+            document.getElementById('cancel-tag').addEventListener('click', () => {
+                tagModal.style.display = 'none';
+                document.getElementById('tag-name').value = '';
+            });
+            
+            document.getElementById('tag-modal-close').addEventListener('click', () => {
+                tagModal.style.display = 'none';
+                document.getElementById('tag-name').value = '';
+            });
+        }
+
+        // Reset post form
+        function resetPostForm() {
+            postContent.value = '';
+            postImage.value = '';
+            imagePreview.style.display = 'none';
+            postTags.innerHTML = '';
+        }
+
+        // Load community posts from Firebase
+        function loadCommunityPosts() {
             if (!appState.currentUser) return;
             
-            db.collection('posts')
+            db.collection('community-posts')
                 .orderBy('createdAt', 'desc')
                 .limit(20)
                 .get()
@@ -3598,120 +3892,117 @@
                     communityFeed.innerHTML = '';
                     
                     if (querySnapshot.empty) {
-                        communityFeed.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No posts yet. Be the first to share something!</p>';
+                        communityFeed.innerHTML = `
+                            <div style="text-align: center; padding: 3rem; color: var(--text-light);">
+                                <i class="fas fa-comments" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                                <h3>No posts yet</h3>
+                                <p>Be the first to share a tax tip or question!</p>
+                            </div>
+                        `;
                         return;
                     }
                     
                     querySnapshot.forEach(doc => {
                         const post = doc.data();
                         const postId = doc.id;
-                        const postElement = document.createElement('div');
-                        postElement.className = 'post-card';
-                        
-                        // Format timestamp
-                        const postDate = post.createdAt ? post.createdAt.toDate() : new Date();
-                        const timeAgo = getTimeAgo(postDate);
-                        
-                        // Check if current user liked this post
-                        const isLiked = post.likedBy && post.likedBy.includes(appState.currentUser.uid);
-                        
-                        postElement.innerHTML = `
-                            <div class="post-header">
-                                <div class="post-avatar">${post.userInitials}</div>
-                                <div class="post-user">
-                                    <div class="post-name">${post.userName}</div>
-                                    <div class="post-time">${timeAgo}</div>
-                                </div>
-                            </div>
-                            <div class="post-content">
-                                ${post.content}
-                            </div>
-                            ${post.images && post.images.length > 0 ? `
-                                <div class="post-images" style="margin-bottom: 1rem;">
-                                    ${post.images.map(img => `<img src="${img}" style="max-width: 100%; border-radius: var(--radius); margin-bottom: 0.5rem;">`).join('')}
-                                </div>
-                            ` : ''}
-                            <div class="post-footer">
-                                <div class="post-actions-footer">
-                                    <div class="post-action ${isLiked ? 'liked' : ''}" data-post-id="${postId}" data-action="like">
-                                        <i class="fas fa-heart"></i>
-                                        <span>${post.likes || 0}</span>
-                                    </div>
-                                    <div class="post-action" data-post-id="${postId}" data-action="comment">
-                                        <i class="fas fa-comment"></i>
-                                        <span>${post.comments || 0}</span>
-                                    </div>
-                                    <div class="post-action" data-post-id="${postId}" data-action="share">
-                                        <i class="fas fa-share"></i>
-                                        <span>Share</span>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        
+                        const postElement = createPostElement(post, postId);
                         communityFeed.appendChild(postElement);
-                    });
-                    
-                    // Add event listeners to post actions
-                    document.querySelectorAll('.post-action[data-action="like"]').forEach(action => {
-                        action.addEventListener('click', function() {
-                            const postId = this.getAttribute('data-post-id');
-                            togglePostLike(postId, this);
-                        });
                     });
                 })
                 .catch(error => {
                     console.error('Error loading posts:', error);
-                    showToast('Error loading posts', 'error');
+                    showToast('Error loading community posts', 'error');
                 });
         }
 
-        // Toggle post like
-        function togglePostLike(postId, likeElement) {
-            if (!appState.currentUser) return;
+        // Create post element
+        function createPostElement(post, postId) {
+            const postElement = document.createElement('div');
+            postElement.className = 'post-card';
+            postElement.id = `post-${postId}`;
             
-            const postRef = db.collection('posts').doc(postId);
+            // Format date
+            const postDate = post.createdAt ? post.createdAt.toDate() : new Date();
+            const timeAgo = getTimeAgo(postDate);
             
-            // Get current post data
-            postRef.get()
-                .then(doc => {
-                    if (!doc.exists) return;
-                    
-                    const post = doc.data();
-                    const currentLikes = post.likes || 0;
-                    const likedBy = post.likedBy || [];
-                    const isLiked = likedBy.includes(appState.currentUser.uid);
-                    
-                    let newLikes;
-                    let newLikedBy;
-                    
-                    if (isLiked) {
-                        // Unlike the post
-                        newLikes = currentLikes - 1;
-                        newLikedBy = likedBy.filter(id => id !== appState.currentUser.uid);
-                        likeElement.classList.remove('liked');
-                    } else {
-                        // Like the post
-                        newLikes = currentLikes + 1;
-                        newLikedBy = [...likedBy, appState.currentUser.uid];
-                        likeElement.classList.add('liked');
-                    }
-                    
-                    // Update the post
-                    return postRef.update({
-                        likes: newLikes,
-                        likedBy: newLikedBy
-                    });
-                })
-                .then(() => {
-                    // Update the like count in the UI
-                    const likeCount = likeElement.querySelector('span');
-                    likeCount.textContent = parseInt(likeCount.textContent) + (likeElement.classList.contains('liked') ? 1 : -1);
-                })
-                .catch(error => {
-                    console.error('Error toggling like:', error);
-                    showToast('Error updating like', 'error');
-                });
+            // Check if current user liked this post
+            const isLiked = post.likedBy && post.likedBy.includes(appState.currentUser.uid);
+            
+            postElement.innerHTML = `
+                <div class="post-header">
+                    <div class="post-avatar">${post.userInitials}</div>
+                    <div class="post-user">
+                        <div class="post-name">${post.userName}</div>
+                        <div class="post-time">${timeAgo}</div>
+                    </div>
+                </div>
+                <div class="post-content">
+                    ${formatPostContent(post.content)}
+                </div>
+                ${post.imageUrl ? `<img src="${post.imageUrl}" class="post-image" alt="Post image">` : ''}
+                ${post.tags && post.tags.length > 0 ? `
+                <div class="post-tags">
+                    ${post.tags.map(tag => `<span class="post-tag">${tag}</span>`).join('')}
+                </div>
+                ` : ''}
+                <div class="post-footer">
+                    <div class="post-actions-footer">
+                        <div class="post-action ${isLiked ? 'liked' : ''}" data-post-id="${postId}" data-action="like">
+                            <i class="fas fa-heart"></i>
+                            <span>${post.likes || 0}</span>
+                        </div>
+                        <div class="post-action" data-post-id="${postId}" data-action="comment">
+                            <i class="fas fa-comment"></i>
+                            <span>${post.comments || 0}</span>
+                        </div>
+                        <div class="post-action" data-post-id="${postId}" data-action="share">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners to post actions
+            const likeBtn = postElement.querySelector('.post-action[data-action="like"]');
+            likeBtn.addEventListener('click', () => {
+                handlePostLike(postId, post, likeBtn);
+            });
+            
+            return postElement;
+        }
+
+        // Format post content (convert markdown-like links)
+        function formatPostContent(content) {
+            // Convert [text](url) to HTML links
+            return content.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+        }
+
+        // Handle post like
+        function handlePostLike(postId, post, likeBtn) {
+            const isLiked = post.likedBy && post.likedBy.includes(appState.currentUser.uid);
+            const newLikedBy = isLiked 
+                ? post.likedBy.filter(id => id !== appState.currentUser.uid)
+                : [...(post.likedBy || []), appState.currentUser.uid];
+            
+            const newLikes = newLikedBy.length;
+            
+            // Update Firestore
+            db.collection('community-posts').doc(postId).update({
+                likes: newLikes,
+                likedBy: newLikedBy
+            })
+            .then(() => {
+                // Update UI
+                likeBtn.classList.toggle('liked', !isLiked);
+                likeBtn.querySelector('span').textContent = newLikes;
+                
+                showToast(isLiked ? 'Post unliked' : 'Post liked!', 'success');
+            })
+            .catch(error => {
+                console.error('Error updating like:', error);
+                showToast('Error updating like', 'error');
+            });
         }
 
         // Get time ago string
@@ -3724,13 +4015,13 @@
             const diffDays = Math.floor(diffHours / 24);
             
             if (diffSecs < 60) {
-                return 'just now';
+                return 'Just now';
             } else if (diffMins < 60) {
-                return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+                return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
             } else if (diffHours < 24) {
-                return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+                return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
             } else if (diffDays < 7) {
-                return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+                return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
             } else {
                 return date.toLocaleDateString();
             }
@@ -3738,14 +4029,6 @@
 
         // Load notifications
         function loadNotifications() {
-            // This would typically load from Firestore
-            // For now, we'll use static data
-            appState.notifications = [
-                { id: 1, type: "deadline", message: "VAT Returns due in 2 weeks", time: "2 hours ago", read: false },
-                { id: 2, type: "update", message: "New tax guidelines published for 2025", time: "1 day ago", read: false },
-                { id: 3, type: "tip", message: "Tax saving tip: Consider increasing your pension contributions", time: "3 days ago", read: true }
-            ];
-            
             notificationList.innerHTML = '';
             
             appState.notifications.forEach(notification => {
@@ -3909,42 +4192,28 @@
             });
         }
 
-        // Save tax calculation to Firestore
+        // Save tax calculation to local storage
         function saveTaxCalculation(calculation) {
-            if (!appState.currentUser) return;
-            
             const calculationRecord = {
-                userId: appState.currentUser.uid,
+                id: Date.now().toString(),
+                date: new Date().toISOString(),
                 userType: userData.userType,
                 incomeAmount: userData.incomeAmount,
                 allowances: userData.allowances,
                 taxAmount: calculation.tax,
                 taxableIncome: calculation.taxableIncome,
                 taxRate: calculation.taxRate,
-                status: 'pending',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                status: 'pending'
             };
             
-            db.collection('taxCalculations').add(calculationRecord)
-                .then(() => {
-                    // Add to local state for immediate UI update
-                    const localRecord = {
-                        id: Date.now().toString(),
-                        date: new Date().toISOString(),
-                        ...calculationRecord
-                    };
-                    appState.taxHistory.unshift(localRecord);
-                    
-                    // Update dashboard
-                    updateDashboard();
-                    
-                    // Show success message
-                    showToast('Tax calculation saved to history', 'success');
-                })
-                .catch(error => {
-                    console.error('Error saving calculation:', error);
-                    showToast('Error saving calculation', 'error');
-                });
+            // Add to local state
+            appState.taxHistory.unshift(calculationRecord);
+            
+            // Update dashboard
+            updateDashboard();
+            
+            // Show success message
+            showToast('Tax calculation saved to history', 'success');
         }
 
         // View a specific calculation
@@ -4086,12 +4355,42 @@
                     } else if (tabId === 'resources') {
                         loadCustomResources();
                     } else if (tabId === 'community') {
-                        loadCommunityFeed();
+                        loadCommunityPosts();
                     }
                     
                     // Close mobile menu if open
                     if (window.innerWidth <= 768) {
                         sidebar.classList.remove('active');
+                    }
+                });
+            });
+
+            // Bottom navigation
+            bottomNavItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Update active nav item
+                    bottomNavItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update sidebar nav
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    document.querySelector(`.nav-item[data-tab="${tabId}"]`).classList.add('active');
+                    
+                    // Show the selected tab content
+                    tabContents.forEach(tab => tab.classList.remove('active'));
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Update specific tab content if needed
+                    if (tabId === 'history') {
+                        loadTaxHistory();
+                    } else if (tabId === 'dashboard') {
+                        updateDashboard();
+                    } else if (tabId === 'resources') {
+                        loadCustomResources();
+                    } else if (tabId === 'community') {
+                        loadCommunityPosts();
                     }
                 });
             });
@@ -4127,6 +4426,12 @@
                 if (e.target === modal) closeModal();
             });
 
+            // Profile modal functionality
+            profileModalClose.addEventListener('click', closeProfileModal);
+            profileModal.addEventListener('click', function(e) {
+                if (e.target === profileModal) closeProfileModal();
+            });
+
             // History filters
             document.getElementById('history-type-filter').addEventListener('change', loadTaxHistory);
             document.getElementById('history-status-filter').addEventListener('change', loadTaxHistory);
@@ -4149,6 +4454,10 @@
                     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
                     document.getElementById(tabId).classList.add('active');
                     
+                    // Update bottom nav
+                    bottomNavItems.forEach(nav => nav.classList.remove('active'));
+                    document.querySelector(`.bottom-nav-item[data-tab="${tabId}"]`).classList.add('active');
+                    
                     // Close dropdown
                     userDropdown.classList.remove('show');
                 });
@@ -4160,15 +4469,13 @@
 
         // Save profile to Firestore
         function saveProfile() {
-            if (!appState.currentUser) return;
-            
             const profileData = {
                 firstName: document.getElementById('first-name').value,
                 lastName: document.getElementById('last-name').value,
-                phone: document.getElementById('phone').value,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                phone: document.getElementById('phone').value
             };
             
+            // Update Firestore
             db.collection('users').doc(appState.currentUser.uid).update(profileData)
                 .then(() => {
                     // Update local state
@@ -4195,6 +4502,7 @@
                 return;
             }
             
+            // Update password
             appState.currentUser.updatePassword(newPassword)
                 .then(() => {
                     // Clear password fields
