@@ -1404,7 +1404,7 @@
             font-size: 0.8rem;
         }
 
-        /* UPDATED: Settings Styles - Removed Account Information */
+        /* UPDATED: Settings Styles - Simplified */
         .settings-container {
             max-width: 800px;
             margin: 0 auto;
@@ -2810,7 +2810,7 @@
                 </div>
             </div>
 
-            <!-- UPDATED: Settings Tab - Removed Account Information -->
+            <!-- UPDATED: Settings Tab - Simplified -->
             <div class="tab-content" id="settings">
                 <div class="tab-header">
                     <h2>Settings</h2>
@@ -3471,6 +3471,20 @@
                         // Update user profile
                         return user.updateProfile({
                             displayName: name
+                        }).then(() => {
+                            // Create user document in Firestore
+                            return db.collection('users').doc(user.uid).set({
+                                firstName: name.split(' ')[0],
+                                lastName: name.split(' ').slice(1).join(' '),
+                                email: email,
+                                phone: phone,
+                                state: state,
+                                userType: 'individual',
+                                hasTin: false,
+                                dependents: 0,
+                                children: 0,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
                         });
                     })
                     .then(() => {
@@ -3505,6 +3519,25 @@
                 // Create a demo account
                 auth.createUserWithEmailAndPassword('demo@taxnaija.com', 'demopassword123')
                     .then((userCredential) => {
+                        const user = userCredential.user;
+                        return user.updateProfile({
+                            displayName: 'Demo User'
+                        }).then(() => {
+                            return db.collection('users').doc(user.uid).set({
+                                firstName: 'Demo',
+                                lastName: 'User',
+                                email: 'demo@taxnaija.com',
+                                phone: '+2348000000000',
+                                state: 'Lagos',
+                                userType: 'individual',
+                                hasTin: false,
+                                dependents: 0,
+                                children: 0,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        });
+                    })
+                    .then(() => {
                         showToast('Demo account created!', 'success');
                     })
                     .catch((error) => {
@@ -3573,6 +3606,17 @@
                 }
             });
             
+            // Add tag button
+            addTagBtn.addEventListener('click', () => {
+                const tag = prompt('Enter a tag (e.g., #taxhelp):');
+                if (tag && tag.trim()) {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'post-tag';
+                    tagElement.textContent = tag.trim();
+                    postTags.appendChild(tagElement);
+                }
+            });
+            
             // Submit post
             submitPost.addEventListener('click', () => {
                 const content = postContent.value.trim();
@@ -3588,8 +3632,9 @@
                 const postData = {
                     content: content,
                     userId: appState.currentUser.uid,
-                    userName: `${appState.userProfile.firstName} ${appState.userProfile.lastName}`.trim(),
-                    userInitials: (appState.userProfile.firstName.charAt(0) + (appState.userProfile.lastName.charAt(0) || '')).toUpperCase(),
+                    userName: `${appState.userProfile.firstName} ${appState.userProfile.lastName}`.trim() || 'User',
+                    userInitials: (appState.userProfile.firstName ? appState.userProfile.firstName.charAt(0) : 'U') + 
+                                (appState.userProfile.lastName ? appState.userProfile.lastName.charAt(0) : ''),
                     tags: Array.from(postTags.querySelectorAll('.post-tag')).map(tag => tag.textContent),
                     likes: 0,
                     comments: 0,
@@ -3629,6 +3674,7 @@
                                     // Reset form
                                     resetPostForm();
                                     showToast('Post published successfully!', 'success');
+                                    loadCommunityPosts(); // Refresh the feed
                                 })
                                 .catch(error => {
                                     console.error('Error saving post:', error);
@@ -3648,6 +3694,7 @@
                             // Reset form
                             resetPostForm();
                             showToast('Post published successfully!', 'success');
+                            loadCommunityPosts(); // Refresh the feed
                         })
                         .catch(error => {
                             console.error('Error saving post:', error);
@@ -3773,9 +3820,9 @@
             
             postElement.innerHTML = `
                 <div class="post-header">
-                    <div class="post-avatar">${post.userInitials}</div>
+                    <div class="post-avatar">${post.userInitials || 'U'}</div>
                     <div class="post-user">
-                        <div class="post-name">${post.userName}</div>
+                        <div class="post-name">${post.userName || 'User'}</div>
                         <div class="post-time">${timeAgo}</div>
                     </div>
                 </div>
