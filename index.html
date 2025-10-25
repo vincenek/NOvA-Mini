@@ -81,6 +81,11 @@
             opacity: 0.9;
         }
         
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
         .dashboard {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -398,25 +403,76 @@
             color: var(--gray);
         }
         
-        .settings-section {
-            background: var(--white);
-            border-radius: var(--radius);
-            padding: 25px;
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
+        .settings-modal {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
         }
         
-        .settings-section h2 {
-            color: var(--dark);
+        .settings-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .settings-content {
+            background: var(--white);
+            width: 90%;
+            max-width: 500px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 25px;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .settings-modal.active .settings-content {
+            transform: translateX(0);
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--light);
+        }
+        
+        .settings-header h2 {
+            color: var(--dark);
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--gray);
+            cursor: pointer;
+            padding: 5px;
+            transition: var(--transition);
+        }
+        
+        .close-modal:hover {
+            color: var(--danger);
+            transform: none;
+        }
+        
         .settings-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
         }
         
@@ -477,6 +533,11 @@
                 gap: 15px;
             }
             
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+            }
+            
             .filter-section {
                 flex-direction: column;
                 align-items: stretch;
@@ -494,6 +555,10 @@
             .settings-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .settings-content {
+                width: 100%;
+            }
         }
         
         @media (max-width: 480px) {
@@ -501,7 +566,7 @@
                 padding: 10px;
             }
             
-            .form-section, .chart-container, .data-section, .settings-section {
+            .form-section, .chart-container, .data-section {
                 padding: 15px;
             }
             
@@ -566,45 +631,6 @@
             <button id="clear-filter" class="btn-warning">
                 <i class="fas fa-times"></i> Clear Filter
             </button>
-        </div>
-        
-        <div class="settings-section hidden" id="settings-section">
-            <h2><i class="fas fa-cog"></i> Application Settings</h2>
-            <div class="settings-grid">
-                <div class="setting-card">
-                    <h3><i class="fas fa-money-bill-wave"></i> Default Pricing</h3>
-                    <div class="form-group">
-                        <label for="default-nightly-rate">Default Nightly Rate (₦)</label>
-                        <input type="text" id="default-nightly-rate" class="number-input" placeholder="50,000">
-                    </div>
-                    <div class="form-group">
-                        <label for="default-cleaning-fee">Default Cleaning Fee (₦)</label>
-                        <input type="text" id="default-cleaning-fee" class="number-input" placeholder="5,000">
-                    </div>
-                    <button id="save-settings" class="btn-success">
-                        <i class="fas fa-save"></i> Save Settings
-                    </button>
-                </div>
-                
-                <div class="setting-card">
-                    <h3><i class="fas fa-calculator"></i> Quick Calculator</h3>
-                    <div class="form-group">
-                        <label for="calc-nights">Number of Nights</label>
-                        <input type="number" id="calc-nights" min="1" value="1">
-                    </div>
-                    <div class="form-group">
-                        <label for="calc-nightly-rate">Nightly Rate (₦)</label>
-                        <input type="text" id="calc-nightly-rate" class="number-input" placeholder="50,000">
-                    </div>
-                    <div class="form-group">
-                        <label for="calc-cleaning-fee">Cleaning Fee (₦)</label>
-                        <input type="text" id="calc-cleaning-fee" class="number-input" placeholder="5,000">
-                    </div>
-                    <div class="quick-calc">
-                        <div class="result" id="calc-result">Total: ₦0</div>
-                    </div>
-                </div>
-            </div>
         </div>
         
         <div class="forms-container">
@@ -800,6 +826,53 @@
         </div>
     </div>
 
+    <!-- Settings Modal -->
+    <div class="settings-modal" id="settings-modal">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h2><i class="fas fa-cog"></i> Application Settings</h2>
+                <button class="close-modal" id="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="settings-grid">
+                <div class="setting-card">
+                    <h3><i class="fas fa-money-bill-wave"></i> Default Pricing</h3>
+                    <div class="form-group">
+                        <label for="default-nightly-rate">Default Nightly Rate (₦)</label>
+                        <input type="text" id="default-nightly-rate" class="number-input" placeholder="50,000">
+                    </div>
+                    <div class="form-group">
+                        <label for="default-cleaning-fee">Default Cleaning Fee (₦)</label>
+                        <input type="text" id="default-cleaning-fee" class="number-input" placeholder="5,000">
+                    </div>
+                    <button id="save-settings" class="btn-success">
+                        <i class="fas fa-save"></i> Save Settings
+                    </button>
+                </div>
+                
+                <div class="setting-card">
+                    <h3><i class="fas fa-calculator"></i> Quick Calculator</h3>
+                    <div class="form-group">
+                        <label for="calc-nights">Number of Nights</label>
+                        <input type="number" id="calc-nights" min="1" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="calc-nightly-rate">Nightly Rate (₦)</label>
+                        <input type="text" id="calc-nightly-rate" class="number-input" placeholder="50,000">
+                    </div>
+                    <div class="form-group">
+                        <label for="calc-cleaning-fee">Cleaning Fee (₦)</label>
+                        <input type="text" id="calc-cleaning-fee" class="number-input" placeholder="5,000">
+                    </div>
+                    <div class="quick-calc">
+                        <div class="result" id="calc-result">Total: ₦0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Data management functions
         function getBookings() {
@@ -837,7 +910,7 @@
             });
         }
         
-        // NEW: Format number with commas as user types
+        // Format number with commas as user types
         function formatNumberInput(input) {
             // Remove non-numeric characters except decimal point
             let value = input.value.replace(/[^\d.]/g, '');
@@ -854,12 +927,12 @@
             input.value = integerPart + decimalPart;
         }
         
-        // NEW: Parse formatted number back to numeric value
+        // Parse formatted number back to numeric value
         function parseFormattedNumber(formattedValue) {
             return parseFloat(formattedValue.replace(/,/g, ''));
         }
         
-        // NEW: Calculate nights between two dates
+        // Calculate nights between two dates
         function calculateNights(checkIn, checkOut) {
             const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
             const firstDate = new Date(checkIn);
@@ -867,7 +940,7 @@
             return Math.round(Math.abs((firstDate - secondDate) / oneDay));
         }
         
-        // NEW: Calculate booking total based on nights and rate
+        // Calculate booking total based on nights and rate
         function calculateBookingTotal() {
             const checkIn = document.getElementById('check-in').value;
             const checkOut = document.getElementById('check-out').value;
@@ -917,7 +990,7 @@
                 }
             });
             
-            // Calculate expenses - BUG FIX: was using booking.amountSpent instead of expense.amountSpent
+            // Calculate expenses
             expenses.forEach(expense => {
                 const expenseYear = expense.date.substring(0, 4);
                 if ((!filterMonth || expense.date.startsWith(filterMonth)) && 
@@ -1121,7 +1194,7 @@
             });
         }
         
-        // NEW: Update quick calculator
+        // Update quick calculator
         function updateQuickCalculator() {
             const nights = parseInt(document.getElementById('calc-nights').value) || 0;
             const nightlyRate = parseFormattedNumber(document.getElementById('calc-nightly-rate').value) || 0;
@@ -1129,6 +1202,22 @@
             
             const total = (nights * nightlyRate) + cleaningFee;
             document.getElementById('calc-result').textContent = `Total: ${formatCurrency(total)}`;
+        }
+        
+        // Modal functions
+        function openSettingsModal() {
+            const settingsModal = document.getElementById('settings-modal');
+            settingsModal.classList.add('active');
+            
+            // Load settings into modal
+            const settings = getSettings();
+            document.getElementById('default-nightly-rate').value = formatCurrency(settings.defaultNightlyRate).replace('₦', '');
+            document.getElementById('default-cleaning-fee').value = formatCurrency(settings.defaultCleaningFee).replace('₦', '');
+        }
+        
+        function closeSettingsModal() {
+            const settingsModal = document.getElementById('settings-modal');
+            settingsModal.classList.remove('active');
         }
         
         // Form handling
@@ -1139,7 +1228,7 @@
             const checkIn = document.getElementById('check-in').value;
             const checkOut = document.getElementById('check-out').value;
             const roomName = document.getElementById('room-name').value;
-            const amountPaid = parseFormattedNumber(document.getElementById('amount-paid').value); // NEW: Parse formatted value
+            const amountPaid = parseFormattedNumber(document.getElementById('amount-paid').value);
             const paymentMethod = document.getElementById('payment-method').value;
             
             if (new Date(checkOut) <= new Date(checkIn)) {
@@ -1154,7 +1243,7 @@
                 checkIn,
                 checkOut,
                 roomName,
-                amountPaid, // Store as number
+                amountPaid,
                 paymentMethod
             };
             
@@ -1183,7 +1272,7 @@
             const expenseName = document.getElementById('expense-name').value;
             const category = document.getElementById('category').value;
             const date = document.getElementById('expense-date').value;
-            const amountSpent = parseFormattedNumber(document.getElementById('amount-spent').value); // NEW: Parse formatted value
+            const amountSpent = parseFormattedNumber(document.getElementById('amount-spent').value);
             const description = document.getElementById('description').value;
             
             const expenses = getExpenses();
@@ -1192,7 +1281,7 @@
                 expenseName,
                 category,
                 date,
-                amountSpent, // Store as number
+                amountSpent,
                 description
             };
             
@@ -1211,7 +1300,7 @@
             populateYearFilter();
         });
         
-        // NEW: Settings form handling
+        // Settings form handling
         document.getElementById('save-settings').addEventListener('click', function() {
             const defaultNightlyRate = parseFormattedNumber(document.getElementById('default-nightly-rate').value) || 0;
             const defaultCleaningFee = parseFormattedNumber(document.getElementById('default-cleaning-fee').value) || 0;
@@ -1223,6 +1312,7 @@
             
             saveSettings(settings);
             showAlert('booking-alert', 'Settings saved successfully!', 'success');
+            closeSettingsModal();
         });
         
         // Data display functions
@@ -1277,7 +1367,6 @@
             document.getElementById('bookings-section').classList.remove('hidden');
             document.getElementById('expenses-section').classList.add('hidden');
             document.getElementById('summary-section').classList.add('hidden');
-            document.getElementById('settings-section').classList.add('hidden');
         }
         
         function displayExpenses() {
@@ -1330,7 +1419,6 @@
             document.getElementById('expenses-section').classList.remove('hidden');
             document.getElementById('bookings-section').classList.add('hidden');
             document.getElementById('summary-section').classList.add('hidden');
-            document.getElementById('settings-section').classList.add('hidden');
         }
         
         function displaySummary() {
@@ -1340,20 +1428,6 @@
             document.getElementById('summary-section').classList.remove('hidden');
             document.getElementById('bookings-section').classList.add('hidden');
             document.getElementById('expenses-section').classList.add('hidden');
-            document.getElementById('settings-section').classList.add('hidden');
-        }
-        
-        // NEW: Display settings
-        function displaySettings() {
-            const settings = getSettings();
-            
-            document.getElementById('default-nightly-rate').value = formatCurrency(settings.defaultNightlyRate).replace('₦', '');
-            document.getElementById('default-cleaning-fee').value = formatCurrency(settings.defaultCleaningFee).replace('₦', '');
-            
-            document.getElementById('settings-section').classList.remove('hidden');
-            document.getElementById('bookings-section').classList.add('hidden');
-            document.getElementById('expenses-section').classList.add('hidden');
-            document.getElementById('summary-section').classList.add('hidden');
         }
         
         // Export functionality
@@ -1441,9 +1515,17 @@
         document.getElementById('view-bookings').addEventListener('click', displayBookings);
         document.getElementById('view-expenses').addEventListener('click', displayExpenses);
         document.getElementById('view-summary').addEventListener('click', displaySummary);
-        document.getElementById('settings-toggle').addEventListener('click', displaySettings);
+        document.getElementById('settings-toggle').addEventListener('click', openSettingsModal);
+        document.getElementById('close-modal').addEventListener('click', closeSettingsModal);
         document.getElementById('export-csv').addEventListener('click', exportToCSV);
         document.getElementById('clear-data').addEventListener('click', clearAllData);
+        
+        // Close modal when clicking outside
+        document.getElementById('settings-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSettingsModal();
+            }
+        });
         
         // Filter functionality
         document.getElementById('apply-filter').addEventListener('click', function() {
@@ -1458,18 +1540,18 @@
             updateChart();
         });
         
-        // NEW: Auto-format number inputs
+        // Auto-format number inputs
         document.querySelectorAll('.number-input').forEach(input => {
             input.addEventListener('input', function() {
                 formatNumberInput(this);
             });
         });
         
-        // NEW: Calculate booking total when dates change
+        // Calculate booking total when dates change
         document.getElementById('check-in').addEventListener('change', calculateBookingTotal);
         document.getElementById('check-out').addEventListener('change', calculateBookingTotal);
         
-        // NEW: Update quick calculator when inputs change
+        // Update quick calculator when inputs change
         document.getElementById('calc-nights').addEventListener('input', updateQuickCalculator);
         document.getElementById('calc-nightly-rate').addEventListener('input', function() {
             formatNumberInput(this);
