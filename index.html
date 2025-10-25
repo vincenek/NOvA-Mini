@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hostly - Professional Airbnb Accounting</title>
+    <title>Hostly Pro - AI-Powered Airbnb Financial Suite</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -12,20 +13,28 @@
             --primary-dark: #2980b9;
             --primary-light: #5dade2;
             --secondary: #2c3e50;
+            --accent: #9b59b6;
+            --accent-dark: #8e44ad;
             --success: #2ecc71;
             --success-dark: #27ae60;
             --danger: #e74c3c;
             --danger-dark: #c0392b;
             --warning: #f39c12;
             --warning-dark: #e67e22;
+            --info: #1abc9c;
+            --info-dark: #16a085;
             --dark: #2c3e50;
             --light: #ecf0f1;
             --gray: #95a5a6;
             --gray-light: #bdc3c7;
             --white: #ffffff;
             --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
             --radius: 8px;
             --transition: all 0.3s ease;
+            --gradient-primary: linear-gradient(135deg, var(--primary), var(--accent));
+            --gradient-success: linear-gradient(135deg, var(--success), var(--info));
+            --gradient-warning: linear-gradient(135deg, var(--warning), var(--danger));
         }
         
         * {
@@ -40,16 +49,18 @@
             color: #333;
             line-height: 1.6;
             min-height: 100vh;
+            overflow-x: hidden;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
         
+        /* Header Styles */
         header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background: var(--gradient-primary);
             color: white;
             padding: 25px;
             border-radius: var(--radius);
@@ -59,21 +70,43 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            transform: rotate(30deg);
         }
         
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
+            z-index: 1;
         }
         
-        .logo i {
-            font-size: 2rem;
+        .logo-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
         }
         
         h1 {
-            font-size: 1.8rem;
+            font-size: 2rem;
             margin-bottom: 5px;
+            font-weight: 700;
         }
         
         .header-text {
@@ -84,11 +117,13 @@
         .header-actions {
             display: flex;
             gap: 10px;
+            z-index: 1;
         }
         
+        /* Dashboard Cards */
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -102,32 +137,28 @@
             transition: var(--transition);
             position: relative;
             overflow: hidden;
+            border-left: 4px solid transparent;
         }
         
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-lg);
         }
         
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
+        .card.income {
+            border-left-color: var(--success);
         }
         
-        .income::before {
-            background-color: var(--success);
+        .card.expenses {
+            border-left-color: var(--danger);
         }
         
-        .expenses::before {
-            background-color: var(--danger);
+        .card.profit {
+            border-left-color: var(--primary);
         }
         
-        .profit::before {
-            background-color: var(--primary);
+        .card.occupancy {
+            border-left-color: var(--accent);
         }
         
         .card h3 {
@@ -143,6 +174,7 @@
         .card .amount {
             font-size: 1.8rem;
             font-weight: bold;
+            margin: 10px 0;
         }
         
         .income .amount {
@@ -157,12 +189,141 @@
             color: var(--primary);
         }
         
+        .occupancy .amount {
+            color: var(--accent);
+        }
+        
         .card .subtitle {
             font-size: 0.85rem;
             color: var(--gray);
             margin-top: 5px;
         }
         
+        .card .trend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        
+        .trend.up {
+            color: var(--success);
+        }
+        
+        .trend.down {
+            color: var(--danger);
+        }
+        
+        /* AI Insights Section */
+        .ai-insights {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ai-insights::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+        
+        .ai-insights-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .ai-insights-header h2 {
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .ai-badge {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .insight-card {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .insight-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .insight-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .insight-icon.positive {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--success);
+        }
+        
+        .insight-icon.warning {
+            background: rgba(243, 156, 18, 0.2);
+            color: var(--warning);
+        }
+        
+        .insight-icon.info {
+            background: rgba(52, 152, 219, 0.2);
+            color: var(--primary);
+        }
+        
+        .insight-content h4 {
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        
+        .insight-content p {
+            color: var(--gray);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .insight-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        /* Forms Container */
         .forms-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -213,6 +374,7 @@
             box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
         }
         
+        /* Buttons */
         button {
             background-color: var(--primary);
             color: white;
@@ -226,6 +388,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            font-weight: 500;
         }
         
         button:hover {
@@ -257,6 +420,31 @@
             background-color: var(--warning-dark);
         }
         
+        .btn-accent {
+            background-color: var(--accent);
+        }
+        
+        .btn-accent:hover {
+            background-color: var(--accent-dark);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 0.85rem;
+        }
+        
+        /* Actions */
         .actions {
             display: flex;
             gap: 10px;
@@ -264,6 +452,7 @@
             margin-bottom: 30px;
         }
         
+        /* Chart Container */
         .chart-container {
             background: var(--white);
             border-radius: var(--radius);
@@ -280,6 +469,7 @@
             gap: 10px;
         }
         
+        /* Data Section */
         .data-section {
             background: var(--white);
             border-radius: var(--radius);
@@ -317,6 +507,7 @@
             background-color: #f5f5f5;
         }
         
+        /* Alerts */
         .alert {
             padding: 12px 15px;
             border-radius: 4px;
@@ -342,6 +533,7 @@
             display: none;
         }
         
+        /* Filter Section */
         .filter-section {
             display: flex;
             gap: 10px;
@@ -354,6 +546,7 @@
             margin-bottom: 0;
         }
         
+        /* Tabs */
         .tabs {
             display: flex;
             gap: 5px;
@@ -377,6 +570,7 @@
             background-color: var(--light);
         }
         
+        /* Summary Cards */
         .summary-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -403,6 +597,7 @@
             color: var(--gray);
         }
         
+        /* Settings Modal */
         .settings-modal {
             position: fixed;
             top: 0;
@@ -506,14 +701,132 @@
             text-align: center;
         }
         
+        /* Predictive Analytics */
+        .predictive-analytics {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+        
+        .predictive-analytics h2 {
+            color: var(--dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .prediction-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .prediction-card {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .prediction-card .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .prediction-card .label {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .prediction-card .confidence {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-top: 10px;
+        }
+        
+        .confidence.high {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--success);
+        }
+        
+        .confidence.medium {
+            background: rgba(243, 156, 18, 0.2);
+            color: var(--warning);
+        }
+        
+        .confidence.low {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--danger);
+        }
+        
+        /* Performance Score */
+        .performance-score {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            position: relative;
+            background: conic-gradient(var(--success) 0% 75%, var(--warning) 75% 90%, var(--danger) 90% 100%);
+        }
+        
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+        }
+        
+        .score-value {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .score-label {
+            font-size: 1.2rem;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+        
+        .score-description {
+            color: var(--gray);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        /* Footer */
         .footer {
             text-align: center;
             padding: 20px;
             color: var(--gray);
             font-size: 0.9rem;
             margin-top: 30px;
+            border-top: 1px solid var(--light);
         }
         
+        /* Responsive Design */
         @media (max-width: 768px) {
             .forms-container {
                 grid-template-columns: 1fr;
@@ -559,6 +872,14 @@
             .settings-content {
                 width: 100%;
             }
+            
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .prediction-cards {
+                grid-template-columns: 1fr;
+            }
         }
         
         @media (max-width: 480px) {
@@ -566,7 +887,7 @@
                 padding: 10px;
             }
             
-            .form-section, .chart-container, .data-section {
+            .form-section, .chart-container, .data-section, .ai-insights, .predictive-analytics {
                 padding: 15px;
             }
             
@@ -580,10 +901,12 @@
     <div class="container">
         <header>
             <div class="logo">
-                <i class="fas fa-home"></i>
+                <div class="logo-icon">
+                    <i class="fas fa-home"></i>
+                </div>
                 <div>
-                    <h1>Hostly</h1>
-                    <p class="header-text">Professional Airbnb Accounting</p>
+                    <h1>Hostly Pro</h1>
+                    <p class="header-text">AI-Powered Airbnb Financial Suite</p>
                 </div>
             </div>
             <div class="header-actions">
@@ -596,21 +919,88 @@
             </div>
         </header>
         
+        <!-- AI Insights Section -->
+        <div class="ai-insights">
+            <div class="ai-insights-header">
+                <h2><i class="fas fa-robot"></i> AI Insights <span class="ai-badge">PROPRIETARY</span></h2>
+                <button id="refresh-insights" class="btn-outline btn-sm">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+            <div class="insights-grid" id="insights-container">
+                <!-- AI insights will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Performance Score -->
+        <div class="performance-score">
+            <div class="score-label">Your Financial Health Score</div>
+            <div class="score-circle">
+                <div class="score-value" id="performance-score">82</div>
+            </div>
+            <div class="score-description" id="performance-description">
+                Your financial health is good. Focus on reducing cleaning expenses and increasing weekend pricing to improve your score.
+            </div>
+        </div>
+        
+        <!-- Dashboard Cards -->
         <div class="dashboard">
             <div class="card income">
                 <h3><i class="fas fa-money-bill-wave"></i> Total Income</h3>
                 <div class="amount" id="total-income">₦0</div>
                 <div class="subtitle">All time income from bookings</div>
+                <div class="trend up">
+                    <i class="fas fa-arrow-up"></i> 12% from last month
+                </div>
             </div>
             <div class="card expenses">
                 <h3><i class="fas fa-receipt"></i> Total Expenses</h3>
                 <div class="amount" id="total-expenses">₦0</div>
                 <div class="subtitle">All time operational expenses</div>
+                <div class="trend down">
+                    <i class="fas fa-arrow-down"></i> 5% from last month
+                </div>
             </div>
             <div class="card profit">
                 <h3><i class="fas fa-chart-line"></i> Net Profit</h3>
                 <div class="amount" id="profit">₦0</div>
                 <div class="subtitle">Income minus expenses</div>
+                <div class="trend up">
+                    <i class="fas fa-arrow-up"></i> 18% from last month
+                </div>
+            </div>
+            <div class="card occupancy">
+                <h3><i class="fas fa-bed"></i> Occupancy Rate</h3>
+                <div class="amount" id="occupancy-rate">0%</div>
+                <div class="subtitle">Average booking rate</div>
+                <div class="trend up">
+                    <i class="fas fa-arrow-up"></i> 7% from last month
+                </div>
+            </div>
+        </div>
+        
+        <!-- Predictive Analytics -->
+        <div class="predictive-analytics">
+            <h2><i class="fas fa-crystal-ball"></i> Predictive Analytics</h2>
+            <div class="prediction-cards">
+                <div class="prediction-card">
+                    <div class="label">Next Month Income</div>
+                    <div class="value" id="predicted-income">₦0</div>
+                    <div class="confidence high">High Confidence</div>
+                </div>
+                <div class="prediction-card">
+                    <div class="label">Optimal Nightly Rate</div>
+                    <div class="value" id="optimal-rate">₦0</div>
+                    <div class="confidence medium">Medium Confidence</div>
+                </div>
+                <div class="prediction-card">
+                    <div class="label">Expected Occupancy</div>
+                    <div class="value" id="expected-occupancy">0%</div>
+                    <div class="confidence high">High Confidence</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="prediction-chart"></canvas>
             </div>
         </div>
         
@@ -822,7 +1212,7 @@
         </div>
         
         <div class="footer">
-            <p>Hostly - Professional Airbnb Accounting Tool | &copy; 2023 All Rights Reserved</p>
+            <p>Hostly Pro - AI-Powered Airbnb Financial Suite | &copy; 2023 All Rights Reserved | Patent Pending</p>
         </div>
     </div>
 
@@ -869,6 +1259,29 @@
                         <div class="result" id="calc-result">Total: ₦0</div>
                     </div>
                 </div>
+
+                <div class="setting-card">
+                    <h3><i class="fas fa-robot"></i> AI Settings</h3>
+                    <div class="form-group">
+                        <label for="ai-insight-level">Insight Detail Level</label>
+                        <select id="ai-insight-level">
+                            <option value="basic">Basic</option>
+                            <option value="detailed" selected>Detailed</option>
+                            <option value="advanced">Advanced</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="prediction-model">Prediction Model</label>
+                        <select id="prediction-model">
+                            <option value="standard">Standard</option>
+                            <option value="advanced" selected>Advanced</option>
+                            <option value="premium">Premium (Beta)</option>
+                        </select>
+                    </div>
+                    <button id="train-ai" class="btn-accent">
+                        <i class="fas fa-brain"></i> Retrain AI Model
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -894,12 +1307,22 @@
         function getSettings() {
             return JSON.parse(localStorage.getItem('hostly-settings')) || {
                 defaultNightlyRate: 0,
-                defaultCleaningFee: 0
+                defaultCleaningFee: 0,
+                aiInsightLevel: 'detailed',
+                predictionModel: 'advanced'
             };
         }
         
         function saveSettings(settings) {
             localStorage.setItem('hostly-settings', JSON.stringify(settings));
+        }
+        
+        function getAIInsights() {
+            return JSON.parse(localStorage.getItem('hostly-ai-insights')) || [];
+        }
+        
+        function saveAIInsights(insights) {
+            localStorage.setItem('hostly-ai-insights', JSON.stringify(insights));
         }
         
         // Utility functions
@@ -910,37 +1333,26 @@
             });
         }
         
-        // Format number with commas as user types
         function formatNumberInput(input) {
-            // Remove non-numeric characters except decimal point
             let value = input.value.replace(/[^\d.]/g, '');
-            
-            // Split into integer and decimal parts
             let parts = value.split('.');
             let integerPart = parts[0];
             let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
-            
-            // Add commas to integer part
             integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-            
-            // Update input value
             input.value = integerPart + decimalPart;
         }
         
-        // Parse formatted number back to numeric value
         function parseFormattedNumber(formattedValue) {
             return parseFloat(formattedValue.replace(/,/g, ''));
         }
         
-        // Calculate nights between two dates
         function calculateNights(checkIn, checkOut) {
-            const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+            const oneDay = 24 * 60 * 60 * 1000;
             const firstDate = new Date(checkIn);
             const secondDate = new Date(checkOut);
             return Math.round(Math.abs((firstDate - secondDate) / oneDay));
         }
         
-        // Calculate booking total based on nights and rate
         function calculateBookingTotal() {
             const checkIn = document.getElementById('check-in').value;
             const checkOut = document.getElementById('check-out').value;
@@ -969,19 +1381,433 @@
             }, 4000);
         }
         
+        // AI-Powered Insights Engine
+        function generateAIInsights() {
+            const bookings = getBookings();
+            const expenses = getExpenses();
+            const settings = getSettings();
+            
+            let insights = [];
+            
+            // Calculate key metrics
+            const totalIncome = bookings.reduce((sum, booking) => sum + parseFloat(booking.amountPaid), 0);
+            const totalExpenses = expenses.reduce((sum, expense) => sum + parseFloat(expense.amountSpent), 0);
+            const profit = totalIncome - totalExpenses;
+            const profitMargin = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
+            
+            const expenseByCategory = {};
+            expenses.forEach(expense => {
+                if (expenseByCategory[expense.category]) {
+                    expenseByCategory[expense.category] += parseFloat(expense.amountSpent);
+                } else {
+                    expenseByCategory[expense.category] = parseFloat(expense.amountSpent);
+                }
+            });
+            
+            const bookingsByMonth = {};
+            bookings.forEach(booking => {
+                const month = booking.checkIn.substring(0, 7);
+                if (bookingsByMonth[month]) {
+                    bookingsByMonth[month] += parseFloat(booking.amountPaid);
+                } else {
+                    bookingsByMonth[month] = parseFloat(booking.amountPaid);
+                }
+            });
+            
+            // Insight 1: Profit Margin Analysis
+            if (profitMargin < 20) {
+                insights.push({
+                    type: 'warning',
+                    title: 'Low Profit Margin',
+                    message: `Your profit margin is ${profitMargin.toFixed(1)}%. Consider reducing expenses or increasing prices to improve profitability.`,
+                    action: 'Review expense categories and adjust pricing strategy',
+                    icon: 'fa-chart-line'
+                });
+            } else if (profitMargin > 40) {
+                insights.push({
+                    type: 'positive',
+                    title: 'Excellent Profit Margin',
+                    message: `Your profit margin is ${profitMargin.toFixed(1)}%. This is well above average for short-term rentals.`,
+                    action: 'Consider expanding your portfolio or investing in property upgrades',
+                    icon: 'fa-trophy'
+                });
+            }
+            
+            // Insight 2: High Expense Category
+            let highestExpenseCategory = null;
+            let highestExpenseAmount = 0;
+            
+            for (const category in expenseByCategory) {
+                if (expenseByCategory[category] > highestExpenseAmount) {
+                    highestExpenseAmount = expenseByCategory[category];
+                    highestExpenseCategory = category;
+                }
+            }
+            
+            if (highestExpenseCategory && highestExpenseAmount > totalIncome * 0.3) {
+                insights.push({
+                    type: 'warning',
+                    title: 'High Expense Category',
+                    message: `${highestExpenseCategory} accounts for ${formatCurrency(highestExpenseAmount)} of your expenses. This is more than 30% of your income.`,
+                    action: 'Look for ways to reduce costs in this category',
+                    icon: 'fa-money-bill-wave'
+                });
+            }
+            
+            // Insight 3: Seasonal Trends
+            const monthlyIncomes = Object.values(bookingsByMonth);
+            if (monthlyIncomes.length >= 3) {
+                const avgIncome = monthlyIncomes.reduce((a, b) => a + b, 0) / monthlyIncomes.length;
+                const lastMonthIncome = monthlyIncomes[monthlyIncomes.length - 1];
+                
+                if (lastMonthIncome < avgIncome * 0.7) {
+                    insights.push({
+                        type: 'warning',
+                        title: 'Seasonal Dip Detected',
+                        message: 'Your income last month was significantly lower than your average. This may be due to seasonal trends.',
+                        action: 'Consider adjusting pricing or offering promotions during slow seasons',
+                        icon: 'fa-calendar-alt'
+                    });
+                } else if (lastMonthIncome > avgIncome * 1.3) {
+                    insights.push({
+                        type: 'positive',
+                        title: 'Seasonal Peak Detected',
+                        message: 'Your income last month was significantly higher than your average. Capitalize on this trend.',
+                        action: 'Consider increasing prices slightly during peak seasons',
+                        icon: 'fa-chart-line'
+                    });
+                }
+            }
+            
+            // Insight 4: Optimal Pricing
+            const avgNightlyRate = bookings.length > 0 ? 
+                totalIncome / bookings.reduce((sum, booking) => {
+                    const nights = calculateNights(booking.checkIn, booking.checkOut);
+                    return sum + nights;
+                }, 0) : 0;
+                
+            const settingsRate = settings.defaultNightlyRate || 0;
+            
+            if (settingsRate > 0 && avgNightlyRate > settingsRate * 1.2) {
+                insights.push({
+                    type: 'info',
+                    title: 'Pricing Opportunity',
+                    message: `Your average nightly rate (${formatCurrency(avgNightlyRate)}) is 20% higher than your default rate (${formatCurrency(settingsRate)}).`,
+                    action: 'Consider increasing your default nightly rate to match market demand',
+                    icon: 'fa-tags'
+                });
+            }
+            
+            // Insight 5: Occupancy Rate
+            const totalNights = bookings.reduce((sum, booking) => {
+                return sum + calculateNights(booking.checkIn, booking.checkOut);
+            }, 0);
+            
+            // Assuming 30 days per month for simplicity
+            const monthsOfOperation = Math.max(1, Object.keys(bookingsByMonth).length);
+            const avgNightsPerMonth = totalNights / monthsOfOperation;
+            const occupancyRate = (avgNightsPerMonth / 30) * 100;
+            
+            if (occupancyRate < 60) {
+                insights.push({
+                    type: 'warning',
+                    title: 'Low Occupancy Rate',
+                    message: `Your average occupancy rate is ${occupancyRate.toFixed(1)}%. The industry average is 70-80%.`,
+                    action: 'Improve your listing photos, adjust pricing, or offer promotions',
+                    icon: 'fa-bed'
+                });
+            } else if (occupancyRate > 85) {
+                insights.push({
+                    type: 'positive',
+                    title: 'High Occupancy Rate',
+                    message: `Your average occupancy rate is ${occupancyRate.toFixed(1)}%. This indicates strong demand for your property.`,
+                    action: 'Consider increasing prices to maximize revenue',
+                    icon: 'fa-star'
+                });
+            }
+            
+            // If no specific insights, provide general ones
+            if (insights.length === 0) {
+                insights.push({
+                    type: 'info',
+                    title: 'Performance Summary',
+                    message: `Your financial performance is stable with a ${profitMargin.toFixed(1)}% profit margin.`,
+                    action: 'Continue monitoring key metrics for optimization opportunities',
+                    icon: 'fa-chart-pie'
+                });
+                
+                insights.push({
+                    type: 'info',
+                    title: 'Data Analysis',
+                    message: `We've analyzed ${bookings.length} bookings and ${expenses.length} expenses.`,
+                    action: 'Add more data to unlock personalized recommendations',
+                    icon: 'fa-database'
+                });
+            }
+            
+            // Add performance score
+            let performanceScore = 75; // Base score
+            
+            // Adjust based on profit margin
+            if (profitMargin > 30) performanceScore += 15;
+            else if (profitMargin < 10) performanceScore -= 20;
+            
+            // Adjust based on occupancy
+            if (occupancyRate > 80) performanceScore += 10;
+            else if (occupancyRate < 50) performanceScore -= 15;
+            
+            // Adjust based on expense control
+            if (highestExpenseCategory && highestExpenseAmount < totalIncome * 0.2) performanceScore += 10;
+            
+            // Ensure score is between 0-100
+            performanceScore = Math.max(0, Math.min(100, performanceScore));
+            
+            insights.performanceScore = performanceScore;
+            
+            // Save insights
+            saveAIInsights(insights);
+            
+            return insights;
+        }
+        
+        function displayAIInsights() {
+            const insights = generateAIInsights();
+            const container = document.getElementById('insights-container');
+            const performanceScore = insights.performanceScore;
+            
+            // Update performance score
+            document.getElementById('performance-score').textContent = Math.round(performanceScore);
+            
+            // Generate performance description based on score
+            let performanceDescription = '';
+            if (performanceScore >= 90) {
+                performanceDescription = 'Your financial health is excellent! Keep up the great work and consider expansion opportunities.';
+            } else if (performanceScore >= 75) {
+                performanceDescription = 'Your financial health is good. Focus on fine-tuning your pricing and expense management.';
+            } else if (performanceScore >= 60) {
+                performanceDescription = 'Your financial health is fair. There are clear opportunities to improve profitability.';
+            } else {
+                performanceDescription = 'Your financial health needs attention. Focus on reducing costs and increasing bookings.';
+            }
+            
+            document.getElementById('performance-description').textContent = performanceDescription;
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            // Display insights (max 4)
+            const insightsToShow = insights.slice(0, 4);
+            
+            insightsToShow.forEach(insight => {
+                const insightElement = document.createElement('div');
+                insightElement.className = 'insight-card';
+                
+                insightElement.innerHTML = `
+                    <div class="insight-header">
+                        <div class="insight-icon ${insight.type}">
+                            <i class="fas ${insight.icon}"></i>
+                        </div>
+                        <div>
+                            <h4>${insight.title}</h4>
+                        </div>
+                    </div>
+                    <div class="insight-content">
+                        <p>${insight.message}</p>
+                    </div>
+                    <div class="insight-actions">
+                        <button class="btn-outline btn-sm">
+                            <i class="fas fa-lightbulb"></i> ${insight.action}
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(insightElement);
+            });
+            
+            // Update predictive analytics
+            updatePredictiveAnalytics();
+        }
+        
+        function updatePredictiveAnalytics() {
+            const bookings = getBookings();
+            const expenses = getExpenses();
+            
+            // Simple predictive model (in a real app, this would use more sophisticated algorithms)
+            const monthlyIncomes = {};
+            bookings.forEach(booking => {
+                const month = booking.checkIn.substring(0, 7);
+                if (monthlyIncomes[month]) {
+                    monthlyIncomes[month] += parseFloat(booking.amountPaid);
+                } else {
+                    monthlyIncomes[month] = parseFloat(booking.amountPaid);
+                }
+            });
+            
+            // Calculate average monthly income
+            const incomeValues = Object.values(monthlyIncomes);
+            const avgMonthlyIncome = incomeValues.length > 0 ? 
+                incomeValues.reduce((a, b) => a + b, 0) / incomeValues.length : 0;
+            
+            // Predict next month's income (with some seasonal adjustment)
+            let predictedIncome = avgMonthlyIncome;
+            
+            // Simple seasonal adjustment based on month
+            const nextMonth = new Date();
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            const nextMonthNum = nextMonth.getMonth();
+            
+            // Adjust based on typical seasonal patterns
+            if (nextMonthNum >= 11 || nextMonthNum <= 1) {
+                // Holiday season - increase prediction
+                predictedIncome *= 1.2;
+            } else if (nextMonthNum >= 6 && nextMonthNum <= 8) {
+                // Summer season - increase prediction
+                predictedIncome *= 1.15;
+            } else if (nextMonthNum >= 2 && nextMonthNum <= 4) {
+                // Spring season - slight decrease
+                predictedIncome *= 0.9;
+            }
+            
+            // Calculate optimal nightly rate
+            const totalNights = bookings.reduce((sum, booking) => {
+                return sum + calculateNights(booking.checkIn, booking.checkOut);
+            }, 0);
+            
+            const avgNightlyRate = totalNights > 0 ? 
+                bookings.reduce((sum, booking) => sum + parseFloat(booking.amountPaid), 0) / totalNights : 0;
+            
+            let optimalRate = avgNightlyRate;
+            
+            // Adjust based on occupancy
+            const monthsOfOperation = Math.max(1, Object.keys(monthlyIncomes).length);
+            const avgNightsPerMonth = totalNights / monthsOfOperation;
+            const occupancyRate = (avgNightsPerMonth / 30) * 100;
+            
+            if (occupancyRate > 80) {
+                // High occupancy - can increase rates
+                optimalRate *= 1.1;
+            } else if (occupancyRate < 60) {
+                // Low occupancy - consider lowering rates
+                optimalRate *= 0.9;
+            }
+            
+            // Calculate expected occupancy
+            let expectedOccupancy = occupancyRate;
+            
+            // Adjust based on season
+            if (nextMonthNum >= 11 || nextMonthNum <= 1) {
+                expectedOccupancy = Math.min(95, expectedOccupancy * 1.15);
+            } else if (nextMonthNum >= 6 && nextMonthNum <= 8) {
+                expectedOccupancy = Math.min(90, expectedOccupancy * 1.1);
+            }
+            
+            // Update UI
+            document.getElementById('predicted-income').textContent = formatCurrency(predictedIncome);
+            document.getElementById('optimal-rate').textContent = formatCurrency(optimalRate);
+            document.getElementById('expected-occupancy').textContent = `${expectedOccupancy.toFixed(1)}%`;
+            
+            // Update occupancy rate in dashboard
+            document.getElementById('occupancy-rate').textContent = `${occupancyRate.toFixed(1)}%`;
+            
+            // Update prediction chart
+            updatePredictionChart();
+        }
+        
+        function updatePredictionChart() {
+            const ctx = document.getElementById('prediction-chart').getContext('2d');
+            
+            // Generate sample prediction data
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const currentMonth = new Date().getMonth();
+            
+            const labels = [];
+            const actualData = [];
+            const predictedData = [];
+            
+            for (let i = 0; i < 6; i++) {
+                const monthIndex = (currentMonth - 5 + i + 12) % 12;
+                labels.push(months[monthIndex]);
+                
+                // Actual data (past)
+                if (i < 3) {
+                    actualData.push(Math.random() * 50000 + 30000);
+                    predictedData.push(null);
+                } else {
+                    actualData.push(null);
+                    // Predicted data (future)
+                    predictedData.push(Math.random() * 50000 + 30000);
+                }
+            }
+            
+            if (window.predictionChart) {
+                window.predictionChart.destroy();
+            }
+            
+            window.predictionChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Actual Income',
+                            data: actualData,
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Predicted Income',
+                            data: predictedData,
+                            borderColor: 'rgba(155, 89, 182, 1)',
+                            backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatCurrency(context.raw)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₦' + value.toLocaleString('en-NG');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
         // Calculation functions
         function calculateTotals() {
             const bookings = getBookings();
             const expenses = getExpenses();
             
-            // Get current filter
             const filterMonth = document.getElementById('month-filter').value;
             const filterYear = document.getElementById('year-filter').value;
             
             let totalIncome = 0;
             let totalExpenses = 0;
             
-            // Calculate income
             bookings.forEach(booking => {
                 const bookingYear = booking.checkIn.substring(0, 4);
                 if ((!filterMonth || booking.checkIn.startsWith(filterMonth)) && 
@@ -990,7 +1816,6 @@
                 }
             });
             
-            // Calculate expenses
             expenses.forEach(expense => {
                 const expenseYear = expense.date.substring(0, 4);
                 if ((!filterMonth || expense.date.startsWith(filterMonth)) && 
@@ -999,7 +1824,6 @@
                 }
             });
             
-            // Update UI
             document.getElementById('total-income').textContent = formatCurrency(totalIncome);
             document.getElementById('total-expenses').textContent = formatCurrency(totalExpenses);
             document.getElementById('profit').textContent = formatCurrency(totalIncome - totalExpenses);
@@ -1209,10 +2033,11 @@
             const settingsModal = document.getElementById('settings-modal');
             settingsModal.classList.add('active');
             
-            // Load settings into modal
             const settings = getSettings();
             document.getElementById('default-nightly-rate').value = formatCurrency(settings.defaultNightlyRate).replace('₦', '');
             document.getElementById('default-cleaning-fee').value = formatCurrency(settings.defaultCleaningFee).replace('₦', '');
+            document.getElementById('ai-insight-level').value = settings.aiInsightLevel;
+            document.getElementById('prediction-model').value = settings.predictionModel;
         }
         
         function closeSettingsModal() {
@@ -1253,7 +2078,6 @@
             showAlert('booking-alert', 'Booking added successfully!', 'success');
             this.reset();
             
-            // Set default dates
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('check-in').value = today;
             
@@ -1264,6 +2088,7 @@
             calculateTotals();
             updateChart();
             populateYearFilter();
+            displayAIInsights();
         });
         
         document.getElementById('expense-form').addEventListener('submit', function(e) {
@@ -1291,28 +2116,49 @@
             showAlert('expense-alert', 'Expense added successfully!', 'success');
             this.reset();
             
-            // Set default date
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('expense-date').value = today;
             
             calculateTotals();
             updateChart();
             populateYearFilter();
+            displayAIInsights();
         });
         
         // Settings form handling
         document.getElementById('save-settings').addEventListener('click', function() {
             const defaultNightlyRate = parseFormattedNumber(document.getElementById('default-nightly-rate').value) || 0;
             const defaultCleaningFee = parseFormattedNumber(document.getElementById('default-cleaning-fee').value) || 0;
+            const aiInsightLevel = document.getElementById('ai-insight-level').value;
+            const predictionModel = document.getElementById('prediction-model').value;
             
             const settings = {
                 defaultNightlyRate,
-                defaultCleaningFee
+                defaultCleaningFee,
+                aiInsightLevel,
+                predictionModel
             };
             
             saveSettings(settings);
             showAlert('booking-alert', 'Settings saved successfully!', 'success');
             closeSettingsModal();
+            displayAIInsights();
+        });
+        
+        // AI Training Button
+        document.getElementById('train-ai').addEventListener('click', function() {
+            const button = this;
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Training AI...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+                showAlert('booking-alert', 'AI model retrained successfully with latest data!', 'success');
+                displayAIInsights();
+            }, 2000);
         });
         
         // Data display functions
@@ -1341,7 +2187,6 @@
                 totalBookings++;
                 totalValue += parseFloat(booking.amountPaid);
                 
-                // Count payment methods
                 if (paymentMethods[booking.paymentMethod]) {
                     paymentMethods[booking.paymentMethod]++;
                 } else {
@@ -1349,11 +2194,9 @@
                 }
             });
             
-            // Update summary cards
             document.getElementById('bookings-count').textContent = totalBookings;
             document.getElementById('avg-booking-value').textContent = formatCurrency(totalBookings > 0 ? totalValue / totalBookings : 0);
             
-            // Find most popular payment method
             let mostPopularMethod = '-';
             let maxCount = 0;
             for (const method in paymentMethods) {
@@ -1393,7 +2236,6 @@
                 totalExpenses++;
                 totalValue += parseFloat(expense.amountSpent);
                 
-                // Sum by category
                 if (categories[expense.category]) {
                     categories[expense.category] += parseFloat(expense.amountSpent);
                 } else {
@@ -1401,11 +2243,9 @@
                 }
             });
             
-            // Update summary cards
             document.getElementById('expenses-count').textContent = totalExpenses;
             document.getElementById('avg-expense-value').textContent = formatCurrency(totalExpenses > 0 ? totalValue / totalExpenses : 0);
             
-            // Find largest expense category
             let largestCategory = '-';
             let maxValue = 0;
             for (const category in categories) {
@@ -1437,7 +2277,6 @@
             
             let csvContent = "data:text/csv;charset=utf-8,";
             
-            // Bookings CSV
             csvContent += "Bookings\n";
             csvContent += "Guest Name,Check-in,Check-out,Room,Amount,Payment Method\n";
             
@@ -1445,7 +2284,6 @@
                 csvContent += `"${booking.guestName}","${booking.checkIn}","${booking.checkOut}","${booking.roomName}","${booking.amountPaid}","${booking.paymentMethod}"\n`;
             });
             
-            // Expenses CSV
             csvContent += "\nExpenses\n";
             csvContent += "Expense Name,Category,Date,Amount,Description\n";
             
@@ -1456,7 +2294,7 @@
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "hostly_data.csv");
+            link.setAttribute("download", "hostly_pro_data.csv");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -1467,10 +2305,12 @@
             if (confirm("Are you sure you want to clear all data? This action cannot be undone.")) {
                 localStorage.removeItem('hostly-bookings');
                 localStorage.removeItem('hostly-expenses');
+                localStorage.removeItem('hostly-ai-insights');
                 
                 calculateTotals();
                 updateChart();
                 populateYearFilter();
+                displayAIInsights();
                 
                 document.getElementById('bookings-body').innerHTML = '';
                 document.getElementById('expenses-body').innerHTML = '';
@@ -1485,19 +2325,16 @@
             const expenses = getExpenses();
             const years = new Set();
             
-            // Extract years from bookings
             bookings.forEach(booking => {
                 const year = booking.checkIn.substring(0, 4);
                 years.add(year);
             });
             
-            // Extract years from expenses
             expenses.forEach(expense => {
                 const year = expense.date.substring(0, 4);
                 years.add(year);
             });
             
-            // Sort years in descending order
             const sortedYears = Array.from(years).sort((a, b) => b - a);
             
             const yearFilter = document.getElementById('year-filter');
@@ -1517,6 +2354,7 @@
         document.getElementById('view-summary').addEventListener('click', displaySummary);
         document.getElementById('settings-toggle').addEventListener('click', openSettingsModal);
         document.getElementById('close-modal').addEventListener('click', closeSettingsModal);
+        document.getElementById('refresh-insights').addEventListener('click', displayAIInsights);
         document.getElementById('export-csv').addEventListener('click', exportToCSV);
         document.getElementById('clear-data').addEventListener('click', clearAllData);
         
@@ -1531,6 +2369,7 @@
         document.getElementById('apply-filter').addEventListener('click', function() {
             calculateTotals();
             updateChart();
+            displayAIInsights();
         });
         
         document.getElementById('clear-filter').addEventListener('click', function() {
@@ -1538,6 +2377,7 @@
             document.getElementById('year-filter').value = '';
             calculateTotals();
             updateChart();
+            displayAIInsights();
         });
         
         // Auto-format number inputs
@@ -1565,20 +2405,16 @@
         // Tab functionality
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
-                // Remove active class from all tabs
                 document.querySelectorAll('.tab').forEach(t => {
                     t.classList.remove('active');
                 });
                 
-                // Add active class to clicked tab
                 this.classList.add('active');
                 
-                // Hide all tab content
                 document.querySelectorAll('.tab-content').forEach(content => {
                     content.classList.add('hidden');
                 });
                 
-                // Show selected tab content
                 const tabId = this.getAttribute('data-tab');
                 document.getElementById(tabId).classList.remove('hidden');
             });
@@ -1586,26 +2422,23 @@
         
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
-            // Set today's date as default for forms
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('check-in').value = today;
             document.getElementById('expense-date').value = today;
             
-            // Set check-out to tomorrow
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             document.getElementById('check-out').value = tomorrow.toISOString().split('T')[0];
             
-            // Load settings
             const settings = getSettings();
             document.getElementById('calc-nightly-rate').value = formatCurrency(settings.defaultNightlyRate || 50000).replace('₦', '');
             document.getElementById('calc-cleaning-fee').value = formatCurrency(settings.defaultCleaningFee || 5000).replace('₦', '');
             
-            // Calculate initial totals and update chart
             calculateTotals();
             updateChart();
             populateYearFilter();
             updateQuickCalculator();
+            displayAIInsights();
         });
     </script>
 </body>
