@@ -398,6 +398,58 @@
             color: var(--gray);
         }
         
+        .settings-section {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+        
+        .settings-section h2 {
+            color: var(--dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .setting-card {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+        
+        .setting-card h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .quick-calc {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .quick-calc .result {
+            font-weight: bold;
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--white);
+            border-radius: 4px;
+            text-align: center;
+        }
+        
         .footer {
             text-align: center;
             padding: 20px;
@@ -438,6 +490,10 @@
                 display: block;
                 overflow-x: auto;
             }
+            
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
         }
         
         @media (max-width: 480px) {
@@ -445,7 +501,7 @@
                 padding: 10px;
             }
             
-            .form-section, .chart-container, .data-section {
+            .form-section, .chart-container, .data-section, .settings-section {
                 padding: 15px;
             }
             
@@ -466,6 +522,9 @@
                 </div>
             </div>
             <div class="header-actions">
+                <button id="settings-toggle">
+                    <i class="fas fa-cog"></i> Settings
+                </button>
                 <button id="export-csv" class="btn-success">
                     <i class="fas fa-file-export"></i> Export Data
                 </button>
@@ -509,6 +568,45 @@
             </button>
         </div>
         
+        <div class="settings-section hidden" id="settings-section">
+            <h2><i class="fas fa-cog"></i> Application Settings</h2>
+            <div class="settings-grid">
+                <div class="setting-card">
+                    <h3><i class="fas fa-money-bill-wave"></i> Default Pricing</h3>
+                    <div class="form-group">
+                        <label for="default-nightly-rate">Default Nightly Rate (₦)</label>
+                        <input type="text" id="default-nightly-rate" class="number-input" placeholder="50,000">
+                    </div>
+                    <div class="form-group">
+                        <label for="default-cleaning-fee">Default Cleaning Fee (₦)</label>
+                        <input type="text" id="default-cleaning-fee" class="number-input" placeholder="5,000">
+                    </div>
+                    <button id="save-settings" class="btn-success">
+                        <i class="fas fa-save"></i> Save Settings
+                    </button>
+                </div>
+                
+                <div class="setting-card">
+                    <h3><i class="fas fa-calculator"></i> Quick Calculator</h3>
+                    <div class="form-group">
+                        <label for="calc-nights">Number of Nights</label>
+                        <input type="number" id="calc-nights" min="1" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="calc-nightly-rate">Nightly Rate (₦)</label>
+                        <input type="text" id="calc-nightly-rate" class="number-input" placeholder="50,000">
+                    </div>
+                    <div class="form-group">
+                        <label for="calc-cleaning-fee">Cleaning Fee (₦)</label>
+                        <input type="text" id="calc-cleaning-fee" class="number-input" placeholder="5,000">
+                    </div>
+                    <div class="quick-calc">
+                        <div class="result" id="calc-result">Total: ₦0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="forms-container">
             <div class="form-section">
                 <h2><i class="fas fa-calendar-plus"></i> Add Booking</h2>
@@ -532,7 +630,8 @@
                     </div>
                     <div class="form-group">
                         <label for="amount-paid">Amount Paid (₦)</label>
-                        <input type="number" id="amount-paid" min="0" step="0.01" required>
+                        <input type="text" id="amount-paid" class="number-input" required>
+                        <small style="color: var(--gray);">Auto-formats with commas as you type</small>
                     </div>
                     <div class="form-group">
                         <label for="payment-method">Payment Method</label>
@@ -579,7 +678,8 @@
                     </div>
                     <div class="form-group">
                         <label for="amount-spent">Amount Spent (₦)</label>
-                        <input type="number" id="amount-spent" min="0" step="0.01" required>
+                        <input type="text" id="amount-spent" class="number-input" required>
+                        <small style="color: var(--gray);">Auto-formats with commas as you type</small>
                     </div>
                     <div class="form-group">
                         <label for="description">Description</label>
@@ -718,12 +818,72 @@
             localStorage.setItem('hostly-expenses', JSON.stringify(expenses));
         }
         
+        function getSettings() {
+            return JSON.parse(localStorage.getItem('hostly-settings')) || {
+                defaultNightlyRate: 0,
+                defaultCleaningFee: 0
+            };
+        }
+        
+        function saveSettings(settings) {
+            localStorage.setItem('hostly-settings', JSON.stringify(settings));
+        }
+        
         // Utility functions
         function formatCurrency(amount) {
             return '₦' + parseFloat(amount).toLocaleString('en-NG', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             });
+        }
+        
+        // NEW: Format number with commas as user types
+        function formatNumberInput(input) {
+            // Remove non-numeric characters except decimal point
+            let value = input.value.replace(/[^\d.]/g, '');
+            
+            // Split into integer and decimal parts
+            let parts = value.split('.');
+            let integerPart = parts[0];
+            let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+            
+            // Add commas to integer part
+            integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            
+            // Update input value
+            input.value = integerPart + decimalPart;
+        }
+        
+        // NEW: Parse formatted number back to numeric value
+        function parseFormattedNumber(formattedValue) {
+            return parseFloat(formattedValue.replace(/,/g, ''));
+        }
+        
+        // NEW: Calculate nights between two dates
+        function calculateNights(checkIn, checkOut) {
+            const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+            const firstDate = new Date(checkIn);
+            const secondDate = new Date(checkOut);
+            return Math.round(Math.abs((firstDate - secondDate) / oneDay));
+        }
+        
+        // NEW: Calculate booking total based on nights and rate
+        function calculateBookingTotal() {
+            const checkIn = document.getElementById('check-in').value;
+            const checkOut = document.getElementById('check-out').value;
+            
+            if (!checkIn || !checkOut) return;
+            
+            const nights = calculateNights(checkIn, checkOut);
+            const settings = getSettings();
+            const nightlyRate = settings.defaultNightlyRate || 0;
+            const cleaningFee = settings.defaultCleaningFee || 0;
+            
+            const total = (nights * nightlyRate) + cleaningFee;
+            
+            if (total > 0) {
+                document.getElementById('amount-paid').value = formatCurrency(total).replace('₦', '');
+            }
         }
         
         function showAlert(elementId, message, type) {
@@ -757,7 +917,7 @@
                 }
             });
             
-            // Calculate expenses
+            // Calculate expenses - BUG FIX: was using booking.amountSpent instead of expense.amountSpent
             expenses.forEach(expense => {
                 const expenseYear = expense.date.substring(0, 4);
                 if ((!filterMonth || expense.date.startsWith(filterMonth)) && 
@@ -961,6 +1121,16 @@
             });
         }
         
+        // NEW: Update quick calculator
+        function updateQuickCalculator() {
+            const nights = parseInt(document.getElementById('calc-nights').value) || 0;
+            const nightlyRate = parseFormattedNumber(document.getElementById('calc-nightly-rate').value) || 0;
+            const cleaningFee = parseFormattedNumber(document.getElementById('calc-cleaning-fee').value) || 0;
+            
+            const total = (nights * nightlyRate) + cleaningFee;
+            document.getElementById('calc-result').textContent = `Total: ${formatCurrency(total)}`;
+        }
+        
         // Form handling
         document.getElementById('booking-form').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -969,7 +1139,7 @@
             const checkIn = document.getElementById('check-in').value;
             const checkOut = document.getElementById('check-out').value;
             const roomName = document.getElementById('room-name').value;
-            const amountPaid = document.getElementById('amount-paid').value;
+            const amountPaid = parseFormattedNumber(document.getElementById('amount-paid').value); // NEW: Parse formatted value
             const paymentMethod = document.getElementById('payment-method').value;
             
             if (new Date(checkOut) <= new Date(checkIn)) {
@@ -984,7 +1154,7 @@
                 checkIn,
                 checkOut,
                 roomName,
-                amountPaid,
+                amountPaid, // Store as number
                 paymentMethod
             };
             
@@ -1013,7 +1183,7 @@
             const expenseName = document.getElementById('expense-name').value;
             const category = document.getElementById('category').value;
             const date = document.getElementById('expense-date').value;
-            const amountSpent = document.getElementById('amount-spent').value;
+            const amountSpent = parseFormattedNumber(document.getElementById('amount-spent').value); // NEW: Parse formatted value
             const description = document.getElementById('description').value;
             
             const expenses = getExpenses();
@@ -1022,7 +1192,7 @@
                 expenseName,
                 category,
                 date,
-                amountSpent,
+                amountSpent, // Store as number
                 description
             };
             
@@ -1039,6 +1209,20 @@
             calculateTotals();
             updateChart();
             populateYearFilter();
+        });
+        
+        // NEW: Settings form handling
+        document.getElementById('save-settings').addEventListener('click', function() {
+            const defaultNightlyRate = parseFormattedNumber(document.getElementById('default-nightly-rate').value) || 0;
+            const defaultCleaningFee = parseFormattedNumber(document.getElementById('default-cleaning-fee').value) || 0;
+            
+            const settings = {
+                defaultNightlyRate,
+                defaultCleaningFee
+            };
+            
+            saveSettings(settings);
+            showAlert('booking-alert', 'Settings saved successfully!', 'success');
         });
         
         // Data display functions
@@ -1093,6 +1277,7 @@
             document.getElementById('bookings-section').classList.remove('hidden');
             document.getElementById('expenses-section').classList.add('hidden');
             document.getElementById('summary-section').classList.add('hidden');
+            document.getElementById('settings-section').classList.add('hidden');
         }
         
         function displayExpenses() {
@@ -1145,6 +1330,7 @@
             document.getElementById('expenses-section').classList.remove('hidden');
             document.getElementById('bookings-section').classList.add('hidden');
             document.getElementById('summary-section').classList.add('hidden');
+            document.getElementById('settings-section').classList.add('hidden');
         }
         
         function displaySummary() {
@@ -1154,6 +1340,20 @@
             document.getElementById('summary-section').classList.remove('hidden');
             document.getElementById('bookings-section').classList.add('hidden');
             document.getElementById('expenses-section').classList.add('hidden');
+            document.getElementById('settings-section').classList.add('hidden');
+        }
+        
+        // NEW: Display settings
+        function displaySettings() {
+            const settings = getSettings();
+            
+            document.getElementById('default-nightly-rate').value = formatCurrency(settings.defaultNightlyRate).replace('₦', '');
+            document.getElementById('default-cleaning-fee').value = formatCurrency(settings.defaultCleaningFee).replace('₦', '');
+            
+            document.getElementById('settings-section').classList.remove('hidden');
+            document.getElementById('bookings-section').classList.add('hidden');
+            document.getElementById('expenses-section').classList.add('hidden');
+            document.getElementById('summary-section').classList.add('hidden');
         }
         
         // Export functionality
@@ -1241,6 +1441,7 @@
         document.getElementById('view-bookings').addEventListener('click', displayBookings);
         document.getElementById('view-expenses').addEventListener('click', displayExpenses);
         document.getElementById('view-summary').addEventListener('click', displaySummary);
+        document.getElementById('settings-toggle').addEventListener('click', displaySettings);
         document.getElementById('export-csv').addEventListener('click', exportToCSV);
         document.getElementById('clear-data').addEventListener('click', clearAllData);
         
@@ -1255,6 +1456,28 @@
             document.getElementById('year-filter').value = '';
             calculateTotals();
             updateChart();
+        });
+        
+        // NEW: Auto-format number inputs
+        document.querySelectorAll('.number-input').forEach(input => {
+            input.addEventListener('input', function() {
+                formatNumberInput(this);
+            });
+        });
+        
+        // NEW: Calculate booking total when dates change
+        document.getElementById('check-in').addEventListener('change', calculateBookingTotal);
+        document.getElementById('check-out').addEventListener('change', calculateBookingTotal);
+        
+        // NEW: Update quick calculator when inputs change
+        document.getElementById('calc-nights').addEventListener('input', updateQuickCalculator);
+        document.getElementById('calc-nightly-rate').addEventListener('input', function() {
+            formatNumberInput(this);
+            updateQuickCalculator();
+        });
+        document.getElementById('calc-cleaning-fee').addEventListener('input', function() {
+            formatNumberInput(this);
+            updateQuickCalculator();
         });
         
         // Tab functionality
@@ -1291,10 +1514,16 @@
             tomorrow.setDate(tomorrow.getDate() + 1);
             document.getElementById('check-out').value = tomorrow.toISOString().split('T')[0];
             
+            // Load settings
+            const settings = getSettings();
+            document.getElementById('calc-nightly-rate').value = formatCurrency(settings.defaultNightlyRate || 50000).replace('₦', '');
+            document.getElementById('calc-cleaning-fee').value = formatCurrency(settings.defaultCleaningFee || 5000).replace('₦', '');
+            
             // Calculate initial totals and update chart
             calculateTotals();
             updateChart();
             populateYearFilter();
+            updateQuickCalculator();
         });
     </script>
 </body>
