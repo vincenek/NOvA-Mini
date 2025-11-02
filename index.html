@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuitPath - Your Smoking Tracker</title>
+    <title>QuitPath - Smoking Tracker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --accent: #e74c3c;
-            --light: #ecf0f1;
-            --dark: #2c3e50;
-            --success: #2ecc71;
-            --warning: #f39c12;
-            --danger: #e74c3c;
+            --primary: #1a365d;
+            --secondary: #2d74b4;
+            --accent: #e53e3e;
+            --light: #f7fafc;
+            --dark: #2d3748;
+            --success: #38a169;
+            --warning: #d69e2e;
+            --danger: #e53e3e;
+            --gray: #718096;
         }
         
         * {
@@ -41,7 +42,7 @@
             background-color: var(--primary);
             color: white;
             padding: 15px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -81,6 +82,7 @@
             padding: 8px 12px;
             border-radius: 4px;
             transition: background-color 0.3s;
+            font-weight: 500;
         }
         
         nav a:hover, nav a.active {
@@ -125,6 +127,7 @@
             color: var(--primary);
             border-bottom: 2px solid var(--light);
             padding-bottom: 10px;
+            font-weight: 600;
         }
         
         .card {
@@ -133,11 +136,12 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             padding: 20px;
             margin-bottom: 20px;
+            border-left: 4px solid var(--secondary);
         }
         
         .card-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
@@ -161,6 +165,7 @@
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             text-align: center;
+            border-top: 4px solid var(--secondary);
         }
         
         .stat-value {
@@ -171,7 +176,7 @@
         }
         
         .stat-label {
-            color: #7f8c8d;
+            color: var(--gray);
             font-size: 14px;
         }
         
@@ -187,10 +192,11 @@
             align-items: center;
             gap: 8px;
             font-size: 14px;
+            font-weight: 500;
         }
         
         .btn:hover {
-            background-color: #2980b9;
+            background-color: #2563a8;
         }
         
         .btn-danger {
@@ -198,7 +204,7 @@
         }
         
         .btn-danger:hover {
-            background-color: #c0392b;
+            background-color: #c53030;
         }
         
         .btn-success {
@@ -206,7 +212,7 @@
         }
         
         .btn-success:hover {
-            background-color: #27ae60;
+            background-color: #2f855a;
         }
         
         .form-group {
@@ -250,7 +256,7 @@
         }
         
         .trigger-option:hover {
-            background-color: #d5dbdb;
+            background-color: #e2e8f0;
         }
         
         .trigger-option.selected {
@@ -259,7 +265,7 @@
         }
         
         .quote-card {
-            background: linear-gradient(135deg, var(--secondary), #8e44ad);
+            background: linear-gradient(135deg, var(--secondary), #4c51bf);
             color: white;
             border-radius: 8px;
             padding: 25px;
@@ -300,7 +306,7 @@
         
         .progress-bar {
             height: 10px;
-            background-color: #ecf0f1;
+            background-color: #e2e8f0;
             border-radius: 5px;
             margin: 15px 0;
             overflow: hidden;
@@ -344,13 +350,25 @@
         }
         
         .craving-date {
-            color: #7f8c8d;
+            color: var(--gray);
             font-size: 14px;
         }
         
         .craving-strategy {
             margin-top: 10px;
             font-style: italic;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--gray);
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #cbd5e0;
         }
         
         footer {
@@ -397,8 +415,8 @@
                     </ul>
                 </nav>
                 <div class="user-info">
-                    <div class="avatar">JD</div>
-                    <span>John Doe</span>
+                    <div class="avatar" id="user-avatar">U</div>
+                    <span id="user-name">User</span>
                 </div>
             </div>
         </div>
@@ -412,22 +430,22 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <i class="fas fa-smoking fa-2x" style="color: var(--accent);"></i>
-                    <div class="stat-value">3</div>
+                    <div class="stat-value" id="today-count">0</div>
                     <div class="stat-label">Cigarettes Today</div>
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-calendar-day fa-2x" style="color: var(--secondary);"></i>
-                    <div class="stat-value">12</div>
+                    <div class="stat-value" id="days-smoke-free">0</div>
                     <div class="stat-label">Days Smoke-Free</div>
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-piggy-bank fa-2x" style="color: var(--success);"></i>
-                    <div class="stat-value">$42</div>
+                    <div class="stat-value" id="money-saved">$0</div>
                     <div class="stat-label">Money Saved</div>
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-lungs fa-2x" style="color: var(--warning);"></i>
-                    <div class="stat-value">78%</div>
+                    <div class="stat-value" id="health-improvement">0%</div>
                     <div class="stat-label">Health Improvement</div>
                 </div>
             </div>
@@ -445,34 +463,14 @@
                 <div class="card-header">
                     <h3 class="card-title">Health Insights</h3>
                 </div>
-                <div class="health-benefits">
-                    <div class="benefit-card">
-                        <div class="benefit-title">Lung Capacity</div>
-                        <p>Your lung function has improved by approximately 15% since you started reducing smoking.</p>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 65%"></div>
-                        </div>
-                    </div>
-                    <div class="benefit-card">
-                        <div class="benefit-title">Heart Disease Risk</div>
-                        <p>Your risk of coronary heart disease has decreased by 25% compared to when you were smoking regularly.</p>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 40%"></div>
-                        </div>
-                    </div>
-                    <div class="benefit-card">
-                        <div class="benefit-title">Financial Savings</div>
-                        <p>You've saved $42 that would have been spent on cigarettes. At this rate, you'll save over $1,200 annually.</p>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 20%"></div>
-                        </div>
-                    </div>
+                <div class="health-benefits" id="health-benefits">
+                    <!-- Health benefits will be populated by JavaScript -->
                 </div>
             </div>
             
             <div class="quote-card">
-                <div class="quote-text">"The best time to plant a tree was 20 years ago. The second best time is now."</div>
-                <div class="quote-author">- Chinese Proverb</div>
+                <div class="quote-text" id="motivational-quote">"The best time to plant a tree was 20 years ago. The second best time is now."</div>
+                <div class="quote-author" id="quote-author">- Chinese Proverb</div>
             </div>
         </section>
 
@@ -491,15 +489,15 @@
                     </div>
                     
                     <div class="form-group">
-                        <label>What triggered this smoking?</label>
+                        <label>What triggered this smoking? (Select all that apply)</label>
                         <div class="triggers-grid">
-                            <div class="trigger-option">Stress</div>
-                            <div class="trigger-option">Boredom</div>
-                            <div class="trigger-option">Social</div>
-                            <div class="trigger-option">After Meal</div>
-                            <div class="trigger-option">Coffee</div>
-                            <div class="trigger-option">Alcohol</div>
-                            <div class="trigger-option">Other</div>
+                            <div class="trigger-option" data-trigger="stress">Stress</div>
+                            <div class="trigger-option" data-trigger="boredom">Boredom</div>
+                            <div class="trigger-option" data-trigger="social">Social</div>
+                            <div class="trigger-option" data-trigger="after-meal">After Meal</div>
+                            <div class="trigger-option" data-trigger="coffee">Coffee</div>
+                            <div class="trigger-option" data-trigger="alcohol">Alcohol</div>
+                            <div class="trigger-option" data-trigger="other">Other</div>
                         </div>
                     </div>
                     
@@ -519,7 +517,10 @@
                     <h3 class="card-title">Today's Log</h3>
                 </div>
                 <div id="today-logs">
-                    <p>No cigarettes logged today yet.</p>
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <p>No cigarettes logged today yet.</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -555,19 +556,8 @@
                 </div>
             </div>
             
-            <div class="health-benefits">
-                <div class="benefit-card">
-                    <div class="benefit-title">Carbon Monoxide Levels</div>
-                    <p>Your blood carbon monoxide levels have normalized, improving oxygen delivery to your organs.</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-title">Circulation</div>
-                    <p>Your circulation has significantly improved, reducing your risk of peripheral artery disease.</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-title">Lung Cancer Risk</div>
-                    <p>After 12 months smoke-free, your lung cancer risk drops significantly compared to continued smoking.</p>
-                </div>
+            <div class="health-benefits" id="progress-health-benefits">
+                <!-- Progress health benefits will be populated by JavaScript -->
             </div>
         </section>
 
@@ -575,18 +565,16 @@
         <section id="goals" class="page">
             <h2 class="page-title">Your Goals</h2>
             
-            <div class="card">
+            <div class="card" id="current-goal-container">
                 <div class="card-header">
                     <h3 class="card-title">Current Goal</h3>
                 </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 60%"></div>
+                <div id="current-goal-content">
+                    <div class="empty-state">
+                        <i class="fas fa-bullseye"></i>
+                        <p>No active goals. Set your first goal to get started.</p>
+                    </div>
                 </div>
-                <p>Reduce from 20 to 5 cigarettes per day. Currently at 12 cigarettes per day.</p>
-                <p><strong>Target Date:</strong> October 15, 2023</p>
-                <button class="btn" style="margin-top: 15px;">
-                    <i class="fas fa-edit"></i> Edit Goal
-                </button>
             </div>
             
             <div class="card">
@@ -623,11 +611,12 @@
                 <div class="card-header">
                     <h3 class="card-title">Goal History</h3>
                 </div>
-                <ul>
-                    <li>✅ Reduced from 20 to 15 cigarettes per day (Completed: Aug 1, 2023)</li>
-                    <li>✅ Reduced from 15 to 10 cigarettes per day (Completed: Sep 5, 2023)</li>
-                    <li>🔄 Reduce from 10 to 5 cigarettes per day (In Progress)</li>
-                </ul>
+                <div id="goal-history">
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <p>No goal history yet.</p>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -672,23 +661,10 @@
                 <div class="card-header">
                     <h3 class="card-title">Recent Cravings</h3>
                 </div>
-                <div class="cravings-list">
-                    <div class="craving-item">
-                        <div class="craving-header">
-                            <span class="craving-intensity">Intensity: 8/10</span>
-                            <span class="craving-date">Today, 3:45 PM</span>
-                        </div>
-                        <p><strong>Trigger:</strong> After lunch</p>
-                        <p class="craving-strategy"><strong>Resistance Strategy:</strong> Drank a glass of water and chewed gum instead.</p>
-                    </div>
-                    
-                    <div class="craving-item">
-                        <div class="craving-header">
-                            <span class="craving-intensity">Intensity: 6/10</span>
-                            <span class="craving-date">Yesterday, 10:30 AM</span>
-                        </div>
-                        <p><strong>Trigger:</strong> Morning coffee</p>
-                        <p class="craving-strategy"><strong>Resistance Strategy:</strong> Went for a 10-minute walk outside.</p>
+                <div class="cravings-list" id="cravings-list">
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <p>No cravings logged yet.</p>
                     </div>
                 </div>
             </div>
@@ -705,17 +681,17 @@
                 <form id="profile-form">
                     <div class="form-group">
                         <label for="name">Name</label>
-                        <input type="text" id="name" value="John Doe">
+                        <input type="text" id="name" placeholder="Enter your name">
                     </div>
                     
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" value="john.doe@example.com">
+                        <input type="email" id="email" placeholder="Enter your email">
                     </div>
                     
                     <div class="form-group">
                         <label for="age">Age</label>
-                        <input type="number" id="age" value="42">
+                        <input type="number" id="age" placeholder="Enter your age">
                     </div>
                     
                     <button type="submit" class="btn">
@@ -731,17 +707,17 @@
                 <form id="smoking-settings-form">
                     <div class="form-group">
                         <label for="cigarette-cost">Cost per Cigarette ($)</label>
-                        <input type="number" id="cigarette-cost" step="0.01" value="0.50">
+                        <input type="number" id="cigarette-cost" step="0.01" placeholder="0.50">
                     </div>
                     
                     <div class="form-group">
                         <label for="cigarettes-per-day">Average Cigarettes per Day (before quitting)</label>
-                        <input type="number" id="cigarettes-per-day" value="20">
+                        <input type="number" id="cigarettes-per-day" placeholder="20">
                     </div>
                     
                     <div class="form-group">
                         <label for="quit-date">Quit Date</label>
-                        <input type="date" id="quit-date" value="2023-08-15">
+                        <input type="date" id="quit-date">
                     </div>
                     
                     <button type="submit" class="btn">
@@ -752,27 +728,16 @@
             
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Health Insights Settings</h3>
-                </div>
-                <p>Customize the health insights you receive based on your smoking reduction.</p>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" checked> Show lung capacity improvements
-                    </label>
+                    <h3 class="card-title">Data Management</h3>
                 </div>
                 <div class="form-group">
-                    <label>
-                        <input type="checkbox" checked> Show disease risk reduction
-                    </label>
+                    <button class="btn" id="export-data">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                    <button class="btn btn-danger" id="reset-data">
+                        <i class="fas fa-trash"></i> Reset All Data
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" checked> Show financial savings
-                    </label>
-                </div>
-                <button class="btn">
-                    <i class="fas fa-save"></i> Save Preferences
-                </button>
             </div>
         </section>
     </main>
@@ -785,207 +750,833 @@
     </footer>
 
     <script>
-        // Navigation
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
+        // Data Management
+        class QuitPathApp {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadUserData();
+                this.updateUI();
+            }
+
+            // Load user data from localStorage or initialize with defaults
+            loadUserData() {
+                // User Profile
+                this.userProfile = JSON.parse(localStorage.getItem('quitPathUserProfile')) || {
+                    name: '',
+                    email: '',
+                    age: '',
+                    cigaretteCost: 0.5,
+                    cigarettesPerDay: 20,
+                    quitDate: ''
+                };
+
+                // Cigarette Logs
+                this.cigaretteLogs = JSON.parse(localStorage.getItem('quitPathCigaretteLogs')) || [];
+
+                // Cravings
+                this.cravings = JSON.parse(localStorage.getItem('quitPathCravings')) || [];
+
+                // Goals
+                this.goals = JSON.parse(localStorage.getItem('quitPathGoals')) || [];
+
+                // Health Insights
+                this.healthInsights = JSON.parse(localStorage.getItem('quitPathHealthInsights')) || {
+                    lungCapacity: 0,
+                    heartDiseaseRisk: 0,
+                    financialSavings: 0
+                };
+
+                // Update UI elements with user data
+                this.updateProfileForm();
+                this.updateDashboard();
+                this.updateProgressPage();
+                this.updateGoalsPage();
+                this.updateCravingsPage();
+            }
+
+            // Save data to localStorage
+            saveUserData() {
+                localStorage.setItem('quitPathUserProfile', JSON.stringify(this.userProfile));
+                localStorage.setItem('quitPathCigaretteLogs', JSON.stringify(this.cigaretteLogs));
+                localStorage.setItem('quitPathCravings', JSON.stringify(this.cravings));
+                localStorage.setItem('quitPathGoals', JSON.stringify(this.goals));
+                localStorage.setItem('quitPathHealthInsights', JSON.stringify(this.healthInsights));
+            }
+
+            // Setup event listeners
+            setupEventListeners() {
+                // Navigation
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        
+                        // Update active nav link
+                        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                        e.target.classList.add('active');
+                        
+                        // Show selected page
+                        const pageId = e.target.getAttribute('data-page');
+                        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                        document.getElementById(pageId).classList.add('active');
+                    });
+                });
                 
-                // Update active nav link
-                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                this.classList.add('active');
+                // Trigger selection
+                document.querySelectorAll('.trigger-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        e.target.classList.toggle('selected');
+                    });
+                });
                 
-                // Show selected page
-                const pageId = this.getAttribute('data-page');
-                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-                document.getElementById(pageId).classList.add('active');
-            });
-        });
-        
-        // Trigger selection
-        document.querySelectorAll('.trigger-option').forEach(option => {
-            option.addEventListener('click', function() {
-                this.classList.toggle('selected');
-            });
-        });
-        
-        // Craving intensity display
-        const intensitySlider = document.getElementById('craving-intensity');
-        const intensityValue = document.getElementById('intensity-value');
-        
-        intensitySlider.addEventListener('input', function() {
-            intensityValue.textContent = this.value;
-        });
-        
-        // Form submissions
-        document.getElementById('log-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Cigarette logged successfully!');
-            this.reset();
-            document.querySelectorAll('.trigger-option').forEach(opt => opt.classList.remove('selected'));
-        });
-        
-        document.getElementById('goal-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('New goal set successfully!');
-            this.reset();
-        });
-        
-        document.getElementById('craving-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Craving logged successfully!');
-            this.reset();
-            intensityValue.textContent = '5';
-        });
-        
-        document.getElementById('profile-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Profile updated successfully!');
-        });
-        
-        document.getElementById('smoking-settings-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Smoking settings updated successfully!');
-        });
-        
-        // Charts
-        window.onload = function() {
-            // Weekly Chart
-            const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
-            new Chart(weeklyCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [{
-                        label: 'Cigarettes per Day',
-                        data: [8, 6, 5, 7, 4, 3, 3],
-                        borderColor: '#e74c3c',
-                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                        tension: 0.3,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Cigarettes'
+                // Craving intensity display
+                const intensitySlider = document.getElementById('craving-intensity');
+                const intensityValue = document.getElementById('intensity-value');
+                
+                intensitySlider.addEventListener('input', function() {
+                    intensityValue.textContent = this.value;
+                });
+                
+                // Form submissions
+                document.getElementById('log-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.logCigarette();
+                });
+                
+                document.getElementById('goal-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.setGoal();
+                });
+                
+                document.getElementById('craving-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.logCraving();
+                });
+                
+                document.getElementById('profile-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveProfile();
+                });
+                
+                document.getElementById('smoking-settings-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveSmokingSettings();
+                });
+
+                // Data management
+                document.getElementById('export-data').addEventListener('click', () => {
+                    this.exportData();
+                });
+
+                document.getElementById('reset-data').addEventListener('click', () => {
+                    if (confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
+                        this.resetData();
+                    }
+                });
+            }
+
+            // Update profile form with existing data
+            updateProfileForm() {
+                document.getElementById('name').value = this.userProfile.name || '';
+                document.getElementById('email').value = this.userProfile.email || '';
+                document.getElementById('age').value = this.userProfile.age || '';
+                document.getElementById('cigarette-cost').value = this.userProfile.cigaretteCost || 0.5;
+                document.getElementById('cigarettes-per-day').value = this.userProfile.cigarettesPerDay || 20;
+                document.getElementById('quit-date').value = this.userProfile.quitDate || '';
+
+                // Update user info in header
+                document.getElementById('user-name').textContent = this.userProfile.name || 'User';
+                document.getElementById('user-avatar').textContent = this.userProfile.name ? this.userProfile.name.charAt(0).toUpperCase() : 'U';
+            }
+
+            // Log a cigarette
+            logCigarette() {
+                const count = parseInt(document.getElementById('cigarette-count').value);
+                const notes = document.getElementById('notes').value;
+                
+                // Get selected triggers
+                const selectedTriggers = [];
+                document.querySelectorAll('.trigger-option.selected').forEach(trigger => {
+                    selectedTriggers.push(trigger.getAttribute('data-trigger'));
+                });
+                
+                const logEntry = {
+                    id: Date.now(),
+                    date: new Date().toISOString().split('T')[0],
+                    time: new Date().toLocaleTimeString(),
+                    count: count,
+                    triggers: selectedTriggers,
+                    notes: notes
+                };
+                
+                this.cigaretteLogs.push(logEntry);
+                this.saveUserData();
+                
+                // Update UI
+                this.updateDashboard();
+                this.updateProgressPage();
+                this.updateTodayLogs();
+                
+                // Reset form
+                document.getElementById('log-form').reset();
+                document.querySelectorAll('.trigger-option').forEach(opt => opt.classList.remove('selected'));
+                
+                // Show confirmation
+                alert('Cigarette logged successfully!');
+            }
+
+            // Log a craving
+            logCraving() {
+                const intensity = parseInt(document.getElementById('craving-intensity').value);
+                const trigger = document.getElementById('craving-trigger').value;
+                const strategy = document.getElementById('resistance-strategy').value;
+                
+                const cravingEntry = {
+                    id: Date.now(),
+                    date: new Date().toISOString().split('T')[0],
+                    time: new Date().toLocaleTimeString(),
+                    intensity: intensity,
+                    trigger: trigger,
+                    strategy: strategy
+                };
+                
+                this.cravings.push(cravingEntry);
+                this.saveUserData();
+                
+                // Update UI
+                this.updateCravingsPage();
+                
+                // Reset form
+                document.getElementById('craving-form').reset();
+                document.getElementById('intensity-value').textContent = '5';
+                
+                // Show confirmation
+                alert('Craving logged successfully!');
+            }
+
+            // Set a goal
+            setGoal() {
+                const type = document.getElementById('goal-type').value;
+                const targetValue = document.getElementById('target-value').value;
+                const targetDate = document.getElementById('target-date').value;
+                
+                const goal = {
+                    id: Date.now(),
+                    type: type,
+                    targetValue: targetValue,
+                    targetDate: targetDate,
+                    createdAt: new Date().toISOString().split('T')[0],
+                    completed: false
+                };
+                
+                this.goals.push(goal);
+                this.saveUserData();
+                
+                // Update UI
+                this.updateGoalsPage();
+                
+                // Reset form
+                document.getElementById('goal-form').reset();
+                
+                // Show confirmation
+                alert('Goal set successfully!');
+            }
+
+            // Save profile information
+            saveProfile() {
+                this.userProfile.name = document.getElementById('name').value;
+                this.userProfile.email = document.getElementById('email').value;
+                this.userProfile.age = document.getElementById('age').value;
+                
+                this.saveUserData();
+                
+                // Update UI
+                document.getElementById('user-name').textContent = this.userProfile.name || 'User';
+                document.getElementById('user-avatar').textContent = this.userProfile.name ? this.userProfile.name.charAt(0).toUpperCase() : 'U';
+                
+                alert('Profile updated successfully!');
+            }
+
+            // Save smoking settings
+            saveSmokingSettings() {
+                this.userProfile.cigaretteCost = parseFloat(document.getElementById('cigarette-cost').value);
+                this.userProfile.cigarettesPerDay = parseInt(document.getElementById('cigarettes-per-day').value);
+                this.userProfile.quitDate = document.getElementById('quit-date').value;
+                
+                this.saveUserData();
+                
+                // Update UI
+                this.updateDashboard();
+                this.updateProgressPage();
+                
+                alert('Smoking settings updated successfully!');
+            }
+
+            // Export data
+            exportData() {
+                const data = {
+                    userProfile: this.userProfile,
+                    cigaretteLogs: this.cigaretteLogs,
+                    cravings: this.cravings,
+                    goals: this.goals,
+                    healthInsights: this.healthInsights
+                };
+                
+                const dataStr = JSON.stringify(data, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'quitpath-data.json';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            // Reset all data
+            resetData() {
+                localStorage.removeItem('quitPathUserProfile');
+                localStorage.removeItem('quitPathCigaretteLogs');
+                localStorage.removeItem('quitPathCravings');
+                localStorage.removeItem('quitPathGoals');
+                localStorage.removeItem('quitPathHealthInsights');
+                
+                this.loadUserData();
+                this.updateUI();
+                
+                alert('All data has been reset.');
+            }
+
+            // Update all UI elements
+            updateUI() {
+                this.updateDashboard();
+                this.updateTodayLogs();
+                this.updateProgressPage();
+                this.updateGoalsPage();
+                this.updateCravingsPage();
+            }
+
+            // Update dashboard with current data
+            updateDashboard() {
+                // Calculate today's count
+                const today = new Date().toISOString().split('T')[0];
+                const todayLogs = this.cigaretteLogs.filter(log => log.date === today);
+                const todayCount = todayLogs.reduce((total, log) => total + log.count, 0);
+                document.getElementById('today-count').textContent = todayCount;
+
+                // Calculate days smoke-free
+                let daysSmokeFree = 0;
+                if (this.userProfile.quitDate) {
+                    const quitDate = new Date(this.userProfile.quitDate);
+                    const today = new Date();
+                    const diffTime = Math.abs(today - quitDate);
+                    daysSmokeFree = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                }
+                document.getElementById('days-smoke-free').textContent = daysSmokeFree;
+
+                // Calculate money saved
+                const avgDailyBefore = this.userProfile.cigarettesPerDay || 20;
+                const costPerCigarette = this.userProfile.cigaretteCost || 0.5;
+                
+                // Calculate average daily consumption for the last 7 days
+                const last7Days = this.getLastNDays(7);
+                const avgDailyCurrent = this.calculateAverageDaily(last7Days);
+                
+                const dailySavings = (avgDailyBefore - avgDailyCurrent) * costPerCigarette;
+                const totalSavings = dailySavings * daysSmokeFree;
+                document.getElementById('money-saved').textContent = `$${totalSavings.toFixed(2)}`;
+
+                // Calculate health improvement
+                const healthImprovement = Math.min(100, Math.round((1 - (avgDailyCurrent / avgDailyBefore)) * 100));
+                document.getElementById('health-improvement').textContent = `${healthImprovement}%`;
+
+                // Update health benefits
+                this.updateHealthBenefits();
+
+                // Update charts
+                this.updateCharts();
+            }
+
+            // Update today's logs display
+            updateTodayLogs() {
+                const today = new Date().toISOString().split('T')[0];
+                const todayLogs = this.cigaretteLogs.filter(log => log.date === today);
+                const container = document.getElementById('today-logs');
+                
+                if (todayLogs.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>No cigarettes logged today yet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                todayLogs.forEach(log => {
+                    html += `
+                        <div class="craving-item">
+                            <div class="craving-header">
+                                <span class="craving-intensity">${log.count} cigarette(s)</span>
+                                <span class="craving-date">${log.time}</span>
+                            </div>
+                            <p><strong>Triggers:</strong> ${log.triggers.join(', ') || 'None specified'}</p>
+                            ${log.notes ? `<p class="craving-strategy"><strong>Notes:</strong> ${log.notes}</p>` : ''}
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            }
+
+            // Update progress page
+            updateProgressPage() {
+                this.updateCharts();
+                this.updateProgressHealthBenefits();
+            }
+
+            // Update goals page
+            updateGoalsPage() {
+                const currentGoalContainer = document.getElementById('current-goal-content');
+                const goalHistoryContainer = document.getElementById('goal-history');
+                
+                // Find active goal (not completed)
+                const activeGoal = this.goals.find(goal => !goal.completed);
+                
+                if (activeGoal) {
+                    currentGoalContainer.innerHTML = `
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 30%"></div>
+                        </div>
+                        <p>${this.getGoalDescription(activeGoal)}</p>
+                        <p><strong>Target Date:</strong> ${this.formatDate(activeGoal.targetDate)}</p>
+                        <button class="btn" style="margin-top: 15px;">
+                            <i class="fas fa-edit"></i> Edit Goal
+                        </button>
+                    `;
+                } else {
+                    currentGoalContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-bullseye"></i>
+                            <p>No active goals. Set your first goal to get started.</p>
+                        </div>
+                    `;
+                }
+                
+                // Update goal history
+                const completedGoals = this.goals.filter(goal => goal.completed);
+                if (completedGoals.length === 0) {
+                    goalHistoryContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-history"></i>
+                            <p>No goal history yet.</p>
+                        </div>
+                    `;
+                } else {
+                    let html = '<ul>';
+                    completedGoals.forEach(goal => {
+                        html += `<li>✅ ${this.getGoalDescription(goal)} (Completed: ${this.formatDate(goal.completedAt)})</li>`;
+                    });
+                    html += '</ul>';
+                    goalHistoryContainer.innerHTML = html;
+                }
+            }
+
+            // Update cravings page
+            updateCravingsPage() {
+                const container = document.getElementById('cravings-list');
+                
+                if (this.cravings.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>No cravings logged yet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Sort by date (newest first)
+                const sortedCravings = [...this.cravings].sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                let html = '';
+                sortedCravings.slice(0, 10).forEach(craving => {
+                    html += `
+                        <div class="craving-item">
+                            <div class="craving-header">
+                                <span class="craving-intensity">Intensity: ${craving.intensity}/10</span>
+                                <span class="craving-date">${this.formatDate(craving.date)} ${craving.time}</span>
+                            </div>
+                            <p><strong>Trigger:</strong> ${this.capitalizeFirst(craving.trigger)}</p>
+                            <p class="craving-strategy"><strong>Resistance Strategy:</strong> ${craving.strategy}</p>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            }
+
+            // Update health benefits display
+            updateHealthBenefits() {
+                const container = document.getElementById('health-benefits');
+                
+                // Calculate benefits based on user data
+                const avgDailyBefore = this.userProfile.cigarettesPerDay || 20;
+                const last7Days = this.getLastNDays(7);
+                const avgDailyCurrent = this.calculateAverageDaily(last7Days);
+                const reductionPercentage = 1 - (avgDailyCurrent / avgDailyBefore);
+                
+                const lungCapacityImprovement = Math.min(100, Math.round(reductionPercentage * 80));
+                const heartDiseaseRiskReduction = Math.min(100, Math.round(reductionPercentage * 50));
+                const financialSavings = (avgDailyBefore - avgDailyCurrent) * this.userProfile.cigaretteCost * 30;
+                
+                container.innerHTML = `
+                    <div class="benefit-card">
+                        <div class="benefit-title">Lung Capacity</div>
+                        <p>Your lung function has improved by approximately ${lungCapacityImprovement}% since you started reducing smoking.</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${lungCapacityImprovement}%"></div>
+                        </div>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-title">Heart Disease Risk</div>
+                        <p>Your risk of coronary heart disease has decreased by ${heartDiseaseRiskReduction}% compared to when you were smoking regularly.</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${heartDiseaseRiskReduction}%"></div>
+                        </div>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-title">Financial Savings</div>
+                        <p>You're saving approximately $${financialSavings.toFixed(2)} per month compared to your previous smoking habits.</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${Math.min(100, financialSavings / 2)}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Update progress health benefits
+            updateProgressHealthBenefits() {
+                const container = document.getElementById('progress-health-benefits');
+                
+                container.innerHTML = `
+                    <div class="benefit-card">
+                        <div class="benefit-title">Carbon Monoxide Levels</div>
+                        <p>Your blood carbon monoxide levels have normalized, improving oxygen delivery to your organs.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-title">Circulation</div>
+                        <p>Your circulation has significantly improved, reducing your risk of peripheral artery disease.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-title">Lung Cancer Risk</div>
+                        <p>After 12 months smoke-free, your lung cancer risk drops significantly compared to continued smoking.</p>
+                    </div>
+                `;
+            }
+
+            // Update all charts
+            updateCharts() {
+                this.updateWeeklyChart();
+                this.updateMonthlyChart();
+                this.updateTriggerChart();
+                this.updateBenefitsChart();
+            }
+
+            // Update weekly chart
+            updateWeeklyChart() {
+                const ctx = document.getElementById('weeklyChart').getContext('2d');
+                
+                // Get data for the last 7 days
+                const last7Days = this.getLastNDays(7);
+                const labels = last7Days.map(day => {
+                    const date = new Date(day);
+                    return date.toLocaleDateString('en-US', { weekday: 'short' });
+                });
+                
+                const data = last7Days.map(day => {
+                    const dayLogs = this.cigaretteLogs.filter(log => log.date === day);
+                    return dayLogs.reduce((total, log) => total + log.count, 0);
+                });
+                
+                if (window.weeklyChart) {
+                    window.weeklyChart.destroy();
+                }
+                
+                window.weeklyChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Cigarettes per Day',
+                            data: data,
+                            borderColor: '#e53e3e',
+                            backgroundColor: 'rgba(229, 62, 62, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Cigarettes'
+                                }
                             }
                         }
                     }
+                });
+            }
+
+            // Update monthly chart
+            updateMonthlyChart() {
+                const ctx = document.getElementById('monthlyChart').getContext('2d');
+                
+                // Get data for the last 30 days, grouped by week
+                const last30Days = this.getLastNDays(30);
+                const weeks = [];
+                for (let i = 0; i < 4; i++) {
+                    const weekDays = last30Days.slice(i * 7, (i + 1) * 7);
+                    weeks.push(weekDays);
                 }
-            });
-            
-            // Monthly Chart
-            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-            new Chart(monthlyCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                    datasets: [{
-                        label: 'Cigarettes per Week',
-                        data: [56, 42, 35, 21],
-                        backgroundColor: '#3498db',
-                        borderColor: '#2980b9',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Cigarettes'
+                
+                const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+                const data = weeks.map(week => {
+                    return week.reduce((total, day) => {
+                        const dayLogs = this.cigaretteLogs.filter(log => log.date === day);
+                        return total + dayLogs.reduce((sum, log) => sum + log.count, 0);
+                    }, 0);
+                });
+                
+                if (window.monthlyChart) {
+                    window.monthlyChart.destroy();
+                }
+                
+                window.monthlyChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Cigarettes per Week',
+                            data: data,
+                            backgroundColor: '#2d74b4',
+                            borderColor: '#1e5a8a',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Cigarettes'
+                                }
                             }
                         }
                     }
+                });
+            }
+
+            // Update trigger chart
+            updateTriggerChart() {
+                const ctx = document.getElementById('triggerChart').getContext('2d');
+                
+                // Count triggers from all logs
+                const triggerCounts = {};
+                this.cigaretteLogs.forEach(log => {
+                    log.triggers.forEach(trigger => {
+                        triggerCounts[trigger] = (triggerCounts[trigger] || 0) + 1;
+                    });
+                });
+                
+                const labels = Object.keys(triggerCounts).map(key => this.capitalizeFirst(key));
+                const data = Object.values(triggerCounts);
+                
+                if (window.triggerChart) {
+                    window.triggerChart.destroy();
                 }
-            });
-            
-            // Trigger Chart
-            const triggerCtx = document.getElementById('triggerChart').getContext('2d');
-            new Chart(triggerCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Stress', 'Boredom', 'Social', 'After Meal', 'Coffee', 'Other'],
-                    datasets: [{
-                        data: [35, 20, 15, 15, 10, 5],
-                        backgroundColor: [
-                            '#e74c3c',
-                            '#3498db',
-                            '#2ecc71',
-                            '#f39c12',
-                            '#9b59b6',
-                            '#34495e'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
+                
+                window.triggerChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: [
+                                '#e53e3e',
+                                '#2d74b4',
+                                '#38a169',
+                                '#d69e2e',
+                                '#9f7aea',
+                                '#4a5568'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Update benefits chart
+            updateBenefitsChart() {
+                const ctx = document.getElementById('benefitsChart').getContext('2d');
+                
+                // Get data for the last 30 days, grouped by week
+                const last30Days = this.getLastNDays(30);
+                const weeks = [];
+                for (let i = 0; i < 4; i++) {
+                    const weekDays = last30Days.slice(i * 7, (i + 1) * 7);
+                    weeks.push(weekDays);
                 }
-            });
-            
-            // Benefits Chart
-            const benefitsCtx = document.getElementById('benefitsChart').getContext('2d');
-            new Chart(benefitsCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                    datasets: [
-                        {
-                            label: 'Health Improvement (%)',
-                            data: [15, 30, 50, 78],
-                            borderColor: '#2ecc71',
-                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                            yAxisID: 'y',
-                            tension: 0.3
-                        },
-                        {
-                            label: 'Money Saved ($)',
-                            data: [10, 22, 32, 42],
-                            borderColor: '#f39c12',
-                            backgroundColor: 'rgba(243, 156, 18, 0.1)',
-                            yAxisID: 'y1',
-                            tension: 0.3
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: {
-                                display: true,
-                                text: 'Health Improvement (%)'
-                            }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: {
-                                display: true,
-                                text: 'Money Saved ($)'
+                
+                const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+                
+                // Calculate health improvement for each week
+                const avgDailyBefore = this.userProfile.cigarettesPerDay || 20;
+                const healthData = weeks.map(week => {
+                    const weekTotal = week.reduce((total, day) => {
+                        const dayLogs = this.cigaretteLogs.filter(log => log.date === day);
+                        return total + dayLogs.reduce((sum, log) => sum + log.count, 0);
+                    }, 0);
+                    const avgDailyCurrent = weekTotal / 7;
+                    const reductionPercentage = 1 - (avgDailyCurrent / avgDailyBefore);
+                    return Math.min(100, Math.round(reductionPercentage * 100));
+                });
+                
+                // Calculate money saved for each week
+                const costPerCigarette = this.userProfile.cigaretteCost || 0.5;
+                const moneyData = weeks.map(week => {
+                    const weekTotal = week.reduce((total, day) => {
+                        const dayLogs = this.cigaretteLogs.filter(log => log.date === day);
+                        return total + dayLogs.reduce((sum, log) => sum + log.count, 0);
+                    }, 0);
+                    const avgDailyCurrent = weekTotal / 7;
+                    const dailySavings = (avgDailyBefore - avgDailyCurrent) * costPerCigarette;
+                    return dailySavings * 7;
+                });
+                
+                if (window.benefitsChart) {
+                    window.benefitsChart.destroy();
+                }
+                
+                window.benefitsChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Health Improvement (%)',
+                                data: healthData,
+                                borderColor: '#38a169',
+                                backgroundColor: 'rgba(56, 161, 105, 0.1)',
+                                yAxisID: 'y',
+                                tension: 0.3
                             },
-                            grid: {
-                                drawOnChartArea: false
+                            {
+                                label: 'Money Saved ($)',
+                                data: moneyData,
+                                borderColor: '#d69e2e',
+                                backgroundColor: 'rgba(214, 158, 46, 0.1)',
+                                yAxisID: 'y1',
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Health Improvement (%)'
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Money Saved ($)'
+                                },
+                                grid: {
+                                    drawOnChartArea: false
+                                }
                             }
                         }
                     }
+                });
+            }
+
+            // Helper functions
+            getLastNDays(n) {
+                const days = [];
+                for (let i = n - 1; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    days.push(date.toISOString().split('T')[0]);
                 }
-            });
-        };
+                return days;
+            }
+
+            calculateAverageDaily(days) {
+                if (days.length === 0) return 0;
+                
+                const total = days.reduce((sum, day) => {
+                    const dayLogs = this.cigaretteLogs.filter(log => log.date === day);
+                    return sum + dayLogs.reduce((daySum, log) => daySum + log.count, 0);
+                }, 0);
+                
+                return total / days.length;
+            }
+
+            getGoalDescription(goal) {
+                switch (goal.type) {
+                    case 'reduce':
+                        return `Reduce to ${goal.targetValue} cigarettes per day`;
+                    case 'quit':
+                        return `Quit smoking completely`;
+                    case 'save':
+                        return `Save $${goal.targetValue}`;
+                    default:
+                        return 'Unknown goal';
+                }
+            }
+
+            formatDate(dateString) {
+                if (!dateString) return 'Not set';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            }
+
+            capitalizeFirst(str) {
+                if (!str) return '';
+                return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+        }
+
+        // Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new QuitPathApp();
+        });
     </script>
 </body>
 </html>
