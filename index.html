@@ -371,6 +371,136 @@
             color: #cbd5e0;
         }
         
+        /* Health Insights Styles */
+        .health-insights-card {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0, #6ee7b7);
+            border-left: 4px solid var(--success);
+        }
+        
+        .health-score-card {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .health-score-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .financial-impact {
+            background: linear-gradient(135deg, #fef3c7, #fde68a, #fcd34d);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .savings-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .savings-item {
+            padding: 10px;
+        }
+        
+        .savings-amount {
+            font-size: 18px;
+            font-weight: bold;
+            color: #b45309;
+        }
+        
+        .savings-label {
+            font-size: 12px;
+            color: var(--gray);
+        }
+        
+        .health-benefit-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .benefit-icon {
+            color: var(--success);
+            margin-top: 2px;
+        }
+        
+        .risk-reduction {
+            margin: 15px 0;
+        }
+        
+        .risk-item {
+            margin-bottom: 10px;
+        }
+        
+        .risk-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .risk-bar {
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .risk-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .savings-goals {
+            margin: 20px 0;
+        }
+        
+        .goal-item {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .goal-item:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .goal-progress {
+            margin-top: 10px;
+        }
+        
+        .lifetime-savings {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .lifetime-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
         footer {
             background-color: var(--primary);
             color: white;
@@ -392,6 +522,10 @@
             
             .stats-grid {
                 grid-template-columns: 1fr 1fr;
+            }
+            
+            .savings-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -459,13 +593,9 @@
                 </div>
             </div>
             
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Health Insights</h3>
-                </div>
-                <div class="health-benefits" id="health-benefits">
-                    <!-- Health benefits will be populated by JavaScript -->
-                </div>
+            <!-- Health Insights Card -->
+            <div id="health-insights-container">
+                <!-- Health insights will be rendered here by JavaScript -->
             </div>
             
             <div class="quote-card">
@@ -556,8 +686,14 @@
                 </div>
             </div>
             
-            <div class="health-benefits" id="progress-health-benefits">
-                <!-- Progress health benefits will be populated by JavaScript -->
+            <!-- Detailed Health Metrics -->
+            <div id="detailed-health-metrics-container">
+                <!-- Detailed health metrics will be rendered here by JavaScript -->
+            </div>
+            
+            <!-- Savings Calculator -->
+            <div id="savings-calculator-container">
+                <!-- Savings calculator will be rendered here by JavaScript -->
             </div>
         </section>
 
@@ -706,13 +842,18 @@
                 </div>
                 <form id="smoking-settings-form">
                     <div class="form-group">
-                        <label for="cigarette-cost">Cost per Cigarette ($)</label>
-                        <input type="number" id="cigarette-cost" step="0.01" placeholder="0.50">
+                        <label for="baseline-daily">Baseline Daily Cigarettes</label>
+                        <input type="number" id="baseline-daily" placeholder="20">
                     </div>
                     
                     <div class="form-group">
-                        <label for="cigarettes-per-day">Average Cigarettes per Day (before quitting)</label>
-                        <input type="number" id="cigarettes-per-day" placeholder="20">
+                        <label for="cigarette-price">Cigarette Price (per pack)</label>
+                        <input type="number" id="cigarette-price" step="0.01" placeholder="10.00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cigarettes-per-pack">Cigarettes per Pack</label>
+                        <input type="number" id="cigarettes-per-pack" placeholder="20">
                     </div>
                     
                     <div class="form-group">
@@ -769,8 +910,9 @@
                     name: '',
                     email: '',
                     age: '',
-                    cigaretteCost: 0.5,
-                    cigarettesPerDay: 20,
+                    baseline_daily_cigarettes: 20,
+                    cigarette_price: 10.00,
+                    cigarettes_per_pack: 20,
                     quitDate: ''
                 };
 
@@ -782,13 +924,6 @@
 
                 // Goals
                 this.goals = JSON.parse(localStorage.getItem('quitPathGoals')) || [];
-
-                // Health Insights
-                this.healthInsights = JSON.parse(localStorage.getItem('quitPathHealthInsights')) || {
-                    lungCapacity: 0,
-                    heartDiseaseRisk: 0,
-                    financialSavings: 0
-                };
 
                 // Update UI elements with user data
                 this.updateProfileForm();
@@ -804,7 +939,6 @@
                 localStorage.setItem('quitPathCigaretteLogs', JSON.stringify(this.cigaretteLogs));
                 localStorage.setItem('quitPathCravings', JSON.stringify(this.cravings));
                 localStorage.setItem('quitPathGoals', JSON.stringify(this.goals));
-                localStorage.setItem('quitPathHealthInsights', JSON.stringify(this.healthInsights));
             }
 
             // Setup event listeners
@@ -883,8 +1017,9 @@
                 document.getElementById('name').value = this.userProfile.name || '';
                 document.getElementById('email').value = this.userProfile.email || '';
                 document.getElementById('age').value = this.userProfile.age || '';
-                document.getElementById('cigarette-cost').value = this.userProfile.cigaretteCost || 0.5;
-                document.getElementById('cigarettes-per-day').value = this.userProfile.cigarettesPerDay || 20;
+                document.getElementById('baseline-daily').value = this.userProfile.baseline_daily_cigarettes || 20;
+                document.getElementById('cigarette-price').value = this.userProfile.cigarette_price || 10.00;
+                document.getElementById('cigarettes-per-pack').value = this.userProfile.cigarettes_per_pack || 20;
                 document.getElementById('quit-date').value = this.userProfile.quitDate || '';
 
                 // Update user info in header
@@ -1002,8 +1137,9 @@
 
             // Save smoking settings
             saveSmokingSettings() {
-                this.userProfile.cigaretteCost = parseFloat(document.getElementById('cigarette-cost').value);
-                this.userProfile.cigarettesPerDay = parseInt(document.getElementById('cigarettes-per-day').value);
+                this.userProfile.baseline_daily_cigarettes = parseInt(document.getElementById('baseline-daily').value);
+                this.userProfile.cigarette_price = parseFloat(document.getElementById('cigarette-price').value);
+                this.userProfile.cigarettes_per_pack = parseInt(document.getElementById('cigarettes-per-pack').value);
                 this.userProfile.quitDate = document.getElementById('quit-date').value;
                 
                 this.saveUserData();
@@ -1021,8 +1157,7 @@
                     userProfile: this.userProfile,
                     cigaretteLogs: this.cigaretteLogs,
                     cravings: this.cravings,
-                    goals: this.goals,
-                    healthInsights: this.healthInsights
+                    goals: this.goals
                 };
                 
                 const dataStr = JSON.stringify(data, null, 2);
@@ -1043,7 +1178,6 @@
                 localStorage.removeItem('quitPathCigaretteLogs');
                 localStorage.removeItem('quitPathCravings');
                 localStorage.removeItem('quitPathGoals');
-                localStorage.removeItem('quitPathHealthInsights');
                 
                 this.loadUserData();
                 this.updateUI();
@@ -1079,23 +1213,23 @@
                 document.getElementById('days-smoke-free').textContent = daysSmokeFree;
 
                 // Calculate money saved
-                const avgDailyBefore = this.userProfile.cigarettesPerDay || 20;
-                const costPerCigarette = this.userProfile.cigaretteCost || 0.5;
+                const baseline = this.userProfile.baseline_daily_cigarettes || 20;
+                const costPerCigarette = (this.userProfile.cigarette_price || 10) / (this.userProfile.cigarettes_per_pack || 20);
                 
                 // Calculate average daily consumption for the last 7 days
                 const last7Days = this.getLastNDays(7);
                 const avgDailyCurrent = this.calculateAverageDaily(last7Days);
                 
-                const dailySavings = (avgDailyBefore - avgDailyCurrent) * costPerCigarette;
+                const dailySavings = (baseline - avgDailyCurrent) * costPerCigarette;
                 const totalSavings = dailySavings * daysSmokeFree;
                 document.getElementById('money-saved').textContent = `$${totalSavings.toFixed(2)}`;
 
                 // Calculate health improvement
-                const healthImprovement = Math.min(100, Math.round((1 - (avgDailyCurrent / avgDailyBefore)) * 100));
+                const healthImprovement = Math.min(100, Math.round((1 - (avgDailyCurrent / baseline)) * 100));
                 document.getElementById('health-improvement').textContent = `${healthImprovement}%`;
 
-                // Update health benefits
-                this.updateHealthBenefits();
+                // Update health insights
+                this.renderHealthInsights();
 
                 // Update charts
                 this.updateCharts();
@@ -1137,7 +1271,8 @@
             // Update progress page
             updateProgressPage() {
                 this.updateCharts();
-                this.updateProgressHealthBenefits();
+                this.renderDetailedHealthMetrics();
+                this.renderSavingsCalculator();
             }
 
             // Update goals page
@@ -1221,61 +1356,428 @@
                 container.innerHTML = html;
             }
 
-            // Update health benefits display
-            updateHealthBenefits() {
-                const container = document.getElementById('health-benefits');
+            // Render Health Insights component
+            renderHealthInsights() {
+                const container = document.getElementById('health-insights-container');
                 
-                // Calculate benefits based on user data
-                const avgDailyBefore = this.userProfile.cigarettesPerDay || 20;
-                const last7Days = this.getLastNDays(7);
-                const avgDailyCurrent = this.calculateAverageDaily(last7Days);
-                const reductionPercentage = 1 - (avgDailyCurrent / avgDailyBefore);
+                if (!this.userProfile || !this.userProfile.baseline_daily_cigarettes) {
+                    container.innerHTML = `
+                        <div class="card" style="background: linear-gradient(135deg, #dbeafe, #93c5fd);">
+                            <div class="card-content" style="padding: 1.5rem;">
+                                <div class="text-center py-4">
+                                    <i class="fas fa-chart-line fa-2x mb-3" style="color: #3b82f6;"></i>
+                                    <p class="font-medium mb-2" style="color: #374151;">Start Your Journey</p>
+                                    <p class="text-sm" style="color: #6b7280;">
+                                        Set your baseline in Profile to see personalized health insights and savings
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const baseline = this.userProfile.baseline_daily_cigarettes;
+                const last30Days = this.getLastNDays(30);
+                const last30DaysLogs = this.cigaretteLogs.filter(log => {
+                    return last30Days.includes(log.date);
+                });
+
+                const currentDailyAverage = last30DaysLogs.length / 30;
+                const reduction = baseline - currentDailyAverage;
+                const reductionPercent = baseline > 0 ? Math.round((reduction / baseline) * 100) : 0;
+
+                const pricePerCigarette = this.userProfile.cigarettes_per_pack > 0 
+                    ? this.userProfile.cigarette_price / this.userProfile.cigarettes_per_pack 
+                    : 0.5;
                 
-                const lungCapacityImprovement = Math.min(100, Math.round(reductionPercentage * 80));
-                const heartDiseaseRiskReduction = Math.min(100, Math.round(reductionPercentage * 50));
-                const financialSavings = (avgDailyBefore - avgDailyCurrent) * this.userProfile.cigaretteCost * 30;
-                
+                const dailySavings = reduction * pricePerCigarette;
+                const monthlySavings = dailySavings * 30;
+                const yearlySavings = dailySavings * 365;
+
+                const totalCigarettesAvoided = this.cigaretteLogs.length > 0 
+                    ? (baseline * Math.ceil(this.cigaretteLogs.length / baseline)) - this.cigaretteLogs.length
+                    : 0;
+                const totalSavings = totalCigarettesAvoided * pricePerCigarette;
+
+                const getHealthScore = () => {
+                    if (reductionPercent >= 90) return { score: 95, status: "Excellent", color: "text-green-600" };
+                    if (reductionPercent >= 70) return { score: 80, status: "Very Good", color: "text-teal-600" };
+                    if (reductionPercent >= 50) return { score: 65, status: "Good", color: "text-blue-600" };
+                    if (reductionPercent >= 30) return { score: 50, status: "Improving", color: "text-yellow-600" };
+                    if (reductionPercent > 0) return { score: 30, status: "Starting", color: "text-orange-600" };
+                    return { score: 0, status: "Track More", color: "text-slate-600" };
+                };
+
+                const healthScore = getHealthScore();
+
+                const hoursGained = Math.floor(totalCigarettesAvoided * 0.2);
+                const daysGained = Math.floor(hoursGained / 24);
+
+                if (reduction <= 0) {
+                    container.innerHTML = `
+                        <div class="card health-insights-card">
+                            <div class="card-content">
+                                <div class="text-center py-4">
+                                    <i class="fas fa-chart-line fa-2x mb-3" style="color: #3b82f6;"></i>
+                                    <p class="font-medium mb-2" style="color: #374151;">Start Your Journey</p>
+                                    <p class="text-sm" style="color: #6b7280;">
+                                        Set your baseline in Profile to see personalized health insights and savings
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
                 container.innerHTML = `
-                    <div class="benefit-card">
-                        <div class="benefit-title">Lung Capacity</div>
-                        <p>Your lung function has improved by approximately ${lungCapacityImprovement}% since you started reducing smoking.</p>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${lungCapacityImprovement}%"></div>
+                    <div class="card health-insights-card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-heart" style="color: #e53e3e;"></i>
+                                Your Health Impact
+                            </h3>
                         </div>
-                    </div>
-                    <div class="benefit-card">
-                        <div class="benefit-title">Heart Disease Risk</div>
-                        <p>Your risk of coronary heart disease has decreased by ${heartDiseaseRiskReduction}% compared to when you were smoking regularly.</p>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${heartDiseaseRiskReduction}%"></div>
-                        </div>
-                    </div>
-                    <div class="benefit-card">
-                        <div class="benefit-title">Financial Savings</div>
-                        <p>You're saving approximately $${financialSavings.toFixed(2)} per month compared to your previous smoking habits.</p>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${Math.min(100, financialSavings / 2)}%"></div>
+                        <div class="card-content">
+                            <!-- Reduction Progress -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm font-medium" style="color: #374151;">Smoking Reduction</span>
+                                    <span class="text-lg font-bold" style="${healthScore.color}">
+                                        ${reductionPercent}%
+                                    </span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.min(reductionPercent, 100)}%; background: linear-gradient(90deg, #10b981, #06b6d4, #0ea5e9);"></div>
+                                </div>
+                                <p class="text-xs" style="color: #6b7280; margin-top: 8px;">
+                                    From ${baseline} to ${currentDailyAverage.toFixed(1)} cigarettes/day
+                                </p>
+                            </div>
+
+                            <!-- Health Score -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0;">
+                                <div class="health-score-card">
+                                    <i class="fas fa-award fa-2x mb-2" style="color: #8b5cf6;"></i>
+                                    <p class="health-score-value" style="color: #1f2937;">${healthScore.score}</p>
+                                    <p class="text-xs" style="color: #6b7280;">Health Score</p>
+                                    <p class="text-xs font-semibold mt-1" style="${healthScore.color}">
+                                        ${healthScore.status}
+                                    </p>
+                                </div>
+
+                                <div class="health-score-card">
+                                    <i class="fas fa-heart fa-2x mb-2" style="color: #e53e3e;"></i>
+                                    <p class="health-score-value" style="color: #1f2937;">${daysGained}</p>
+                                    <p class="text-xs" style="color: #6b7280;">Days Gained</p>
+                                    <p class="text-xs font-semibold mt-1" style="color: #16a34a;">
+                                        +${hoursGained}h total
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Financial Impact -->
+                            <div class="financial-impact">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <i class="fas fa-wallet" style="color: #d97706;"></i>
+                                    <span class="font-semibold" style="color: #1f2937;">Money Saved</span>
+                                </div>
+                                
+                                <div class="savings-grid">
+                                    <div class="savings-item">
+                                        <p class="savings-amount">$${dailySavings.toFixed(2)}</p>
+                                        <p class="savings-label">per day</p>
+                                    </div>
+                                    <div class="savings-item">
+                                        <p class="savings-amount">$${monthlySavings.toFixed(0)}</p>
+                                        <p class="savings-label">per month</p>
+                                    </div>
+                                    <div class="savings-item">
+                                        <p class="savings-amount">$${yearlySavings.toFixed(0)}</p>
+                                        <p class="savings-label">per year</p>
+                                    </div>
+                                </div>
+
+                                ${totalSavings > 0 ? `
+                                    <div style="padding-top: 12px; border-top: 1px solid #fbbf24;">
+                                        <p class="text-center text-sm" style="color: #374151;">
+                                            <span class="font-bold" style="color: #16a34a;">$${totalSavings.toFixed(2)}</span> saved so far!
+                                        </p>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <!-- Quick Health Facts -->
+                            <div style="margin-top: 20px;">
+                                <p class="font-semibold" style="color: #374151; margin-bottom: 8px;">Your Progress Unlocks:</p>
+                                <div>
+                                    ${reductionPercent >= 20 ? `
+                                        <div class="health-benefit-item">
+                                            <span class="benefit-icon">✓</span>
+                                            <span style="color: #6b7280;">Reduced carbon monoxide levels</span>
+                                        </div>
+                                    ` : ''}
+                                    ${reductionPercent >= 40 ? `
+                                        <div class="health-benefit-item">
+                                            <span class="benefit-icon">✓</span>
+                                            <span style="color: #6b7280;">Improved circulation and lung function</span>
+                                        </div>
+                                    ` : ''}
+                                    ${reductionPercent >= 60 ? `
+                                        <div class="health-benefit-item">
+                                            <span class="benefit-icon">✓</span>
+                                            <span style="color: #6b7280;">Significantly reduced heart disease risk</span>
+                                        </div>
+                                    ` : ''}
+                                    ${reductionPercent >= 80 ? `
+                                        <div class="health-benefit-item">
+                                            <span class="benefit-icon">✓</span>
+                                            <span style="color: #6b7280;">Major lung healing progress</span>
+                                        </div>
+                                    ` : ''}
+                                    ${reductionPercent < 20 ? `
+                                        <div class="health-benefit-item">
+                                            <span style="color: #9ca3af;">○</span>
+                                            <span style="color: #9ca3af;">Keep reducing to unlock health benefits</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
             }
 
-            // Update progress health benefits
-            updateProgressHealthBenefits() {
-                const container = document.getElementById('progress-health-benefits');
+            // Render Detailed Health Metrics component
+            renderDetailedHealthMetrics() {
+                const container = document.getElementById('detailed-health-metrics-container');
                 
+                if (!this.userProfile || !this.userProfile.baseline_daily_cigarettes) {
+                    container.innerHTML = `
+                        <div class="card">
+                            <div class="card-content" style="padding: 3rem; text-align: center;">
+                                <i class="fas fa-heart fa-2x mb-4" style="color: #cbd5e0;"></i>
+                                <p class="font-medium mb-2" style="color: #6b7280;">Health Insights Unavailable</p>
+                                <p class="text-sm" style="color: #9ca3af;">
+                                    Set your baseline daily cigarettes in Profile to see detailed health metrics
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const baseline = this.userProfile.baseline_daily_cigarettes;
+                const last30DaysLogs = this.cigaretteLogs.slice(0, Math.min(this.cigaretteLogs.length, baseline * 30));
+                const currentDailyAverage = last30DaysLogs.length / 30;
+                const reduction = baseline - currentDailyAverage;
+                const reductionRate = baseline > 0 ? reduction / baseline : 0;
+
+                const daysTracking = this.cigaretteLogs.length > 0 ? Math.ceil(this.cigaretteLogs.length / Math.max(currentDailyAverage, 1)) : 0;
+                const cigarettesAvoided = Math.max(0, (baseline * daysTracking) - this.cigaretteLogs.length);
+
+                const getRiskReduction = (rate) => {
+                    if (rate >= 0.9) return { heart: 50, lung: 40, stroke: 35, cancer: 30 };
+                    if (rate >= 0.7) return { heart: 35, lung: 25, stroke: 20, cancer: 15 };
+                    if (rate >= 0.5) return { heart: 20, lung: 15, stroke: 12, cancer: 8 };
+                    if (rate >= 0.3) return { heart: 10, lung: 8, stroke: 6, cancer: 4 };
+                    return { heart: 5, lung: 3, stroke: 2, cancer: 1 };
+                };
+
+                const riskReductions = getRiskReduction(reductionRate);
+
                 container.innerHTML = `
-                    <div class="benefit-card">
-                        <div class="benefit-title">Carbon Monoxide Levels</div>
-                        <p>Your blood carbon monoxide levels have normalized, improving oxygen delivery to your organs.</p>
+                    <div class="card" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0);">
+                        <div class="card-header">
+                            <h3 class="card-title" style="color: #1f2937;">Health Recovery Progress</h3>
+                        </div>
+                        <div class="card-content">
+                            <!-- Cigarettes Avoided -->
+                            <div style="text-align: center; padding: 1.5rem; background: rgba(255, 255, 255, 0.6); border-radius: 12px; margin-bottom: 1.5rem;">
+                                <div style="font-size: 3rem; font-weight: bold; color: #16a34a; margin-bottom: 8px;">
+                                    ${cigarettesAvoided.toLocaleString()}
+                                </div>
+                                <p style="color: #374151; font-weight: 500;">Cigarettes Avoided</p>
+                                <p style="font-size: 0.875rem; color: #6b7280; margin-top: 4px;">
+                                    That's ${Math.floor(cigarettesAvoided / (this.userProfile.cigarettes_per_pack || 20))} packs!
+                                </p>
+                            </div>
+
+                            <!-- Disease Risk Reduction -->
+                            <div>
+                                <h3 style="font-weight: 600; color: #1f2937; margin-bottom: 1rem;">Disease Risk Reduction</h3>
+                                <div>
+                                    <div class="risk-item">
+                                        <div class="risk-label">
+                                            <span style="color: #374151;">Heart Disease</span>
+                                            <span style="font-weight: bold; color: #e11d48;">-${riskReductions.heart}%</span>
+                                        </div>
+                                        <div class="risk-bar">
+                                            <div class="risk-fill" style="width: ${riskReductions.heart}%; background: linear-gradient(90deg, #f43f5e, #ec4899);"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="risk-item">
+                                        <div class="risk-label">
+                                            <span style="color: #374151;">Lung Disease</span>
+                                            <span style="font-weight: bold; color: #0891b2;">-${riskReductions.lung}%</span>
+                                        </div>
+                                        <div class="risk-bar">
+                                            <div class="risk-fill" style="width: ${riskReductions.lung}%; background: linear-gradient(90deg, #22d3ee, #3b82f6);"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="risk-item">
+                                        <div class="risk-label">
+                                            <span style="color: #374151;">Stroke Risk</span>
+                                            <span style="font-weight: bold; color: #7c3aed;">-${riskReductions.stroke}%</span>
+                                        </div>
+                                        <div class="risk-bar">
+                                            <div class="risk-fill" style="width: ${riskReductions.stroke}%; background: linear-gradient(90deg, #a855f7, #8b5cf6);"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="risk-item">
+                                        <div class="risk-label">
+                                            <span style="color: #374151;">Cancer Risk</span>
+                                            <span style="font-weight: bold; color: #ea580c;">-${riskReductions.cancer}%</span>
+                                        </div>
+                                        <div class="risk-bar">
+                                            <div class="risk-fill" style="width: ${riskReductions.cancer}%; background: linear-gradient(90deg, #fb923c, #f59e0b);"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="benefit-card">
-                        <div class="benefit-title">Circulation</div>
-                        <p>Your circulation has significantly improved, reducing your risk of peripheral artery disease.</p>
-                    </div>
-                    <div class="benefit-card">
-                        <div class="benefit-title">Lung Cancer Risk</div>
-                        <p>After 12 months smoke-free, your lung cancer risk drops significantly compared to continued smoking.</p>
+                `;
+            }
+
+            // Render Savings Calculator component
+            renderSavingsCalculator() {
+                const container = document.getElementById('savings-calculator-container');
+                
+                if (!this.userProfile || !this.userProfile.baseline_daily_cigarettes) {
+                    return;
+                }
+
+                const baseline = this.userProfile.baseline_daily_cigarettes;
+                const last30DaysLogs = this.cigaretteLogs.slice(0, Math.min(this.cigaretteLogs.length, baseline * 30));
+                const currentDailyAverage = last30DaysLogs.length / 30;
+                const reduction = baseline - currentDailyAverage;
+
+                const pricePerCigarette = this.userProfile.cigarettes_per_pack > 0 
+                    ? this.userProfile.cigarette_price / this.userProfile.cigarettes_per_pack 
+                    : 0.5;
+
+                const dailySavings = reduction * pricePerCigarette;
+                const monthlySavings = dailySavings * 30;
+                const yearlySavings = dailySavings * 365;
+
+                const daysTracking = this.cigaretteLogs.length > 0 ? Math.ceil(this.cigaretteLogs.length / Math.max(currentDailyAverage, 1)) : 0;
+                const cigarettesAvoided = Math.max(0, (baseline * daysTracking) - this.cigaretteLogs.length);
+                const totalSaved = cigarettesAvoided * pricePerCigarette;
+
+                if (reduction <= 0) {
+                    return;
+                }
+
+                const savingsGoals = [
+                    { icon: "shopping-bag", label: "New Phone", amount: 800, color: "from-blue-400 to-cyan-500" },
+                    { icon: "plane", label: "Vacation", amount: 2000, color: "from-purple-400 to-pink-500" },
+                    { icon: "graduation-cap", label: "Course/Training", amount: 500, color: "from-green-400 to-emerald-500" },
+                    { icon: "home", label: "Home Upgrade", amount: 5000, color: "from-orange-400 to-amber-500" },
+                ];
+
+                container.innerHTML = `
+                    <div class="card" style="background: linear-gradient(135deg, #fef3c7, #fde68a);">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-dollar-sign" style="color: #d97706;"></i>
+                                Your Savings Journey
+                            </h3>
+                        </div>
+                        <div class="card-content">
+                            <!-- Total Saved -->
+                            <div style="text-align: center; padding: 1.5rem; background: rgba(255, 255, 255, 0.6); border-radius: 12px; margin-bottom: 1.5rem;">
+                                <div style="font-size: 2.25rem; font-weight: bold; color: #d97706; margin-bottom: 8px;">
+                                    $${totalSaved.toFixed(2)}
+                                </div>
+                                <p style="color: #374151; font-weight: 500;">Total Saved So Far</p>
+                                <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1rem; font-size: 0.875rem;">
+                                    <div>
+                                        <p style="color: #6b7280;">Daily</p>
+                                        <p style="font-weight: bold; color: #1f2937;">$${dailySavings.toFixed(2)}</p>
+                                    </div>
+                                    <div style="width: 1px; background-color: #d1d5db;"></div>
+                                    <div>
+                                        <p style="color: #6b7280;">Monthly</p>
+                                        <p style="font-weight: bold; color: #1f2937;">$${monthlySavings.toFixed(0)}</p>
+                                    </div>
+                                    <div style="width: 1px; background-color: #d1d5db;"></div>
+                                    <div>
+                                        <p style="color: #6b7280;">Yearly</p>
+                                        <p style="font-weight: bold; color: #1f2937;">$${yearlySavings.toFixed(0)}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Savings Goals -->
+                            <div class="savings-goals">
+                                <h3 style="font-weight: 600; color: #1f2937; margin-bottom: 1rem;">What You Could Afford</h3>
+                                <div>
+                                    ${savingsGoals.map((goal, index) => {
+                                        const daysToGoal = dailySavings > 0 ? Math.ceil(goal.amount / dailySavings) : 0;
+                                        const monthsToGoal = Math.floor(daysToGoal / 30);
+                                        const progress = totalSaved > 0 ? Math.min((totalSaved / goal.amount) * 100, 100) : 0;
+                                        const isAchievable = yearlySavings >= goal.amount;
+
+                                        return `
+                                            <div class="goal-item">
+                                                <div class="goal-header">
+                                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                                        <div style="padding: 0.75rem; border-radius: 12px; background: linear-gradient(135deg, ${goal.color});">
+                                                            <i class="fas fa-${goal.icon}" style="color: white; width: 1.25rem; height: 1.25rem;"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div style="font-weight: 600; color: #1f2937;">${goal.label}</div>
+                                                            <div style="font-size: 0.875rem; ${isAchievable ? 'color: #16a34a;' : 'color: #6b7280;'} font-weight: 500;">
+                                                                ${isAchievable ? 
+                                                                    (progress >= 100 ? 
+                                                                        '✓ Already saved enough!' : 
+                                                                        `${monthsToGoal} months away at current rate`) : 
+                                                                    'Reduce more to achieve this goal within a year'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <span style="font-size: 0.875rem; font-weight: bold; color: #1f2937;">$${goal.amount}</span>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Lifetime Projection -->
+                            <div class="lifetime-savings">
+                                <h3 style="font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">Lifetime Savings Potential</h3>
+                                <div>
+                                    <div class="lifetime-item">
+                                        <span style="color: #374151;">5 Years</span>
+                                        <span style="font-weight: bold; color: #16a34a;">$${(yearlySavings * 5).toLocaleString()}</span>
+                                    </div>
+                                    <div class="lifetime-item">
+                                        <span style="color: #374151;">10 Years</span>
+                                        <span style="font-weight: bold; color: #16a34a;">$${(yearlySavings * 10).toLocaleString()}</span>
+                                    </div>
+                                    <div class="lifetime-item">
+                                        <span style="color: #374151;">20 Years</span>
+                                        <span style="font-weight: bold; color: #16a34a;">$${(yearlySavings * 20).toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 `;
             }
@@ -1446,26 +1948,26 @@
                 const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
                 
                 // Calculate health improvement for each week
-                const avgDailyBefore = this.userProfile.cigarettesPerDay || 20;
+                const baseline = this.userProfile.baseline_daily_cigarettes || 20;
                 const healthData = weeks.map(week => {
                     const weekTotal = week.reduce((total, day) => {
                         const dayLogs = this.cigaretteLogs.filter(log => log.date === day);
                         return total + dayLogs.reduce((sum, log) => sum + log.count, 0);
                     }, 0);
                     const avgDailyCurrent = weekTotal / 7;
-                    const reductionPercentage = 1 - (avgDailyCurrent / avgDailyBefore);
+                    const reductionPercentage = 1 - (avgDailyCurrent / baseline);
                     return Math.min(100, Math.round(reductionPercentage * 100));
                 });
                 
                 // Calculate money saved for each week
-                const costPerCigarette = this.userProfile.cigaretteCost || 0.5;
+                const costPerCigarette = (this.userProfile.cigarette_price || 10) / (this.userProfile.cigarettes_per_pack || 20);
                 const moneyData = weeks.map(week => {
                     const weekTotal = week.reduce((total, day) => {
                         const dayLogs = this.cigaretteLogs.filter(log => log.date === day);
                         return total + dayLogs.reduce((sum, log) => sum + log.count, 0);
                     }, 0);
                     const avgDailyCurrent = weekTotal / 7;
-                    const dailySavings = (avgDailyBefore - avgDailyCurrent) * costPerCigarette;
+                    const dailySavings = (baseline - avgDailyCurrent) * costPerCigarette;
                     return dailySavings * 7;
                 });
                 
