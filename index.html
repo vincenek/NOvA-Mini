@@ -882,13 +882,18 @@
                 </div>
                 <form id="smoking-settings-form">
                     <div class="form-group">
-                        <label for="cigarette-cost">Cost per Cigarette ($)</label>
-                        <input type="number" id="cigarette-cost" step="0.01" placeholder="0.50">
+                        <label for="cigarette-cost">Cost per Pack ($)</label>
+                        <input type="number" id="cigarette-cost" step="0.01" placeholder="10.00" value="10.00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cigarettes-per-pack">Cigarettes per Pack</label>
+                        <input type="number" id="cigarettes-per-pack" placeholder="20" value="20">
                     </div>
                     
                     <div class="form-group">
                         <label for="cigarettes-per-day">Average Cigarettes per Day (before quitting)</label>
-                        <input type="number" id="cigarettes-per-day" placeholder="20">
+                        <input type="number" id="cigarettes-per-day" placeholder="20" value="20">
                     </div>
                     
                     <div class="form-group">
@@ -1068,6 +1073,7 @@
                 document.getElementById('email').value = this.userProfile.email || '';
                 document.getElementById('age').value = this.userProfile.age || '';
                 document.getElementById('cigarette-cost').value = this.userProfile.cigarette_price || 10;
+                document.getElementById('cigarettes-per-pack').value = this.userProfile.cigarettes_per_pack || 20;
                 document.getElementById('cigarettes-per-day').value = this.userProfile.baseline_daily_cigarettes || 20;
                 document.getElementById('quit-date').value = this.userProfile.quitDate || '';
 
@@ -1188,6 +1194,7 @@
             // Save smoking settings
             saveSmokingSettings() {
                 this.userProfile.cigarette_price = parseFloat(document.getElementById('cigarette-cost').value);
+                this.userProfile.cigarettes_per_pack = parseInt(document.getElementById('cigarettes-per-pack').value);
                 this.userProfile.baseline_daily_cigarettes = parseInt(document.getElementById('cigarettes-per-day').value);
                 this.userProfile.quitDate = document.getElementById('quit-date').value;
                 
@@ -1898,20 +1905,16 @@
                 const ctx = document.getElementById('monthlyChart')?.getContext('2d');
                 if (!ctx) return;
                 
-                // Get data for the last 30 days, grouped by week
+                // Get data for the last 30 days
                 const last30Days = this.getLastNDays(30);
-                const weeks = [];
-                for (let i = 0; i < 4; i++) {
-                    const weekDays = last30Days.slice(i * 7, (i + 1) * 7);
-                    weeks.push(weekDays);
-                }
+                const labels = last30Days.map(day => {
+                    const date = new Date(day);
+                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                });
                 
-                const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-                const data = weeks.map(week => {
-                    return week.reduce((total, day) => {
-                        const dayLogs = this.cigaretteLogs.filter(log => log.date === day);
-                        return total + dayLogs.reduce((sum, log) => sum + log.count, 0);
-                    }, 0);
+                const data = last30Days.map(day => {
+                    const dayLogs = this.cigaretteLogs.filter(log => log.date === day);
+                    return dayLogs.reduce((total, log) => total + log.count, 0);
                 });
                 
                 if (window.monthlyChart) {
@@ -1919,15 +1922,16 @@
                 }
                 
                 window.monthlyChart = new Chart(ctx, {
-                    type: 'bar',
+                    type: 'line',
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: 'Cigarettes per Week',
+                            label: 'Daily Cigarettes',
                             data: data,
-                            backgroundColor: '#2d74b4',
-                            borderColor: '#1e5a8a',
-                            borderWidth: 1
+                            borderColor: '#2d74b4',
+                            backgroundColor: 'rgba(45, 116, 180, 0.1)',
+                            tension: 0.3,
+                            fill: true
                         }]
                     },
                     options: {
@@ -1967,10 +1971,11 @@
                 }
                 
                 window.triggerChart = new Chart(ctx, {
-                    type: 'doughnut',
+                    type: 'bar',
                     data: {
                         labels: labels,
                         datasets: [{
+                            label: 'Trigger Frequency',
                             data: data,
                             backgroundColor: [
                                 '#e53e3e',
@@ -1984,7 +1989,16 @@
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Times Triggered'
+                                }
+                            }
+                        }
                     }
                 });
             }
