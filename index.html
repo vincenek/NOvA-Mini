@@ -3,54 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Airbnb Finance Pro | Collaborative Money Manager</title>
+    <title>Airbnb Finance Manager - Live Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-
         :root {
             --primary: #FF5A5F;
-            --primary-dark: #FF385C;
+            --primary-dark: #E04F54;
             --primary-light: #FF7A7F;
             --secondary: #00A699;
+            --success: #00A699;
+            --warning: #FFB400;
+            --danger: #FF385C;
             --dark: #222222;
             --light: #FFFFFF;
             --gray: #717171;
             --gray-light: #F7F7F7;
-            --success: #00A699;
-            --warning: #FFB400;
-            --danger: #FF385C;
-            --gradient: linear-gradient(135deg, #FF5A5F 0%, #FF7A7F 100%);
-            --gradient-dark: linear-gradient(135deg, #FF385C 0%, #FF5A5F 100%);
-            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.12);
-            --radius: 20px;
-            --radius-sm: 12px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.15);
+            --radius: 16px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             min-height: 100vh;
             color: var(--dark);
         }
 
-        .app-container {
+        #root {
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
-            min-height: 100vh;
         }
 
         /* Header */
@@ -62,17 +62,17 @@
             margin-bottom: 30px;
         }
 
-        .logo-container {
+        .logo {
             display: flex;
             align-items: center;
             gap: 15px;
         }
 
-        .logo {
+        .logo-icon {
             width: 50px;
             height: 50px;
-            background: var(--gradient);
-            border-radius: 15px;
+            background: var(--primary);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -84,81 +84,80 @@
         .logo-text h1 {
             font-size: 28px;
             font-weight: 800;
-            background: var(--gradient);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
         }
 
         .logo-text p {
             color: var(--gray);
             font-size: 14px;
-            font-weight: 500;
         }
 
         .live-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 16px;
             background: var(--success);
             color: white;
-            border-radius: 50px;
-            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-weight: 600;
-            box-shadow: 0 4px 12px rgba(0, 166, 153, 0.3);
+            font-size: 14px;
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 4px 12px rgba(0, 166, 153, 0.3); }
-            50% { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0, 166, 153, 0.4); }
-            100% { transform: scale(1); box-shadow: 0 4px 12px rgba(0, 166, 153, 0.3); }
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
         }
 
         /* Navigation */
-        .nav-tabs {
+        .nav {
             display: flex;
             gap: 10px;
             background: white;
             padding: 8px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        .nav-tab {
+        .nav-btn {
             padding: 12px 24px;
-            border-radius: var(--radius-sm);
             border: none;
-            background: transparent;
+            background: none;
+            border-radius: var(--radius-sm);
             font-weight: 600;
             cursor: pointer;
-            transition: var(--transition);
             color: var(--gray);
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 15px;
+            transition: all 0.3s;
         }
 
-        .nav-tab.active {
-            background: var(--gradient);
+        .nav-btn.active {
+            background: var(--primary);
             color: white;
-            box-shadow: 0 4px 15px rgba(255, 90, 95, 0.3);
+            box-shadow: var(--shadow);
         }
 
-        .nav-tab:hover:not(.active) {
+        .nav-btn:hover:not(.active) {
             background: var(--gray-light);
-            transform: translateY(-2px);
         }
 
-        /* Dashboard Cards */
-        .dashboard-grid {
+        /* Dashboard */
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
         }
 
         .stat-card {
@@ -166,41 +165,29 @@
             border-radius: var(--radius);
             padding: 30px;
             box-shadow: var(--shadow);
-            transition: var(--transition);
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--gradient);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-left: 5px solid var(--primary);
         }
 
         .stat-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-5px);
             box-shadow: var(--shadow-lg);
         }
 
-        .stat-card.income::before {
-            background: var(--success);
+        .stat-card.income {
+            border-left-color: var(--success);
         }
 
-        .stat-card.expense::before {
-            background: var(--danger);
+        .stat-card.expense {
+            border-left-color: var(--danger);
         }
 
-        .stat-card.net::before {
-            background: var(--gradient);
+        .stat-card.net {
+            border-left-color: var(--primary);
         }
 
-        .stat-card.imprest::before {
-            background: var(--warning);
+        .stat-card.imprest {
+            border-left-color: var(--warning);
         }
 
         .stat-header {
@@ -217,209 +204,75 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
-            background: var(--gray-light);
-            color: var(--dark);
+            font-size: 24px;
+            color: white;
         }
 
         .stat-card.income .stat-icon {
-            background: rgba(0, 166, 153, 0.1);
-            color: var(--success);
+            background: var(--success);
         }
 
         .stat-card.expense .stat-icon {
-            background: rgba(255, 56, 92, 0.1);
-            color: var(--danger);
+            background: var(--danger);
         }
 
         .stat-card.net .stat-icon {
-            background: rgba(255, 90, 95, 0.1);
-            color: var(--primary);
+            background: var(--primary);
         }
 
         .stat-card.imprest .stat-icon {
-            background: rgba(255, 180, 0, 0.1);
-            color: var(--warning);
+            background: var(--warning);
         }
 
         .stat-title {
             font-size: 16px;
-            font-weight: 600;
             color: var(--gray);
             margin-bottom: 5px;
         }
 
         .stat-value {
-            font-size: 48px;
+            font-size: 42px;
             font-weight: 800;
             line-height: 1;
-            margin-bottom: 10px;
-            font-feature-settings: "tnum";
         }
 
-        .stat-trend {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 20px;
-            background: var(--gray-light);
-            width: fit-content;
-        }
-
-        .trend-up {
-            color: var(--success);
-            background: rgba(0, 166, 153, 0.1);
-        }
-
-        .trend-down {
-            color: var(--danger);
-            background: rgba(255, 56, 92, 0.1);
-        }
-
-        /* Charts Section */
-        .charts-section {
-            background: white;
-            border-radius: var(--radius);
-            padding: 30px;
-            box-shadow: var(--shadow);
-            margin-bottom: 40px;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .section-title {
-            font-size: 22px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
+        /* Month Selector */
         .month-selector {
             display: flex;
             align-items: center;
-            gap: 15px;
-            background: var(--gray-light);
-            padding: 10px 20px;
-            border-radius: 50px;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
         }
 
-        .month-nav {
-            width: 36px;
-            height: 36px;
+        .month-btn {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
+            border: none;
+            background: white;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: white;
-            cursor: pointer;
-            transition: var(--transition);
-            color: var(--dark);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
         }
 
-        .month-nav:hover {
+        .month-btn:hover {
             background: var(--primary);
             color: white;
-            transform: scale(1.1);
         }
 
         .current-month {
+            font-size: 20px;
             font-weight: 700;
-            font-size: 16px;
             min-width: 200px;
             text-align: center;
         }
 
-        /* Chart Visualization */
-        .chart-container {
-            height: 300px;
-            display: flex;
-            align-items: flex-end;
-            gap: 20px;
-            padding: 20px 0;
-        }
-
-        .bar-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .bar {
-            width: 80px;
-            border-radius: 10px 10px 0 0;
-            transition: var(--transition);
-            position: relative;
-        }
-
-        .bar-income {
-            background: var(--success);
-        }
-
-        .bar-expense {
-            background: var(--danger);
-        }
-
-        .bar-value {
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-weight: 700;
-            font-size: 14px;
-            color: var(--dark);
-        }
-
-        /* Imprest Progress */
-        .imprest-progress {
-            background: white;
-            border-radius: var(--radius);
-            padding: 30px;
-            box-shadow: var(--shadow);
-            margin-bottom: 40px;
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .progress-bar {
-            height: 16px;
-            background: var(--gray-light);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.6s ease;
-        }
-
-        .progress-labels {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: var(--gray);
-            font-weight: 500;
-        }
-
         /* Forms */
-        .form-modal {
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -431,59 +284,50 @@
             justify-content: center;
             z-index: 1000;
             padding: 20px;
-            backdrop-filter: blur(10px);
         }
 
-        .form-container {
+        .modal {
             background: white;
             border-radius: var(--radius);
-            max-width: 600px;
             width: 100%;
+            max-width: 600px;
             max-height: 90vh;
             overflow-y: auto;
-            animation: slideUp 0.4s ease-out;
-            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.3s;
         }
 
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
-        .form-header {
-            padding: 25px 30px;
+        .modal-header {
+            padding: 24px;
             border-bottom: 1px solid var(--gray-light);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .form-title {
+        .modal-title {
             font-size: 24px;
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
 
         .close-btn {
             width: 40px;
             height: 40px;
             border-radius: 50%;
+            border: none;
+            background: var(--gray-light);
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--gray-light);
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            color: var(--dark);
+            transition: all 0.3s;
         }
 
         .close-btn:hover {
@@ -492,8 +336,8 @@
             transform: rotate(90deg);
         }
 
-        .form-content {
-            padding: 30px;
+        .form {
+            padding: 24px;
         }
 
         .form-grid {
@@ -509,23 +353,21 @@
             gap: 8px;
         }
 
-        .form-group.full-width {
+        .form-group.full {
             grid-column: span 2;
         }
 
         .form-label {
             font-weight: 600;
             font-size: 14px;
-            color: var(--dark);
         }
 
         .form-input, .form-select, .form-textarea {
-            padding: 15px;
-            border: 2px solid #E8E8E8;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
             border-radius: var(--radius-sm);
-            font-size: 15px;
-            transition: var(--transition);
-            background: white;
+            font-size: 16px;
+            transition: all 0.3s;
         }
 
         .form-input:focus, .form-select:focus, .form-textarea:focus {
@@ -535,39 +377,40 @@
         }
 
         .form-textarea {
-            resize: vertical;
             min-height: 100px;
+            resize: vertical;
         }
 
         .form-actions {
             display: flex;
-            gap: 15px;
+            gap: 16px;
             margin-top: 30px;
         }
 
         .btn {
-            padding: 15px 30px;
+            padding: 14px 28px;
             border-radius: var(--radius-sm);
             border: none;
             font-weight: 600;
-            font-size: 15px;
+            font-size: 16px;
             cursor: pointer;
-            transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
             flex: 1;
+            transition: all 0.3s;
         }
 
         .btn-primary {
-            background: var(--gradient);
+            background: var(--primary);
             color: white;
         }
 
         .btn-primary:hover {
+            background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(255, 90, 95, 0.3);
+            box-shadow: var(--shadow);
         }
 
         .btn-secondary {
@@ -576,40 +419,10 @@
         }
 
         .btn-secondary:hover {
-            background: #E0E0E0;
-            transform: translateY(-2px);
+            background: #e0e0e0;
         }
 
-        /* Floating Action Button */
-        .fab-container {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 100;
-        }
-
-        .fab {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: var(--gradient);
-            color: white;
-            border: none;
-            font-size: 28px;
-            cursor: pointer;
-            box-shadow: 0 10px 30px rgba(255, 90, 95, 0.4);
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .fab:hover {
-            transform: scale(1.1) rotate(90deg);
-            box-shadow: 0 15px 40px rgba(255, 90, 95, 0.6);
-        }
-
-        /* Ledger Table */
+        /* Ledger */
         .ledger-container {
             background: white;
             border-radius: var(--radius);
@@ -625,79 +438,98 @@
 
         .table th {
             text-align: left;
-            padding: 18px;
+            padding: 16px;
             border-bottom: 2px solid var(--gray-light);
             font-weight: 700;
             color: var(--gray);
-            font-size: 13px;
+            font-size: 14px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .table td {
-            padding: 18px;
+            padding: 16px;
             border-bottom: 1px solid var(--gray-light);
-            vertical-align: middle;
-        }
-
-        .table tr {
-            transition: var(--transition);
         }
 
         .table tr:hover {
-            background: rgba(255, 90, 95, 0.03);
-            transform: translateX(5px);
+            background: rgba(255, 90, 95, 0.05);
         }
 
         .badge {
-            padding: 8px 16px;
+            padding: 6px 12px;
             border-radius: 20px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
             gap: 6px;
         }
 
-        .badge-success {
+        .badge-income {
             background: rgba(0, 166, 153, 0.1);
             color: var(--success);
         }
 
-        .badge-danger {
+        .badge-expense {
             background: rgba(255, 56, 92, 0.1);
             color: var(--danger);
         }
 
-        .receipt-preview {
-            width: 60px;
-            height: 60px;
-            border-radius: 10px;
+        .receipt-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
             object-fit: cover;
             cursor: pointer;
-            transition: var(--transition);
             border: 2px solid var(--gray-light);
+            transition: all 0.3s;
         }
 
-        .receipt-preview:hover {
-            transform: scale(1.2);
+        .receipt-img:hover {
+            transform: scale(1.1);
             border-color: var(--primary);
         }
 
-        /* Loading States */
-        .loading-container {
+        /* Floating Button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 10px 30px rgba(255, 90, 95, 0.4);
+        }
+
+        /* Loading */
+        .loading {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 400px;
-            gap: 25px;
+            gap: 20px;
         }
 
         .spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255, 90, 95, 0.1);
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--gray-light);
             border-top: 4px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -708,7 +540,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Empty States */
+        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -721,21 +553,19 @@
             margin-bottom: 20px;
         }
 
-        /* Responsive Design */
+        /* Responsive */
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
                 gap: 20px;
-                text-align: center;
             }
             
-            .nav-tabs {
+            .nav {
                 width: 100%;
                 overflow-x: auto;
-                padding: 6px;
             }
             
-            .dashboard-grid {
+            .stats-grid {
                 grid-template-columns: 1fr;
             }
             
@@ -743,46 +573,13 @@
                 grid-template-columns: 1fr;
             }
             
-            .form-group.full-width {
+            .form-group.full {
                 grid-column: span 1;
             }
             
-            .table {
-                min-width: 800px;
-            }
-            
-            .fab-container {
+            .fab {
                 bottom: 20px;
                 right: 20px;
-            }
-            
-            .fab {
-                width: 60px;
-                height: 60px;
-                font-size: 24px;
-            }
-        }
-
-        /* Dark Mode Support */
-        @media (prefers-color-scheme: dark) {
-            body {
-                background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
-                color: #fff;
-            }
-            
-            .stat-card, .charts-section, .imprest-progress, .ledger-container, .form-container {
-                background: #1e1e1e;
-                border-color: #333;
-            }
-            
-            .nav-tabs {
-                background: #1e1e1e;
-            }
-            
-            .form-input, .form-select, .form-textarea {
-                background: #2a2a2a;
-                border-color: #444;
-                color: #fff;
             }
         }
     </style>
@@ -791,7 +588,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // Initialize Firebase with your configuration
+        // Initialize Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDR8V9TeOIpexlYo9bSDV7hb2njVq7rQ-8",
             authDomain: "skill-exchange-536ac.firebaseapp.com",
@@ -802,12 +599,27 @@
             measurementId: "G-QTWEQLV7M3"
         };
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
+        // Check if Firebase is available
+        if (!firebase || !firebase.apps || !firebase.apps.length) {
+            // Try to initialize Firebase
+            try {
+                firebase.initializeApp(firebaseConfig);
+            } catch (error) {
+                console.error("Firebase initialization error:", error);
+                document.getElementById('root').innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #dc3545;">
+                        <h2>Firebase Initialization Error</h2>
+                        <p>Please check your Firebase configuration</p>
+                        <p style="font-size: 14px; margin-top: 20px;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
         const db = firebase.firestore();
         const storage = firebase.storage();
 
-        // Format currency helper
+        // Format currency
         const formatCurrency = (amount) => {
             return new Intl.NumberFormat('en-US', {
                 style: 'currency',
@@ -825,8 +637,8 @@
             const pages = [
                 { id: 'dashboard', label: 'Dashboard', icon: 'chart-line' },
                 { id: 'ledger', label: 'Ledger', icon: 'receipt' },
-                { id: 'properties', label: 'Properties', icon: 'home' },
-                { id: 'imprest', label: 'Imprest Fund', icon: 'wallet' }
+                { id: 'properties', label: 'Properties', icon: 'house' },
+                { id: 'imprest', label: 'Imprest', icon: 'wallet' }
             ];
             
             const renderPage = () => {
@@ -836,7 +648,7 @@
                     case 'ledger':
                         return <Ledger currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} />;
                     case 'properties':
-                        return <PropertiesManager />;
+                        return <Properties />;
                     case 'imprest':
                         return <ImprestManager />;
                     default:
@@ -845,28 +657,28 @@
             };
             
             return (
-                <div className="app-container">
+                <div className="app">
                     {/* Header */}
                     <div className="header">
-                        <div className="logo-container">
-                            <div className="logo">
-                                <i className="fas fa-money-bill-wave"></i>
+                        <div className="logo">
+                            <div className="logo-icon">
+                                <i className="fas fa-chart-pie"></i>
                             </div>
                             <div className="logo-text">
-                                <h1>Airbnb Finance Pro</h1>
-                                <p>Collaborative property finance management</p>
+                                <h1>Airbnb Finance</h1>
+                                <p>Manage your property finances in real-time</p>
                             </div>
                             <div className="live-badge">
                                 <i className="fas fa-bolt"></i>
-                                REAL-TIME SYNC
+                                LIVE SYNC
                             </div>
                         </div>
                         
-                        <div className="nav-tabs">
+                        <div className="nav">
                             {pages.map(page => (
                                 <button
                                     key={page.id}
-                                    className={`nav-tab ${currentPage === page.id ? 'active' : ''}`}
+                                    className={`nav-btn ${currentPage === page.id ? 'active' : ''}`}
                                     onClick={() => setCurrentPage(page.id)}
                                 >
                                     <i className={`fas fa-${page.icon}`}></i>
@@ -880,33 +692,24 @@
                     {renderPage()}
                     
                     {/* Floating Action Button */}
-                    <div className="fab-container">
-                        <button className="fab" onClick={() => {
-                            // Randomly choose between income or expense
-                            if (Math.random() > 0.5) {
-                                setShowIncomeForm(true);
-                            } else {
-                                setShowExpenseForm(true);
-                            }
-                        }}>
-                            <i className="fas fa-plus"></i>
-                        </button>
-                    </div>
+                    <button className="fab" onClick={() => {
+                        if (Math.random() > 0.5) {
+                            setShowIncomeForm(true);
+                        } else {
+                            setShowExpenseForm(true);
+                        }
+                    }}>
+                        <i className="fas fa-plus"></i>
+                    </button>
                     
                     {/* Income Form Modal */}
                     {showIncomeForm && (
-                        <IncomeForm 
-                            onClose={() => setShowIncomeForm(false)} 
-                            currentMonth={currentMonth}
-                        />
+                        <IncomeForm onClose={() => setShowIncomeForm(false)} />
                     )}
                     
                     {/* Expense Form Modal */}
                     {showExpenseForm && (
-                        <ExpenseForm 
-                            onClose={() => setShowExpenseForm(false)} 
-                            currentMonth={currentMonth}
-                        />
+                        <ExpenseForm onClose={() => setShowExpenseForm(false)} />
                     )}
                 </div>
             );
@@ -918,95 +721,65 @@
                 income: 0,
                 expenses: 0,
                 net: 0,
-                imprest: { initial: 0, spent: 0, remaining: 0 }
+                imprest: { initial: 1000, spent: 0, remaining: 1000 }
             });
             const [loading, setLoading] = React.useState(true);
-            const [recentTransactions, setRecentTransactions] = React.useState([]);
             
             React.useEffect(() => {
                 const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
                 const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
                 
-                // Fetch income
+                // Load income
                 const unsubscribeIncome = db.collection('income')
                     .where('date', '>=', start)
                     .where('date', '<=', end)
                     .onSnapshot(snapshot => {
                         let total = 0;
                         snapshot.forEach(doc => {
-                            total += parseFloat(doc.data().amount) || 0;
+                            const data = doc.data();
+                            total += parseFloat(data.amount) || 0;
                         });
                         setDashboardData(prev => ({ ...prev, income: total }));
+                    }, error => {
+                        console.error("Error loading income:", error);
                     });
                 
-                // Fetch expenses
+                // Load expenses
                 const unsubscribeExpenses = db.collection('expenses')
                     .where('date', '>=', start)
                     .where('date', '<=', end)
                     .onSnapshot(snapshot => {
                         let total = 0;
                         snapshot.forEach(doc => {
-                            total += parseFloat(doc.data().amount) || 0;
+                            const data = doc.data();
+                            total += parseFloat(data.amount) || 0;
                         });
                         setDashboardData(prev => ({ 
                             ...prev, 
                             expenses: total,
                             net: prev.income - total
                         }));
+                        setLoading(false);
+                    }, error => {
+                        console.error("Error loading expenses:", error);
+                        setLoading(false);
                     });
                 
-                // Fetch imprest
+                // Load imprest
                 const unsubscribeImprest = db.collection('imprest')
                     .doc('main')
                     .onSnapshot(doc => {
                         if (doc.exists) {
                             setDashboardData(prev => ({ ...prev, imprest: doc.data() }));
-                        } else {
-                            // Initialize imprest
-                            db.collection('imprest').doc('main').set({
-                                initial: 5000,
-                                spent: 0,
-                                remaining: 5000,
-                                updatedAt: new Date()
-                            });
                         }
-                    });
-                
-                // Fetch recent transactions
-                const unsubscribeRecent = db.collection('income')
-                    .orderBy('date', 'desc')
-                    .limit(5)
-                    .onSnapshot(snapshot => {
-                        const transactions = snapshot.docs.map(doc => ({
-                            id: doc.id,
-                            type: 'income',
-                            ...doc.data(),
-                            date: doc.data().date?.toDate()
-                        }));
-                        
-                        db.collection('expenses')
-                            .orderBy('date', 'desc')
-                            .limit(5)
-                            .onSnapshot(snapshot2 => {
-                                const expenses = snapshot2.docs.map(doc => ({
-                                    id: doc.id,
-                                    type: 'expense',
-                                    ...doc.data(),
-                                    date: doc.data().date?.toDate()
-                                }));
-                                const all = [...transactions, ...expenses]
-                                    .sort((a, b) => b.date - a.date)
-                                    .slice(0, 5);
-                                setRecentTransactions(all);
-                                setLoading(false);
-                            });
+                    }, error => {
+                        console.error("Error loading imprest:", error);
                     });
                 
                 return () => {
                     unsubscribeIncome();
                     unsubscribeExpenses();
                     unsubscribeImprest();
-                    unsubscribeRecent();
                 };
             }, [currentMonth]);
             
@@ -1025,174 +798,137 @@
             
             if (loading) {
                 return (
-                    <div className="loading-container">
+                    <div className="loading">
                         <div className="spinner"></div>
-                        <p>Loading your financial dashboard...</p>
+                        <p>Loading dashboard data...</p>
                     </div>
                 );
             }
             
-            const imprestPercentage = dashboardData.imprest.initial > 0 
-                ? (dashboardData.imprest.spent / dashboardData.imprest.initial) * 100 
-                : 0;
-            
             return (
-                <>
+                <div className="dashboard">
                     {/* Month Selector */}
-                    <div className="charts-section">
-                        <div className="section-header">
-                            <div className="section-title">
-                                <i className="fas fa-calendar-alt"></i>
-                                {getMonthName(currentMonth)} Financial Overview
+                    <div className="month-selector">
+                        <button className="month-btn" onClick={() => changeMonth(-1)}>
+                            <i className="fas fa-chevron-left"></i>
+                        </button>
+                        <div className="current-month">{getMonthName(currentMonth)}</div>
+                        <button className="month-btn" onClick={() => changeMonth(1)}>
+                            <i className="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    
+                    {/* Stats Grid */}
+                    <div className="stats-grid">
+                        <div className="stat-card income">
+                            <div className="stat-header">
+                                <div className="stat-icon">
+                                    <i className="fas fa-money-bill-wave"></i>
+                                </div>
+                                <div>
+                                    <div className="stat-title">Total Income</div>
+                                    <div className="stat-value">{formatCurrency(dashboardData.income)}</div>
+                                </div>
                             </div>
-                            <div className="month-selector">
-                                <div className="month-nav" onClick={() => changeMonth(-1)}>
-                                    <i className="fas fa-chevron-left"></i>
-                                </div>
-                                <div className="current-month">{getMonthName(currentMonth)}</div>
-                                <div className="month-nav" onClick={() => changeMonth(1)}>
-                                    <i className="fas fa-chevron-right"></i>
-                                </div>
+                            <div style={{ fontSize: '14px', color: 'var(--gray)' }}>
+                                From all properties this month
                             </div>
                         </div>
                         
-                        {/* Dashboard Cards */}
-                        <div className="dashboard-grid">
-                            <div className="stat-card income">
-                                <div className="stat-header">
-                                    <div className="stat-icon">
-                                        <i className="fas fa-arrow-down"></i>
-                                    </div>
-                                    <div>
-                                        <div className="stat-title">Total Income</div>
-                                        <div className="stat-value">{formatCurrency(dashboardData.income)}</div>
-                                    </div>
+                        <div className="stat-card expense">
+                            <div className="stat-header">
+                                <div className="stat-icon">
+                                    <i className="fas fa-credit-card"></i>
                                 </div>
-                                <div className="stat-trend trend-up">
-                                    <i className="fas fa-arrow-up"></i>
-                                    +12% from last month
+                                <div>
+                                    <div className="stat-title">Total Expenses</div>
+                                    <div className="stat-value">{formatCurrency(dashboardData.expenses)}</div>
                                 </div>
                             </div>
-                            
-                            <div className="stat-card expense">
-                                <div className="stat-header">
-                                    <div className="stat-icon">
-                                        <i className="fas fa-arrow-up"></i>
-                                    </div>
-                                    <div>
-                                        <div className="stat-title">Total Expenses</div>
-                                        <div className="stat-value">{formatCurrency(dashboardData.expenses)}</div>
-                                    </div>
+                            <div style={{ fontSize: '14px', color: 'var(--gray)' }}>
+                                Operating costs and maintenance
+                            </div>
+                        </div>
+                        
+                        <div className="stat-card net">
+                            <div className="stat-header">
+                                <div className="stat-icon">
+                                    <i className="fas fa-chart-line"></i>
                                 </div>
-                                <div className="stat-trend trend-down">
-                                    <i className="fas fa-arrow-down"></i>
-                                    -5% from last month
+                                <div>
+                                    <div className="stat-title">Net Profit</div>
+                                    <div className="stat-value" style={{
+                                        color: dashboardData.net >= 0 ? 'var(--success)' : 'var(--danger)'
+                                    }}>
+                                        {formatCurrency(dashboardData.net)}
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <div className="stat-card net">
-                                <div className="stat-header">
-                                    <div className="stat-icon">
-                                        <i className="fas fa-balance-scale"></i>
-                                    </div>
-                                    <div>
-                                        <div className="stat-title">Net Profit</div>
-                                        <div className="stat-value" style={{
-                                            color: dashboardData.net >= 0 ? 'var(--success)' : 'var(--danger)'
-                                        }}>
-                                            {formatCurrency(dashboardData.net)}
-                                        </div>
-                                    </div>
+                            <div style={{ fontSize: '14px', color: 'var(--gray)' }}>
+                                {dashboardData.net >= 0 ? 'Profit' : 'Loss'} this month
+                            </div>
+                        </div>
+                        
+                        <div className="stat-card imprest">
+                            <div className="stat-header">
+                                <div className="stat-icon">
+                                    <i className="fas fa-wallet"></i>
                                 </div>
-                                <div className={`stat-trend ${dashboardData.net >= 0 ? 'trend-up' : 'trend-down'}`}>
-                                    <i className={`fas fa-${dashboardData.net >= 0 ? 'arrow-up' : 'arrow-down'}`}></i>
-                                    {dashboardData.net >= 0 ? 'Profitable' : 'Loss'}
+                                <div>
+                                    <div className="stat-title">Imprest Fund</div>
+                                    <div className="stat-value">{formatCurrency(dashboardData.imprest.remaining)}</div>
                                 </div>
                             </div>
-                            
-                            <div className="stat-card imprest">
-                                <div className="stat-header">
-                                    <div className="stat-icon">
-                                        <i className="fas fa-wallet"></i>
-                                    </div>
-                                    <div>
-                                        <div className="stat-title">Imprest Fund</div>
-                                        <div className="stat-value">{formatCurrency(dashboardData.imprest.remaining)}</div>
-                                    </div>
-                                </div>
-                                <div className="stat-trend">
-                                    <i className="fas fa-percentage"></i>
-                                    {imprestPercentage.toFixed(1)}% spent
-                                </div>
+                            <div style={{ fontSize: '14px', color: 'var(--gray)' }}>
+                                Spent: {formatCurrency(dashboardData.imprest.spent)}
                             </div>
                         </div>
                     </div>
                     
-                    {/* Income vs Expenses Chart */}
-                    <div className="charts-section">
-                        <div className="section-header">
-                            <div className="section-title">
-                                <i className="fas fa-chart-bar"></i>
+                    {/* Chart Section */}
+                    <div className="ledger-container">
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '30px'
+                        }}>
+                            <h2 style={{ fontSize: '20px', fontWeight: '700' }}>
+                                <i className="fas fa-chart-bar" style={{ marginRight: '10px' }}></i>
                                 Income vs Expenses
-                            </div>
+                            </h2>
                         </div>
                         
-                        <div className="chart-container">
-                            <div className="bar-container">
-                                <div 
-                                    className="bar bar-income" 
-                                    style={{ 
-                                        height: `${Math.min(100, (dashboardData.income / Math.max(dashboardData.income + dashboardData.expenses, 1)) * 100)}%` 
-                                    }}
-                                >
-                                    <div className="bar-value">{formatCurrency(dashboardData.income)}</div>
-                                </div>
+                        <div style={{ 
+                            height: '200px', 
+                            display: 'flex', 
+                            alignItems: 'flex-end',
+                            gap: '20px',
+                            padding: '20px 0'
+                        }}>
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <div style={{
+                                    height: `${Math.min(100, (dashboardData.income / Math.max(dashboardData.income + dashboardData.expenses, 1)) * 100)}%`,
+                                    background: 'var(--success)',
+                                    width: '60px',
+                                    borderRadius: '8px 8px 0 0',
+                                    transition: 'height 0.5s ease'
+                                }}></div>
                                 <div style={{ marginTop: '10px', fontWeight: '600' }}>Income</div>
                             </div>
-                            <div className="bar-container">
-                                <div 
-                                    className="bar bar-expense" 
-                                    style={{ 
-                                        height: `${Math.min(100, (dashboardData.expenses / Math.max(dashboardData.income + dashboardData.expenses, 1)) * 100)}%` 
-                                    }}
-                                >
-                                    <div className="bar-value">{formatCurrency(dashboardData.expenses)}</div>
-                                </div>
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <div style={{
+                                    height: `${Math.min(100, (dashboardData.expenses / Math.max(dashboardData.income + dashboardData.expenses, 1)) * 100)}%`,
+                                    background: 'var(--danger)',
+                                    width: '60px',
+                                    borderRadius: '8px 8px 0 0',
+                                    transition: 'height 0.5s ease'
+                                }}></div>
                                 <div style={{ marginTop: '10px', fontWeight: '600' }}>Expenses</div>
                             </div>
                         </div>
                     </div>
-                    
-                    {/* Imprest Progress */}
-                    <div className="imprest-progress">
-                        <div className="progress-header">
-                            <div className="section-title">
-                                <i className="fas fa-chart-pie"></i>
-                                Imprest Fund Utilization
-                            </div>
-                            <div style={{ fontWeight: '600', fontSize: '18px' }}>
-                                {formatCurrency(dashboardData.imprest.remaining)} remaining
-                            </div>
-                        </div>
-                        
-                        <div className="progress-bar">
-                            <div 
-                                className="progress-fill"
-                                style={{ 
-                                    width: `${Math.min(100, imprestPercentage)}%`,
-                                    background: imprestPercentage > 90 ? 'var(--danger)' : 
-                                               imprestPercentage > 70 ? 'var(--warning)' : 'var(--success)'
-                                }}
-                            ></div>
-                        </div>
-                        
-                        <div className="progress-labels">
-                            <div>Initial: {formatCurrency(dashboardData.imprest.initial)}</div>
-                            <div>Spent: {formatCurrency(dashboardData.imprest.spent)}</div>
-                            <div>Remaining: {formatCurrency(dashboardData.imprest.remaining)}</div>
-                        </div>
-                    </div>
-                </>
+                </div>
             );
         };
         
@@ -1200,7 +936,7 @@
         const Ledger = ({ currentMonth, setCurrentMonth }) => {
             const [transactions, setTransactions] = React.useState([]);
             const [loading, setLoading] = React.useState(true);
-            const [selectedReceipt, setSelectedReceipt] = React.useState(null);
+            const [showReceipt, setShowReceipt] = React.useState(null);
             
             React.useEffect(() => {
                 const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
@@ -1232,17 +968,25 @@
                                     .sort((a, b) => b.date - a.date);
                                 setTransactions(all);
                                 setLoading(false);
+                            }, error => {
+                                console.error("Error loading expenses:", error);
+                                setLoading(false);
                             });
+                    }, error => {
+                        console.error("Error loading income:", error);
+                        setLoading(false);
                     });
                 
                 return () => unsubscribe();
             }, [currentMonth]);
             
             const formatDate = (date) => {
-                return date?.toLocaleDateString('en-US', {
+                if (!date) return '';
+                return date.toLocaleDateString('en-US', {
                     month: 'short',
-                    day: 'numeric'
-                }) || '';
+                    day: 'numeric',
+                    year: 'numeric'
+                });
             };
             
             const getMonthName = (date) => {
@@ -1257,29 +1001,40 @@
             
             if (loading) {
                 return (
-                    <div className="loading-container">
+                    <div className="loading">
                         <div className="spinner"></div>
-                        <p>Loading transaction history...</p>
+                        <p>Loading transactions...</p>
                     </div>
                 );
             }
             
             return (
                 <>
+                    {/* Month Selector */}
+                    <div className="month-selector">
+                        <button className="month-btn" onClick={() => changeMonth(-1)}>
+                            <i className="fas fa-chevron-left"></i>
+                        </button>
+                        <div className="current-month">{getMonthName(currentMonth)}</div>
+                        <button className="month-btn" onClick={() => changeMonth(1)}>
+                            <i className="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    
                     <div className="ledger-container">
-                        <div className="section-header">
-                            <div className="section-title">
-                                <i className="fas fa-history"></i>
-                                Transaction Ledger - {getMonthName(currentMonth)}
-                            </div>
-                            <div className="month-selector">
-                                <div className="month-nav" onClick={() => changeMonth(-1)}>
-                                    <i className="fas fa-chevron-left"></i>
-                                </div>
-                                <div className="current-month">{getMonthName(currentMonth)}</div>
-                                <div className="month-nav" onClick={() => changeMonth(1)}>
-                                    <i className="fas fa-chevron-right"></i>
-                                </div>
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '30px'
+                        }}>
+                            <h2 style={{ fontSize: '20px', fontWeight: '700' }}>
+                                <i className="fas fa-history" style={{ marginRight: '10px' }}></i>
+                                Transaction History
+                            </h2>
+                            <div className="live-badge">
+                                <i className="fas fa-sync"></i>
+                                REAL-TIME
                             </div>
                         </div>
                         
@@ -1310,30 +1065,27 @@
                                         <tr key={`${transaction.type}-${transaction.id}`}>
                                             <td>{formatDate(transaction.date)}</td>
                                             <td>
-                                                <span className={`badge ${transaction.type === 'income' ? 'badge-success' : 'badge-danger'}`}>
+                                                <span className={`badge ${transaction.type === 'income' ? 'badge-income' : 'badge-expense'}`}>
                                                     <i className={`fas fa-${transaction.type === 'income' ? 'arrow-down' : 'arrow-up'}`}></i>
                                                     {transaction.type === 'income' ? 'Income' : 'Expense'}
                                                 </span>
                                             </td>
                                             <td style={{
                                                 fontWeight: '700',
-                                                fontSize: '16px',
                                                 color: transaction.type === 'income' ? 'var(--success)' : 'var(--danger)'
                                             }}>
                                                 {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
                                             </td>
-                                            <td>
-                                                {transaction.type === 'income' ? transaction.source : transaction.category}
-                                            </td>
-                                            <td>{transaction.property || 'N/A'}</td>
+                                            <td>{transaction.type === 'income' ? transaction.source : transaction.category}</td>
+                                            <td>{transaction.property || '-'}</td>
                                             <td>{transaction.notes || '-'}</td>
                                             <td>
                                                 {transaction.receiptUrl ? (
                                                     <img 
                                                         src={transaction.receiptUrl} 
                                                         alt="Receipt" 
-                                                        className="receipt-preview"
-                                                        onClick={() => setSelectedReceipt(transaction.receiptUrl)}
+                                                        className="receipt-img"
+                                                        onClick={() => setShowReceipt(transaction.receiptUrl)}
                                                     />
                                                 ) : (
                                                     <i className="fas fa-receipt" style={{ color: '#ccc' }}></i>
@@ -1354,33 +1106,26 @@
                     </div>
                     
                     {/* Receipt Modal */}
-                    {selectedReceipt && (
-                        <div className="form-modal" onClick={() => setSelectedReceipt(null)}>
-                            <div style={{ 
-                                background: 'white', 
-                                borderRadius: 'var(--radius)',
-                                padding: '20px',
-                                maxWidth: '800px',
-                                maxHeight: '80vh',
-                                overflow: 'auto'
-                            }} onClick={e => e.stopPropagation()}>
-                                <div className="form-header">
-                                    <div className="form-title">
+                    {showReceipt && (
+                        <div className="modal-overlay" onClick={() => setShowReceipt(null)}>
+                            <div className="modal" style={{ maxWidth: '800px' }} onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <div className="modal-title">
                                         <i className="fas fa-receipt"></i>
-                                        Receipt Preview
+                                        Receipt
                                     </div>
-                                    <button className="close-btn" onClick={() => setSelectedReceipt(null)}>
+                                    <button className="close-btn" onClick={() => setShowReceipt(null)}>
                                         <i className="fas fa-times"></i>
                                     </button>
                                 </div>
-                                <div style={{ textAlign: 'center', padding: '20px' }}>
+                                <div style={{ padding: '20px', textAlign: 'center' }}>
                                     <img 
-                                        src={selectedReceipt} 
+                                        src={showReceipt} 
                                         alt="Receipt" 
                                         style={{ 
                                             maxWidth: '100%', 
                                             maxHeight: '60vh',
-                                            borderRadius: '10px',
+                                            borderRadius: '8px',
                                             boxShadow: 'var(--shadow)'
                                         }}
                                     />
@@ -1393,7 +1138,7 @@
         };
         
         // Income Form Component
-        const IncomeForm = ({ onClose, currentMonth }) => {
+        const IncomeForm = ({ onClose }) => {
             const [formData, setFormData] = React.useState({
                 amount: '',
                 date: new Date().toISOString().split('T')[0],
@@ -1403,20 +1148,24 @@
                 receiptFile: null
             });
             const [uploading, setUploading] = React.useState(false);
-            const [properties, setProperties] = React.useState([]);
+            const [properties, setProperties] = React.useState([{ name: 'Main Property' }]);
             
             React.useEffect(() => {
+                // Try to load properties
                 const unsubscribe = db.collection('properties')
-                    .where('status', '==', 'active')
                     .onSnapshot(snapshot => {
                         const props = snapshot.docs.map(doc => ({
                             id: doc.id,
                             ...doc.data()
                         }));
-                        setProperties(props);
-                        if (props.length > 0 && !formData.property) {
-                            setFormData(prev => ({ ...prev, property: props[0].name }));
+                        if (props.length > 0) {
+                            setProperties(props);
+                            if (!formData.property && props[0]) {
+                                setFormData(prev => ({ ...prev, property: props[0].name }));
+                            }
                         }
+                    }, error => {
+                        console.error("Error loading properties:", error);
                     });
                 
                 return () => unsubscribe();
@@ -1424,6 +1173,7 @@
             
             const handleSubmit = async (e) => {
                 e.preventDefault();
+                
                 if (!formData.amount || isNaN(formData.amount)) {
                     alert('Please enter a valid amount');
                     return;
@@ -1436,10 +1186,14 @@
                     
                     // Upload receipt if exists
                     if (formData.receiptFile) {
-                        const storageRef = storage.ref();
-                        const fileRef = storageRef.child(`receipts/income/${Date.now()}_${formData.receiptFile.name}`);
-                        await fileRef.put(formData.receiptFile);
-                        receiptUrl = await fileRef.getDownloadURL();
+                        try {
+                            const storageRef = storage.ref();
+                            const fileRef = storageRef.child(`receipts/income/${Date.now()}_${formData.receiptFile.name}`);
+                            await fileRef.put(formData.receiptFile);
+                            receiptUrl = await fileRef.getDownloadURL();
+                        } catch (error) {
+                            console.error("Error uploading receipt:", error);
+                        }
                     }
                     
                     // Save to Firestore
@@ -1447,7 +1201,7 @@
                         amount: parseFloat(formData.amount),
                         date: firebase.firestore.Timestamp.fromDate(new Date(formData.date)),
                         source: formData.source,
-                        property: formData.property,
+                        property: formData.property || properties[0]?.name || 'Main Property',
                         notes: formData.notes,
                         receiptUrl: receiptUrl,
                         createdAt: new Date()
@@ -1455,27 +1209,27 @@
                     
                     onClose();
                 } catch (error) {
-                    console.error('Error adding income:', error);
-                    alert('Error adding income. Please try again.');
+                    console.error("Error saving income:", error);
+                    alert('Error saving income. Please try again.');
                 } finally {
                     setUploading(false);
                 }
             };
             
             return (
-                <div className="form-modal">
-                    <div className="form-container">
-                        <div className="form-header">
-                            <div className="form-title">
+                <div className="modal-overlay">
+                    <div className="modal">
+                        <div className="modal-header">
+                            <div className="modal-title">
                                 <i className="fas fa-money-bill-wave" style={{ color: 'var(--success)' }}></i>
-                                Add New Income
+                                Add Income
                             </div>
                             <button className="close-btn" onClick={onClose}>
                                 <i className="fas fa-times"></i>
                             </button>
                         </div>
                         
-                        <div className="form-content">
+                        <div className="form">
                             <form onSubmit={handleSubmit}>
                                 <div className="form-grid">
                                     <div className="form-group">
@@ -1512,7 +1266,7 @@
                                             <option value="Airbnb">Airbnb</option>
                                             <option value="Booking.com">Booking.com</option>
                                             <option value="VRBO">VRBO</option>
-                                            <option value="Direct">Direct Booking</option>
+                                            <option value="Direct">Direct</option>
                                             <option value="Other">Other</option>
                                         </select>
                                     </div>
@@ -1524,28 +1278,28 @@
                                             value={formData.property}
                                             onChange={e => setFormData({...formData, property: e.target.value})}
                                         >
-                                            {properties.map(prop => (
-                                                <option key={prop.id} value={prop.name}>{prop.name}</option>
+                                            {properties.map((prop, index) => (
+                                                <option key={index} value={prop.name}>{prop.name}</option>
                                             ))}
                                         </select>
                                     </div>
                                     
-                                    <div className="form-group full-width">
+                                    <div className="form-group full">
                                         <label className="form-label">Notes</label>
                                         <textarea
                                             className="form-textarea"
                                             value={formData.notes}
                                             onChange={e => setFormData({...formData, notes: e.target.value})}
-                                            placeholder="Additional notes about this income..."
+                                            placeholder="Additional notes..."
                                             rows="3"
                                         />
                                     </div>
                                     
-                                    <div className="form-group full-width">
+                                    <div className="form-group full">
                                         <label className="form-label">Receipt (Optional)</label>
                                         <input
                                             type="file"
-                                            accept="image/*,.pdf"
+                                            accept="image/*"
                                             className="form-input"
                                             onChange={e => setFormData({...formData, receiptFile: e.target.files[0]})}
                                         />
@@ -1560,7 +1314,7 @@
                                         {uploading ? (
                                             <>
                                                 <i className="fas fa-spinner fa-spin"></i>
-                                                Adding...
+                                                Saving...
                                             </>
                                         ) : (
                                             <>
@@ -1578,7 +1332,7 @@
         };
         
         // Expense Form Component
-        const ExpenseForm = ({ onClose, currentMonth }) => {
+        const ExpenseForm = ({ onClose }) => {
             const [formData, setFormData] = React.useState({
                 amount: '',
                 date: new Date().toISOString().split('T')[0],
@@ -1589,23 +1343,26 @@
                 receiptFile: null
             });
             const [uploading, setUploading] = React.useState(false);
-            const [properties, setProperties] = React.useState([]);
-            const [imprestBalance, setImprestBalance] = React.useState(0);
+            const [properties, setProperties] = React.useState([{ name: 'Main Property' }]);
+            const [imprestBalance, setImprestBalance] = React.useState(1000);
             
             React.useEffect(() => {
+                // Load properties
                 const unsubscribeProps = db.collection('properties')
-                    .where('status', '==', 'active')
                     .onSnapshot(snapshot => {
                         const props = snapshot.docs.map(doc => ({
                             id: doc.id,
                             ...doc.data()
                         }));
-                        setProperties(props);
-                        if (props.length > 0 && !formData.property) {
-                            setFormData(prev => ({ ...prev, property: props[0].name }));
+                        if (props.length > 0) {
+                            setProperties(props);
+                            if (!formData.property && props[0]) {
+                                setFormData(prev => ({ ...prev, property: props[0].name }));
+                            }
                         }
                     });
                 
+                // Load imprest balance
                 const unsubscribeImprest = db.collection('imprest')
                     .doc('main')
                     .onSnapshot(doc => {
@@ -1622,6 +1379,7 @@
             
             const handleSubmit = async (e) => {
                 e.preventDefault();
+                
                 if (!formData.amount || isNaN(formData.amount)) {
                     alert('Please enter a valid amount');
                     return;
@@ -1631,7 +1389,7 @@
                 
                 // Check imprest balance
                 if (formData.fromImprest && amount > imprestBalance) {
-                    if (!confirm(`This will exceed the imprest balance by $${(amount - imprestBalance).toFixed(2)}. Continue?`)) {
+                    if (!confirm(`This exceeds the imprest balance by $${(amount - imprestBalance).toFixed(2)}. Continue?`)) {
                         return;
                     }
                 }
@@ -1643,10 +1401,14 @@
                     
                     // Upload receipt
                     if (formData.receiptFile) {
-                        const storageRef = storage.ref();
-                        const fileRef = storageRef.child(`receipts/expenses/${Date.now()}_${formData.receiptFile.name}`);
-                        await fileRef.put(formData.receiptFile);
-                        receiptUrl = await fileRef.getDownloadURL();
+                        try {
+                            const storageRef = storage.ref();
+                            const fileRef = storageRef.child(`receipts/expenses/${Date.now()}_${formData.receiptFile.name}`);
+                            await fileRef.put(formData.receiptFile);
+                            receiptUrl = await fileRef.getDownloadURL();
+                        } catch (error) {
+                            console.error("Error uploading receipt:", error);
+                        }
                     }
                     
                     // Save expense
@@ -1654,7 +1416,7 @@
                         amount: amount,
                         date: firebase.firestore.Timestamp.fromDate(new Date(formData.date)),
                         category: formData.category,
-                        property: formData.property,
+                        property: formData.property || properties[0]?.name || 'Main Property',
                         notes: formData.notes,
                         fromImprest: formData.fromImprest,
                         receiptUrl: receiptUrl,
@@ -1672,27 +1434,27 @@
                     
                     onClose();
                 } catch (error) {
-                    console.error('Error adding expense:', error);
-                    alert('Error adding expense. Please try again.');
+                    console.error("Error saving expense:", error);
+                    alert('Error saving expense. Please try again.');
                 } finally {
                     setUploading(false);
                 }
             };
             
             return (
-                <div className="form-modal">
-                    <div className="form-container">
-                        <div className="form-header">
-                            <div className="form-title">
+                <div className="modal-overlay">
+                    <div className="modal">
+                        <div className="modal-header">
+                            <div className="modal-title">
                                 <i className="fas fa-credit-card" style={{ color: 'var(--danger)' }}></i>
-                                Add New Expense
+                                Add Expense
                             </div>
                             <button className="close-btn" onClick={onClose}>
                                 <i className="fas fa-times"></i>
                             </button>
                         </div>
                         
-                        <div className="form-content">
+                        <div className="form">
                             <form onSubmit={handleSubmit}>
                                 <div className="form-grid">
                                     <div className="form-group">
@@ -1744,8 +1506,8 @@
                                             value={formData.property}
                                             onChange={e => setFormData({...formData, property: e.target.value})}
                                         >
-                                            {properties.map(prop => (
-                                                <option key={prop.id} value={prop.name}>{prop.name}</option>
+                                            {properties.map((prop, index) => (
+                                                <option key={index} value={prop.name}>{prop.name}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -1756,33 +1518,32 @@
                                                 type="checkbox"
                                                 checked={formData.fromImprest}
                                                 onChange={e => setFormData({...formData, fromImprest: e.target.checked})}
-                                                style={{ width: '20px', height: '20px' }}
                                             />
-                                            Deduct from Imprest Fund
+                                            Deduct from Imprest
                                         </label>
                                         {formData.fromImprest && (
-                                            <div style={{ fontSize: '13px', color: 'var(--gray)', marginTop: '5px' }}>
+                                            <div style={{ fontSize: '14px', color: 'var(--gray)', marginTop: '5px' }}>
                                                 Available: {formatCurrency(imprestBalance)}
                                             </div>
                                         )}
                                     </div>
                                     
-                                    <div className="form-group full-width">
+                                    <div className="form-group full">
                                         <label className="form-label">Notes</label>
                                         <textarea
                                             className="form-textarea"
                                             value={formData.notes}
                                             onChange={e => setFormData({...formData, notes: e.target.value})}
-                                            placeholder="Additional notes about this expense..."
+                                            placeholder="Additional notes..."
                                             rows="3"
                                         />
                                     </div>
                                     
-                                    <div className="form-group full-width">
+                                    <div className="form-group full">
                                         <label className="form-label">Receipt (Optional)</label>
                                         <input
                                             type="file"
-                                            accept="image/*,.pdf"
+                                            accept="image/*"
                                             className="form-input"
                                             onChange={e => setFormData({...formData, receiptFile: e.target.files[0]})}
                                         />
@@ -1797,7 +1558,7 @@
                                         {uploading ? (
                                             <>
                                                 <i className="fas fa-spinner fa-spin"></i>
-                                                Adding...
+                                                Saving...
                                             </>
                                         ) : (
                                             <>
@@ -1814,22 +1575,24 @@
             );
         };
         
-        // Properties Manager Component
-        const PropertiesManager = () => {
+        // Properties Component
+        const Properties = () => {
             const [properties, setProperties] = React.useState([]);
             const [showAddForm, setShowAddForm] = React.useState(false);
-            const [newProperty, setNewProperty] = React.useState({ name: '', status: 'active' });
+            const [newProperty, setNewProperty] = React.useState({ name: '', status: 'Active' });
             const [loading, setLoading] = React.useState(true);
             
             React.useEffect(() => {
                 const unsubscribe = db.collection('properties')
-                    .orderBy('name')
                     .onSnapshot(snapshot => {
                         const props = snapshot.docs.map(doc => ({
                             id: doc.id,
                             ...doc.data()
                         }));
                         setProperties(props);
+                        setLoading(false);
+                    }, error => {
+                        console.error("Error loading properties:", error);
                         setLoading(false);
                     });
                 
@@ -1849,27 +1612,17 @@
                         createdAt: new Date()
                     });
                     
-                    setNewProperty({ name: '', status: 'active' });
+                    setNewProperty({ name: '', status: 'Active' });
                     setShowAddForm(false);
                 } catch (error) {
-                    console.error('Error adding property:', error);
+                    console.error("Error adding property:", error);
                     alert('Error adding property');
-                }
-            };
-            
-            const toggleStatus = async (property) => {
-                try {
-                    await db.collection('properties').doc(property.id).update({
-                        status: property.status === 'active' ? 'inactive' : 'active'
-                    });
-                } catch (error) {
-                    console.error('Error updating property:', error);
                 }
             };
             
             if (loading) {
                 return (
-                    <div className="loading-container">
+                    <div className="loading">
                         <div className="spinner"></div>
                         <p>Loading properties...</p>
                     </div>
@@ -1878,11 +1631,16 @@
             
             return (
                 <div className="ledger-container">
-                    <div className="section-header">
-                        <div className="section-title">
-                            <i className="fas fa-home"></i>
-                            Properties Management
-                        </div>
+                    <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '30px'
+                    }}>
+                        <h2 style={{ fontSize: '20px', fontWeight: '700' }}>
+                            <i className="fas fa-home" style={{ marginRight: '10px' }}></i>
+                            Properties
+                        </h2>
                         <button className="btn btn-primary" onClick={() => setShowAddForm(true)}>
                             <i className="fas fa-plus"></i>
                             Add Property
@@ -1894,8 +1652,15 @@
                             <div className="empty-icon">
                                 <i className="fas fa-home"></i>
                             </div>
-                            <h3>No properties added yet</h3>
-                            <p>Add your first property to start tracking finances</p>
+                            <h3>No properties yet</h3>
+                            <p>Add your first property to start tracking</p>
+                            <button 
+                                className="btn btn-primary" 
+                                onClick={() => setShowAddForm(true)}
+                                style={{ marginTop: '20px' }}
+                            >
+                                Add First Property
+                            </button>
                         </div>
                     ) : (
                         <table className="table">
@@ -1909,22 +1674,27 @@
                             <tbody>
                                 {properties.map(property => (
                                     <tr key={property.id}>
-                                        <td style={{ fontWeight: '600', fontSize: '16px' }}>
-                                            {property.name}
-                                        </td>
+                                        <td style={{ fontWeight: '600' }}>{property.name}</td>
                                         <td>
-                                            <span className={`badge ${property.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
-                                                {property.status === 'active' ? 'Active' : 'Inactive'}
+                                            <span className={`badge ${property.status === 'Active' ? 'badge-income' : 'badge-expense'}`}>
+                                                {property.status}
                                             </span>
                                         </td>
                                         <td>
                                             <button 
-                                                className="btn btn-secondary" 
-                                                onClick={() => toggleStatus(property)}
-                                                style={{ padding: '8px 16px', fontSize: '14px' }}
+                                                className="btn btn-secondary"
+                                                onClick={async () => {
+                                                    try {
+                                                        await db.collection('properties').doc(property.id).update({
+                                                            status: property.status === 'Active' ? 'Inactive' : 'Active'
+                                                        });
+                                                    } catch (error) {
+                                                        console.error("Error updating property:", error);
+                                                    }
+                                                }}
                                             >
-                                                <i className={`fas fa-${property.status === 'active' ? 'pause' : 'play'}`}></i>
-                                                {property.status === 'active' ? 'Deactivate' : 'Activate'}
+                                                <i className={`fas fa-${property.status === 'Active' ? 'pause' : 'play'}`}></i>
+                                                {property.status === 'Active' ? 'Deactivate' : 'Activate'}
                                             </button>
                                         </td>
                                     </tr>
@@ -1935,21 +1705,21 @@
                     
                     {/* Add Property Modal */}
                     {showAddForm && (
-                        <div className="form-modal">
-                            <div className="form-container" style={{ maxWidth: '500px' }}>
-                                <div className="form-header">
-                                    <div className="form-title">
+                        <div className="modal-overlay">
+                            <div className="modal" style={{ maxWidth: '500px' }}>
+                                <div className="modal-header">
+                                    <div className="modal-title">
                                         <i className="fas fa-plus"></i>
-                                        Add New Property
+                                        Add Property
                                     </div>
                                     <button className="close-btn" onClick={() => setShowAddForm(false)}>
                                         <i className="fas fa-times"></i>
                                     </button>
                                 </div>
                                 
-                                <div className="form-content">
+                                <div className="form">
                                     <div className="form-grid">
-                                        <div className="form-group full-width">
+                                        <div className="form-group full">
                                             <label className="form-label">Property Name *</label>
                                             <input
                                                 type="text"
@@ -1961,15 +1731,15 @@
                                             />
                                         </div>
                                         
-                                        <div className="form-group full-width">
+                                        <div className="form-group full">
                                             <label className="form-label">Status</label>
                                             <select
                                                 className="form-select"
                                                 value={newProperty.status}
                                                 onChange={e => setNewProperty({...newProperty, status: e.target.value})}
                                             >
-                                                <option value="active">Active</option>
-                                                <option value="inactive">Inactive</option>
+                                                <option value="Active">Active</option>
+                                                <option value="Inactive">Inactive</option>
                                             </select>
                                         </div>
                                     </div>
@@ -1993,7 +1763,7 @@
         
         // Imprest Manager Component
         const ImprestManager = () => {
-            const [imprest, setImprest] = React.useState({ initial: 0, spent: 0, remaining: 0 });
+            const [imprest, setImprest] = React.useState({ initial: 1000, spent: 0, remaining: 1000 });
             const [showAdjustForm, setShowAdjustForm] = React.useState(false);
             const [adjustment, setAdjustment] = React.useState({ type: 'add', amount: '' });
             const [loading, setLoading] = React.useState(true);
@@ -2007,12 +1777,15 @@
                         } else {
                             // Initialize if not exists
                             db.collection('imprest').doc('main').set({
-                                initial: 5000,
+                                initial: 1000,
                                 spent: 0,
-                                remaining: 5000,
+                                remaining: 1000,
                                 updatedAt: new Date()
                             });
                         }
+                        setLoading(false);
+                    }, error => {
+                        console.error("Error loading imprest:", error);
                         setLoading(false);
                     });
                 
@@ -2050,16 +1823,16 @@
                     setAdjustment({ type: 'add', amount: '' });
                     setShowAdjustForm(false);
                 } catch (error) {
-                    console.error('Error adjusting imprest:', error);
+                    console.error("Error adjusting imprest:", error);
                     alert('Error adjusting imprest fund');
                 }
             };
             
-            const percentage = imprest.initial > 0 ? (imprest.spent / imprest.initial) * 100 : 0;
+            const percentage = (imprest.spent / imprest.initial) * 100;
             
             if (loading) {
                 return (
-                    <div className="loading-container">
+                    <div className="loading">
                         <div className="spinner"></div>
                         <p>Loading imprest fund...</p>
                     </div>
@@ -2068,26 +1841,26 @@
             
             return (
                 <div className="ledger-container">
-                    <div className="section-header">
-                        <div className="section-title">
-                            <i className="fas fa-wallet"></i>
+                    <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '30px'
+                    }}>
+                        <h2 style={{ fontSize: '20px', fontWeight: '700' }}>
+                            <i className="fas fa-wallet" style={{ marginRight: '10px' }}></i>
                             Imprest Fund Management
-                        </div>
+                        </h2>
                         <button className="btn btn-primary" onClick={() => setShowAdjustForm(true)}>
                             <i className="fas fa-edit"></i>
                             Adjust Fund
                         </button>
                     </div>
                     
-                    <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                        gap: '25px',
-                        marginBottom: '40px'
-                    }}>
+                    <div className="stats-grid">
                         <div className="stat-card">
                             <div className="stat-header">
-                                <div className="stat-icon" style={{ background: 'rgba(0, 166, 153, 0.1)', color: 'var(--success)' }}>
+                                <div className="stat-icon" style={{ background: 'var(--success)' }}>
                                     <i className="fas fa-money-bill-wave"></i>
                                 </div>
                                 <div>
@@ -2099,7 +1872,7 @@
                         
                         <div className="stat-card">
                             <div className="stat-header">
-                                <div className="stat-icon" style={{ background: 'rgba(255, 56, 92, 0.1)', color: 'var(--danger)' }}>
+                                <div className="stat-icon" style={{ background: 'var(--danger)' }}>
                                     <i className="fas fa-credit-card"></i>
                                 </div>
                                 <div>
@@ -2112,10 +1885,8 @@
                         <div className="stat-card">
                             <div className="stat-header">
                                 <div className="stat-icon" style={{ 
-                                    background: percentage > 90 ? 'rgba(255, 56, 92, 0.1)' : 
-                                             percentage > 70 ? 'rgba(255, 180, 0, 0.1)' : 'rgba(0, 166, 153, 0.1)',
-                                    color: percentage > 90 ? 'var(--danger)' : 
-                                           percentage > 70 ? 'var(--warning)' : 'var(--success)'
+                                    background: percentage > 90 ? 'var(--danger)' : 
+                                             percentage > 70 ? 'var(--warning)' : 'var(--success)'
                                 }}>
                                     <i className="fas fa-piggy-bank"></i>
                                 </div>
@@ -2133,29 +1904,31 @@
                     </div>
                     
                     {/* Progress Bar */}
-                    <div className="imprest-progress">
-                        <div className="progress-header">
-                            <div className="section-title">
-                                <i className="fas fa-chart-pie"></i>
-                                Fund Utilization
-                            </div>
-                            <div style={{ fontWeight: '600', fontSize: '18px' }}>
+                    <div style={{ marginTop: '40px', padding: '30px', background: 'white', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)' }}>
+                        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Fund Utilization</h3>
+                            <div style={{ fontWeight: '700', fontSize: '18px' }}>
                                 {percentage.toFixed(1)}% Spent
                             </div>
                         </div>
                         
-                        <div className="progress-bar">
-                            <div 
-                                className="progress-fill"
-                                style={{ 
-                                    width: `${Math.min(100, percentage)}%`,
-                                    background: percentage > 90 ? 'var(--danger)' : 
-                                               percentage > 70 ? 'var(--warning)' : 'var(--success)'
-                                }}
-                            ></div>
+                        <div style={{ 
+                            height: '20px', 
+                            background: '#e9ecef', 
+                            borderRadius: '10px',
+                            overflow: 'hidden',
+                            marginBottom: '10px'
+                        }}>
+                            <div style={{
+                                width: `${Math.min(100, percentage)}%`,
+                                height: '100%',
+                                background: percentage > 90 ? 'var(--danger)' : 
+                                           percentage > 70 ? 'var(--warning)' : 'var(--success)',
+                                transition: 'width 0.5s ease'
+                            }}></div>
                         </div>
                         
-                        <div className="progress-labels">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--gray)' }}>
                             <div>{formatCurrency(0)}</div>
                             <div>{formatCurrency(imprest.initial / 2)}</div>
                             <div>{formatCurrency(imprest.initial)}</div>
@@ -2164,10 +1937,10 @@
                     
                     {/* Adjust Fund Modal */}
                     {showAdjustForm && (
-                        <div className="form-modal">
-                            <div className="form-container" style={{ maxWidth: '500px' }}>
-                                <div className="form-header">
-                                    <div className="form-title">
+                        <div className="modal-overlay">
+                            <div className="modal" style={{ maxWidth: '500px' }}>
+                                <div className="modal-header">
+                                    <div className="modal-title">
                                         <i className="fas fa-edit"></i>
                                         Adjust Imprest Fund
                                     </div>
@@ -2176,7 +1949,7 @@
                                     </button>
                                 </div>
                                 
-                                <div className="form-content">
+                                <div className="form">
                                     <div className="form-grid">
                                         <div className="form-group">
                                             <label className="form-label">Action</label>
@@ -2205,16 +1978,16 @@
                                     </div>
                                     
                                     <div style={{ 
-                                        background: 'rgba(255, 90, 95, 0.05)', 
+                                        background: 'rgba(255, 90, 95, 0.1)', 
                                         padding: '20px',
-                                        borderRadius: '12px',
+                                        borderRadius: '8px',
                                         marginBottom: '20px'
                                     }}>
-                                        <div style={{ fontWeight: '600', marginBottom: '10px' }}>
+                                        <div style={{ fontWeight: '600', marginBottom: '5px' }}>
                                             Current Balance: {formatCurrency(imprest.remaining)}
                                         </div>
                                         <div style={{ fontSize: '14px', color: 'var(--gray)' }}>
-                                            New balance after {adjustment.type}: {formatCurrency(
+                                            New balance: {formatCurrency(
                                                 adjustment.type === 'add' ? 
                                                 imprest.remaining + parseFloat(adjustment.amount || 0) :
                                                 imprest.remaining - parseFloat(adjustment.amount || 0)
@@ -2240,31 +2013,26 @@
         };
         
         // Initialize default data
-        const initializeApp = async () => {
+        const initializeDefaults = async () => {
             try {
+                // Check if imprest exists
+                const imprestDoc = await db.collection('imprest').doc('main').get();
+                if (!imprestDoc.exists) {
+                    await db.collection('imprest').doc('main').set({
+                        initial: 1000,
+                        spent: 0,
+                        remaining: 1000,
+                        updatedAt: new Date()
+                    });
+                }
+                
                 // Check if properties exist
                 const propertiesSnapshot = await db.collection('properties').get();
                 if (propertiesSnapshot.empty) {
-                    // Add default properties
-                    const defaultProperties = [
-                        { name: 'Downtown Luxury Apartment', status: 'active', createdAt: new Date() },
-                        { name: 'Beachfront Villa', status: 'active', createdAt: new Date() },
-                        { name: 'Mountain Cabin Retreat', status: 'inactive', createdAt: new Date() }
-                    ];
-                    
-                    for (const prop of defaultProperties) {
-                        await db.collection('properties').add(prop);
-                    }
-                }
-                
-                // Check if imprest exists
-                const imprestSnapshot = await db.collection('imprest').doc('main').get();
-                if (!imprestSnapshot.exists) {
-                    await db.collection('imprest').doc('main').set({
-                        initial: 5000,
-                        spent: 0,
-                        remaining: 5000,
-                        updatedAt: new Date()
+                    await db.collection('properties').add({
+                        name: 'Main Property',
+                        status: 'Active',
+                        createdAt: new Date()
                     });
                 }
                 
@@ -2272,19 +2040,24 @@
                 ReactDOM.render(<App />, document.getElementById('root'));
                 
             } catch (error) {
-                console.error('Error initializing app:', error);
+                console.error("Initialization error:", error);
                 document.getElementById('root').innerHTML = `
                     <div style="padding: 40px; text-align: center;">
-                        <h2>Error Loading App</h2>
-                        <p>Please check your Firebase configuration</p>
-                        <p style="color: #666;">${error.message}</p>
+                        <h2>Application Error</h2>
+                        <p>Please check your internet connection and Firebase configuration</p>
+                        <p style="color: #666; margin-top: 20px;">Error: ${error.message}</p>
+                        <button onclick="window.location.reload()" style="margin-top: 20px; padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            Retry
+                        </button>
                     </div>
                 `;
             }
         };
         
-        // Start the app
-        initializeApp();
+        // Start the app when Firebase is ready
+        if (firebase.apps.length > 0) {
+            initializeDefaults();
+        }
     </script>
 </body>
 </html>
