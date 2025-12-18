@@ -60,7 +60,7 @@
             padding: 24px;
         }
 
-        /* Header */
+        /* Header - Simplified */
         .app-header {
             display: flex;
             justify-content: space-between;
@@ -70,37 +70,18 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .logo-icon {
-            width: 52px;
-            height: 52px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            box-shadow: var(--shadow-md);
-        }
-
-        .logo-text h1 {
+        .header-title {
             font-size: 28px;
             font-weight: 700;
             color: var(--dark);
             letter-spacing: -0.5px;
-            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .logo-text p {
-            color: var(--gray);
-            font-size: 15px;
-            font-weight: 500;
+        .header-title i {
+            color: var(--primary);
         }
 
         /* Navigation */
@@ -778,6 +759,11 @@
             transform: translateY(-2px);
         }
 
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
         /* Loading & Empty States */
         .loading-container {
             display: flex;
@@ -968,6 +954,120 @@
             color: var(--gray);
             border: 1px solid rgba(107, 114, 128, 0.2);
         }
+
+        .status-connecting {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        /* Imprest Reset Controls */
+        .imprest-reset-controls {
+            background: rgba(37, 99, 235, 0.05);
+            border: 1px solid rgba(37, 99, 235, 0.1);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            margin-top: 24px;
+        }
+
+        .reset-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .reset-option {
+            padding: 12px 20px;
+            background: var(--light);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reset-option:hover {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .reset-option.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .next-reset-info {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        /* Connection Status */
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .connection-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .connection-badge.connected {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(5, 150, 105, 0.2);
+        }
+
+        .connection-badge.disconnected {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+
+        .connection-badge.connecting {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        /* Enhanced Tooltip */
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 8px;
+            box-shadow: var(--shadow-lg);
+        }
     </style>
 </head>
 <body>
@@ -1033,6 +1133,38 @@
             return `${year}-${month}-${day}`;
         };
 
+        const getNextResetDate = (resetPeriod, lastResetDate) => {
+            if (!lastResetDate || !resetPeriod || resetPeriod === 'never') return null;
+            
+            const lastReset = lastResetDate.toDate ? lastResetDate.toDate() : new Date(lastResetDate);
+            const nextReset = new Date(lastReset);
+            
+            switch(resetPeriod) {
+                case 'daily':
+                    nextReset.setDate(nextReset.getDate() + 1);
+                    break;
+                case 'weekly':
+                    nextReset.setDate(nextReset.getDate() + 7);
+                    break;
+                case 'biweekly':
+                    nextReset.setDate(nextReset.getDate() + 14);
+                    break;
+                case 'monthly':
+                    nextReset.setMonth(nextReset.getMonth() + 1);
+                    break;
+                case 'quarterly':
+                    nextReset.setMonth(nextReset.getMonth() + 3);
+                    break;
+                case 'yearly':
+                    nextReset.setFullYear(nextReset.getFullYear() + 1);
+                    break;
+                default:
+                    return null;
+            }
+            
+            return nextReset;
+        };
+
         // Initialize default data
         const initializeFirebaseData = async () => {
             if (!firebaseInitialized) return;
@@ -1045,11 +1177,46 @@
                         initial: 0,
                         spent: 0,
                         remaining: 0,
-                        updatedAt: new Date()
+                        resetPeriod: 'never',
+                        lastResetDate: new Date(),
+                        nextResetDate: null,
+                        createdAt: new Date()
                     });
                 }
             } catch (error) {
                 console.error("Error initializing Firebase data:", error);
+            }
+        };
+
+        // Check and auto-reset imprest
+        const checkAndResetImprest = async () => {
+            if (!firebaseInitialized) return;
+            
+            try {
+                const imprestDoc = await db.collection('imprest').doc('current').get();
+                if (!imprestDoc.exists) return;
+                
+                const imprest = imprestDoc.data();
+                const { resetPeriod, lastResetDate, nextResetDate } = imprest;
+                
+                if (resetPeriod === 'never' || !nextResetDate) return;
+                
+                const now = new Date();
+                const nextReset = nextResetDate.toDate ? nextResetDate.toDate() : new Date(nextResetDate);
+                
+                if (now >= nextReset) {
+                    // Reset the imprest
+                    await db.collection('imprest').doc('current').update({
+                        spent: 0,
+                        remaining: imprest.initial,
+                        lastResetDate: new Date(),
+                        nextResetDate: getNextResetDate(resetPeriod, new Date())
+                    });
+                    
+                    console.log("Imprest auto-reset completed");
+                }
+            } catch (error) {
+                console.error("Error checking imprest reset:", error);
             }
         };
 
@@ -1060,15 +1227,32 @@
             const [showExpenseForm, setShowExpenseForm] = React.useState(false);
             const [showFabOptions, setShowFabOptions] = React.useState(false);
             const [currentMonth, setCurrentMonth] = React.useState(new Date());
-            const [dbStatus, setDbStatus] = React.useState(firebaseInitialized ? 'connected' : 'disconnected');
+            const [connectionStatus, setConnectionStatus] = React.useState(firebaseInitialized ? 'connected' : 'disconnected');
             
             React.useEffect(() => {
                 initializeFirebaseData();
+                checkAndResetImprest();
+                
+                // Set up connection monitoring
+                if (firebaseInitialized) {
+                    db.collection('income').limit(1).onSnapshot(
+                        () => setConnectionStatus('connected'),
+                        (error) => {
+                            console.error("Firestore error:", error);
+                            setConnectionStatus('disconnected');
+                        }
+                    );
+                }
+                
+                // Check imprest reset every hour
+                const resetCheckInterval = setInterval(checkAndResetImprest, 3600000);
+                
+                return () => clearInterval(resetCheckInterval);
             }, []);
             
             const pages = [
                 { id: 'dashboard', label: 'Dashboard', icon: 'chart-line' },
-                { id: 'ledger', label: 'Transaction History', icon: 'receipt' },
+                { id: 'ledger', label: 'Transactions', icon: 'receipt' },
                 { id: 'imprest', label: 'Imprest Fund', icon: 'wallet' }
             ];
             
@@ -1077,7 +1261,7 @@
                     case 'dashboard':
                         return <Dashboard currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} />;
                     case 'ledger':
-                        return <Ledger currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} />;
+                        return <Ledger currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} connectionStatus={connectionStatus} />;
                     case 'imprest':
                         return <ImprestManager />;
                     default:
@@ -1087,16 +1271,20 @@
             
             return (
                 <div className="app-container">
+                    {/* Connection Status Badge */}
+                    <div className="connection-status">
+                        <div className={`connection-badge ${connectionStatus}`}>
+                            <i className={`fas fa-${connectionStatus === 'connected' ? 'signal' : 'signal-slash'}`}></i>
+                            {connectionStatus === 'connected' ? 'Live Database' : 
+                             connectionStatus === 'connecting' ? 'Connecting...' : 'Offline'}
+                        </div>
+                    </div>
+                    
                     {/* Header */}
                     <div className="app-header">
-                        <div className="logo">
-                            <div className="logo-icon">
-                                <i className="fas fa-chart-pie"></i>
-                            </div>
-                            <div className="logo-text">
-                                <h1>Agito Prop</h1>
-                                <p>Professional Property Finance Management</p>
-                            </div>
+                        <div className="header-title">
+                            <i className="fas fa-chart-pie"></i>
+                            Agito Prop Finance
                         </div>
                         
                         <div className="nav-tabs">
@@ -1164,15 +1352,15 @@
                 income: 0,
                 expenses: 0,
                 net: 0,
-                imprest: { initial: 0, spent: 0, remaining: 0 },
+                imprest: { initial: 0, spent: 0, remaining: 0, resetPeriod: 'never' },
                 allTimeIncome: 0,
-                allTimeExpenses: 0
+                allTimeExpenses: 0,
+                loading: true
             });
-            const [loading, setLoading] = React.useState(true);
             
             React.useEffect(() => {
                 if (!firebaseInitialized) {
-                    setLoading(false);
+                    setDashboardData(prev => ({ ...prev, loading: false }));
                     return;
                 }
                 
@@ -1233,7 +1421,6 @@
                             total += parseFloat(data.amount) || 0;
                         });
                         setDashboardData(prev => ({ ...prev, allTimeExpenses: total }));
-                        setLoading(false);
                     });
                 
                 // Imprest listener
@@ -1241,8 +1428,17 @@
                     .doc('current')
                     .onSnapshot(doc => {
                         if (doc.exists) {
-                            setDashboardData(prev => ({ ...prev, imprest: doc.data() }));
+                            setDashboardData(prev => ({ 
+                                ...prev, 
+                                imprest: doc.data(),
+                                loading: false 
+                            }));
+                        } else {
+                            setDashboardData(prev => ({ ...prev, loading: false }));
                         }
+                    }, error => {
+                        console.error("Error loading imprest:", error);
+                        setDashboardData(prev => ({ ...prev, loading: false }));
                     });
                 
                 return () => {
@@ -1267,11 +1463,11 @@
                 setCurrentMonth(newDate);
             };
             
-            if (loading) {
+            if (dashboardData.loading) {
                 return (
                     <div className="loading-container">
                         <div className="spinner"></div>
-                        <p>Loading dashboard...</p>
+                        <p>Loading dashboard data...</p>
                     </div>
                 );
             }
@@ -1453,13 +1649,20 @@
                             <div>Spent: {formatCurrency(dashboardData.imprest.spent)}</div>
                             <div>Initial: {formatCurrency(dashboardData.imprest.initial)}</div>
                         </div>
+                        
+                        {dashboardData.imprest.resetPeriod !== 'never' && (
+                            <div className="next-reset-info">
+                                <i className="fas fa-calendar-alt text-primary"></i>
+                                Reset period: {dashboardData.imprest.resetPeriod}
+                            </div>
+                        )}
                     </div>
                 </>
             );
         };
         
         // Ledger Component
-        const Ledger = ({ currentMonth, setCurrentMonth }) => {
+        const Ledger = ({ currentMonth, setCurrentMonth, connectionStatus }) => {
             const [transactions, setTransactions] = React.useState([]);
             const [loading, setLoading] = React.useState(true);
             const [showReceipt, setShowReceipt] = React.useState(null);
@@ -1577,9 +1780,10 @@
                                 <i className="fas fa-history"></i>
                                 Transaction History - {getMonthName(currentMonth)}
                             </div>
-                            <div className="status-indicator status-active">
-                                <i className="fas fa-database"></i>
-                                Live Database
+                            <div className={`status-indicator ${connectionStatus === 'connected' ? 'status-active' : connectionStatus === 'connecting' ? 'status-connecting' : 'status-inactive'}`}>
+                                <i className={`fas fa-${connectionStatus === 'connected' ? 'bolt' : 'bolt-slash'}`}></i>
+                                {connectionStatus === 'connected' ? 'Live Sync' : 
+                                 connectionStatus === 'connecting' ? 'Connecting...' : 'Offline'}
                             </div>
                         </div>
                         
@@ -1645,8 +1849,7 @@
                                             </td>
                                             <td>
                                                 <button 
-                                                    className="btn btn-secondary"
-                                                    style={{ padding: '8px 16px', fontSize: '14px' }}
+                                                    className="btn btn-secondary btn-sm"
                                                     onClick={() => deleteTransaction(transaction.id, transaction.type)}
                                                     title="Delete Transaction"
                                                 >
@@ -2149,13 +2352,22 @@
             );
         };
         
-        // Imprest Manager Component
+        // Imprest Manager Component with Reset Functionality
         const ImprestManager = () => {
-            const [imprest, setImprest] = React.useState({ initial: 0, spent: 0, remaining: 0 });
+            const [imprest, setImprest] = React.useState({ 
+                initial: 0, 
+                spent: 0, 
+                remaining: 0, 
+                resetPeriod: 'never',
+                lastResetDate: null,
+                nextResetDate: null
+            });
             const [showAdjustForm, setShowAdjustForm] = React.useState(false);
+            const [showResetSettings, setShowResetSettings] = React.useState(false);
             const [adjustment, setAdjustment] = React.useState({ type: 'add', amount: '' });
             const [loading, setLoading] = React.useState(true);
             const [error, setError] = React.useState('');
+            const [resetPeriod, setResetPeriod] = React.useState('never');
             
             React.useEffect(() => {
                 if (!firebaseInitialized) {
@@ -2167,7 +2379,9 @@
                     .doc('current')
                     .onSnapshot(doc => {
                         if (doc.exists) {
-                            setImprest(doc.data());
+                            const data = doc.data();
+                            setImprest(data);
+                            setResetPeriod(data.resetPeriod || 'never');
                         }
                         setLoading(false);
                     }, error => {
@@ -2220,7 +2434,57 @@
                 }
             };
             
+            const handleResetImprest = async () => {
+                if (!confirm('Are you sure you want to reset the imprest fund? This will set spent amount to 0 and remaining to initial amount.')) {
+                    return;
+                }
+                
+                try {
+                    await db.collection('imprest').doc('current').update({
+                        spent: 0,
+                        remaining: imprest.initial,
+                        lastResetDate: new Date(),
+                        nextResetDate: getNextResetDate(resetPeriod, new Date()),
+                        updatedAt: new Date()
+                    });
+                    
+                    alert('Imprest fund reset successfully!');
+                } catch (error) {
+                    console.error("Error resetting imprest:", error);
+                    alert('Failed to reset imprest fund. Please try again.');
+                }
+            };
+            
+            const handleUpdateResetPeriod = async (period) => {
+                try {
+                    const nextReset = period === 'never' ? null : getNextResetDate(period, imprest.lastResetDate || new Date());
+                    
+                    await db.collection('imprest').doc('current').update({
+                        resetPeriod: period,
+                        nextResetDate: nextReset,
+                        updatedAt: new Date()
+                    });
+                    
+                    setResetPeriod(period);
+                    alert(`Reset period updated to ${period}`);
+                } catch (error) {
+                    console.error("Error updating reset period:", error);
+                    alert('Failed to update reset period. Please try again.');
+                }
+            };
+            
             const percentage = imprest.initial > 0 ? (imprest.spent / imprest.initial) * 100 : 0;
+            const nextResetDate = imprest.nextResetDate ? formatDate(imprest.nextResetDate) : 'Not set';
+            
+            const resetPeriods = [
+                { value: 'never', label: 'Never', icon: 'ban' },
+                { value: 'daily', label: 'Daily', icon: 'sun' },
+                { value: 'weekly', label: 'Weekly', icon: 'calendar-week' },
+                { value: 'biweekly', label: 'Bi-weekly', icon: 'calendar-alt' },
+                { value: 'monthly', label: 'Monthly', icon: 'calendar' },
+                { value: 'quarterly', label: 'Quarterly', icon: 'calendar-plus' },
+                { value: 'yearly', label: 'Yearly', icon: 'calendar-day' }
+            ];
             
             if (loading) {
                 return (
@@ -2238,10 +2502,16 @@
                             <i className="fas fa-wallet"></i>
                             Imprest Fund Management
                         </div>
-                        <button className="btn btn-primary" onClick={() => setShowAdjustForm(true)}>
-                            <i className="fas fa-edit"></i>
-                            Adjust Fund
-                        </button>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button className="btn btn-secondary" onClick={() => setShowResetSettings(true)}>
+                                <i className="fas fa-cog"></i>
+                                Reset Settings
+                            </button>
+                            <button className="btn btn-primary" onClick={() => setShowAdjustForm(true)}>
+                                <i className="fas fa-edit"></i>
+                                Adjust Fund
+                            </button>
+                        </div>
                     </div>
                     
                     <div className="dashboard-grid mb-32">
@@ -2324,6 +2594,28 @@
                             <div>{formatCurrency(imprest.initial / 2)}</div>
                             <div>{formatCurrency(imprest.initial)}</div>
                         </div>
+                        
+                        {imprest.resetPeriod !== 'never' && imprest.nextResetDate && (
+                            <div className="next-reset-info">
+                                <i className="fas fa-calendar-check text-primary"></i>
+                                Next auto-reset: {nextResetDate}
+                            </div>
+                        )}
+                    </div>
+                    
+                    {/* Manual Reset Button */}
+                    <div style={{ textAlign: 'center', marginTop: '32px' }}>
+                        <button 
+                            className="btn btn-primary"
+                            onClick={handleResetImprest}
+                            style={{ padding: '12px 32px', fontSize: '16px' }}
+                        >
+                            <i className="fas fa-redo"></i>
+                            Manually Reset Imprest Now
+                        </button>
+                        <p style={{ color: 'var(--gray)', fontSize: '14px', marginTop: '12px' }}>
+                            This will reset spent to 0 and remaining to {formatCurrency(imprest.initial)}
+                        </p>
                     </div>
                     
                     {/* Adjust Fund Modal */}
@@ -2349,7 +2641,7 @@
                                             marginBottom: '20px',
                                             color: 'var(--danger)',
                                             display: 'flex',
-                                            alignitems: 'center',
+                                            alignItems: 'center',
                                             gap: '10px'
                                         }}>
                                             <i className="fas fa-exclamation-circle"></i>
@@ -2418,6 +2710,81 @@
                                         <button type="button" className="btn btn-primary" onClick={handleAdjust}>
                                             <i className="fas fa-check"></i>
                                             Apply Adjustment
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Reset Settings Modal */}
+                    {showResetSettings && (
+                        <div className="modal-overlay">
+                            <div className="modal" style={{ maxWidth: '520px' }}>
+                                <div className="modal-header">
+                                    <div className="modal-title">
+                                        <i className="fas fa-cog"></i>
+                                        Imprest Reset Settings
+                                    </div>
+                                    <button className="close-btn" onClick={() => setShowResetSettings(false)}>
+                                        <i className="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                
+                                <div className="form-content">
+                                    <div className="form-group">
+                                        <label className="form-label">
+                                            <i className="fas fa-history"></i>
+                                            Auto-Reset Period
+                                        </label>
+                                        <p style={{ color: 'var(--gray)', fontSize: '14px', marginBottom: '16px' }}>
+                                            Set how often the imprest fund should automatically reset to its initial amount
+                                        </p>
+                                        
+                                        <div className="reset-options">
+                                            {resetPeriods.map(period => (
+                                                <div 
+                                                    key={period.value}
+                                                    className={`reset-option ${resetPeriod === period.value ? 'active' : ''}`}
+                                                    onClick={() => handleUpdateResetPeriod(period.value)}
+                                                >
+                                                    <i className={`fas fa-${period.icon}`}></i>
+                                                    {period.label}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    
+                                    <div style={{ 
+                                        background: 'rgba(37, 99, 235, 0.05)', 
+                                        padding: '20px',
+                                        borderRadius: '10px',
+                                        marginTop: '24px',
+                                        border: '1px solid rgba(37, 99, 235, 0.1)'
+                                    }}>
+                                        <h4 style={{ color: 'var(--primary)', marginBottom: '12px' }}>
+                                            <i className="fas fa-info-circle"></i> How It Works
+                                        </h4>
+                                        <ul style={{ color: 'var(--gray)', fontSize: '14px', paddingLeft: '20px' }}>
+                                            <li>When auto-reset is enabled, the imprest fund will automatically reset at the specified interval</li>
+                                            <li>On reset: Spent amount becomes 0, Remaining becomes equal to Initial amount</li>
+                                            <li>Last reset date and next reset date are tracked automatically</li>
+                                            <li>You can also manually reset at any time using the "Manually Reset" button</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div className="form-actions" style={{ marginTop: '32px' }}>
+                                        <button type="button" className="btn btn-secondary" onClick={() => setShowResetSettings(false)}>
+                                            <i className="fas fa-times"></i>
+                                            Close
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            className="btn btn-primary"
+                                            onClick={handleResetImprest}
+                                        >
+                                            <i className="fas fa-redo"></i>
+                                            Reset Now
                                         </button>
                                     </div>
                                 </div>
