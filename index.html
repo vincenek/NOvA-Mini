@@ -330,7 +330,7 @@
             padding: 0 10px;
         }
 
-        /* Charts Section */
+        /* Charts Section - Updated for larger size */
         .chart-section {
             background: var(--light);
             border-radius: var(--radius);
@@ -359,9 +359,9 @@
             gap: 10px;
         }
 
-        /* Chart Container */
+        /* Chart Container - Updated for larger size */
         .chart-container {
-            height: 200px;
+            height: 280px; /* Increased from 200px */
             display: flex;
             align-items: flex-end;
             gap: 24px;
@@ -376,11 +376,11 @@
             flex-direction: column;
             align-items: center;
             height: 100%;
-            min-width: 80px;
+            min-width: 90px; /* Increased for larger bars */
         }
 
         .bar {
-            width: 60px;
+            width: 75px; /* Increased from 60px */
             border-radius: 8px 8px 0 0;
             transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             position: relative;
@@ -407,14 +407,20 @@
 
         .bar-value {
             position: absolute;
-            top: -30px;
+            top: -40px; /* Adjusted for larger bar */
             left: 50%;
             transform: translateX(-50%);
             font-weight: 700;
-            font-size: 13px;
+            font-size: 14px; /* Slightly larger */
             color: var(--dark);
             white-space: nowrap;
             text-align: center;
+            background: var(--light);
+            padding: 4px 8px;
+            border-radius: 6px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            z-index: 1;
         }
 
         /* Imprest Progress */
@@ -781,6 +787,71 @@
             flex-shrink: 0;
         }
 
+        /* File Upload Styles */
+        .file-upload-container {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--gray-light);
+        }
+
+        .file-upload-container:hover {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .file-upload-container.has-file {
+            border-color: var(--success);
+            background: rgba(5, 150, 105, 0.05);
+        }
+
+        .file-upload-icon {
+            font-size: 36px;
+            color: var(--gray);
+            margin-bottom: 10px;
+        }
+
+        .file-upload-container:hover .file-upload-icon {
+            color: var(--primary);
+        }
+
+        .file-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 2px solid var(--border);
+            margin: 10px auto;
+        }
+
+        .remove-file-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        /* Custom Category Input */
+        .custom-category-container {
+            margin-top: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .form-actions {
             display: flex;
             gap: 12px;
@@ -976,12 +1047,12 @@
             }
             
             .chart-container {
-                height: 160px;
+                height: 220px; /* Adjusted for mobile */
                 gap: 16px;
             }
             
             .bar {
-                width: 50px;
+                width: 60px; /* Adjusted for mobile */
             }
             
             .fab {
@@ -1050,11 +1121,11 @@
             }
             
             .chart-container {
-                height: 140px;
+                height: 200px; /* Adjusted for small mobile */
             }
             
             .bar {
-                width: 40px;
+                width: 50px; /* Adjusted for small mobile */
             }
             
             .fab {
@@ -1157,7 +1228,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // Firebase Configuration - Updated with working config
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDR8V9TeOIpexlYo9bSDV7hb2njVq7rQ-8",
             authDomain: "skill-exchange-536ac.firebaseapp.com",
@@ -1223,6 +1294,11 @@
             return `${year}-${month}-${day}`;
         };
 
+        // Generate unique ID for receipts
+        const generateReceiptId = () => {
+            return 'receipt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        };
+
         // Toast Component
         const Toast = ({ message, type = 'success', onClose }) => {
             React.useEffect(() => {
@@ -1269,14 +1345,13 @@
                     }
                     
                     try {
-                        // Test Firestore connection by creating a test document
+                        // Test Firestore connection
                         const testRef = db.collection('testConnection').doc('test');
                         await testRef.set({
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                             message: 'Connection test successful'
                         });
                         
-                        // Clean up test document
                         await testRef.delete();
                         
                         setConnectionStatus('online');
@@ -1746,7 +1821,7 @@
                         </div>
                     </div>
                     
-                    {/* Income vs Expenses Chart */}
+                    {/* Income vs Expenses Chart - Updated to be larger */}
                     <div className="chart-section mb-24">
                         <div className="section-header">
                             <div className="section-title">
@@ -1989,7 +2064,7 @@
                                             <th>Date</th>
                                             <th>Type</th>
                                             <th>Amount</th>
-                                            <th>Category/Source</th>
+                                            <th>Category</th>
                                             <th>Notes</th>
                                             <th>Receipt</th>
                                             <th>Imprest</th>
@@ -2012,7 +2087,7 @@
                                                     {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
                                                 </td>
                                                 <td>
-                                                    {transaction.type === 'income' ? transaction.source : transaction.category}
+                                                    {transaction.type === 'income' ? (transaction.source || transaction.category) : transaction.category}
                                                 </td>
                                                 <td>{transaction.notes || '-'}</td>
                                                 <td>
@@ -2083,17 +2158,69 @@
             const [formData, setFormData] = React.useState({
                 amount: '',
                 date: formatDateForInput(new Date()),
-                source: 'Airbnb',
-                notes: ''
+                category: 'Airbnb',
+                customCategory: '',
+                notes: '',
+                receiptFile: null
             });
             const [uploading, setUploading] = React.useState(false);
             const [error, setError] = React.useState('');
+            const [showCustomCategory, setShowCustomCategory] = React.useState(false);
+            const [imagePreview, setImagePreview] = React.useState(null);
+            
+            const categories = [
+                'Airbnb',
+                'Booking.com',
+                'VRBO',
+                'Direct Booking',
+                'Other'
+            ];
+            
+            const handleCategoryChange = (e) => {
+                const value = e.target.value;
+                setFormData({...formData, category: value});
+                setShowCustomCategory(value === 'Other');
+            };
+            
+            const handleFileChange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                        setError('File size must be less than 5MB');
+                        return;
+                    }
+                    
+                    if (!file.type.startsWith('image/')) {
+                        setError('Please upload an image file');
+                        return;
+                    }
+                    
+                    setFormData({...formData, receiptFile: file});
+                    
+                    // Create preview
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setImagePreview(reader.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            
+            const removeFile = () => {
+                setFormData({...formData, receiptFile: null});
+                setImagePreview(null);
+            };
             
             const handleSubmit = async (e) => {
                 e.preventDefault();
                 
                 if (!formData.amount || isNaN(formData.amount) || parseFloat(formData.amount) <= 0) {
                     setError('Please enter a valid amount');
+                    return;
+                }
+                
+                if (showCustomCategory && !formData.customCategory.trim()) {
+                    setError('Please enter a custom category');
                     return;
                 }
                 
@@ -2106,12 +2233,27 @@
                 setError('');
                 
                 try {
+                    let receiptUrl = null;
+                    
+                    // Upload receipt image if exists
+                    if (formData.receiptFile) {
+                        const receiptId = generateReceiptId();
+                        const storageRef = storage.ref(`receipts/${receiptId}`);
+                        await storageRef.put(formData.receiptFile);
+                        receiptUrl = await storageRef.getDownloadURL();
+                    }
+                    
+                    // Get final category
+                    const finalCategory = showCustomCategory ? formData.customCategory : formData.category;
+                    
                     // Save to Firestore
                     await db.collection('income').add({
                         amount: parseFloat(formData.amount),
                         date: new Date(formData.date),
-                        source: formData.source,
+                        source: finalCategory,
+                        category: finalCategory, // For consistency
                         notes: formData.notes || '',
+                        receiptUrl: receiptUrl,
                         createdAt: new Date()
                     });
                     
@@ -2194,19 +2336,71 @@
                                     <div className="form-group">
                                         <label className="form-label">
                                             <i className="fas fa-tag"></i>
-                                            Source
+                                            Category
                                         </label>
                                         <select
                                             className="form-select"
-                                            value={formData.source}
-                                            onChange={e => setFormData({...formData, source: e.target.value})}
+                                            value={formData.category}
+                                            onChange={handleCategoryChange}
                                         >
-                                            <option value="Airbnb">Airbnb</option>
-                                            <option value="Booking.com">Booking.com</option>
-                                            <option value="VRBO">VRBO</option>
-                                            <option value="Direct">Direct Booking</option>
-                                            <option value="Other">Other</option>
+                                            {categories.map(cat => (
+                                                <option key={cat} value={cat}>{cat}</option>
+                                            ))}
                                         </select>
+                                        
+                                        {showCustomCategory && (
+                                            <div className="custom-category-container">
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    placeholder="Enter custom category..."
+                                                    value={formData.customCategory}
+                                                    onChange={e => setFormData({...formData, customCategory: e.target.value})}
+                                                    required={showCustomCategory}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    <div className="form-group">
+                                        <label className="form-label">
+                                            <i className="fas fa-receipt"></i>
+                                            Receipt (Optional)
+                                        </label>
+                                        <div className={`file-upload-container ${formData.receiptFile ? 'has-file' : ''}`}
+                                             onClick={() => !formData.receiptFile && document.getElementById('income-receipt-upload').click()}>
+                                            <input
+                                                type="file"
+                                                id="income-receipt-upload"
+                                                accept="image/*"
+                                                onChange={handleFileChange}
+                                                style={{ display: 'none' }}
+                                            />
+                                            
+                                            {imagePreview ? (
+                                                <>
+                                                    <img src={imagePreview} alt="Preview" className="file-preview" />
+                                                    <button type="button" className="remove-file-btn" onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        removeFile();
+                                                    }}>
+                                                        <i className="fas fa-trash"></i> Remove
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="file-upload-icon">
+                                                        <i className="fas fa-cloud-upload-alt"></i>
+                                                    </div>
+                                                    <div style={{ fontSize: '14px', color: 'var(--gray)' }}>
+                                                        Click to upload receipt image
+                                                    </div>
+                                                    <div style={{ fontSize: '12px', color: 'var(--gray)', marginTop: '8px' }}>
+                                                        Max size: 5MB (JPEG, PNG, GIF)
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                     
                                     <div className="form-group">
@@ -2256,12 +2450,29 @@
                 amount: '',
                 date: formatDateForInput(new Date()),
                 category: 'Supplies',
+                customCategory: '',
                 notes: '',
-                fromImprest: false
+                fromImprest: false,
+                receiptFile: null
             });
             const [uploading, setUploading] = React.useState(false);
             const [imprestBalance, setImprestBalance] = React.useState(0);
             const [error, setError] = React.useState('');
+            const [showCustomCategory, setShowCustomCategory] = React.useState(false);
+            const [imagePreview, setImagePreview] = React.useState(null);
+            
+            const categories = [
+                'Cleaning',
+                'Repairs & Maintenance',
+                'Utilities',
+                'Internet',
+                'Supplies',
+                'Platform Fees',
+                'Insurance',
+                'Taxes',
+                'Miscellaneous',
+                'Other'
+            ];
             
             React.useEffect(() => {
                 if (!firebaseInitialized) return;
@@ -2280,11 +2491,51 @@
                 loadImprestBalance();
             }, []);
             
+            const handleCategoryChange = (e) => {
+                const value = e.target.value;
+                setFormData({...formData, category: value});
+                setShowCustomCategory(value === 'Other');
+            };
+            
+            const handleFileChange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                        setError('File size must be less than 5MB');
+                        return;
+                    }
+                    
+                    if (!file.type.startsWith('image/')) {
+                        setError('Please upload an image file');
+                        return;
+                    }
+                    
+                    setFormData({...formData, receiptFile: file});
+                    
+                    // Create preview
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setImagePreview(reader.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            
+            const removeFile = () => {
+                setFormData({...formData, receiptFile: null});
+                setImagePreview(null);
+            };
+            
             const handleSubmit = async (e) => {
                 e.preventDefault();
                 
                 if (!formData.amount || isNaN(formData.amount) || parseFloat(formData.amount) <= 0) {
                     setError('Please enter a valid amount');
+                    return;
+                }
+                
+                if (showCustomCategory && !formData.customCategory.trim()) {
+                    setError('Please enter a custom category');
                     return;
                 }
                 
@@ -2306,12 +2557,26 @@
                 setError('');
                 
                 try {
+                    let receiptUrl = null;
+                    
+                    // Upload receipt image if exists
+                    if (formData.receiptFile) {
+                        const receiptId = generateReceiptId();
+                        const storageRef = storage.ref(`receipts/${receiptId}`);
+                        await storageRef.put(formData.receiptFile);
+                        receiptUrl = await storageRef.getDownloadURL();
+                    }
+                    
+                    // Get final category
+                    const finalCategory = showCustomCategory ? formData.customCategory : formData.category;
+                    
                     // Save expense
                     await db.collection('expenses').add({
                         amount: amount,
                         date: new Date(formData.date),
-                        category: formData.category,
+                        category: finalCategory,
                         notes: formData.notes || '',
+                        receiptUrl: receiptUrl,
                         fromImprest: formData.fromImprest,
                         createdAt: new Date()
                     });
@@ -2359,7 +2624,7 @@
                                         marginBottom: '16px',
                                         color: 'var(--danger)',
                                         display: 'flex',
-                                        alignItems: 'center',
+                                        alignItems: center',
                                         gap: '8px',
                                         fontSize: '14px'
                                     }}>
@@ -2408,18 +2673,25 @@
                                         <select
                                             className="form-select"
                                             value={formData.category}
-                                            onChange={e => setFormData({...formData, category: e.target.value})}
+                                            onChange={handleCategoryChange}
                                         >
-                                            <option value="Cleaning">Cleaning</option>
-                                            <option value="Repairs">Repairs & Maintenance</option>
-                                            <option value="Utilities">Utilities</option>
-                                            <option value="Internet">Internet</option>
-                                            <option value="Supplies">Supplies</option>
-                                            <option value="Platform Fees">Platform Fees</option>
-                                            <option value="Insurance">Insurance</option>
-                                            <option value="Taxes">Taxes</option>
-                                            <option value="Misc">Miscellaneous</option>
+                                            {categories.map(cat => (
+                                                <option key={cat} value={cat}>{cat}</option>
+                                            ))}
                                         </select>
+                                        
+                                        {showCustomCategory && (
+                                            <div className="custom-category-container">
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    placeholder="Enter custom category..."
+                                                    value={formData.customCategory}
+                                                    onChange={e => setFormData({...formData, customCategory: e.target.value})}
+                                                    required={showCustomCategory}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                     
                                     <div className="form-group">
@@ -2445,6 +2717,47 @@
                                                 )}
                                             </div>
                                         )}
+                                    </div>
+                                    
+                                    <div className="form-group">
+                                        <label className="form-label">
+                                            <i className="fas fa-receipt"></i>
+                                            Receipt (Optional)
+                                        </label>
+                                        <div className={`file-upload-container ${formData.receiptFile ? 'has-file' : ''}`}
+                                             onClick={() => !formData.receiptFile && document.getElementById('expense-receipt-upload').click()}>
+                                            <input
+                                                type="file"
+                                                id="expense-receipt-upload"
+                                                accept="image/*"
+                                                onChange={handleFileChange}
+                                                style={{ display: 'none' }}
+                                            />
+                                            
+                                            {imagePreview ? (
+                                                <>
+                                                    <img src={imagePreview} alt="Preview" className="file-preview" />
+                                                    <button type="button" className="remove-file-btn" onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        removeFile();
+                                                    }}>
+                                                        <i className="fas fa-trash"></i> Remove
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="file-upload-icon">
+                                                        <i className="fas fa-cloud-upload-alt"></i>
+                                                    </div>
+                                                    <div style={{ fontSize: '14px', color: 'var(--gray)' }}>
+                                                        Click to upload receipt image
+                                                    </div>
+                                                    <div style={{ fontSize: '12px', color: 'var(--gray)', marginTop: '8px' }}>
+                                                        Max size: 5MB (JPEG, PNG, GIF)
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                     
                                     <div className="form-group">
