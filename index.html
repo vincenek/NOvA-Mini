@@ -330,7 +330,7 @@
             padding: 0 10px;
         }
 
-        /* Charts Section - UPDATED TO MAKE BIGGER */
+        /* Charts Section */
         .chart-section {
             background: var(--light);
             border-radius: var(--radius);
@@ -359,9 +359,9 @@
             gap: 10px;
         }
 
-        /* Chart Container - UPDATED TO MAKE BIGGER */
+        /* Chart Container */
         .chart-container {
-            height: 300px; /* Increased from 200px */
+            height: 200px;
             display: flex;
             align-items: flex-end;
             gap: 24px;
@@ -415,11 +415,6 @@
             color: var(--dark);
             white-space: nowrap;
             text-align: center;
-            padding: 4px 8px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 6px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border);
         }
 
         /* Imprest Progress */
@@ -738,7 +733,7 @@
             margin-left: 2px;
         }
 
-        .form-input, .form-select, .form-textarea, .form-file {
+        .form-input, .form-select, .form-textarea {
             padding: 14px 16px;
             border: 2px solid var(--border);
             border-radius: var(--radius-sm);
@@ -750,7 +745,7 @@
             -webkit-appearance: none;
         }
 
-        .form-input:focus, .form-select:focus, .form-textarea:focus, .form-file:focus {
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
@@ -760,22 +755,6 @@
             resize: vertical;
             min-height: 100px;
             line-height: 1.5;
-        }
-
-        .form-file {
-            padding: 12px 16px;
-            cursor: pointer;
-        }
-
-        .file-preview {
-            width: 100%;
-            max-height: 200px;
-            object-fit: contain;
-            border-radius: var(--radius-sm);
-            border: 2px dashed var(--border);
-            padding: 10px;
-            margin-top: 8px;
-            background: var(--gray-light);
         }
 
         .checkbox-group {
@@ -997,7 +976,7 @@
             }
             
             .chart-container {
-                height: 250px; /* Adjusted for mobile */
+                height: 160px;
                 gap: 16px;
             }
             
@@ -1071,7 +1050,7 @@
             }
             
             .chart-container {
-                height: 220px; /* Adjusted for small mobile */
+                height: 140px;
             }
             
             .bar {
@@ -1171,33 +1150,6 @@
             0% { transform: scale(1); }
             50% { transform: scale(1.02); }
             100% { transform: scale(1); }
-        }
-
-        /* Category Custom Input */
-        .custom-category-input {
-            margin-top: 10px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Upload Progress */
-        .upload-progress {
-            width: 100%;
-            height: 6px;
-            background: var(--border);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-
-        .upload-progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
-            transition: width 0.3s ease;
         }
     </style>
 </head>
@@ -1670,7 +1622,7 @@
             
             const allTimeNet = dashboardData.allTimeIncome - dashboardData.allTimeExpenses;
             
-            // Calculate chart heights - UPDATED FOR BIGGER CHART
+            // Calculate chart heights
             const maxAmount = Math.max(dashboardData.income, dashboardData.expenses, 1);
             const incomeHeight = (dashboardData.income / maxAmount) * 100;
             const expenseHeight = (dashboardData.expenses / maxAmount) * 100;
@@ -1794,7 +1746,7 @@
                         </div>
                     </div>
                     
-                    {/* Income vs Expenses Chart - UPDATED FOR BIGGER CHART */}
+                    {/* Income vs Expenses Chart */}
                     <div className="chart-section mb-24">
                         <div className="section-header">
                             <div className="section-title">
@@ -2070,7 +2022,6 @@
                                                             alt="Receipt" 
                                                             className="receipt-img"
                                                             onClick={() => setShowReceipt(transaction.receiptUrl)}
-                                                            title="Click to view receipt"
                                                         />
                                                     ) : (
                                                         <i className="fas fa-receipt" style={{ color: '#D1D5DB', fontSize: '18px' }}></i>
@@ -2127,16 +2078,14 @@
             );
         };
         
-        // Income Form Component - UPDATED WITH CATEGORY AUDIT OPTION
+        // Income Form Component
         const IncomeForm = ({ onClose, currentMonth, showNotification }) => {
             const [formData, setFormData] = React.useState({
                 amount: '',
                 date: formatDateForInput(new Date()),
                 source: 'Airbnb',
-                notes: '',
-                customSource: ''
+                notes: ''
             });
-            const [showCustomSource, setShowCustomSource] = React.useState(false);
             const [uploading, setUploading] = React.useState(false);
             const [error, setError] = React.useState('');
             
@@ -2157,19 +2106,13 @@
                 setError('');
                 
                 try {
-                    // Use custom source if provided, otherwise use selected source
-                    const sourceToSave = showCustomSource && formData.customSource 
-                        ? formData.customSource 
-                        : formData.source;
-                    
                     // Save to Firestore
                     await db.collection('income').add({
                         amount: parseFloat(formData.amount),
                         date: new Date(formData.date),
-                        source: sourceToSave,
+                        source: formData.source,
                         notes: formData.notes || '',
-                        createdAt: new Date(),
-                        isCustomSource: showCustomSource && formData.customSource ? true : false
+                        createdAt: new Date()
                     });
                     
                     showNotification('Income added successfully!', 'success');
@@ -2207,7 +2150,7 @@
                                         marginBottom: '16px',
                                         color: 'var(--danger)',
                                         display: 'flex',
-                                        alignItems: center',
+                                        alignItems: 'center',
                                         gap: '8px',
                                         fontSize: '14px'
                                     }}>
@@ -2256,32 +2199,14 @@
                                         <select
                                             className="form-select"
                                             value={formData.source}
-                                            onChange={e => {
-                                                const value = e.target.value;
-                                                setFormData({...formData, source: value});
-                                                setShowCustomSource(value === 'Other');
-                                            }}
+                                            onChange={e => setFormData({...formData, source: e.target.value})}
                                         >
                                             <option value="Airbnb">Airbnb</option>
                                             <option value="Booking.com">Booking.com</option>
                                             <option value="VRBO">VRBO</option>
                                             <option value="Direct">Direct Booking</option>
-                                            <option value="Other">Other (Custom)</option>
+                                            <option value="Other">Other</option>
                                         </select>
-                                        
-                                        {/* Custom Source Input - AUDITABLE CATEGORY */}
-                                        {showCustomSource && (
-                                            <div className="custom-category-input">
-                                                <input
-                                                    type="text"
-                                                    className="form-input"
-                                                    value={formData.customSource}
-                                                    onChange={e => setFormData({...formData, customSource: e.target.value})}
-                                                    placeholder="Enter custom source name"
-                                                    style={{ marginTop: '8px' }}
-                                                />
-                                            </div>
-                                        )}
                                     </div>
                                     
                                     <div className="form-group">
@@ -2325,22 +2250,17 @@
             );
         };
         
-        // Expense Form Component - UPDATED WITH RECEIPT UPLOAD AND CATEGORY AUDIT
+        // Expense Form Component
         const ExpenseForm = ({ onClose, currentMonth, showNotification }) => {
             const [formData, setFormData] = React.useState({
                 amount: '',
                 date: formatDateForInput(new Date()),
                 category: 'Supplies',
                 notes: '',
-                fromImprest: false,
-                customCategory: ''
+                fromImprest: false
             });
-            const [receiptFile, setReceiptFile] = React.useState(null);
-            const [receiptPreview, setReceiptPreview] = React.useState(null);
             const [uploading, setUploading] = React.useState(false);
-            const [uploadProgress, setUploadProgress] = React.useState(0);
             const [imprestBalance, setImprestBalance] = React.useState(0);
-            const [showCustomCategory, setShowCustomCategory] = React.useState(false);
             const [error, setError] = React.useState('');
             
             React.useEffect(() => {
@@ -2359,73 +2279,6 @@
                 
                 loadImprestBalance();
             }, []);
-            
-            const handleFileChange = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                // Check file size (max 5MB)
-                if (file.size > 5 * 1024 * 1024) {
-                    setError('File size must be less than 5MB');
-                    return;
-                }
-                
-                // Check file type
-                if (!file.type.match('image.*')) {
-                    setError('Please select an image file (JPEG, PNG, etc.)');
-                    return;
-                }
-                
-                setReceiptFile(file);
-                setError('');
-                
-                // Create preview
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    setReceiptPreview(reader.result);
-                };
-                reader.readAsDataURL(file);
-            };
-            
-            const uploadReceipt = async (file) => {
-                if (!file) return null;
-                
-                try {
-                    // Create a unique filename
-                    const timestamp = Date.now();
-                    const filename = `receipts/${timestamp}_${file.name}`;
-                    
-                    // Create storage reference
-                    const storageRef = storage.ref(filename);
-                    
-                    // Upload file with progress tracking
-                    const uploadTask = storageRef.put(file);
-                    
-                    // Return a promise that resolves with download URL
-                    return new Promise((resolve, reject) => {
-                        uploadTask.on(
-                            'state_changed',
-                            (snapshot) => {
-                                // Track upload progress
-                                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                                setUploadProgress(progress);
-                            },
-                            (error) => {
-                                console.error('Upload error:', error);
-                                reject(error);
-                            },
-                            async () => {
-                                // Upload completed successfully
-                                const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                                resolve(downloadURL);
-                            }
-                        );
-                    });
-                } catch (error) {
-                    console.error('Error uploading receipt:', error);
-                    throw error;
-                }
-            };
             
             const handleSubmit = async (e) => {
                 e.preventDefault();
@@ -2453,38 +2306,14 @@
                 setError('');
                 
                 try {
-                    let receiptUrl = null;
-                    
-                    // Upload receipt if provided
-                    if (receiptFile) {
-                        try {
-                            receiptUrl = await uploadReceipt(receiptFile);
-                        } catch (uploadError) {
-                            console.error('Receipt upload failed:', uploadError);
-                            setError('Failed to upload receipt. You can continue without it.');
-                            if (!confirm('Failed to upload receipt. Save expense without receipt?')) {
-                                setUploading(false);
-                                return;
-                            }
-                        }
-                    }
-                    
-                    // Use custom category if provided, otherwise use selected category
-                    const categoryToSave = showCustomCategory && formData.customCategory 
-                        ? formData.customCategory 
-                        : formData.category;
-                    
                     // Save expense
                     await db.collection('expenses').add({
                         amount: amount,
                         date: new Date(formData.date),
-                        category: categoryToSave,
+                        category: formData.category,
                         notes: formData.notes || '',
                         fromImprest: formData.fromImprest,
-                        receiptUrl: receiptUrl,
-                        receiptFilename: receiptFile ? receiptFile.name : null,
-                        createdAt: new Date(),
-                        isCustomCategory: showCustomCategory && formData.customCategory ? true : false
+                        createdAt: new Date()
                     });
                     
                     // Update imprest if needed
@@ -2495,7 +2324,7 @@
                         });
                     }
                     
-                    showNotification('Expense added successfully!' + (receiptUrl ? ' Receipt uploaded.' : ''), 'success');
+                    showNotification('Expense added successfully!', 'success');
                     onClose();
                     
                 } catch (error) {
@@ -2504,7 +2333,6 @@
                     showNotification('Failed to save expense', 'error');
                 } finally {
                     setUploading(false);
-                    setUploadProgress(0);
                 }
             };
             
@@ -2580,11 +2408,7 @@
                                         <select
                                             className="form-select"
                                             value={formData.category}
-                                            onChange={e => {
-                                                const value = e.target.value;
-                                                setFormData({...formData, category: value});
-                                                setShowCustomCategory(value === 'Other');
-                                            }}
+                                            onChange={e => setFormData({...formData, category: e.target.value})}
                                         >
                                             <option value="Cleaning">Cleaning</option>
                                             <option value="Repairs">Repairs & Maintenance</option>
@@ -2594,63 +2418,8 @@
                                             <option value="Platform Fees">Platform Fees</option>
                                             <option value="Insurance">Insurance</option>
                                             <option value="Taxes">Taxes</option>
-                                            <option value="Other">Other (Custom)</option>
+                                            <option value="Misc">Miscellaneous</option>
                                         </select>
-                                        
-                                        {/* Custom Category Input - AUDITABLE CATEGORY */}
-                                        {showCustomCategory && (
-                                            <div className="custom-category-input">
-                                                <input
-                                                    type="text"
-                                                    className="form-input"
-                                                    value={formData.customCategory}
-                                                    onChange={e => setFormData({...formData, customCategory: e.target.value})}
-                                                    placeholder="Enter custom category name"
-                                                    style={{ marginTop: '8px' }}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                    
-                                    {/* Receipt Upload Section - NEW FEATURE */}
-                                    <div className="form-group">
-                                        <label className="form-label">
-                                            <i className="fas fa-receipt"></i>
-                                            Receipt (Optional)
-                                        </label>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            className="form-file"
-                                            onChange={handleFileChange}
-                                            disabled={uploading}
-                                        />
-                                        
-                                        {receiptPreview && (
-                                            <div style={{ marginTop: '10px' }}>
-                                                <div style={{ fontSize: '14px', color: 'var(--gray)', marginBottom: '8px' }}>
-                                                    <i className="fas fa-image"></i> Preview:
-                                                </div>
-                                                <img 
-                                                    src={receiptPreview} 
-                                                    alt="Receipt preview" 
-                                                    className="file-preview"
-                                                />
-                                            </div>
-                                        )}
-                                        
-                                        {uploading && receiptFile && (
-                                            <div className="upload-progress">
-                                                <div 
-                                                    className="upload-progress-fill"
-                                                    style={{ width: `${uploadProgress}%` }}
-                                                ></div>
-                                            </div>
-                                        )}
-                                        
-                                        <div style={{ fontSize: '13px', color: 'var(--gray)', marginTop: '8px' }}>
-                                            <i className="fas fa-info-circle"></i> Max file size: 5MB. Supported formats: JPEG, PNG, GIF
-                                        </div>
                                     </div>
                                     
                                     <div className="form-group">
@@ -2661,7 +2430,6 @@
                                                 className="checkbox-input"
                                                 checked={formData.fromImprest}
                                                 onChange={e => setFormData({...formData, fromImprest: e.target.checked})}
-                                                disabled={uploading}
                                             />
                                             <label htmlFor="fromImprest" className="form-label" style={{ fontSize: '15px' }}>
                                                 Deduct from Imprest Fund
@@ -2690,7 +2458,6 @@
                                             onChange={e => setFormData({...formData, notes: e.target.value})}
                                             placeholder="Additional notes about this expense..."
                                             rows="3"
-                                            disabled={uploading}
                                         />
                                     </div>
                                 </div>
@@ -2704,7 +2471,7 @@
                                         {uploading ? (
                                             <>
                                                 <i className="fas fa-spinner fa-spin"></i>
-                                                {receiptFile ? `Uploading... ${Math.round(uploadProgress)}%` : 'Saving...'}
+                                                Saving...
                                             </>
                                         ) : (
                                             <>
