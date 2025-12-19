@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <style>
         /* Base & Reset */
         * {
@@ -375,7 +376,7 @@
 
         /* Chart Container */
         .chart-container {
-            height: 180px;
+            height: 200px;
             display: flex;
             align-items: flex-end;
             gap: 24px;
@@ -1200,7 +1201,7 @@
             margin: 0 auto;
         }
 
-        /* Social Media Style Updates */
+        /* Transaction Item */
         .transaction-item {
             background: var(--light);
             border-radius: var(--radius);
@@ -1302,40 +1303,41 @@
             line-height: 1.5;
         }
 
-        /* Success/Error Messages */
-        .alert {
-            padding: 12px 16px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 16px;
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--success);
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-weight: 500;
+            gap: 12px;
+            z-index: 1000;
+            animation: slideInUp 0.3s ease-out;
+            max-width: 300px;
         }
 
-        .alert-success {
-            background: rgba(5, 150, 105, 0.1);
-            color: var(--success);
-            border: 1px solid rgba(5, 150, 105, 0.2);
+        .toast.error {
+            border-left-color: var(--danger);
         }
 
-        .alert-error {
-            background: rgba(220, 38, 38, 0.1);
-            color: var(--danger);
-            border: 1px solid rgba(220, 38, 38, 0.2);
+        .toast.warning {
+            border-left-color: var(--warning);
         }
 
-        /* Graph improvements */
-        .chart-placeholder {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--gray);
-        }
-
-        .chart-placeholder i {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
+        @keyframes slideInUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
@@ -1343,7 +1345,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // Firebase Configuration
+        // Firebase Configuration - Using your actual config
         const firebaseConfig = {
             apiKey: "AIzaSyDR8V9TeOIpexlYo9bSDV7hb2njVq7rQ-8",
             authDomain: "skill-exchange-536ac.firebaseapp.com",
@@ -1360,17 +1362,28 @@
         let appInstanceId = localStorage.getItem('app_instance_id') || Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 
         try {
+            // Initialize Firebase only once
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
+                console.log("Firebase initialized successfully");
             }
+            
             db = firebase.firestore();
             storage = firebase.storage();
             firebaseInitialized = true;
             
-            // Enable offline persistence
-            db.enablePersistence().catch(err => {
-                console.log("Offline persistence enabled");
-            });
+            // Enable offline persistence with better error handling
+            db.enablePersistence()
+                .then(() => {
+                    console.log("Offline persistence enabled");
+                })
+                .catch((err) => {
+                    if (err.code === 'failed-precondition') {
+                        console.log("Multiple tabs open, persistence can only be enabled in one tab at a time.");
+                    } else if (err.code === 'unimplemented') {
+                        console.log("The current browser doesn't support offline persistence");
+                    }
+                });
             
             // Store app instance ID
             if (!localStorage.getItem('app_instance_id')) {
@@ -1378,6 +1391,7 @@
             }
         } catch (error) {
             console.error("Firebase initialization error:", error);
+            alert("Firebase initialization failed. Please check your internet connection.");
         }
 
         // Helper Functions
@@ -1446,9 +1460,11 @@
 
             try {
                 // Check if imprest exists
-                const imprestDoc = await db.collection('imprest').doc('current').get();
+                const imprestRef = db.collection('imprest').doc('current');
+                const imprestDoc = await imprestRef.get();
+                
                 if (!imprestDoc.exists) {
-                    await db.collection('imprest').doc('current').set({
+                    await imprestRef.set({
                         initial: 0,
                         spent: 0,
                         remaining: 0,
@@ -1457,12 +1473,20 @@
                         nextResetDate: null,
                         createdAt: firebase.firestore.Timestamp.fromDate(new Date())
                     });
-                    console.log("Imprest document created");
-                } else {
-                    console.log("Imprest document already exists");
+                    console.log("Imprest document created successfully");
                 }
+                
+                // Test write to ensure Firestore is working
+                await db.collection('test').doc('connection').set({
+                    timestamp: firebase.firestore.Timestamp.fromDate(new Date()),
+                    test: true
+                });
+                
+                console.log("Firebase initialization test successful");
+                return true;
             } catch (error) {
                 console.error("Error initializing Firebase data:", error);
+                return false;
             }
         };
 
@@ -1498,6 +1522,28 @@
             }
         };
 
+        // Toast Component
+        const Toast = ({ message, type = 'success', onClose }) => {
+            React.useEffect(() => {
+                const timer = setTimeout(() => {
+                    onClose();
+                }, 3000);
+                return () => clearTimeout(timer);
+            }, [onClose]);
+            
+            return (
+                <div className={`toast ${type}`}>
+                    <i className={`fas fa-${type === 'success' ? 'check-circle text-success' : type === 'error' ? 'exclamation-circle text-danger' : 'exclamation-triangle text-warning'}`}></i>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '600', fontSize: '14px' }}>{message}</div>
+                    </div>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--gray)', cursor: 'pointer' }}>
+                        <i className="fas fa-times"></i>
+                    </button>
+                </div>
+            );
+        };
+
         // Main App Component
         const App = () => {
             const [currentPage, setCurrentPage] = React.useState('dashboard');
@@ -1505,79 +1551,63 @@
             const [showExpenseForm, setShowExpenseForm] = React.useState(false);
             const [showFabOptions, setShowFabOptions] = React.useState(false);
             const [currentMonth, setCurrentMonth] = React.useState(new Date());
-            const [connectionStatus, setConnectionStatus] = React.useState(firebaseInitialized ? 'connected' : 'disconnected');
-            const [showLiveUpdate, setShowLiveUpdate] = React.useState(false);
-            const [liveUpdateMessage, setLiveUpdateMessage] = React.useState('');
-            const [showSuccess, setShowSuccess] = React.useState(false);
-            const [successMessage, setSuccessMessage] = React.useState('');
+            const [connectionStatus, setConnectionStatus] = React.useState('connecting');
+            const [showToast, setShowToast] = React.useState(false);
+            const [toastMessage, setToastMessage] = React.useState('');
+            const [toastType, setToastType] = React.useState('success');
             
+            // Initialize Firebase and check connection
             React.useEffect(() => {
-                initializeFirebaseData();
-                checkAndResetImprest();
-                
-                // Set up connection monitoring
-                if (firebaseInitialized) {
-                    db.collection('income').limit(1).onSnapshot(
-                        () => setConnectionStatus('connected'),
-                        (error) => {
-                            console.error("Firestore error:", error);
-                            setConnectionStatus('disconnected');
+                const initApp = async () => {
+                    if (!firebaseInitialized) {
+                        setConnectionStatus('offline');
+                        showNotification('Firebase not initialized. Please check your internet connection.', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        // Test Firebase connection
+                        const initialized = await initializeFirebaseData();
+                        if (initialized) {
+                            setConnectionStatus('online');
+                            showNotification('Connected to database successfully', 'success');
+                        } else {
+                            setConnectionStatus('offline');
+                            showNotification('Failed to connect to database', 'error');
                         }
-                    );
-                }
+                        
+                        // Set up connection monitoring
+                        db.collection('test').onSnapshot(
+                            () => {
+                                setConnectionStatus('online');
+                            },
+                            (error) => {
+                                console.error("Firestore connection error:", error);
+                                setConnectionStatus('offline');
+                            }
+                        );
+                        
+                        // Check imprest reset every hour
+                        const resetCheckInterval = setInterval(checkAndResetImprest, 3600000);
+                        
+                        return () => {
+                            clearInterval(resetCheckInterval);
+                        };
+                    } catch (error) {
+                        console.error("App initialization error:", error);
+                        setConnectionStatus('offline');
+                        showNotification('Failed to initialize application', 'error');
+                    }
+                };
                 
-                // Check imprest reset every hour
-                const resetCheckInterval = setInterval(checkAndResetImprest, 3600000);
-                
-                // Show welcome message for new users
-                const hasVisited = localStorage.getItem('has_visited');
-                if (!hasVisited) {
-                    setTimeout(() => {
-                        setLiveUpdateMessage('Welcome to Agito Prop! Start tracking your property finances.');
-                        setShowLiveUpdate(true);
-                        setTimeout(() => setShowLiveUpdate(false), 5000);
-                    }, 1000);
-                    localStorage.setItem('has_visited', 'true');
-                }
-                
-                return () => clearInterval(resetCheckInterval);
+                initApp();
             }, []);
             
-            // Live updates notification
-            React.useEffect(() => {
-                if (!firebaseInitialized) return;
-                
-                const unsubscribe = db.collection('income')
-                    .orderBy('createdAt', 'desc')
-                    .limit(1)
-                    .onSnapshot((snapshot) => {
-                        snapshot.docChanges().forEach((change) => {
-                            if (change.type === 'added') {
-                                setLiveUpdateMessage('New income transaction added!');
-                                setShowLiveUpdate(true);
-                                setTimeout(() => setShowLiveUpdate(false), 3000);
-                            }
-                        });
-                    });
-                
-                const unsubscribe2 = db.collection('expenses')
-                    .orderBy('createdAt', 'desc')
-                    .limit(1)
-                    .onSnapshot((snapshot) => {
-                        snapshot.docChanges().forEach((change) => {
-                            if (change.type === 'added') {
-                                setLiveUpdateMessage('New expense transaction added!');
-                                setShowLiveUpdate(true);
-                                setTimeout(() => setShowLiveUpdate(false), 3000);
-                            }
-                        });
-                    });
-                
-                return () => {
-                    unsubscribe();
-                    unsubscribe2();
-                };
-            }, []);
+            const showNotification = (message, type = 'success') => {
+                setToastMessage(message);
+                setToastType(type);
+                setShowToast(true);
+            };
             
             const pages = [
                 { id: 'dashboard', label: 'Dashboard', icon: 'chart-line' },
@@ -1588,32 +1618,25 @@
             const renderPage = () => {
                 switch(currentPage) {
                     case 'dashboard':
-                        return <Dashboard currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} />;
+                        return <Dashboard currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} showNotification={showNotification} />;
                     case 'ledger':
-                        return <Ledger currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} />;
+                        return <Ledger currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} showNotification={showNotification} />;
                     case 'imprest':
-                        return <ImprestManager />;
+                        return <ImprestManager showNotification={showNotification} />;
                     default:
-                        return <Dashboard currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} />;
+                        return <Dashboard currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} showNotification={showNotification} />;
                 }
             };
             
             return (
                 <div className="app-container">
-                    {/* Live Updates Notification */}
-                    {showLiveUpdate && (
-                        <div className="live-updates">
-                            <i className="fas fa-bolt"></i>
-                            {liveUpdateMessage}
-                        </div>
-                    )}
-                    
-                    {/* Success Message */}
-                    {showSuccess && (
-                        <div className="live-updates" style={{ background: 'var(--success)', top: '80px' }}>
-                            <i className="fas fa-check-circle"></i>
-                            {successMessage}
-                        </div>
+                    {/* Toast Notification */}
+                    {showToast && (
+                        <Toast 
+                            message={toastMessage} 
+                            type={toastType} 
+                            onClose={() => setShowToast(false)} 
+                        />
                     )}
                     
                     {/* Header */}
@@ -1623,9 +1646,10 @@
                                 <i className="fas fa-chart-pie"></i>
                                 Agito Prop Finance
                             </div>
-                            <div className={`connection-status ${connectionStatus === 'connected' ? '' : 'offline'}`}>
-                                <i className={`fas fa-${connectionStatus === 'connected' ? 'signal' : 'signal-slash'}`}></i>
-                                {connectionStatus === 'connected' ? 'Live' : 'Offline'}
+                            <div className={`connection-status ${connectionStatus === 'online' ? '' : 'offline'}`}>
+                                <i className={`fas fa-${connectionStatus === 'online' ? 'signal' : 'signal-slash'}`}></i>
+                                {connectionStatus === 'online' ? 'Online' : 
+                                 connectionStatus === 'connecting' ? 'Connecting...' : 'Offline'}
                             </div>
                         </div>
                         
@@ -1689,11 +1713,7 @@
                         <IncomeForm 
                             onClose={() => setShowIncomeForm(false)} 
                             currentMonth={currentMonth}
-                            onSuccess={(msg) => {
-                                setSuccessMessage(msg);
-                                setShowSuccess(true);
-                                setTimeout(() => setShowSuccess(false), 3000);
-                            }}
+                            showNotification={showNotification}
                         />
                     )}
                     
@@ -1702,11 +1722,7 @@
                         <ExpenseForm 
                             onClose={() => setShowExpenseForm(false)} 
                             currentMonth={currentMonth}
-                            onSuccess={(msg) => {
-                                setSuccessMessage(msg);
-                                setShowSuccess(true);
-                                setTimeout(() => setShowSuccess(false), 3000);
-                            }}
+                            showNotification={showNotification}
                         />
                     )}
                 </div>
@@ -1714,7 +1730,7 @@
         };
         
         // Dashboard Component
-        const Dashboard = ({ currentMonth, setCurrentMonth }) => {
+        const Dashboard = ({ currentMonth, setCurrentMonth, showNotification }) => {
             const [dashboardData, setDashboardData] = React.useState({
                 income: 0,
                 expenses: 0,
@@ -1728,52 +1744,59 @@
             React.useEffect(() => {
                 if (!firebaseInitialized) {
                     setDashboardData(prev => ({ ...prev, loading: false }));
+                    showNotification('Database not connected', 'error');
                     return;
                 }
                 
                 const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
                 const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
                 
-                console.log("Setting up dashboard listeners...");
+                // Convert dates to Firestore Timestamps
+                const startTimestamp = firebase.firestore.Timestamp.fromDate(start);
+                const endTimestamp = firebase.firestore.Timestamp.fromDate(end);
+                
+                console.log("Setting up dashboard listeners for month:", start, end);
                 
                 // Current month income listener
                 const unsubscribeIncome = db.collection('income')
-                    .where('date', '>=', start)
-                    .where('date', '<=', end)
+                    .where('date', '>=', startTimestamp)
+                    .where('date', '<=', endTimestamp)
                     .onSnapshot(snapshot => {
                         let total = 0;
                         snapshot.forEach(doc => {
                             const data = doc.data();
                             total += parseFloat(data.amount) || 0;
                         });
-                        console.log("Current month income updated:", total);
+                        console.log("Income updated:", total);
                         setDashboardData(prev => ({ 
                             ...prev, 
                             income: total,
                             net: total - prev.expenses
                         }));
                     }, error => {
-                        console.error("Error listening to income:", error);
+                        console.error("Error loading income:", error);
+                        showNotification('Error loading income data', 'error');
                     });
                 
                 // Current month expenses listener
                 const unsubscribeExpenses = db.collection('expenses')
-                    .where('date', '>=', start)
-                    .where('date', '<=', end)
+                    .where('date', '>=', startTimestamp)
+                    .where('date', '<=', endTimestamp)
                     .onSnapshot(snapshot => {
                         let total = 0;
                         snapshot.forEach(doc => {
                             const data = doc.data();
                             total += parseFloat(data.amount) || 0;
                         });
-                        console.log("Current month expenses updated:", total);
+                        console.log("Expenses updated:", total);
                         setDashboardData(prev => ({ 
                             ...prev, 
                             expenses: total,
                             net: prev.income - total
                         }));
                     }, error => {
-                        console.error("Error listening to expenses:", error);
+                        console.error("Error loading expenses:", error);
+                        showNotification('Error loading expense data', 'error');
                     });
                 
                 // All-time income listener
@@ -1784,10 +1807,9 @@
                             const data = doc.data();
                             total += parseFloat(data.amount) || 0;
                         });
-                        console.log("All-time income updated:", total);
                         setDashboardData(prev => ({ ...prev, allTimeIncome: total }));
                     }, error => {
-                        console.error("Error listening to all-time income:", error);
+                        console.error("Error loading all-time income:", error);
                     });
                 
                 // All-time expenses listener
@@ -1798,10 +1820,9 @@
                             const data = doc.data();
                             total += parseFloat(data.amount) || 0;
                         });
-                        console.log("All-time expenses updated:", total);
                         setDashboardData(prev => ({ ...prev, allTimeExpenses: total }));
                     }, error => {
-                        console.error("Error listening to all-time expenses:", error);
+                        console.error("Error loading all-time expenses:", error);
                     });
                 
                 // Imprest listener
@@ -1810,7 +1831,7 @@
                     .onSnapshot(doc => {
                         if (doc.exists) {
                             const data = doc.data();
-                            console.log("Imprest data updated:", data);
+                            console.log("Imprest data loaded:", data);
                             setDashboardData(prev => ({ 
                                 ...prev, 
                                 imprest: data,
@@ -1822,6 +1843,7 @@
                     }, error => {
                         console.error("Error loading imprest:", error);
                         setDashboardData(prev => ({ ...prev, loading: false }));
+                        showNotification('Error loading imprest data', 'error');
                     });
                 
                 return () => {
@@ -1995,40 +2017,30 @@
                             </div>
                         </div>
                         
-                        {dashboardData.income === 0 && dashboardData.expenses === 0 ? (
-                            <div className="chart-placeholder">
-                                <i className="fas fa-chart-bar"></i>
-                                <p>No data available for this month</p>
-                                <p className="text-gray" style={{ fontSize: '14px', marginTop: '8px' }}>
-                                    Add income or expenses to see the chart
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="chart-container">
-                                <div className="bar-container">
-                                    <div 
-                                        className="bar bar-income" 
-                                        style={{ 
-                                            height: `${Math.min(100, incomeHeight)}%` 
-                                        }}
-                                    >
-                                        <div className="bar-value">{formatCurrency(dashboardData.income)}</div>
-                                    </div>
-                                    <div className="bar-label">Income</div>
+                        <div className="chart-container">
+                            <div className="bar-container">
+                                <div 
+                                    className="bar bar-income" 
+                                    style={{ 
+                                        height: `${incomeHeight}%` 
+                                    }}
+                                >
+                                    <div className="bar-value">{formatCurrency(dashboardData.income)}</div>
                                 </div>
-                                <div className="bar-container">
-                                    <div 
-                                        className="bar bar-expense" 
-                                        style={{ 
-                                            height: `${Math.min(100, expenseHeight)}%` 
-                                        }}
-                                    >
-                                        <div className="bar-value">{formatCurrency(dashboardData.expenses)}</div>
-                                    </div>
-                                    <div className="bar-label">Expenses</div>
-                                </div>
+                                <div className="bar-label">Income</div>
                             </div>
-                        )}
+                            <div className="bar-container">
+                                <div 
+                                    className="bar bar-expense" 
+                                    style={{ 
+                                        height: `${expenseHeight}%` 
+                                    }}
+                                >
+                                    <div className="bar-value">{formatCurrency(dashboardData.expenses)}</div>
+                                </div>
+                                <div className="bar-label">Expenses</div>
+                            </div>
+                        </div>
                     </div>
                     
                     {/* Imprest Progress */}
@@ -2070,60 +2082,79 @@
             );
         };
         
-        // Ledger Component - Social Media Style
-        const Ledger = ({ currentMonth, setCurrentMonth }) => {
+        // Ledger Component
+        const Ledger = ({ currentMonth, setCurrentMonth, showNotification }) => {
             const [transactions, setTransactions] = React.useState([]);
             const [loading, setLoading] = React.useState(true);
             const [showReceipt, setShowReceipt] = React.useState(null);
-            const [viewMode, setViewMode] = React.useState('list'); // 'list' or 'grid'
             
             React.useEffect(() => {
                 if (!firebaseInitialized) {
                     setLoading(false);
+                    showNotification('Database not connected', 'error');
                     return;
                 }
                 
                 const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
                 const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
                 
-                const unsubscribe = db.collection('income')
-                    .where('date', '>=', start)
-                    .where('date', '<=', end)
-                    .onSnapshot(snapshot => {
-                        const incomeData = snapshot.docs.map(doc => ({
-                            id: doc.id,
-                            type: 'income',
-                            ...doc.data(),
-                            date: doc.data().date?.toDate(),
-                            createdAt: doc.data().createdAt?.toDate()
-                        }));
-                        
-                        db.collection('expenses')
-                            .where('date', '>=', start)
-                            .where('date', '<=', end)
-                            .onSnapshot(snapshot2 => {
-                                const expenseData = snapshot2.docs.map(doc => ({
-                                    id: doc.id,
-                                    type: 'expense',
-                                    ...doc.data(),
-                                    date: doc.data().date?.toDate(),
-                                    createdAt: doc.data().createdAt?.toDate()
-                                }));
-                                
-                                const all = [...incomeData, ...expenseData]
-                                    .sort((a, b) => (b.createdAt || b.date) - (a.createdAt || a.date));
-                                setTransactions(all);
-                                setLoading(false);
-                            }, error => {
-                                console.error("Error loading expenses:", error);
-                                setLoading(false);
-                            });
-                    }, error => {
-                        console.error("Error loading income:", error);
-                        setLoading(false);
-                    });
+                // Convert dates to Firestore Timestamps
+                const startTimestamp = firebase.firestore.Timestamp.fromDate(start);
+                const endTimestamp = firebase.firestore.Timestamp.fromDate(end);
                 
-                return () => unsubscribe();
+                console.log("Loading transactions for:", start, end);
+                
+                let unsubscribeIncome = () => {};
+                let unsubscribeExpenses = () => {};
+                
+                const loadData = () => {
+                    unsubscribeIncome = db.collection('income')
+                        .where('date', '>=', startTimestamp)
+                        .where('date', '<=', endTimestamp)
+                        .onSnapshot(snapshot => {
+                            const incomeData = snapshot.docs.map(doc => ({
+                                id: doc.id,
+                                type: 'income',
+                                ...doc.data(),
+                                date: doc.data().date?.toDate(),
+                                createdAt: doc.data().createdAt?.toDate()
+                            }));
+                            
+                            unsubscribeExpenses = db.collection('expenses')
+                                .where('date', '>=', startTimestamp)
+                                .where('date', '<=', endTimestamp)
+                                .onSnapshot(snapshot2 => {
+                                    const expenseData = snapshot2.docs.map(doc => ({
+                                        id: doc.id,
+                                        type: 'expense',
+                                        ...doc.data(),
+                                        date: doc.data().date?.toDate(),
+                                        createdAt: doc.data().createdAt?.toDate()
+                                    }));
+                                    
+                                    const all = [...incomeData, ...expenseData]
+                                        .sort((a, b) => (b.createdAt || b.date) - (a.createdAt || a.date));
+                                    console.log("Transactions loaded:", all.length);
+                                    setTransactions(all);
+                                    setLoading(false);
+                                }, error => {
+                                    console.error("Error loading expenses:", error);
+                                    setLoading(false);
+                                    showNotification('Error loading expenses', 'error');
+                                });
+                        }, error => {
+                            console.error("Error loading income:", error);
+                            setLoading(false);
+                            showNotification('Error loading income', 'error');
+                        });
+                };
+                
+                loadData();
+                
+                return () => {
+                    unsubscribeIncome();
+                    unsubscribeExpenses();
+                };
             }, [currentMonth]);
             
             const getMonthName = (date) => {
@@ -2157,11 +2188,11 @@
                         
                         // Delete the transaction
                         await db.collection(type).doc(id).delete();
-                        alert('Transaction deleted successfully!');
+                        showNotification('Transaction deleted successfully', 'success');
                     }
                 } catch (error) {
                     console.error("Error deleting transaction:", error);
-                    alert('Error deleting transaction. Please try again.');
+                    showNotification('Error deleting transaction', 'error');
                 }
             };
             
@@ -2193,20 +2224,6 @@
                                 <i className="fas fa-history"></i>
                                 Transaction History - {getMonthName(currentMonth)}
                             </div>
-                            <div className="mobile-actions">
-                                <button 
-                                    className={`btn btn-sm ${viewMode === 'list' ? 'btn-primary' : 'btn-secondary'}`}
-                                    onClick={() => setViewMode('list')}
-                                >
-                                    <i className="fas fa-list"></i>
-                                </button>
-                                <button 
-                                    className={`btn btn-sm ${viewMode === 'grid' ? 'btn-primary' : 'btn-secondary'}`}
-                                    onClick={() => setViewMode('grid')}
-                                >
-                                    <i className="fas fa-th-large"></i>
-                                </button>
-                            </div>
                         </div>
                         
                         {transactions.length === 0 ? (
@@ -2225,74 +2242,7 @@
                                     </button>
                                 </div>
                             </div>
-                        ) : viewMode === 'grid' ? (
-                            // Social Media Grid View
-                            <div className="transaction-grid">
-                                {transactions.map(transaction => (
-                                    <div key={`${transaction.type}-${transaction.id}`} className="transaction-item">
-                                        <div className="transaction-header">
-                                            <div className="transaction-type">
-                                                <span className={`badge ${transaction.type === 'income' ? 'badge-income' : 'badge-expense'}`}>
-                                                    <i className={`fas fa-${transaction.type === 'income' ? 'arrow-down' : 'arrow-up'}`}></i>
-                                                    {transaction.type === 'income' ? 'Income' : 'Expense'}
-                                                </span>
-                                            </div>
-                                            <div className="transaction-amount" style={{
-                                                color: transaction.type === 'income' ? 'var(--success)' : 'var(--danger)'
-                                            }}>
-                                                {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="transaction-details">
-                                            <div>
-                                                <small className="text-gray">Date</small>
-                                                <div className="font-semibold">{formatDate(transaction.date)}</div>
-                                            </div>
-                                            <div>
-                                                <small className="text-gray">{transaction.type === 'income' ? 'Source' : 'Category'}</small>
-                                                <div className="font-semibold">
-                                                    {transaction.type === 'income' ? transaction.source : transaction.category}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        {transaction.notes && (
-                                            <div className="transaction-note">
-                                                <i className="fas fa-sticky-note text-gray"></i> {transaction.notes}
-                                            </div>
-                                        )}
-                                        
-                                        <div className="mt-16" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div>
-                                                {transaction.fromImprest && (
-                                                    <span className="text-warning font-semibold">
-                                                        <i className="fas fa-wallet"></i> From Imprest
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div style={{ display: 'flex', gap: '8px' }}>
-                                                {transaction.receiptUrl && (
-                                                    <button 
-                                                        className="btn btn-sm btn-secondary"
-                                                        onClick={() => setShowReceipt(transaction.receiptUrl)}
-                                                    >
-                                                        <i className="fas fa-eye"></i>
-                                                    </button>
-                                                )}
-                                                <button 
-                                                    className="btn btn-sm btn-secondary"
-                                                    onClick={() => deleteTransaction(transaction.id, transaction.type)}
-                                                >
-                                                    <i className="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
                         ) : (
-                            // Table View
                             <div className="table-wrapper">
                                 <table className="table">
                                     <thead>
@@ -2346,24 +2296,13 @@
                                                     ) : '-'}
                                                 </td>
                                                 <td>
-                                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                                        {transaction.receiptUrl && (
-                                                            <button 
-                                                                className="btn btn-sm btn-secondary"
-                                                                onClick={() => setShowReceipt(transaction.receiptUrl)}
-                                                                title="View Receipt"
-                                                            >
-                                                                <i className="fas fa-eye"></i>
-                                                            </button>
-                                                        )}
-                                                        <button 
-                                                            className="btn btn-sm btn-secondary"
-                                                            onClick={() => deleteTransaction(transaction.id, transaction.type)}
-                                                            title="Delete Transaction"
-                                                        >
-                                                            <i className="fas fa-trash"></i>
-                                                        </button>
-                                                    </div>
+                                                    <button 
+                                                        className="btn btn-sm btn-secondary"
+                                                        onClick={() => deleteTransaction(transaction.id, transaction.type)}
+                                                        title="Delete Transaction"
+                                                    >
+                                                        <i className="fas fa-trash"></i>
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))}
@@ -2400,8 +2339,8 @@
             );
         };
         
-        // Income Form Component - Mobile Optimized
-        const IncomeForm = ({ onClose, currentMonth, onSuccess }) => {
+        // Income Form Component
+        const IncomeForm = ({ onClose, currentMonth, showNotification }) => {
             const [formData, setFormData] = React.useState({
                 amount: '',
                 date: formatDateForInput(new Date()),
@@ -2411,11 +2350,11 @@
             });
             const [uploading, setUploading] = React.useState(false);
             const [error, setError] = React.useState('');
-            const [success, setSuccess] = React.useState('');
             
             const handleSubmit = async (e) => {
                 e.preventDefault();
                 
+                // Validation
                 if (!formData.amount || isNaN(formData.amount) || parseFloat(formData.amount) <= 0) {
                     setError('Please enter a valid amount');
                     return;
@@ -2428,7 +2367,6 @@
                 
                 setUploading(true);
                 setError('');
-                setSuccess('');
                 
                 try {
                     let receiptUrl = '';
@@ -2436,38 +2374,51 @@
                     // Upload receipt if exists
                     if (formData.receiptFile) {
                         try {
+                            console.log("Uploading receipt file:", formData.receiptFile.name);
                             const storageRef = storage.ref();
                             const fileRef = storageRef.child(`receipts/income/${Date.now()}_${formData.receiptFile.name}`);
                             await fileRef.put(formData.receiptFile);
                             receiptUrl = await fileRef.getDownloadURL();
+                            console.log("Receipt uploaded:", receiptUrl);
                         } catch (uploadError) {
                             console.error("Error uploading receipt:", uploadError);
                             setError("Failed to upload receipt. Saving without receipt.");
                         }
                     }
                     
-                    // Save to Firestore
-                    await db.collection('income').add({
+                    // Prepare data for Firestore
+                    const incomeData = {
                         amount: parseFloat(formData.amount),
                         date: firebase.firestore.Timestamp.fromDate(new Date(formData.date)),
                         source: formData.source,
-                        notes: formData.notes,
+                        notes: formData.notes || '',
                         receiptUrl: receiptUrl,
                         createdAt: firebase.firestore.Timestamp.fromDate(new Date()),
                         deviceId: localStorage.getItem('app_instance_id')
-                    });
+                    };
                     
-                    setSuccess('Income added successfully!');
-                    if (onSuccess) onSuccess('Income added successfully!');
+                    console.log("Saving income data:", incomeData);
                     
-                    // Clear form and close after delay
-                    setTimeout(() => {
-                        onClose();
-                    }, 1500);
+                    // Save to Firestore
+                    await db.collection('income').add(incomeData);
+                    
+                    console.log("Income saved successfully");
+                    showNotification('Income added successfully!', 'success');
+                    onClose();
                     
                 } catch (error) {
                     console.error("Error saving income:", error);
-                    setError('Failed to save income. Please check your internet connection and try again.');
+                    let errorMessage = 'Failed to save income. Please try again.';
+                    
+                    // More specific error messages
+                    if (error.code === 'permission-denied') {
+                        errorMessage = 'Permission denied. Please check Firebase rules.';
+                    } else if (error.code === 'unavailable') {
+                        errorMessage = 'Network error. Please check your internet connection.';
+                    }
+                    
+                    setError(errorMessage);
+                    showNotification('Failed to save income', 'error');
                 } finally {
                     setUploading(false);
                 }
@@ -2488,15 +2439,18 @@
                         
                         <div className="form-content">
                             <form onSubmit={handleSubmit}>
-                                {success && (
-                                    <div className="alert alert-success">
-                                        <i className="fas fa-check-circle"></i>
-                                        {success}
-                                    </div>
-                                )}
-                                
                                 {error && (
-                                    <div className="alert alert-error">
+                                    <div style={{ 
+                                        background: 'rgba(220, 38, 38, 0.1)', 
+                                        padding: '12px', 
+                                        borderRadius: '8px',
+                                        marginBottom: '16px',
+                                        color: 'var(--danger)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        fontSize: '14px'
+                                    }}>
                                         <i className="fas fa-exclamation-circle"></i>
                                         {error}
                                     </div>
@@ -2506,7 +2460,7 @@
                                     <div className="form-group">
                                         <label className="form-label required">
                                             <i className="fas fa-money-bill-wave"></i>
-                                            Amount
+                                            Amount (₦)
                                         </label>
                                         <input
                                             type="number"
@@ -2556,7 +2510,7 @@
                                     <div className="form-group">
                                         <label className="form-label">
                                             <i className="fas fa-sticky-note"></i>
-                                            Notes
+                                            Notes (Optional)
                                         </label>
                                         <textarea
                                             className="form-textarea"
@@ -2579,6 +2533,9 @@
                                             onChange={e => setFormData({...formData, receiptFile: e.target.files[0]})}
                                             style={{ padding: '12px' }}
                                         />
+                                        <small style={{ color: 'var(--gray)', fontSize: '13px', marginTop: '4px' }}>
+                                            Max file size: 5MB. Supported: JPG, PNG, PDF
+                                        </small>
                                     </div>
                                 </div>
                                 
@@ -2596,7 +2553,7 @@
                                         ) : (
                                             <>
                                                 <i className="fas fa-check"></i>
-                                                Record Income
+                                                Save Income
                                             </>
                                         )}
                                     </button>
@@ -2608,8 +2565,8 @@
             );
         };
         
-        // Expense Form Component - Mobile Optimized
-        const ExpenseForm = ({ onClose, currentMonth, onSuccess }) => {
+        // Expense Form Component
+        const ExpenseForm = ({ onClose, currentMonth, showNotification }) => {
             const [formData, setFormData] = React.useState({
                 amount: '',
                 date: formatDateForInput(new Date()),
@@ -2621,7 +2578,6 @@
             const [uploading, setUploading] = React.useState(false);
             const [imprestBalance, setImprestBalance] = React.useState(0);
             const [error, setError] = React.useState('');
-            const [success, setSuccess] = React.useState('');
             
             React.useEffect(() => {
                 if (!firebaseInitialized) return;
@@ -2630,7 +2586,7 @@
                     .doc('current')
                     .onSnapshot(doc => {
                         if (doc.exists) {
-                            setImprestBalance(doc.data().remaining);
+                            setImprestBalance(doc.data().remaining || 0);
                         }
                     }, error => {
                         console.error("Error loading imprest:", error);
@@ -2642,6 +2598,7 @@
             const handleSubmit = async (e) => {
                 e.preventDefault();
                 
+                // Validation
                 if (!formData.amount || isNaN(formData.amount) || parseFloat(formData.amount) <= 0) {
                     setError('Please enter a valid amount');
                     return;
@@ -2663,7 +2620,6 @@
                 
                 setUploading(true);
                 setError('');
-                setSuccess('');
                 
                 try {
                     let receiptUrl = '';
@@ -2671,27 +2627,34 @@
                     // Upload receipt if exists
                     if (formData.receiptFile) {
                         try {
+                            console.log("Uploading receipt file:", formData.receiptFile.name);
                             const storageRef = storage.ref();
                             const fileRef = storageRef.child(`receipts/expenses/${Date.now()}_${formData.receiptFile.name}`);
                             await fileRef.put(formData.receiptFile);
                             receiptUrl = await fileRef.getDownloadURL();
+                            console.log("Receipt uploaded:", receiptUrl);
                         } catch (uploadError) {
                             console.error("Error uploading receipt:", uploadError);
                             setError("Failed to upload receipt. Saving without receipt.");
                         }
                     }
                     
-                    // Save expense
-                    await db.collection('expenses').add({
+                    // Prepare data for Firestore
+                    const expenseData = {
                         amount: amount,
                         date: firebase.firestore.Timestamp.fromDate(new Date(formData.date)),
                         category: formData.category,
-                        notes: formData.notes,
+                        notes: formData.notes || '',
                         fromImprest: formData.fromImprest,
                         receiptUrl: receiptUrl,
                         createdAt: firebase.firestore.Timestamp.fromDate(new Date()),
                         deviceId: localStorage.getItem('app_instance_id')
-                    });
+                    };
+                    
+                    console.log("Saving expense data:", expenseData);
+                    
+                    // Save expense
+                    await db.collection('expenses').add(expenseData);
                     
                     // Update imprest if needed
                     if (formData.fromImprest) {
@@ -2702,17 +2665,23 @@
                         });
                     }
                     
-                    setSuccess('Expense added successfully!');
-                    if (onSuccess) onSuccess('Expense added successfully!');
-                    
-                    // Clear form and close after delay
-                    setTimeout(() => {
-                        onClose();
-                    }, 1500);
+                    console.log("Expense saved successfully");
+                    showNotification('Expense added successfully!', 'success');
+                    onClose();
                     
                 } catch (error) {
                     console.error("Error saving expense:", error);
-                    setError('Failed to save expense. Please check your internet connection and try again.');
+                    let errorMessage = 'Failed to save expense. Please try again.';
+                    
+                    // More specific error messages
+                    if (error.code === 'permission-denied') {
+                        errorMessage = 'Permission denied. Please check Firebase rules.';
+                    } else if (error.code === 'unavailable') {
+                        errorMessage = 'Network error. Please check your internet connection.';
+                    }
+                    
+                    setError(errorMessage);
+                    showNotification('Failed to save expense', 'error');
                 } finally {
                     setUploading(false);
                 }
@@ -2733,15 +2702,18 @@
                         
                         <div className="form-content">
                             <form onSubmit={handleSubmit}>
-                                {success && (
-                                    <div className="alert alert-success">
-                                        <i className="fas fa-check-circle"></i>
-                                        {success}
-                                    </div>
-                                )}
-                                
                                 {error && (
-                                    <div className="alert alert-error">
+                                    <div style={{ 
+                                        background: 'rgba(220, 38, 38, 0.1)', 
+                                        padding: '12px', 
+                                        borderRadius: '8px',
+                                        marginBottom: '16px',
+                                        color: 'var(--danger)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        fontSize: '14px'
+                                    }}>
                                         <i className="fas fa-exclamation-circle"></i>
                                         {error}
                                     </div>
@@ -2751,7 +2723,7 @@
                                     <div className="form-group">
                                         <label className="form-label required">
                                             <i className="fas fa-money-bill-wave"></i>
-                                            Amount
+                                            Amount (₦)
                                         </label>
                                         <input
                                             type="number"
@@ -2830,7 +2802,7 @@
                                     <div className="form-group">
                                         <label className="form-label">
                                             <i className="fas fa-sticky-note"></i>
-                                            Notes
+                                            Notes (Optional)
                                         </label>
                                         <textarea
                                             className="form-textarea"
@@ -2853,6 +2825,9 @@
                                             onChange={e => setFormData({...formData, receiptFile: e.target.files[0]})}
                                             style={{ padding: '12px' }}
                                         />
+                                        <small style={{ color: 'var(--gray)', fontSize: '13px', marginTop: '4px' }}>
+                                            Max file size: 5MB. Supported: JPG, PNG, PDF
+                                        </small>
                                     </div>
                                 </div>
                                 
@@ -2870,7 +2845,7 @@
                                         ) : (
                                             <>
                                                 <i className="fas fa-check"></i>
-                                                Record Expense
+                                                Save Expense
                                             </>
                                         )}
                                     </button>
@@ -2882,8 +2857,8 @@
             );
         };
         
-        // Imprest Manager Component - Mobile Optimized
-        const ImprestManager = () => {
+        // Imprest Manager Component
+        const ImprestManager = ({ showNotification }) => {
             const [imprest, setImprest] = React.useState({ 
                 initial: 0, 
                 spent: 0, 
@@ -2897,12 +2872,12 @@
             const [adjustment, setAdjustment] = React.useState({ type: 'add', amount: '' });
             const [loading, setLoading] = React.useState(true);
             const [error, setError] = React.useState('');
-            const [success, setSuccess] = React.useState('');
             const [resetPeriod, setResetPeriod] = React.useState('never');
             
             React.useEffect(() => {
                 if (!firebaseInitialized) {
                     setLoading(false);
+                    showNotification('Database not connected', 'error');
                     return;
                 }
                 
@@ -2911,6 +2886,7 @@
                     .onSnapshot(doc => {
                         if (doc.exists) {
                             const data = doc.data();
+                            console.log("Imprest data loaded:", data);
                             setImprest(data);
                             setResetPeriod(data.resetPeriod || 'never');
                         }
@@ -2918,6 +2894,7 @@
                     }, error => {
                         console.error("Error loading imprest:", error);
                         setLoading(false);
+                        showNotification('Error loading imprest data', 'error');
                     });
                 
                 return () => unsubscribe();
@@ -2943,7 +2920,7 @@
                             remaining: firebase.firestore.FieldValue.increment(amount),
                             updatedAt: firebase.firestore.Timestamp.fromDate(new Date())
                         });
-                        setSuccess(`Successfully added ${formatCurrency(amount)} to imprest fund`);
+                        showNotification(`Added ${formatCurrency(amount)} to imprest fund`, 'success');
                     } else {
                         if (amount > imprest.remaining) {
                             setError('Cannot withdraw more than remaining balance');
@@ -2955,18 +2932,16 @@
                             remaining: firebase.firestore.FieldValue.increment(-amount),
                             updatedAt: firebase.firestore.Timestamp.fromDate(new Date())
                         });
-                        setSuccess(`Successfully withdrew ${formatCurrency(amount)} from imprest fund`);
+                        showNotification(`Withdrew ${formatCurrency(amount)} from imprest fund`, 'success');
                     }
                     
                     setAdjustment({ type: 'add', amount: '' });
-                    setTimeout(() => {
-                        setShowAdjustForm(false);
-                        setSuccess('');
-                    }, 1500);
+                    setShowAdjustForm(false);
                     setError('');
                 } catch (error) {
                     console.error("Error adjusting imprest:", error);
                     setError('Failed to adjust imprest fund. Please try again.');
+                    showNotification('Failed to adjust imprest fund', 'error');
                 }
             };
             
@@ -2984,11 +2959,10 @@
                         updatedAt: firebase.firestore.Timestamp.fromDate(new Date())
                     });
                     
-                    setSuccess('Imprest fund reset successfully!');
-                    setTimeout(() => setSuccess(''), 3000);
+                    showNotification('Imprest fund reset successfully!', 'success');
                 } catch (error) {
                     console.error("Error resetting imprest:", error);
-                    setError('Failed to reset imprest fund. Please try again.');
+                    showNotification('Failed to reset imprest fund', 'error');
                 }
             };
             
@@ -3003,11 +2977,10 @@
                     });
                     
                     setResetPeriod(period);
-                    setSuccess(`Reset period updated to ${period}`);
-                    setTimeout(() => setSuccess(''), 3000);
+                    showNotification(`Reset period updated to ${period}`, 'success');
                 } catch (error) {
                     console.error("Error updating reset period:", error);
-                    setError('Failed to update reset period. Please try again.');
+                    showNotification('Failed to update reset period', 'error');
                 }
             };
             
@@ -3035,13 +3008,6 @@
             
             return (
                 <div className="ledger-container">
-                    {success && (
-                        <div className="alert alert-success mb-24">
-                            <i className="fas fa-check-circle"></i>
-                            {success}
-                        </div>
-                    )}
-                    
                     <div className="section-header mb-24">
                         <div className="section-title">
                             <i className="fas fa-wallet"></i>
@@ -3179,16 +3145,19 @@
                                 
                                 <div className="form-content">
                                     {error && (
-                                        <div className="alert alert-error mb-24">
+                                        <div style={{ 
+                                            background: 'rgba(220, 38, 38, 0.1)', 
+                                            padding: '12px', 
+                                            borderRadius: '8px',
+                                            marginBottom: '16px',
+                                            color: 'var(--danger)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            fontSize: '14px'
+                                        }}>
                                             <i className="fas fa-exclamation-circle"></i>
                                             {error}
-                                        </div>
-                                    )}
-                                    
-                                    {success && (
-                                        <div className="alert alert-success mb-24">
-                                            <i className="fas fa-check-circle"></i>
-                                            {success}
                                         </div>
                                     )}
                                     
@@ -3211,7 +3180,7 @@
                                         <div className="form-group">
                                             <label className="form-label required">
                                                 <i className="fas fa-money-bill-wave"></i>
-                                                Amount
+                                                Amount (₦)
                                             </label>
                                             <input
                                                 type="number"
@@ -3276,20 +3245,6 @@
                                 </div>
                                 
                                 <div className="form-content">
-                                    {error && (
-                                        <div className="alert alert-error mb-24">
-                                            <i className="fas fa-exclamation-circle"></i>
-                                            {error}
-                                        </div>
-                                    )}
-                                    
-                                    {success && (
-                                        <div className="alert alert-success mb-24">
-                                            <i className="fas fa-check-circle"></i>
-                                            {success}
-                                        </div>
-                                    )}
-                                    
                                     <div className="form-group">
                                         <label className="form-label">
                                             <i className="fas fa-history"></i>
