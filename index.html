@@ -2004,16 +2004,19 @@
                 setCurrentMonth(newDate);
             };
             
+            // FIXED: Correctly map 'expense' type to 'expenses' collection
             const deleteTransaction = async (id, type) => {
                 if (!confirm('Are you sure you want to delete this transaction?')) return;
                 
                 try {
-                    const doc = await db.collection(type).doc(id).get();
+                    const collectionName = type === 'income' ? 'income' : 'expenses';
+                    const doc = await db.collection(collectionName).doc(id).get();
+                    
                     if (doc.exists) {
                         const data = doc.data();
                         
                         // If it's an expense from imprest, refund the amount
-                        if (type === 'expenses' && data.fromImprest) {
+                        if (type === 'expense' && data.fromImprest) {
                             const amount = parseFloat(data.amount) || 0;
                             await db.collection('imprest').doc('current').update({
                                 spent: firebase.firestore.FieldValue.increment(-amount),
@@ -2024,20 +2027,37 @@
                         // Delete the receipt image if exists
                         if (data.receiptUrl) {
                             try {
-                                const fileName = data.receiptUrl.split('/').pop().split('?')[0];
-                                await storage.ref(`receipts/${fileName}`).delete();
+                                // Extract filename from URL
+                                const urlParts = data.receiptUrl.split('/');
+                                const fileName = urlParts[urlParts.length - 1].split('?')[0];
+                                
+                                // Decode the filename (it might be URL encoded)
+                                const decodedFileName = decodeURIComponent(fileName);
+                                
+                                // Get the full path
+                                const storageRef = storage.ref();
+                                const receiptRef = storageRef.child(`receipts/${decodedFileName}`);
+                                
+                                // Delete the file
+                                await receiptRef.delete();
+                                console.log('Receipt image deleted:', decodedFileName);
                             } catch (error) {
                                 console.warn('Error deleting receipt image:', error);
+                                // Continue with transaction deletion even if image deletion fails
                             }
                         }
                         
                         // Delete the transaction
-                        await db.collection(type).doc(id).delete();
+                        await db.collection(collectionName).doc(id).delete();
+                        
+                        // Remove from local state immediately for better UX
+                        setTransactions(prev => prev.filter(t => !(t.id === id && t.type === type)));
+                        
                         showNotification('Transaction deleted successfully', 'success');
                     }
                 } catch (error) {
                     console.error('Error deleting transaction:', error);
-                    showNotification('Error deleting transaction', 'error');
+                    showNotification('Error deleting transaction: ' + error.message, 'error');
                 }
             };
             
@@ -2134,9 +2154,14 @@
                                                             className="receipt-img"
                                                             onClick={() => setShowReceipt(transaction.receiptUrl)}
                                                             title="Click to view receipt"
+                                                            onError={(e) => {
+                                                                console.error('Error loading receipt image:', transaction.receiptUrl);
+                                                                e.target.style.display = 'none';
+                                                                e.target.parentElement.innerHTML = '<i class="fas fa-image text-gray" title="Receipt not available"></i>';
+                                                            }}
                                                         />
                                                     ) : (
-                                                        <i className="fas fa-receipt" style={{ color: '#D1D5DB', fontSize: '18px' }}></i>
+                                                        <i className="fas fa-receipt" style={{ color: '#D1D5DB', fontSize: '18px' }} title="No receipt"></i>
                                                     )}
                                                 </td>
                                                 <td>
@@ -2195,7 +2220,7 @@
                                             onLoad={() => setReceiptLoading(false)}
                                             onError={() => {
                                                 setReceiptLoading(false);
-                                                showNotification('Error loading receipt image', 'error');
+                                                showNotification('Error loading receipt image. It may have been deleted.', 'error');
                                             }}
                                         />
                                     )}
@@ -2426,7 +2451,7 @@
             );
         };
         
-        // Expense Form Component with Auditable Categories and Image Upload
+        // Expense Form Component with Auditable Categories and Image Upload - FIXED
         const ExpenseForm = ({ onClose, currentMonth, showNotification }) => {
             const [formData, setFormData] = React.useState({
                 amount: '',
@@ -2540,14 +2565,19 @@
             
             const uploadReceiptToStorage = async (file) => {
                 try {
-                    const fileName = `${generateUniqueId()}_${file.name}`;
+                    // Sanitize filename
+                    const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                    const fileName = `${generateUniqueId()}_${sanitizedName}`;
                     const storageRef = storage.ref(`receipts/${fileName}`);
+                    
+                    console.log('Uploading receipt:', fileName);
                     const snapshot = await storageRef.put(file);
                     const downloadURL = await snapshot.ref.getDownloadURL();
+                    console.log('Receipt uploaded successfully:', downloadURL);
                     return downloadURL;
                 } catch (error) {
                     console.error('Error uploading receipt:', error);
-                    throw error;
+                    throw new Error(`Failed to upload receipt: ${error.message}`);
                 }
             };
             
@@ -2593,18 +2623,26 @@
                     // Determine final category value
                     const finalCategory = formData.isCustom ? formData.customCategory : formData.category;
                     
-                    // Save expense
-                    await db.collection('expenses').add({
+                    // Prepare expense data
+                    const expenseData = {
                         amount: amount,
                         date: new Date(formData.date),
                         category: finalCategory,
                         isCustom: formData.isCustom,
                         notes: formData.notes || '',
                         fromImprest: formData.fromImprest,
-                        receiptUrl: receiptUrl,
-                        receiptFileName: formData.receiptFile ? formData.receiptFile.name : null,
                         createdAt: new Date()
-                    });
+                    };
+                    
+                    // Add receipt URL if available
+                    if (receiptUrl) {
+                        expenseData.receiptUrl = receiptUrl;
+                        expenseData.receiptFileName = formData.receiptFile.name;
+                    }
+                    
+                    // Save expense
+                    const expenseRef = await db.collection('expenses').add(expenseData);
+                    console.log('Expense saved with ID:', expenseRef.id);
                     
                     // Update imprest if needed
                     if (formData.fromImprest) {
@@ -2614,12 +2652,12 @@
                         });
                     }
                     
-                    showNotification('Expense added successfully!', 'success');
+                    showNotification('Expense added successfully!' + (receiptUrl ? ' (Receipt uploaded)' : ''), 'success');
                     onClose();
                     
                 } catch (error) {
                     console.error('Error saving expense:', error);
-                    setError('Failed to save expense. Please try again.');
+                    setError(`Failed to save expense: ${error.message}`);
                     showNotification('Failed to save expense', 'error');
                 } finally {
                     setUploading(false);
