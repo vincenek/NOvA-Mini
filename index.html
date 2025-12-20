@@ -545,6 +545,26 @@
             border: 1px solid rgba(220, 38, 38, 0.2);
         }
 
+        .receipt-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: rgba(37, 99, 235, 0.1);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .receipt-link:hover {
+            background: rgba(37, 99, 235, 0.2);
+            transform: translateY(-2px);
+        }
+
         .receipt-img {
             width: 40px;
             height: 40px;
@@ -1252,6 +1272,23 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Upload Progress */
+        .upload-progress {
+            margin-top: 10px;
+            width: 100%;
+            background: #E5E7EB;
+            border-radius: 6px;
+            height: 6px;
+            overflow: hidden;
+        }
+        
+        .upload-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            border-radius: 6px;
+            transition: width 0.3s ease;
         }
     </style>
 </head>
@@ -2004,6 +2041,7 @@
                 setCurrentMonth(newDate);
             };
             
+            // FIXED: Correctly map 'expense' type to 'expenses' collection
             const deleteTransaction = async (id, type) => {
                 if (!confirm('Are you sure you want to delete this transaction?')) return;
                 
@@ -2042,20 +2080,21 @@
                                 console.log('Receipt image deleted:', decodedFileName);
                             } catch (error) {
                                 console.warn('Error deleting receipt image:', error);
+                                // Continue with transaction deletion even if image deletion fails
                             }
                         }
                         
                         // Delete the transaction
                         await db.collection(collectionName).doc(id).delete();
                         
-                        // Remove from local state
+                        // Remove from local state immediately for better UX
                         setTransactions(prev => prev.filter(t => !(t.id === id && t.type === type)));
                         
                         showNotification('Transaction deleted successfully', 'success');
                     }
                 } catch (error) {
                     console.error('Error deleting transaction:', error);
-                    showNotification('Error deleting transaction', 'error');
+                    showNotification('Error deleting transaction: ' + error.message, 'error');
                 }
             };
             
@@ -2146,18 +2185,31 @@
                                                 <td>{transaction.notes || '-'}</td>
                                                 <td>
                                                     {transaction.receiptUrl ? (
-                                                        <img 
-                                                            src={transaction.receiptUrl} 
-                                                            alt="Receipt" 
-                                                            className="receipt-img"
-                                                            onClick={() => setShowReceipt(transaction.receiptUrl)}
-                                                            title="Click to view receipt"
-                                                            onError={(e) => {
-                                                                console.error('Error loading receipt image:', transaction.receiptUrl);
-                                                                e.target.style.display = 'none';
-                                                                e.target.parentElement.innerHTML = '<i class="fas fa-image text-gray" title="Receipt not available"></i>';
-                                                            }}
-                                                        />
+                                                        <>
+                                                            <img 
+                                                                src={transaction.receiptUrl} 
+                                                                alt="Receipt" 
+                                                                className="receipt-img"
+                                                                onClick={() => setShowReceipt(transaction.receiptUrl)}
+                                                                title="Click to view receipt"
+                                                                onError={(e) => {
+                                                                    console.error('Error loading receipt image:', transaction.receiptUrl);
+                                                                    e.target.style.display = 'none';
+                                                                    e.target.parentElement.innerHTML = '<i class="fas fa-image text-gray" title="Receipt not available"></i>';
+                                                                }}
+                                                            />
+                                                            <div style={{ marginTop: '4px' }}>
+                                                                <a 
+                                                                    href={transaction.receiptUrl} 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer"
+                                                                    className="receipt-link"
+                                                                    title="Open receipt in new tab"
+                                                                >
+                                                                    <i className="fas fa-external-link-alt"></i> Open
+                                                                </a>
+                                                            </div>
+                                                        </>
                                                     ) : (
                                                         <i className="fas fa-receipt" style={{ color: '#D1D5DB', fontSize: '18px' }} title="No receipt"></i>
                                                     )}
@@ -2218,11 +2270,11 @@
                                             onLoad={() => setReceiptLoading(false)}
                                             onError={() => {
                                                 setReceiptLoading(false);
-                                                showNotification('Error loading receipt image', 'error');
+                                                showNotification('Error loading receipt image. It may have been deleted.', 'error');
                                             }}
                                         />
                                     )}
-                                    <div style={{ marginTop: '16px' }}>
+                                    <div style={{ marginTop: '16px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
                                         <a 
                                             href={showReceipt} 
                                             target="_blank" 
@@ -2231,6 +2283,12 @@
                                         >
                                             <i className="fas fa-external-link-alt"></i> Open in New Tab
                                         </a>
+                                        <button 
+                                            className="btn btn-secondary btn-sm"
+                                            onClick={() => setShowReceipt(null)}
+                                        >
+                                            <i className="fas fa-times"></i> Close
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -2240,7 +2298,7 @@
             );
         };
         
-        // Income Form Component
+        // Income Form Component with Auditable Categories
         const IncomeForm = ({ onClose, currentMonth, showNotification }) => {
             const [formData, setFormData] = React.useState({
                 amount: '',
@@ -2269,6 +2327,7 @@
                     return;
                 }
                 
+                // Validate custom source
                 if (formData.isCustom && !formData.customSource.trim()) {
                     setError('Please enter a custom source name');
                     return;
@@ -2283,8 +2342,10 @@
                 setError('');
                 
                 try {
+                    // Determine final source value
                     const finalSource = formData.isCustom ? formData.customSource : formData.source;
                     
+                    // Save to Firestore
                     await db.collection('income').add({
                         amount: parseFloat(formData.amount),
                         date: new Date(formData.date),
@@ -2387,6 +2448,7 @@
                                             <option value="Other">Other (Specify)</option>
                                         </select>
                                         
+                                        {/* Custom source input for "Other" */}
                                         {formData.isCustom && (
                                             <div className="custom-input-container">
                                                 <input
@@ -2445,7 +2507,7 @@
             );
         };
         
-        // Expense Form Component - FIXED VERSION
+        // Expense Form Component with Auditable Categories and Image Upload - FIXED
         const ExpenseForm = ({ onClose, currentMonth, showNotification }) => {
             const [formData, setFormData] = React.useState({
                 amount: '',
@@ -2459,6 +2521,7 @@
                 receiptPreview: null
             });
             const [uploading, setUploading] = React.useState(false);
+            const [uploadProgress, setUploadProgress] = React.useState(0);
             const [imprestBalance, setImprestBalance] = React.useState(0);
             const [error, setError] = React.useState('');
             const [dragging, setDragging] = React.useState(false);
@@ -2491,12 +2554,12 @@
             const handleFileSelect = (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    if (file.size > 5 * 1024 * 1024) {
-                        setError('File size must be less than 5MB');
+                    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                        setError('File size must be less than 10MB');
                         return;
                     }
                     if (!file.type.startsWith('image/')) {
-                        setError('Please select an image file');
+                        setError('Please select an image file (JPG, PNG, etc.)');
                         return;
                     }
                     
@@ -2528,8 +2591,8 @@
                 
                 const file = e.dataTransfer.files[0];
                 if (file) {
-                    if (file.size > 5 * 1024 * 1024) {
-                        setError('File size must be less than 5MB');
+                    if (file.size > 10 * 1024 * 1024) {
+                        setError('File size must be less than 10MB');
                         return;
                     }
                     if (!file.type.startsWith('image/')) {
@@ -2557,46 +2620,59 @@
                 });
             };
             
-            // FIXED: Simplified upload function
             const uploadReceiptToStorage = async (file) => {
                 try {
-                    // Create a safe filename
-                    const timestamp = Date.now();
-                    const randomString = Math.random().toString(36).substring(2, 15);
-                    const safeFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-                    const fileName = `receipt_${timestamp}_${randomString}_${safeFileName}`;
+                    // Sanitize filename
+                    const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                    const fileName = `receipt_${Date.now()}_${sanitizedName}`;
+                    const storageRef = storage.ref(`receipts/${fileName}`);
                     
-                    // Create storage reference
-                    const storageRef = storage.ref();
-                    const receiptRef = storageRef.child(`receipts/${fileName}`);
+                    console.log('Uploading receipt:', fileName, 'Size:', file.size);
                     
-                    // Upload file
-                    console.log('Starting upload for:', fileName);
-                    const snapshot = await receiptRef.put(file);
+                    // Upload file with progress tracking
+                    const uploadTask = storageRef.put(file);
                     
-                    // Get download URL
-                    const downloadURL = await snapshot.ref.getDownloadURL();
-                    console.log('Upload successful, URL:', downloadURL);
-                    
-                    return downloadURL;
+                    return new Promise((resolve, reject) => {
+                        uploadTask.on(
+                            'state_changed',
+                            (snapshot) => {
+                                // Track upload progress
+                                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                setUploadProgress(progress);
+                                console.log('Upload progress:', progress + '%');
+                            },
+                            (error) => {
+                                console.error('Upload error:', error);
+                                reject(error);
+                            },
+                            async () => {
+                                // Upload complete, get download URL
+                                try {
+                                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                                    console.log('Receipt uploaded successfully:', downloadURL);
+                                    resolve(downloadURL);
+                                } catch (error) {
+                                    console.error('Error getting download URL:', error);
+                                    reject(error);
+                                }
+                            }
+                        );
+                    });
                 } catch (error) {
                     console.error('Error uploading receipt:', error);
-                    throw error;
+                    throw new Error(`Failed to upload receipt: ${error.message}`);
                 }
             };
             
             const handleSubmit = async (e) => {
                 e.preventDefault();
                 
-                // Clear any previous errors
-                setError('');
-                
-                // Validate form
                 if (!formData.amount || isNaN(formData.amount) || parseFloat(formData.amount) <= 0) {
                     setError('Please enter a valid amount');
                     return;
                 }
                 
+                // Validate custom category
                 if (formData.isCustom && !formData.customCategory.trim()) {
                     setError('Please enter a custom category name');
                     return;
@@ -2617,24 +2693,20 @@
                 }
                 
                 setUploading(true);
+                setError('');
+                setUploadProgress(0);
                 
                 try {
                     let receiptUrl = null;
                     
                     // Upload receipt if selected
                     if (formData.receiptFile) {
-                        try {
-                            receiptUrl = await uploadReceiptToStorage(formData.receiptFile);
-                            console.log('Receipt uploaded successfully:', receiptUrl);
-                        } catch (uploadError) {
-                            console.error('Failed to upload receipt:', uploadError);
-                            setError('Failed to upload receipt. You can save without receipt or try again.');
-                            setUploading(false);
-                            return;
-                        }
+                        console.log('Starting receipt upload...');
+                        receiptUrl = await uploadReceiptToStorage(formData.receiptFile);
+                        console.log('Receipt URL obtained:', receiptUrl);
                     }
                     
-                    // Determine final category
+                    // Determine final category value
                     const finalCategory = formData.isCustom ? formData.customCategory : formData.category;
                     
                     // Prepare expense data
@@ -2652,34 +2724,33 @@
                     if (receiptUrl) {
                         expenseData.receiptUrl = receiptUrl;
                         expenseData.receiptFileName = formData.receiptFile.name;
+                        console.log('Adding receipt URL to expense data');
                     }
                     
-                    // Save to Firestore
-                    console.log('Saving expense to Firestore:', expenseData);
-                    await db.collection('expenses').add(expenseData);
+                    // Save expense to Firestore
+                    console.log('Saving expense to Firestore...');
+                    const expenseRef = await db.collection('expenses').add(expenseData);
+                    console.log('Expense saved with ID:', expenseRef.id);
                     
                     // Update imprest if needed
                     if (formData.fromImprest) {
+                        console.log('Updating imprest balance...');
                         await db.collection('imprest').doc('current').update({
                             spent: firebase.firestore.FieldValue.increment(amount),
                             remaining: firebase.firestore.FieldValue.increment(-amount)
                         });
                     }
                     
-                    // Success
-                    const successMsg = receiptUrl 
-                        ? 'Expense saved successfully with receipt!' 
-                        : 'Expense saved successfully!';
-                    
-                    showNotification(successMsg, 'success');
+                    showNotification('Expense added successfully!' + (receiptUrl ? ' (Receipt uploaded)' : ''), 'success');
                     onClose();
                     
                 } catch (error) {
                     console.error('Error saving expense:', error);
-                    setError('Failed to save expense: ' + error.message);
-                    showNotification('Failed to save expense: ' + error.message, 'error');
+                    setError(`Failed to save expense: ${error.message}`);
+                    showNotification('Failed to save expense', 'error');
                 } finally {
                     setUploading(false);
+                    setUploadProgress(0);
                 }
             };
             
@@ -2768,6 +2839,7 @@
                                             <option value="Other">Other (Specify)</option>
                                         </select>
                                         
+                                        {/* Custom category input for "Other" */}
                                         {formData.isCustom && (
                                             <div className="custom-input-container">
                                                 <input
@@ -2815,12 +2887,27 @@
                                                     <div style={{ fontSize: '14px', color: 'var(--gray)' }}>
                                                         {formData.receiptFile ? 
                                                             `Selected: ${formData.receiptFile.name}` : 
-                                                            'Drag & drop or click to browse (Max 5MB)'}
+                                                            'Drag & drop or click to browse (Max 10MB)'
+                                                        }
                                                     </div>
                                                 </div>
                                             </label>
                                         </div>
                                         
+                                        {/* Upload Progress */}
+                                        {uploading && formData.receiptFile && uploadProgress > 0 && (
+                                            <div className="upload-progress">
+                                                <div 
+                                                    className="upload-progress-bar"
+                                                    style={{ width: `${uploadProgress}%` }}
+                                                ></div>
+                                                <div style={{ fontSize: '12px', color: 'var(--gray)', textAlign: 'center', marginTop: '4px' }}>
+                                                    Uploading: {uploadProgress.toFixed(0)}%
+                                                </div>
+                                            </div>
+                                        )}
+                                        
+                                        {/* File Preview */}
                                         {formData.receiptPreview && (
                                             <div className="file-preview">
                                                 <img 
@@ -2829,12 +2916,13 @@
                                                     className="file-preview-img"
                                                 />
                                                 <div className="file-preview-name">
-                                                    {formData.receiptFile.name}
+                                                    {formData.receiptFile.name} ({(formData.receiptFile.size / 1024).toFixed(2)} KB)
                                                 </div>
                                                 <button 
                                                     type="button" 
                                                     className="remove-file-btn"
                                                     onClick={removeFile}
+                                                    disabled={uploading}
                                                 >
                                                     <i className="fas fa-times"></i> Remove
                                                 </button>
@@ -2850,6 +2938,7 @@
                                                 className="checkbox-input"
                                                 checked={formData.fromImprest}
                                                 onChange={e => setFormData({...formData, fromImprest: e.target.checked})}
+                                                disabled={uploading}
                                             />
                                             <label htmlFor="fromImprest" className="form-label" style={{ fontSize: '15px' }}>
                                                 Deduct from Imprest Fund
@@ -2878,6 +2967,7 @@
                                             onChange={e => setFormData({...formData, notes: e.target.value})}
                                             placeholder="Additional notes about this expense..."
                                             rows="3"
+                                            disabled={uploading}
                                         />
                                     </div>
                                 </div>
@@ -2891,7 +2981,7 @@
                                         {uploading ? (
                                             <>
                                                 <i className="fas fa-spinner fa-spin"></i>
-                                                Saving...
+                                                {formData.receiptFile && uploadProgress > 0 ? `Uploading... ${uploadProgress.toFixed(0)}%` : 'Saving...'}
                                             </>
                                         ) : (
                                             <>
